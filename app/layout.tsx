@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Lora } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/data";
+import { Analytics } from "@vercel/analytics/next";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -28,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${archivo.variable} ${lora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
