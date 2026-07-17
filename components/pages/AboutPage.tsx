@@ -1,11 +1,13 @@
 "use client";
 
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { Boxed, SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function AboutPage() {
-  const { site, pillars, threads, quotes } = useContent();
+  const content = useContent();
+  const { site, pillars, threads, quotes } = content;
+  const hidden = hiddenSet(content);
 
   return (
     <>
@@ -43,6 +45,7 @@ export default function AboutPage() {
         </Boxed>
       </section>
 
+      {!hidden.has("pillars") && (
       <section
         {...studioSection("pillars", "Pillars")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -73,7 +76,9 @@ export default function AboutPage() {
           post?</em>
         </p>
       </section>
+      )}
 
+      {!hidden.has("threads") && (
       <section
         {...studioSection("threads", "Recurring threads")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -103,7 +108,9 @@ export default function AboutPage() {
           ))}
         </ul>
       </section>
+      )}
 
+      {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
         className="border-t border-line px-5 md:px-6 py-20 text-center"
@@ -112,6 +119,7 @@ export default function AboutPage() {
           &ldquo;{quotes[1] ?? quotes[0]}&rdquo;
         </p>
       </section>
+      )}
 
       <Cta />
     </>

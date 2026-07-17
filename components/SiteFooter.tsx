@@ -1,28 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 
-const columns = [
+const allColumns = [
   {
     title: "Club",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Newsletter", href: "/newsletter" },
-      { label: "Offerings", href: "/offerings" },
+      { label: "About", href: "/about", section: "" },
+      { label: "Newsletter", href: "/newsletter", section: "archive" },
+      { label: "Offerings", href: "/offerings", section: "offerings" },
     ],
   },
   {
     title: "Practice",
     links: [
-      { label: "Learn", href: "/learn" },
-      { label: "Resources", href: "/resources" },
+      { label: "Learn", href: "/learn", section: "learningPaths" },
+      { label: "Resources", href: "/resources", section: "resources" },
     ],
   },
 ];
 
 export default function SiteFooter() {
-  const { site } = useContent();
+  const content = useContent();
+  const { site } = content;
+  const hidden = hiddenSet(content);
+  const columns = allColumns
+    .map((c) => ({
+      ...c,
+      links: c.links.filter((l) => !l.section || !hidden.has(l.section)),
+    }))
+    .filter((c) => c.links.length > 0);
   return (
     <footer
       {...studioSection("site", "Site & links")}

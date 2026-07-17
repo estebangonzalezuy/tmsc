@@ -1,11 +1,13 @@
 "use client";
 
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { CircleLetter, SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function ResourcesPage() {
-  const { site, resources, worksheets, quotes } = useContent();
+  const content = useContent();
+  const { site, resources, worksheets, quotes } = content;
+  const hidden = hiddenSet(content);
 
   return (
     <>
@@ -23,6 +25,7 @@ export default function ResourcesPage() {
         </p>
       </section>
 
+      {!hidden.has("resources") && (
       <section
         {...studioSection("resources", "Resources")}
         className="border-t border-line grid md:grid-cols-3"
@@ -50,7 +53,9 @@ export default function ResourcesPage() {
           </a>
         ))}
       </section>
+      )}
 
+      {!hidden.has("worksheets") && (
       <section
         {...studioSection("worksheets", "Worksheets")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -91,7 +96,9 @@ export default function ResourcesPage() {
           .
         </p>
       </section>
+      )}
 
+      {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
         className="border-t border-line px-5 md:px-6 py-20 text-center"
@@ -100,6 +107,7 @@ export default function ResourcesPage() {
           &ldquo;{quotes[2] ?? quotes[0]}&rdquo;
         </p>
       </section>
+      )}
 
       <Cta />
     </>

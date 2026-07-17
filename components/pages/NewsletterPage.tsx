@@ -1,12 +1,14 @@
 "use client";
 
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { Boxed } from "@/components/Motifs";
 import PostList from "@/components/PostList";
 import Cta from "@/components/Cta";
 
 export default function NewsletterPage() {
-  const { site, stats, archive } = useContent();
+  const content = useContent();
+  const { site, stats, archive } = content;
+  const hidden = hiddenSet(content);
 
   return (
     <>
@@ -37,6 +39,7 @@ export default function NewsletterPage() {
             humanandmotion.substack.com
           </a>
         </div>
+        {!hidden.has("stats") && (
         <dl className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-px bg-line border border-line">
           {stats.map((s) => (
             <div key={s.label} className="bg-background p-6">
@@ -45,9 +48,11 @@ export default function NewsletterPage() {
             </div>
           ))}
         </dl>
+        )}
       </section>
 
-      {archive.map((y) => (
+      {!hidden.has("archive") &&
+        archive.map((y) => (
         <section
           key={y.year}
           {...studioSection("archive", "Newsletter archive")}
@@ -58,7 +63,7 @@ export default function NewsletterPage() {
             <PostList posts={y.posts} />
           </div>
         </section>
-      ))}
+        ))}
 
       <Cta />
     </>

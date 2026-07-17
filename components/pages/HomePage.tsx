@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import {
   Boxed,
   LetterMarquee,
@@ -12,6 +12,7 @@ import PostList from "@/components/PostList";
 import Cta from "@/components/Cta";
 
 export default function HomePage() {
+  const content = useContent();
   const {
     site,
     stats,
@@ -22,8 +23,11 @@ export default function HomePage() {
     offerings,
     archive,
     quotes,
-  } = useContent();
+  } = content;
+  const hidden = hiddenSet(content);
   const latestPosts = archive.flatMap((y) => y.posts).slice(0, 5);
+  const showLearn = !hidden.has("learningPaths");
+  const showResources = !hidden.has("resources");
 
   return (
     <>
@@ -78,6 +82,7 @@ export default function HomePage() {
       <LetterMarquee text={`${site.name.toUpperCase()} `} />
 
       {/* What the club is */}
+      {!hidden.has("stats") && (
       <section
         {...studioSection("stats", "Stats")}
         className="px-5 md:px-6 py-24 md:py-32"
@@ -109,8 +114,10 @@ export default function HomePage() {
           </dl>
         </div>
       </section>
+      )}
 
       {/* Pillars */}
+      {!hidden.has("pillars") && (
       <section
         {...studioSection("pillars", "Pillars")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -136,8 +143,10 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Quote band */}
+      {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
         className="border-t border-line px-5 md:px-6 py-20 text-center"
@@ -146,8 +155,10 @@ export default function HomePage() {
           &ldquo;{quotes[0]}&rdquo;
         </p>
       </section>
+      )}
 
       {/* Newsletter */}
+      {!hidden.has("archive") && (
       <section
         {...studioSection("archive", "Newsletter archive")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -172,8 +183,10 @@ export default function HomePage() {
           <PostList posts={latestPosts} />
         </div>
       </section>
+      )}
 
       {/* Practice File */}
+      {!hidden.has("practiceFiles") && (
       <section
         {...studioSection("practiceFiles", "Practice Files")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -202,12 +215,21 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Learn + Resources preview */}
-      <section className="border-t border-line grid md:grid-cols-2">
+      {(showLearn || showResources) && (
+      <section
+        className={`border-t border-line grid ${
+          showLearn && showResources ? "md:grid-cols-2" : ""
+        }`}
+      >
+        {showLearn && (
         <div
           {...studioSection("learningPaths", "Learning paths")}
-          className="px-5 md:px-6 py-24 md:border-r border-line"
+          className={`px-5 md:px-6 py-24 border-line ${
+            showResources ? "md:border-r" : ""
+          }`}
         >
           <SectionHeading
             label="Learn"
@@ -238,9 +260,13 @@ export default function HomePage() {
             All learning paths →
           </Link>
         </div>
+        )}
+        {showResources && (
         <div
           {...studioSection("resources", "Resources")}
-          className="px-5 md:px-6 py-24 border-t md:border-t-0 border-line"
+          className={`px-5 md:px-6 py-24 border-line ${
+            showLearn ? "border-t md:border-t-0" : ""
+          }`}
         >
           <SectionHeading
             label="Resources"
@@ -271,9 +297,12 @@ export default function HomePage() {
             All resources →
           </Link>
         </div>
+        )}
       </section>
+      )}
 
       {/* Offerings */}
+      {!hidden.has("offerings") && (
       <section
         {...studioSection("offerings", "Offerings")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -309,6 +338,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Human + Motion band */}
       <section

@@ -1,11 +1,13 @@
 "use client";
 
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { Boxed } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function OfferingsPage() {
-  const { site, offerings } = useContent();
+  const content = useContent();
+  const { site, offerings } = content;
+  const hidden = hiddenSet(content);
 
   return (
     <>
@@ -23,6 +25,7 @@ export default function OfferingsPage() {
         </p>
       </section>
 
+      {!hidden.has("offerings") && (
       <section
         {...studioSection("offerings", "Offerings")}
         className="border-t border-line"
@@ -61,6 +64,7 @@ export default function OfferingsPage() {
           </article>
         ))}
       </section>
+      )}
 
       <section className="border-t-0 px-5 md:px-6 py-24 text-center">
         <p className="font-serif italic text-2xl md:text-4xl leading-tight max-w-2xl mx-auto">

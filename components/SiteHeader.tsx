@@ -2,19 +2,25 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 
-const menuLinks = [
-  { label: "Index", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Newsletter", href: "/newsletter" },
-  { label: "Resources", href: "/resources" },
-  { label: "Learn", href: "/learn" },
-  { label: "Offerings", href: "/offerings" },
+// Pages disappear from the menu when the section that powers them is hidden.
+const allMenuLinks = [
+  { label: "Index", href: "/", section: "" },
+  { label: "About", href: "/about", section: "" },
+  { label: "Newsletter", href: "/newsletter", section: "archive" },
+  { label: "Resources", href: "/resources", section: "resources" },
+  { label: "Learn", href: "/learn", section: "learningPaths" },
+  { label: "Offerings", href: "/offerings", section: "offerings" },
 ];
 
 export default function SiteHeader() {
-  const { site } = useContent();
+  const content = useContent();
+  const { site } = content;
+  const hidden = hiddenSet(content);
+  const menuLinks = allMenuLinks.filter(
+    (l) => !l.section || !hidden.has(l.section),
+  );
   const [open, setOpen] = useState(false);
 
   return (

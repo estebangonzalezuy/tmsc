@@ -1,11 +1,13 @@
 "use client";
 
-import { studioSection, useContent } from "@/components/content";
+import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function LearnPage() {
-  const { site, learningPaths, practiceFiles } = useContent();
+  const content = useContent();
+  const { site, learningPaths, practiceFiles } = content;
+  const hidden = hiddenSet(content);
 
   return (
     <>
@@ -24,6 +26,7 @@ export default function LearnPage() {
         </p>
       </section>
 
+      {!hidden.has("learningPaths") && (
       <section
         {...studioSection("learningPaths", "Learning paths")}
         className="border-t border-line px-5 md:px-6 py-24"
@@ -50,7 +53,9 @@ export default function LearnPage() {
           ))}
         </div>
       </section>
+      )}
 
+      {!hidden.has("practiceFiles") && (
       <section
         {...studioSection("practiceFiles", "Practice Files")}
         className="border-t border-line px-5 md:px-6 py-24 md:py-32"
@@ -92,6 +97,7 @@ export default function LearnPage() {
           .
         </p>
       </section>
+      )}
 
       <Cta />
     </>

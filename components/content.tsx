@@ -18,3 +18,10 @@ export const useContent = () => useContext(ContentContext);
 export function studioSection(id: string, label: string) {
   return { "data-studio-section": id, "data-studio-label": label };
 }
+
+// Sections listed in content.hidden are dropped from the site entirely.
+// Older published content may predate the field, hence the fallback.
+export function hiddenSet(content: SiteContent): Set<string> {
+  const hidden = (content as { hidden?: string[] }).hidden ?? [];
+  return new Set(hidden);
+}

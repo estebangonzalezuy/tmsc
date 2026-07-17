@@ -19,6 +19,7 @@ type Content = {
   offerings: Item[];
   archive: { year: string; posts: Item[] }[];
   quotes: string[];
+  hidden: string[];
 };
 
 type ListKey =
@@ -584,7 +585,8 @@ export default function StudioEditor() {
     iframeRef.current?.contentWindow?.postMessage(msg, window.location.origin);
   }, []);
 
-  const adopt = useCallback((json: Content, m: Mode) => {
+  const adopt = useCallback((raw: Content, m: Mode) => {
+    const json = { ...raw, hidden: raw.hidden ?? [] };
     setContent(json);
     setSnapshot(JSON.stringify(json));
     setMode(m);
@@ -903,6 +905,7 @@ export default function StudioEditor() {
               {sections.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}
+                  {content.hidden.includes(s.id) ? " (hidden)" : ""}
                 </option>
               ))}
             </select>
@@ -911,6 +914,26 @@ export default function StudioEditor() {
             {section.note}. Click any outlined section in the preview to jump
             to its fields.
           </p>
+          {section.id !== "site" && (
+            <button
+              type="button"
+              onClick={() => {
+                const hidden = content.hidden.includes(section.id)
+                  ? content.hidden.filter((h) => h !== section.id)
+                  : [...content.hidden, section.id];
+                setContent({ ...content, hidden });
+              }}
+              className={`mt-3 w-full border border-line px-3 py-2 text-sm transition-colors ${
+                content.hidden.includes(section.id)
+                  ? "bg-foreground text-background"
+                  : "hover:bg-foreground hover:text-background"
+              }`}
+            >
+              {content.hidden.includes(section.id)
+                ? "Hidden on the site — click to show"
+                : "Visible on the site — click to hide"}
+            </button>
+          )}
           <div className="mt-6 pb-16">
             {section.kind === "object" && (
               <ObjectEditor
