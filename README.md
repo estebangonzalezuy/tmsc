@@ -16,6 +16,25 @@ club's poster motifs: circled letters, orbital rings, and boxed headlines.
 - `/learn` — learning paths and the Practice File exercises
 - `/offerings` — course, workshops, and residency with honest statuses
 
+## The Studio (CMS)
+
+All site copy lives in `content/site.json`. The Studio at `/studio` is a
+password-protected, section-by-section editor for that file. Publishing from
+the Studio commits the JSON to GitHub, which triggers a Vercel redeploy —
+changes are live in about a minute.
+
+Environment variables (set these in Vercel → Project → Settings →
+Environment Variables):
+
+- `STUDIO_PASSWORD` — required in production; the password for `/studio`
+- `STUDIO_GITHUB_TOKEN` — fine-grained GitHub token with **Contents:
+  read & write** on this repo (create at github.com/settings/personal-access-tokens)
+- `STUDIO_GITHUB_REPO` — optional, defaults to `estebangonzalezuy/tmsc`
+- `STUDIO_GITHUB_BRANCH` — optional, defaults to `main`
+
+In local development no variables are needed: the Studio edits
+`content/site.json` on disk directly.
+
 ## Development
 
 ```bash

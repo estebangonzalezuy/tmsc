@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Archivo, Lora } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/data";
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -30,11 +28,7 @@ export default function RootLayout({
       lang="en"
       className={`${archivo.variable} ${lora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
