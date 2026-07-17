@@ -59,7 +59,8 @@ type Section =
       kind: "strings";
       itemName: string;
     }
-  | { id: "archive"; title: string; note: string; kind: "archive" };
+  | { id: "archive"; title: string; note: string; kind: "archive" }
+  | { id: "nav"; title: string; note: string; kind: "nav" };
 
 const sections: Section[] = [
   {
@@ -79,6 +80,12 @@ const sections: Section[] = [
       { key: "instagram", label: "Instagram URL" },
       { key: "linkedin", label: "LinkedIn URL" },
     ],
+  },
+  {
+    id: "nav",
+    title: "Navigation",
+    note: "Choose which pages appear in the menus",
+    kind: "nav",
   },
   {
     id: "stats",
@@ -478,6 +485,73 @@ function ArchiveEditor({
         label="year"
         onClick={() => onChange([{ year: "", posts: [] }, ...years])}
       />
+    </div>
+  );
+}
+
+/* ---------- navigation visibility ---------- */
+
+const navItems = [
+  { id: "about", label: "About", section: "" },
+  { id: "newsletter", label: "Newsletter", section: "archive" },
+  { id: "resources", label: "Resources", section: "resources" },
+  { id: "learn", label: "Learn", section: "learningPaths" },
+  { id: "offerings", label: "Offerings", section: "offerings" },
+];
+
+function NavEditor({
+  hidden,
+  onChange,
+}: {
+  hidden: string[];
+  onChange: (hidden: string[]) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {navItems.map((item) => {
+        const navKey = "nav:" + item.id;
+        const manuallyHidden = hidden.includes(navKey);
+        const sectionHidden = !!item.section && hidden.includes(item.section);
+        return (
+          <div
+            key={item.id}
+            className="border border-line p-4 flex items-center justify-between gap-4"
+          >
+            <div>
+              <p className="text-sm">{item.label}</p>
+              <p className="text-xs text-muted">
+                {sectionHidden
+                  ? "Already hidden — its section is hidden"
+                  : manuallyHidden
+                    ? "Hidden from the menus (page still reachable by URL)"
+                    : "Shown in the header and footer menus"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                onChange(
+                  manuallyHidden
+                    ? hidden.filter((h) => h !== navKey)
+                    : [...hidden, navKey],
+                )
+              }
+              disabled={sectionHidden}
+              className={`border border-line px-3 py-1.5 text-sm whitespace-nowrap transition-colors disabled:opacity-40 ${
+                manuallyHidden
+                  ? "bg-foreground text-background"
+                  : "enabled:hover:bg-foreground enabled:hover:text-background"
+              }`}
+            >
+              {manuallyHidden ? "Show" : "Hide"}
+            </button>
+          </div>
+        );
+      })}
+      <p className="text-xs text-muted">
+        The Index link and the site name always stay — the site needs a way
+        home.
+      </p>
     </div>
   );
 }
@@ -914,7 +988,7 @@ export default function StudioEditor() {
             {section.note}. Click any outlined section in the preview to jump
             to its fields.
           </p>
-          {section.id !== "site" && (
+          {section.id !== "site" && section.id !== "nav" && (
             <button
               type="button"
               onClick={() => {
@@ -959,6 +1033,12 @@ export default function StudioEditor() {
                 onChange={(items) =>
                   setContent({ ...content, [section.id]: items })
                 }
+              />
+            )}
+            {section.kind === "nav" && (
+              <NavEditor
+                hidden={content.hidden}
+                onChange={(hidden) => setContent({ ...content, hidden })}
               />
             )}
             {section.kind === "archive" && (

@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
 
-// Pages disappear from the menu when the section that powers them is hidden.
+// A link disappears when the section powering its page is hidden, or when
+// the link itself is hidden from the Navigation panel in the Studio.
 const allMenuLinks = [
-  { label: "Index", href: "/", section: "" },
-  { label: "About", href: "/about", section: "" },
-  { label: "Newsletter", href: "/newsletter", section: "archive" },
-  { label: "Resources", href: "/resources", section: "resources" },
-  { label: "Learn", href: "/learn", section: "learningPaths" },
-  { label: "Offerings", href: "/offerings", section: "offerings" },
+  { label: "Index", href: "/", section: "", navId: "" },
+  { label: "About", href: "/about", section: "", navId: "about" },
+  { label: "Newsletter", href: "/newsletter", section: "archive", navId: "newsletter" },
+  { label: "Resources", href: "/resources", section: "resources", navId: "resources" },
+  { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
+  { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },
 ];
 
 export default function SiteHeader() {
@@ -19,13 +20,15 @@ export default function SiteHeader() {
   const { site } = content;
   const hidden = hiddenSet(content);
   const menuLinks = allMenuLinks.filter(
-    (l) => !l.section || !hidden.has(l.section),
+    (l) =>
+      (!l.section || !hidden.has(l.section)) &&
+      (!l.navId || !hidden.has("nav:" + l.navId)),
   );
   const [open, setOpen] = useState(false);
 
   return (
     <header
-      {...studioSection("site", "Site & links")}
+      {...studioSection("nav", "Navigation")}
       className="relative z-20 border-b border-line"
     >
       {/* Desktop nav */}

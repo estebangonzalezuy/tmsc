@@ -7,16 +7,16 @@ const allColumns = [
   {
     title: "Club",
     links: [
-      { label: "About", href: "/about", section: "" },
-      { label: "Newsletter", href: "/newsletter", section: "archive" },
-      { label: "Offerings", href: "/offerings", section: "offerings" },
+      { label: "About", href: "/about", section: "", navId: "about" },
+      { label: "Newsletter", href: "/newsletter", section: "archive", navId: "newsletter" },
+      { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },
     ],
   },
   {
     title: "Practice",
     links: [
-      { label: "Learn", href: "/learn", section: "learningPaths" },
-      { label: "Resources", href: "/resources", section: "resources" },
+      { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
+      { label: "Resources", href: "/resources", section: "resources", navId: "resources" },
     ],
   },
 ];
@@ -28,7 +28,11 @@ export default function SiteFooter() {
   const columns = allColumns
     .map((c) => ({
       ...c,
-      links: c.links.filter((l) => !l.section || !hidden.has(l.section)),
+      links: c.links.filter(
+        (l) =>
+          (!l.section || !hidden.has(l.section)) &&
+          (!l.navId || !hidden.has("nav:" + l.navId)),
+      ),
     }))
     .filter((c) => c.links.length > 0);
   return (
