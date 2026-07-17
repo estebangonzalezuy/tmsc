@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import bundledContent from "@/content/site.json";
 
 /* ---------- content types (mirror content/site.json) ---------- */
 
@@ -480,12 +481,79 @@ function ArchiveEditor({
   );
 }
 
+/* ---------- GitHub (from the browser, no server config) ---------- */
+
+const GH_REPO = "estebangonzalezuy/tmsc";
+const GH_BRANCH = "main";
+const GH_FILE = "content/site.json";
+const TOKEN_KEY = "studio-github-token";
+
+function b64encode(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach((b) => (bin += String.fromCharCode(b)));
+  return btoa(bin);
+}
+
+function b64decode(b64: string): string {
+  const bin = atob(b64.replace(/\s/g, ""));
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+}
+
+function ghHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+async function ghRead(token: string): Promise<{ json: Content; sha: string }> {
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`,
+    { headers: ghHeaders(token), cache: "no-store" },
+  );
+  if (res.status === 401 || res.status === 403) {
+    throw new Error("GitHub rejected the token — check it and try again.");
+  }
+  if (res.status === 404) {
+    throw new Error(
+      "GitHub can't see the repo with this token — make sure it has access to " +
+        GH_REPO +
+        ".",
+    );
+  }
+  if (!res.ok) throw new Error(`GitHub read failed (${res.status})`);
+  const data = (await res.json()) as { content: string; sha: string };
+  return { json: JSON.parse(b64decode(data.content)) as Content, sha: data.sha };
+}
+
+async function ghWrite(token: string, content: Content): Promise<void> {
+  const { sha } = await ghRead(token);
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+    {
+      method: "PUT",
+      headers: ghHeaders(token),
+      body: JSON.stringify({
+        message: "Update site content from the Studio",
+        content: b64encode(JSON.stringify(content, null, 2) + "\n"),
+        sha,
+        branch: GH_BRANCH,
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`GitHub write failed (${res.status})`);
+}
+
 /* ---------- the editor shell ---------- */
+
+type Mode = "github" | "local" | "offline";
 
 type Status =
   | { kind: "idle" }
   | { kind: "saving" }
-  | { kind: "saved"; mode: "github" | "local" }
+  | { kind: "saved"; mode: Mode }
   | { kind: "error"; message: string };
 
 const pageTabs = [
@@ -498,16 +566,16 @@ const pageTabs = [
 ];
 
 export default function StudioEditor() {
-  const [password, setPassword] = useState("");
-  const [authed, setAuthed] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [checking, setChecking] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
   const [snapshot, setSnapshot] = useState("");
+  const [mode, setMode] = useState<Mode>("offline");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [active, setActive] = useState<Section["id"]>("site");
   const [activePage, setActivePage] = useState("home");
   const [previewReady, setPreviewReady] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tokenInput, setTokenInput] = useState("");
+  const [settingsError, setSettingsError] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const dirty = content !== null && JSON.stringify(content) !== snapshot;
@@ -516,30 +584,66 @@ export default function StudioEditor() {
     iframeRef.current?.contentWindow?.postMessage(msg, window.location.origin);
   }, []);
 
-  const load = useCallback(async (pw: string) => {
-    const res = await fetch("/api/studio/content", {
-      headers: { "x-studio-password": pw },
-      cache: "no-store",
-    });
-    if (res.status === 401) return false;
-    if (!res.ok) throw new Error(`Could not load content (${res.status})`);
-    const data = (await res.json()) as { content: Content };
-    setContent(data.content);
-    setSnapshot(JSON.stringify(data.content));
-    setAuthed(true);
-    sessionStorage.setItem("studio-password", pw);
-    return true;
+  const adopt = useCallback((json: Content, m: Mode) => {
+    setContent(json);
+    setSnapshot(JSON.stringify(json));
+    setMode(m);
   }, []);
+
+  // Load the freshest content available: GitHub (token) → dev API → bundled.
+  const load = useCallback(
+    async (token: string): Promise<string> => {
+      if (token) {
+        try {
+          const { json } = await ghRead(token);
+          adopt(json, "github");
+          return "";
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "GitHub read failed";
+          try {
+            const res = await fetch("/api/studio/content", {
+              cache: "no-store",
+            });
+            if (res.ok) {
+              const data = (await res.json()) as { content: Content };
+              adopt(data.content, "local");
+              return message;
+            }
+          } catch {
+            /* fall through to bundled */
+          }
+          adopt(
+            JSON.parse(JSON.stringify(bundledContent)) as Content,
+            "offline",
+          );
+          return message;
+        }
+      }
+      try {
+        const res = await fetch("/api/studio/content", { cache: "no-store" });
+        if (res.ok) {
+          const data = (await res.json()) as { content: Content };
+          adopt(data.content, "local");
+          return "";
+        }
+      } catch {
+        /* fall through to bundled */
+      }
+      adopt(JSON.parse(JSON.stringify(bundledContent)) as Content, "offline");
+      return "";
+    },
+    [adopt],
+  );
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        await load(sessionStorage.getItem("studio-password") ?? "");
-      } catch {
-        if (!cancelled) setLoginError("Could not reach the content API.");
-      } finally {
-        if (!cancelled) setChecking(false);
+      const token = localStorage.getItem(TOKEN_KEY) ?? "";
+      const problem = await load(token);
+      if (!cancelled && problem) {
+        setStatus({ kind: "error", message: problem });
+        setSettingsOpen(true);
       }
     })();
     return () => {
@@ -582,40 +686,61 @@ export default function StudioEditor() {
     post({ studio: "active", section: id, scroll: true });
   }
 
-  async function unlock(e: React.FormEvent) {
-    e.preventDefault();
-    setLoginError("");
-    try {
-      const ok = await load(password);
-      if (!ok) setLoginError("Wrong password.");
-    } catch {
-      setLoginError("Could not reach the content API.");
+  async function saveToken() {
+    const token = tokenInput.trim();
+    setSettingsError("");
+    if (!token) {
+      setSettingsError("Paste a token first.");
+      return;
     }
+    try {
+      await ghRead(token); // validate before storing
+    } catch (err) {
+      setSettingsError(
+        err instanceof Error ? err.message : "Could not reach GitHub.",
+      );
+      return;
+    }
+    localStorage.setItem(TOKEN_KEY, token);
+    setTokenInput("");
+    setSettingsOpen(false);
+    setStatus({ kind: "idle" });
+    await load(token);
+  }
+
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+    setMode((m) => (m === "github" ? "offline" : m));
+    setSettingsError("");
   }
 
   async function save() {
     if (!content || status.kind === "saving") return;
+    const token = localStorage.getItem(TOKEN_KEY) ?? "";
+    if (!token && mode !== "local") {
+      setSettingsOpen(true);
+      return;
+    }
     setStatus({ kind: "saving" });
     try {
+      if (token) {
+        await ghWrite(token, content);
+        setSnapshot(JSON.stringify(content));
+        setMode("github");
+        setStatus({ kind: "saved", mode: "github" });
+        return;
+      }
       const res = await fetch("/api/studio/content", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-studio-password":
-            sessionStorage.getItem("studio-password") ?? password,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(content),
       });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        mode?: "github" | "local";
-        error?: string;
-      };
+      const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
         throw new Error(data.error ?? `Save failed (${res.status})`);
       }
       setSnapshot(JSON.stringify(content));
-      setStatus({ kind: "saved", mode: data.mode ?? "local" });
+      setStatus({ kind: "saved", mode: "local" });
     } catch (err) {
       setStatus({
         kind: "error",
@@ -624,9 +749,7 @@ export default function StudioEditor() {
     }
   }
 
-  /* ----- unauthenticated states ----- */
-
-  if (checking) {
+  if (!content) {
     return (
       <div className="flex-1 flex items-center justify-center text-sm text-muted">
         Opening the Studio…
@@ -634,45 +757,8 @@ export default function StudioEditor() {
     );
   }
 
-  if (!authed || !content) {
-    return (
-      <div className="flex-1 flex items-center justify-center px-5">
-        <form onSubmit={unlock} className="w-full max-w-sm border border-line p-8">
-          <p className="text-sm underline underline-offset-4">
-            the Motion Social Club
-          </p>
-          <h1 className="mt-3 font-serif text-3xl">the Studio</h1>
-          <p className="mt-2 text-sm text-muted">
-            Click any section of the site to edit it. Changes publish to the
-            live site.
-          </p>
-          <input
-            type="password"
-            autoFocus
-            placeholder="Password"
-            className={`${inputClass} mt-6`}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {loginError && (
-            <p className="mt-3 text-sm" role="alert">
-              {loginError}
-            </p>
-          )}
-          <button
-            type="submit"
-            className="mt-4 w-full border border-line px-4 py-2 text-sm hover:bg-foreground hover:text-background transition-colors"
-          >
-            Unlock
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  /* ----- editor ----- */
-
   const section = sections.find((s) => s.id === active) ?? sections[0];
+  const connected = mode === "github";
 
   return (
     <div className="h-dvh flex flex-col">
@@ -709,10 +795,24 @@ export default function StudioEditor() {
                 : "Saved locally"}
             </span>
           )}
-          {status.kind === "error" && <span role="alert">{status.message}</span>}
+          {status.kind === "error" && (
+            <span className="max-w-64 truncate" role="alert">
+              {status.message}
+            </span>
+          )}
           {dirty && status.kind !== "saving" && (
             <span className="text-muted">Unsaved changes</span>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setSettingsOpen((o) => !o);
+              setSettingsError("");
+            }}
+            className="border border-line px-3 py-1.5 hover:bg-foreground hover:text-background transition-colors"
+          >
+            {connected ? "● GitHub" : mode === "local" ? "● Local" : "Connect"}
+          </button>
           <button
             type="button"
             onClick={save}
@@ -723,6 +823,64 @@ export default function StudioEditor() {
           </button>
         </div>
       </header>
+
+      {settingsOpen && (
+        <div className="border-b border-line bg-background px-5 py-5">
+          <div className="max-w-2xl">
+            <p className="text-sm">
+              <span className="underline underline-offset-4">
+                Connect GitHub to publish
+              </span>{" "}
+              {connected && <span className="text-muted">— connected ✓</span>}
+            </p>
+            <p className="mt-2 text-xs text-muted leading-relaxed">
+              One-time setup, no Vercel configuration needed: create a
+              fine-grained token at{" "}
+              <a
+                href="https://github.com/settings/personal-access-tokens/new"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-2"
+              >
+                github.com/settings/personal-access-tokens
+              </a>{" "}
+              with Repository access limited to <strong>{GH_REPO}</strong> and
+              the <strong>Contents: Read and write</strong> permission, then
+              paste it below. It is stored only in this browser.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <input
+                type="password"
+                placeholder="github_pat_…"
+                className={inputClass}
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={saveToken}
+                className="border border-line px-4 py-2 text-sm whitespace-nowrap hover:bg-foreground hover:text-background transition-colors"
+              >
+                Save token
+              </button>
+              {connected && (
+                <button
+                  type="button"
+                  onClick={clearToken}
+                  className="border border-line px-4 py-2 text-sm whitespace-nowrap hover:bg-foreground hover:text-background transition-colors"
+                >
+                  Disconnect
+                </button>
+              )}
+            </div>
+            {settingsError && (
+              <p className="mt-2 text-sm" role="alert">
+                {settingsError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 grid lg:grid-cols-[1fr_26rem]">
         <div className="relative hidden lg:block border-r border-line bg-line/10">

@@ -19,21 +19,21 @@ club's poster motifs: circled letters, orbital rings, and boxed headlines.
 ## The Studio (CMS)
 
 All site copy lives in `content/site.json`. The Studio at `/studio` is a
-password-protected, section-by-section editor for that file. Publishing from
-the Studio commits the JSON to GitHub, which triggers a Vercel redeploy —
-changes are live in about a minute.
+visual editor for that file: the real site renders in a preview, clicking any
+section opens its fields, and edits show up live. Publishing commits the JSON
+to GitHub, which triggers a Vercel redeploy — changes are live in about a
+minute.
 
-Environment variables (set these in Vercel → Project → Settings →
-Environment Variables):
+**No environment variables and no Vercel configuration are needed.** The
+first time you publish, the Studio asks you to connect GitHub: create a
+fine-grained token at github.com/settings/personal-access-tokens with
+Repository access limited to this repo and the **Contents: Read and write**
+permission, and paste it into the Studio. The token is stored only in your
+browser and sent only to api.github.com. Publishing is protected by the token
+itself — without it, visitors to `/studio` can only look at the editor.
 
-- `STUDIO_PASSWORD` — required in production; the password for `/studio`
-- `STUDIO_GITHUB_TOKEN` — fine-grained GitHub token with **Contents:
-  read & write** on this repo (create at github.com/settings/personal-access-tokens)
-- `STUDIO_GITHUB_REPO` — optional, defaults to `estebangonzalezuy/tmsc`
-- `STUDIO_GITHUB_BRANCH` — optional, defaults to `main`
-
-In local development no variables are needed: the Studio edits
-`content/site.json` on disk directly.
+In local development the Studio edits `content/site.json` on disk directly,
+no token required.
 
 ## Development
 
