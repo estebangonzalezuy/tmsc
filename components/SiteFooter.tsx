@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { site } from "@/lib/data";
+import { studioSection, useContent } from "@/components/content";
 
 const columns = [
   {
@@ -20,8 +22,12 @@ const columns = [
 ];
 
 export default function SiteFooter() {
+  const { site } = useContent();
   return (
-    <footer className="border-t border-line">
+    <footer
+      {...studioSection("site", "Site & links")}
+      className="border-t border-line"
+    >
       <div className="px-5 md:px-6 py-12 grid gap-10 md:grid-cols-3">
         <div>
           <p className="underline underline-offset-4">{site.name}</p>

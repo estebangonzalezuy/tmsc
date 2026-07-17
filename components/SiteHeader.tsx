@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { site } from "@/lib/data";
+import { studioSection, useContent } from "@/components/content";
 
 const menuLinks = [
   { label: "Index", href: "/" },
@@ -14,10 +14,14 @@ const menuLinks = [
 ];
 
 export default function SiteHeader() {
+  const { site } = useContent();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="relative z-20 border-b border-line">
+    <header
+      {...studioSection("site", "Site & links")}
+      className="relative z-20 border-b border-line"
+    >
       {/* Desktop nav */}
       <nav className="hidden md:flex items-center justify-between px-6 py-4 text-sm">
         <Link href="/" className="underline underline-offset-4">

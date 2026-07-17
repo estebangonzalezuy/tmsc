@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /* ---------- content types (mirror content/site.json) ---------- */
 
@@ -488,6 +488,15 @@ type Status =
   | { kind: "saved"; mode: "github" | "local" }
   | { kind: "error"; message: string };
 
+const pageTabs = [
+  { id: "home", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "newsletter", label: "Newsletter" },
+  { id: "resources", label: "Resources" },
+  { id: "learn", label: "Learn" },
+  { id: "offerings", label: "Offerings" },
+];
+
 export default function StudioEditor() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -497,8 +506,15 @@ export default function StudioEditor() {
   const [snapshot, setSnapshot] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [active, setActive] = useState<Section["id"]>("site");
+  const [activePage, setActivePage] = useState("home");
+  const [previewReady, setPreviewReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const dirty = content !== null && JSON.stringify(content) !== snapshot;
+
+  const post = useCallback((msg: object) => {
+    iframeRef.current?.contentWindow?.postMessage(msg, window.location.origin);
+  }, []);
 
   const load = useCallback(async (pw: string) => {
     const res = await fetch("/api/studio/content", {
@@ -531,12 +547,40 @@ export default function StudioEditor() {
     };
   }, [load]);
 
+  // Messages coming back from the preview iframe.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const d = e.data as { studio?: string; section?: string };
+      if (d?.studio === "preview-ready") setPreviewReady(true);
+      if (d?.studio === "section-click" && d.section) {
+        setActive(d.section as Section["id"]);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  // Keep the preview fed with draft content and the visible page.
+  useEffect(() => {
+    if (previewReady && content) post({ studio: "content", content });
+  }, [previewReady, content, post]);
+
+  useEffect(() => {
+    if (previewReady) post({ studio: "page", page: activePage });
+  }, [previewReady, activePage, post]);
+
   useEffect(() => {
     if (!dirty) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+
+  function selectSection(id: Section["id"]) {
+    setActive(id);
+    post({ studio: "active", section: id, scroll: true });
+  }
 
   async function unlock(e: React.FormEvent) {
     e.preventDefault();
@@ -599,7 +643,8 @@ export default function StudioEditor() {
           </p>
           <h1 className="mt-3 font-serif text-3xl">the Studio</h1>
           <p className="mt-2 text-sm text-muted">
-            Edit the site section by section. Changes publish to the live site.
+            Click any section of the site to edit it. Changes publish to the
+            live site.
           </p>
           <input
             type="password"
@@ -630,12 +675,29 @@ export default function StudioEditor() {
   const section = sections.find((s) => s.id === active) ?? sections[0];
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-background px-5 py-3">
-        <p className="text-sm">
-          <span className="underline underline-offset-4">the Studio</span>{" "}
-          <span className="text-muted">— {content.site.name}</span>
-        </p>
+    <div className="h-dvh flex flex-col">
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-background px-5 py-3">
+        <div className="flex items-center gap-6 min-w-0">
+          <p className="text-sm whitespace-nowrap">
+            <span className="underline underline-offset-4">the Studio</span>
+          </p>
+          <nav className="hidden lg:flex items-center gap-1 text-sm">
+            {pageTabs.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActivePage(t.id)}
+                className={`px-3 py-1 border transition-colors ${
+                  activePage === t.id
+                    ? "border-line bg-foreground text-background"
+                    : "border-transparent hover:border-line"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
         <div className="flex items-center gap-4 text-sm">
           {status.kind === "saving" && (
             <span className="text-muted">Publishing…</span>
@@ -647,20 +709,10 @@ export default function StudioEditor() {
                 : "Saved locally"}
             </span>
           )}
-          {status.kind === "error" && (
-            <span role="alert">{status.message}</span>
-          )}
+          {status.kind === "error" && <span role="alert">{status.message}</span>}
           {dirty && status.kind !== "saving" && (
             <span className="text-muted">Unsaved changes</span>
           )}
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            className="underline underline-offset-4 hover:text-muted transition-colors"
-          >
-            View site
-          </a>
           <button
             type="button"
             onClick={save}
@@ -672,35 +724,36 @@ export default function StudioEditor() {
         </div>
       </header>
 
-      <div className="flex-1 grid md:grid-cols-[16rem_1fr]">
-        <nav className="border-b md:border-b-0 md:border-r border-line p-4 space-y-1">
-          {sections.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setActive(s.id)}
-              className={`block w-full text-left px-3 py-2 text-sm border transition-colors ${
-                s.id === active
-                  ? "border-line bg-foreground text-background"
-                  : "border-transparent hover:border-line"
-              }`}
-            >
-              <span className="block">{s.title}</span>
-              <span
-                className={`block text-xs ${
-                  s.id === active ? "text-background/60" : "text-muted"
-                }`}
-              >
-                {s.note}
-              </span>
-            </button>
-          ))}
-        </nav>
+      <div className="flex-1 min-h-0 grid lg:grid-cols-[1fr_26rem]">
+        <div className="relative hidden lg:block border-r border-line bg-line/10">
+          <iframe
+            ref={iframeRef}
+            src="/studio/preview"
+            title="Site preview"
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
 
-        <div className="p-5 md:p-8 max-w-3xl">
-          <h2 className="font-serif text-3xl">{section.title}</h2>
-          <p className="mt-1 text-sm text-muted">{section.note}</p>
-          <div className="mt-8 pb-24">
+        <div className="min-h-0 overflow-y-auto p-5">
+          <label className="block">
+            <span className="text-xs text-muted">Section</span>
+            <select
+              className={`${inputClass} mt-1`}
+              value={section.id}
+              onChange={(e) => selectSection(e.target.value as Section["id"])}
+            >
+              {sections.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mt-2 text-xs text-muted">
+            {section.note}. Click any outlined section in the preview to jump
+            to its fields.
+          </p>
+          <div className="mt-6 pb-16">
             {section.kind === "object" && (
               <ObjectEditor
                 fields={section.fields}

@@ -1,6 +1,10 @@
-import { site, type Post } from "@/lib/data";
+"use client";
+
+import type { Post } from "@/lib/data";
+import { useContent } from "@/components/content";
 
 export default function PostList({ posts }: { posts: Post[] }) {
+  const { site } = useContent();
   return (
     <ul className="divide-y divide-line/30 border-y border-line/30">
       {posts.map((p) => (
