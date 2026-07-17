@@ -476,5 +476,11 @@
     "You don't need more tutorials. You need more practice.",
     "Check the time available you have in your week."
   ],
-  "hidden": []
+  "hidden": [
+    "nav:learn",
+    "nav:offerings",
+    "stats",
+    "practiceFiles",
+    "offerings"
+  ]
 }
