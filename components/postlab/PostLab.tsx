@@ -329,20 +329,41 @@ export default function PostLab() {
     rot: number;
     shift: boolean;
   } | null>(null);
+  /* Touch: two fingers pinch-scale the selected layer. */
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
 
   const onStagePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      ox: layer.offsetX,
-      oy: layer.offsetY,
-      rot: layer.rotation,
-      shift: e.shiftKey,
-    };
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointersRef.current.size === 2) {
+      const [a, b] = [...pointersRef.current.values()];
+      pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale: layer.scale };
+      dragRef.current = null;
+    } else if (pointersRef.current.size === 1) {
+      dragRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        ox: layer.offsetX,
+        oy: layer.offsetY,
+        rot: layer.rotation,
+        shift: e.shiftKey,
+      };
+    }
   };
 
   const onStagePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointersRef.current.has(e.pointerId)) return;
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinchRef.current && pointersRef.current.size === 2) {
+      const [a, b] = [...pointersRef.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dist > 0 && pinchRef.current.dist > 0) {
+        const next = pinchRef.current.scale * (dist / pinchRef.current.dist);
+        patchLayer({ scale: Math.max(0.1, Math.min(4, next)) });
+      }
+      return;
+    }
     const d = dragRef.current;
     if (!d) return;
     const dx = (e.clientX - d.x) / stageSize.w;
@@ -357,8 +378,10 @@ export default function PostLab() {
     }
   };
 
-  const onStagePointerUp = () => {
-    dragRef.current = null;
+  const onStagePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointersRef.current.delete(e.pointerId);
+    if (pointersRef.current.size < 2) pinchRef.current = null;
+    if (pointersRef.current.size === 0) dragRef.current = null;
   };
 
   /* Wheel = scale the selected layer (non-passive so we can preventDefault). */
@@ -504,7 +527,7 @@ export default function PostLab() {
   /* -------------------------------------------------------------- render */
 
   return (
-    <div className="h-dvh flex flex-col">
+    <div className="min-h-dvh md:h-dvh flex flex-col">
       <header className="border-b border-line px-5 py-3 flex items-center justify-between text-sm shrink-0">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center rounded-full border border-line size-8 text-xs">
@@ -523,12 +546,12 @@ export default function PostLab() {
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0">
         {/* Stage */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="md:flex-1 flex flex-col min-w-0">
           <div
             ref={stageRef}
-            className="flex-1 flex items-center justify-center min-h-0"
+            className="h-[58vh] md:h-auto md:flex-1 flex items-center justify-center min-h-0"
           >
             <div
               ref={frameRef}
@@ -610,7 +633,7 @@ export default function PostLab() {
         </div>
 
         {/* Control panel */}
-        <aside className="w-[340px] shrink-0 border-l border-line overflow-y-auto text-sm">
+        <aside className="w-full md:w-[340px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto text-sm">
           <Section title="format">
             <Seg
               value={spec.format}

@@ -649,6 +649,9 @@ export default function StudioEditor() {
   const [activePage, setActivePage] = useState("home");
   const [previewReady, setPreviewReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Small screens show one pane at a time; tapping a section in the
+  // preview jumps back to its fields.
+  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
   const [tokenInput, setTokenInput] = useState("");
   const [settingsError, setSettingsError] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -735,6 +738,7 @@ export default function StudioEditor() {
       if (d?.studio === "preview-ready") setPreviewReady(true);
       if (d?.studio === "section-click" && d.section) {
         setActive(d.section as Section["id"]);
+        setMobileView("edit");
       }
     };
     window.addEventListener("message", onMessage);
@@ -958,8 +962,43 @@ export default function StudioEditor() {
         </div>
       )}
 
+      {/* Mobile pane switcher */}
+      <div className="lg:hidden flex items-center gap-2 border-b border-line px-5 py-2 text-sm">
+        {(["edit", "preview"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setMobileView(v)}
+            className={`border border-line px-3 py-1 transition-colors ${
+              mobileView === v
+                ? "bg-foreground text-background"
+                : "hover:bg-foreground hover:text-background"
+            }`}
+          >
+            {v === "edit" ? "Edit" : "Preview"}
+          </button>
+        ))}
+        {mobileView === "preview" && (
+          <select
+            className="ml-auto border border-line bg-transparent px-2 py-1 text-sm focus:outline-none"
+            value={activePage}
+            onChange={(e) => setActivePage(e.target.value)}
+          >
+            {pageTabs.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
       <div className="flex-1 min-h-0 grid lg:grid-cols-[1fr_26rem]">
-        <div className="relative hidden lg:block border-r border-line bg-line/10">
+        <div
+          className={`relative ${
+            mobileView === "preview" ? "block" : "hidden"
+          } lg:block border-r border-line bg-line/10`}
+        >
           <iframe
             ref={iframeRef}
             src="/studio/preview"
@@ -968,7 +1007,11 @@ export default function StudioEditor() {
           />
         </div>
 
-        <div className="min-h-0 overflow-y-auto p-5">
+        <div
+          className={`min-h-0 overflow-y-auto p-5 ${
+            mobileView === "edit" ? "block" : "hidden"
+          } lg:block`}
+        >
           <label className="block">
             <span className="text-xs text-muted">Section</span>
             <select
