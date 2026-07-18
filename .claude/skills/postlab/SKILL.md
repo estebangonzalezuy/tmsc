@@ -99,6 +99,29 @@ speed), `spiral` (density, strokeWidth, distortion, speed), `smoke`
 (thickness, radius, speed). Colors are never specified — everything is
 black & white by design.
 
+## The queue automation (Notion → post)
+
+The owner queues post ideas in the Notion database **"the Post Lab
+queue"** (data source `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d`,
+under "The Motion Social Club" hub page). Columns: Name (title), Status
+(Draft | Ready | Generated | Posted), Format (auto | square | portrait |
+story | carousel | reel), Post link (URL), Notes. The post content lives
+in the page body; Notes carries style direction.
+
+To process the queue (a scheduled Routine does this hourly; any session
+can do it on demand):
+
+1. Query the data source for pages with `Status = 'Ready'`. None → done,
+   end quietly.
+2. For each Ready page: fetch its body and Notes, distill into a PostSpec
+   per this skill (Format `carousel` → portrait multi-slide; `reel` →
+   story single slide, generative background; `auto` → judge from the
+   content). Respect the Notes.
+3. Encode and write back: set **Post link** to
+   `https://themotionsocialclub.vercel.app/postlab#spec=<base64url>` and
+   **Status** to `Generated`. Touch nothing else — never edit rows in
+   other statuses, and never modify repo code for this task.
+
 ## Editorial defaults
 
 - Single quote/thought → `square`, dark theme, `dithering` sphere, serif
