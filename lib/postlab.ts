@@ -472,9 +472,25 @@ const generative: Omit<ShaderDef, "kind">[] = [
   },
 ];
 
+/* Every generative type also takes `ink`: the opacity of the marks
+   themselves (the background stays solid), so shapes can sit back in gray
+   or build up density where they overlap. */
+const inkCtl: ShaderControl = {
+  key: "ink",
+  label: "ink",
+  min: 0.1,
+  max: 1,
+  step: 0.05,
+  def: 1,
+};
+
 export const SHADERS: ShaderDef[] = [
   ...paperShaders.map((s) => ({ ...s, kind: "shader" as const })),
-  ...generative.map((s) => ({ ...s, kind: "generative" as const })),
+  ...generative.map((s) => ({
+    ...s,
+    kind: "generative" as const,
+    controls: [...s.controls, inkCtl],
+  })),
 ];
 
 export const shaderDef = (type: ShaderType): ShaderDef =>

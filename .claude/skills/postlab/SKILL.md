@@ -85,7 +85,11 @@ dot spiral; count, size, speed), `field` (oscillating line waves; rows,
 amplitude, frequency, speed). Most generative types take `warp` (0-1): a
 flow field that deforms the geometry itself — blobby dots, bent crosses,
 wobbly rings, warped lines. Prefer warp for grit over stacking texture
-layers; the griddy-minimal-but-deformed look is the club's style. **Shaders** (Paper Shaders textures): `none`,
+layers; the griddy-minimal-but-deformed look is the club's style. All
+generative types also take `ink` (0.1-1): the opacity of the marks
+themselves, so shapes can sit back in gray while the background stays
+solid (distinct from the layer-level `opacity`, which fades the whole
+layer into the layers beneath). **Shaders** (Paper Shaders textures): `none`,
 `dithering` (shape: simplex|warp|dots|wave|ripple|swirl|sphere, size, speed,
 scale), `waves` (still; shape 0-3, amplitude, frequency, spacing, rotation),
 `mesh` (distortion, swirl, grainOverlay, speed), `perlin` (proportion,

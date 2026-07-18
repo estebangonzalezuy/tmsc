@@ -86,6 +86,9 @@ export function drawGenerative(
   ctx.fillStyle = ink;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+  /* Ink opacity: marks draw translucent while the background stays solid. */
+  const inkAlpha = Math.min(1, Math.max(0.1, num(spec.ink, 1)));
+  ctx.globalAlpha = inkAlpha;
 
   const maxR = Math.hypot(w, h) / 2;
   const m = Math.min(w, h);
@@ -242,7 +245,7 @@ export function drawGenerative(
       for (let i = 0; i < count; i++) {
         const p = ((((i + ph * count) % count) + count) % count) / count;
         const r = maxR * 1.05 * Math.pow(p, 1.6);
-        ctx.globalAlpha = Math.sin(p * Math.PI);
+        ctx.globalAlpha = inkAlpha * Math.sin(p * Math.PI);
         ctx.beginPath();
         if (shape === "square" && warp === 0) {
           ctx.rect(cx - r, cy - r, r * 2, r * 2);
@@ -274,7 +277,7 @@ export function drawGenerative(
         }
         ctx.stroke();
       }
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = inkAlpha;
       break;
     }
 
@@ -320,7 +323,7 @@ export function drawGenerative(
       for (let k = 0; k < rings; k++) {
         const R = (R0 * (k + 1)) / rings;
         ctx.save();
-        ctx.globalAlpha = 0.35;
+        ctx.globalAlpha = inkAlpha * 0.35;
         ctx.beginPath();
         ctx.arc(cx, cy, R, 0, TAU);
         ctx.stroke();
