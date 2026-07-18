@@ -389,6 +389,9 @@ export default function PostLab() {
                   shader={slide.shader}
                   theme={slide.theme}
                   playing={playing}
+                  width={w}
+                  height={h}
+                  duration={spec.duration}
                 />
               </div>
               <canvas
@@ -578,25 +581,38 @@ export default function PostLab() {
             </div>
           </Section>
 
-          <Section title="shader">
-            <div className="grid grid-cols-2 gap-px bg-line border border-line">
-              {SHADERS.map((s) => (
-                <button
-                  key={s.type}
-                  onClick={() => setShaderType(s.type)}
-                  className={`px-2 py-1.5 text-xs text-left transition-colors ${
-                    slide.shader.type === s.type
-                      ? "bg-foreground text-background"
-                      : "bg-background hover:text-muted"
-                  }`}
-                >
-                  {s.label}
-                  {!s.animated && s.type !== "none" && (
-                    <span className="opacity-50"> · still</span>
-                  )}
-                </button>
-              ))}
-            </div>
+          <Section title="background">
+            {(
+              [
+                ["generative", SHADERS.filter((s) => s.kind === "generative")],
+                ["shaders", SHADERS.filter((s) => s.kind === "shader")],
+              ] as const
+            ).map(([group, defs]) => (
+              <div key={group}>
+                <p className="text-[10px] uppercase tracking-wide text-muted mb-1.5">
+                  {group}
+                </p>
+                <div className="grid grid-cols-2 gap-px bg-line border border-line">
+                  {defs.map((s) => (
+                    <button
+                      key={s.type}
+                      onClick={() => setShaderType(s.type)}
+                      className={`px-2 py-1.5 text-xs text-left transition-colors ${
+                        slide.shader.type === s.type
+                          ? "bg-foreground text-background"
+                          : "bg-background hover:text-muted"
+                      }`}
+                    >
+                      {s.label}
+                      {!s.animated && s.type !== "none" && (
+                        <span className="opacity-50"> · still</span>
+                      )}
+                    </button>
+                  ))}
+                  {defs.length % 2 === 1 && <div className="bg-background" />}
+                </div>
+              </div>
+            ))}
             {(def.choices ?? []).map((c) => (
               <Row key={c.key} label={c.label}>
                 <select

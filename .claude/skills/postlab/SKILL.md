@@ -56,7 +56,16 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
 }
 ```
 
-Shaders (`type` + params, all optional with defaults): `none`,
+Backgrounds (`shader.type` + params, all optional with defaults) come in
+two kinds. **Generative** — Cavalry-style procedural motion that loops
+seamlessly over `duration`; prefer these for reels and motion-forward
+posts: `grid` (staggered pulsing grid; shape: circle|square|cross, density,
+size, stagger, speed), `rays` (radial burst; count, inner, weight, speed),
+`tunnel` (expanding rings; shape: circle|square, count, weight, speed),
+`bars` (kinetic bar field; rows, phase, fill, speed), `orbits` (the club's
+orbit motif animated; rings, dots, dotSize, speed), `bloom` (golden-angle
+dot spiral; count, size, speed), `field` (oscillating line waves; rows,
+amplitude, frequency, speed). **Shaders** (Paper Shaders textures): `none`,
 `dithering` (shape: simplex|warp|dots|wave|ripple|swirl|sphere, size, speed,
 scale), `waves` (still; shape 0-3, amplitude, frequency, spacing, rotation),
 `mesh` (distortion, swirl, grainOverlay, speed), `perlin` (proportion,
@@ -73,6 +82,8 @@ black & white by design.
 - Announcement → `portrait`, light, `waves` rotated 90°, sans `l` boxed.
 - Carousel → `portrait`, dark hook slide first, then one idea per slide,
   numbered circled letters ("1", "2", …), kickers like "01 — idea name".
-- Reel → `story`, one slide, `ring: true` looks great, duration 6-10.
+- Reel → `story`, one slide, a generative background (`orbits`, `bloom`,
+  `grid`), duration 6-10 — generative motion loops seamlessly at exactly
+  that length.
 - Content to draw from lives in `content/site.json` (quotes, threads,
   pillars, archive titles).

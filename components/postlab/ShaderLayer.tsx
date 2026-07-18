@@ -16,7 +16,8 @@ import {
   Waves,
 } from "@paper-design/shaders-react";
 import type { DitheringShape, WarpPattern } from "@paper-design/shaders";
-import { tones, type ShaderSpec, type Theme } from "@/lib/postlab";
+import { shaderDef, tones, type ShaderSpec, type Theme } from "@/lib/postlab";
+import GenerativeLayer from "./GenerativeLayer";
 
 const num = (v: number | string | undefined, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
@@ -25,11 +26,29 @@ export default function ShaderLayer({
   shader,
   theme,
   playing,
+  width,
+  height,
+  duration,
 }: {
   shader: ShaderSpec;
   theme: Theme;
   playing: boolean;
+  width: number;
+  height: number;
+  duration: number;
 }) {
+  if (shaderDef(shader.type).kind === "generative") {
+    return (
+      <GenerativeLayer
+        shader={shader}
+        theme={theme}
+        playing={playing}
+        width={width}
+        height={height}
+        duration={duration}
+      />
+    );
+  }
   const { ink, bg, grays } = tones(theme);
   const s = shader;
   const speed = playing ? num(s.speed, 0.5) : 0;

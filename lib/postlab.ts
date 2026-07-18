@@ -31,7 +31,15 @@ export type ShaderType =
   | "metaballs"
   | "warp"
   | "spiral"
-  | "smoke";
+  | "smoke"
+  // generative animators (Cavalry-style procedural motion, canvas 2D)
+  | "grid"
+  | "rays"
+  | "tunnel"
+  | "bars"
+  | "orbits"
+  | "bloom"
+  | "field";
 
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
@@ -90,6 +98,9 @@ export type ShaderDef = {
   type: ShaderType;
   label: string;
   animated: boolean;
+  /** "shader" renders via Paper Shaders (WebGL); "generative" via canvas 2D
+      procedural animators that loop seamlessly over the post duration. */
+  kind: "shader" | "generative";
   controls: ShaderControl[];
   choices?: ShaderChoice[];
 };
@@ -111,7 +122,7 @@ const scale = (def = 1): ShaderControl => ({
   def,
 });
 
-export const SHADERS: ShaderDef[] = [
+const paperShaders: Omit<ShaderDef, "kind">[] = [
   { type: "none", label: "plain", animated: false, controls: [] },
   {
     type: "dithering",
@@ -231,6 +242,98 @@ export const SHADERS: ShaderDef[] = [
       { key: "radius", label: "radius", min: 0, max: 1, step: 0.05, def: 0.5 },
     ],
   },
+];
+
+/* Procedural animators in the spirit of Cavalry: staggered repeaters,
+   oscillators, radial arrays. All loop seamlessly over the post duration
+   (speed picks a whole number of cycles per loop). */
+const generative: Omit<ShaderDef, "kind">[] = [
+  {
+    type: "grid",
+    label: "grid",
+    animated: true,
+    controls: [
+      speed(0.6),
+      { key: "density", label: "density", min: 4, max: 18, step: 1, def: 9 },
+      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
+      { key: "spread", label: "stagger", min: 0, max: 3, step: 0.1, def: 1.2 },
+    ],
+    choices: [
+      { key: "shape", label: "shape", values: ["circle", "square", "cross"], def: "circle" },
+    ],
+  },
+  {
+    type: "rays",
+    label: "rays",
+    animated: true,
+    controls: [
+      speed(0.4),
+      { key: "count", label: "count", min: 8, max: 90, step: 1, def: 36 },
+      { key: "inner", label: "inner", min: 0, max: 0.8, step: 0.05, def: 0.15 },
+      { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
+    ],
+  },
+  {
+    type: "tunnel",
+    label: "tunnel",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "count", label: "count", min: 4, max: 24, step: 1, def: 10 },
+      { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
+    ],
+    choices: [
+      { key: "shape", label: "shape", values: ["circle", "square"], def: "circle" },
+    ],
+  },
+  {
+    type: "bars",
+    label: "bars",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "rows", label: "rows", min: 6, max: 40, step: 1, def: 14 },
+      { key: "phase", label: "phase", min: 0, max: 0.5, step: 0.01, def: 0.12 },
+      { key: "fill", label: "fill", min: 0.2, max: 1, step: 0.05, def: 0.7 },
+    ],
+  },
+  {
+    type: "orbits",
+    label: "orbits",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "rings", label: "rings", min: 2, max: 8, step: 1, def: 4 },
+      { key: "dots", label: "dots", min: 1, max: 14, step: 1, def: 5 },
+      { key: "dotSize", label: "dot size", min: 0.3, max: 2, step: 0.05, def: 1 },
+    ],
+  },
+  {
+    type: "bloom",
+    label: "bloom",
+    animated: true,
+    controls: [
+      speed(0.3),
+      { key: "count", label: "count", min: 60, max: 500, step: 10, def: 220 },
+      { key: "size", label: "size", min: 0.3, max: 2, step: 0.05, def: 1 },
+    ],
+  },
+  {
+    type: "field",
+    label: "wave field",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "rows", label: "rows", min: 6, max: 30, step: 1, def: 12 },
+      { key: "amplitude", label: "amplitude", min: 0, max: 1, step: 0.05, def: 0.5 },
+      { key: "frequency", label: "frequency", min: 0.5, max: 4, step: 0.1, def: 1.5 },
+    ],
+  },
+];
+
+export const SHADERS: ShaderDef[] = [
+  ...paperShaders.map((s) => ({ ...s, kind: "shader" as const })),
+  ...generative.map((s) => ({ ...s, kind: "generative" as const })),
 ];
 
 export const shaderDef = (type: ShaderType): ShaderDef =>
@@ -393,7 +496,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           ring: true,
           plate: true,
           veil: 0.35,
-          shader: { ...defaultShader("spiral"), speed: 0.3 },
+          shader: { ...defaultShader("grid"), shape: "cross" },
         }),
       ],
     },
@@ -417,7 +520,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "Short, bounded exercises beat one more tutorial every time.",
           letter: "1",
           veil: 0.55,
-          shader: defaultShader("perlin"),
+          shader: defaultShader("field"),
         }),
         defaultSlide({
           kicker: "02 — fundamentals over tools",
@@ -432,8 +535,8 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           title: "The work no one sees\nshapes your skill.",
           body: "The gym metaphor: short sessions, no pressure for perfection.",
           letter: "3",
-          veil: 0.35,
-          shader: defaultShader("metaballs"),
+          veil: 0.45,
+          shader: defaultShader("bloom"),
         }),
       ],
     },
@@ -450,10 +553,9 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           title: "Motion design\nshouldn't feel\nthis lonely.",
           body: "Real conversations over algorithm-driven encounters.",
           theme: "dark",
-          ring: true,
           letter: "",
-          veil: 0.35,
-          shader: { ...defaultShader("smoke"), speed: 0.5 },
+          veil: 0.25,
+          shader: { ...defaultShader("orbits"), speed: 0.5 },
         }),
       ],
     },
