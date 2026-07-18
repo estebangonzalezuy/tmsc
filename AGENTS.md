@@ -53,6 +53,31 @@ browser). Therefore:
 - 1px `border-line` borders separate sections; `gap-px bg-line` grids make
   hairline tables.
 
+## The Post Lab (`/postlab`)
+
+An internal design tool (like `/studio`, not in the nav) for generating the
+club's animated Instagram posts, carousels, and reels: grayscale Paper
+Shaders backgrounds (`@paper-design/shaders-react`) under the club's
+typography, with PNG and video export.
+
+- `lib/postlab.ts` — the **PostSpec** model: types, shader registry,
+  presets, base64url encode/decode. The spec travels in the URL
+  (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
+  ready post.
+- `components/postlab/` — `PostLab.tsx` (tool UI), `ShaderLayer.tsx`
+  (spec → Paper Shaders, colors always derived from the theme — grayscale
+  only), `overlay.ts` (canvas 2D text/motif renderer shared by preview and
+  export), `exporter.ts` (PNG + MediaRecorder video).
+- `app/api/postlab/schema/route.ts` — public, static JSON description of
+  the spec so a Claude session anywhere can fetch it and generate links.
+- `.claude/skills/postlab/SKILL.md` — the skill for doing exactly that from
+  a repo session (including from Notion content).
+
+Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
+`normalizeSpec` if it must change) — links and the schema endpoint are the
+integration surface. Shader colors must stay theme-derived; never add color
+fields to the spec.
+
 ## When adding or changing a section
 
 1. Mark its wrapper with `{...studioSection("<id>", "<Label>")}`.

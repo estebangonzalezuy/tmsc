@@ -1,0 +1,461 @@
+// the Post Lab — spec model shared by the tool UI, the exporter, and the
+// /api/postlab/schema endpoint that lets Claude generate posts from a prompt.
+//
+// A PostSpec fully describes a post/carousel/reel: format, slides, and the
+// animated shader behind each slide. Specs travel as base64url JSON in the
+// URL hash (/postlab#spec=...), so anything that can build JSON — including
+// a Claude conversation reading a Notion doc — can deep-link a ready post.
+
+export const SPEC_VERSION = 1;
+
+export type PostFormat = "square" | "portrait" | "story";
+
+export const FORMATS: Record<
+  PostFormat,
+  { w: number; h: number; label: string; hint: string }
+> = {
+  square: { w: 1080, h: 1080, label: "1:1", hint: "feed post" },
+  portrait: { w: 1080, h: 1350, label: "4:5", hint: "feed / carousel" },
+  story: { w: 1080, h: 1920, label: "9:16", hint: "reel / story" },
+};
+
+export type Theme = "light" | "dark";
+
+export type ShaderType =
+  | "none"
+  | "dithering"
+  | "waves"
+  | "mesh"
+  | "perlin"
+  | "voronoi"
+  | "metaballs"
+  | "warp"
+  | "spiral"
+  | "smoke";
+
+export type ShaderSpec = { type: ShaderType } & Record<
+  string,
+  number | string
+>;
+
+export type SlideSpec = {
+  kicker: string;
+  title: string;
+  body: string;
+  footer: string;
+  /** Circled letter drawn top right; empty string hides it. */
+  letter: string;
+  titleFont: "serif" | "sans";
+  italic: boolean;
+  titleSize: "s" | "m" | "l";
+  boxed: boolean;
+  /** Filled background behind the headline so it reads over busy shaders. */
+  plate: boolean;
+  align: "left" | "center";
+  /** Orbit ring of circled letters behind the text. */
+  ring: boolean;
+  /** 0-0.9 background-colored wash over the shader, for text legibility. */
+  veil: number;
+  theme: Theme;
+  shader: ShaderSpec;
+};
+
+export type PostSpec = {
+  v: number;
+  format: PostFormat;
+  /** Seconds of animation recorded when exporting video. */
+  duration: number;
+  slides: SlideSpec[];
+};
+
+/* ---------------------------------------------------------------- shaders */
+
+export type ShaderControl = {
+  key: string;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  def: number;
+};
+
+export type ShaderChoice = {
+  key: string;
+  label: string;
+  values: string[];
+  def: string;
+};
+
+export type ShaderDef = {
+  type: ShaderType;
+  label: string;
+  animated: boolean;
+  controls: ShaderControl[];
+  choices?: ShaderChoice[];
+};
+
+const speed = (def = 0.6): ShaderControl => ({
+  key: "speed",
+  label: "speed",
+  min: 0,
+  max: 2,
+  step: 0.05,
+  def,
+});
+const scale = (def = 1): ShaderControl => ({
+  key: "scale",
+  label: "scale",
+  min: 0.2,
+  max: 3,
+  step: 0.05,
+  def,
+});
+
+export const SHADERS: ShaderDef[] = [
+  { type: "none", label: "plain", animated: false, controls: [] },
+  {
+    type: "dithering",
+    label: "dithering",
+    animated: true,
+    controls: [
+      speed(0.5),
+      scale(0.9),
+      { key: "size", label: "pixel", min: 1, max: 14, step: 0.5, def: 3 },
+    ],
+    choices: [
+      {
+        key: "shape",
+        label: "pattern",
+        values: ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"],
+        def: "sphere",
+      },
+    ],
+  },
+  {
+    type: "waves",
+    label: "waves",
+    animated: false,
+    controls: [
+      scale(1),
+      { key: "shape", label: "shape", min: 0, max: 3, step: 0.05, def: 1 },
+      { key: "amplitude", label: "amplitude", min: 0, max: 1, step: 0.05, def: 0.5 },
+      { key: "frequency", label: "frequency", min: 0, max: 2, step: 0.05, def: 0.5 },
+      { key: "spacing", label: "spacing", min: 0, max: 2, step: 0.05, def: 0.75 },
+      { key: "rotation", label: "rotation", min: 0, max: 360, step: 5, def: 0 },
+    ],
+  },
+  {
+    type: "mesh",
+    label: "mesh gradient",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0.8 },
+      { key: "swirl", label: "swirl", min: 0, max: 1, step: 0.05, def: 0.6 },
+      { key: "grainOverlay", label: "grain", min: 0, max: 1, step: 0.05, def: 0 },
+    ],
+  },
+  {
+    type: "perlin",
+    label: "perlin noise",
+    animated: true,
+    controls: [
+      speed(0.4),
+      scale(0.8),
+      { key: "proportion", label: "proportion", min: 0, max: 1, step: 0.05, def: 0.5 },
+      { key: "softness", label: "softness", min: 0, max: 1, step: 0.05, def: 0.1 },
+    ],
+  },
+  {
+    type: "voronoi",
+    label: "voronoi",
+    animated: true,
+    controls: [
+      speed(0.4),
+      scale(0.8),
+      { key: "gap", label: "gap", min: 0, max: 0.1, step: 0.005, def: 0.03 },
+      { key: "glow", label: "glow", min: 0, max: 1, step: 0.05, def: 0 },
+    ],
+  },
+  {
+    type: "metaballs",
+    label: "metaballs",
+    animated: true,
+    controls: [
+      speed(0.6),
+      scale(1),
+      { key: "count", label: "count", min: 1, max: 20, step: 1, def: 8 },
+      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
+    ],
+  },
+  {
+    type: "warp",
+    label: "warp",
+    animated: true,
+    controls: [
+      speed(0.4),
+      scale(1),
+      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0.25 },
+      { key: "swirl", label: "swirl", min: 0, max: 1, step: 0.05, def: 0.8 },
+      { key: "softness", label: "softness", min: 0, max: 1, step: 0.05, def: 0 },
+    ],
+    choices: [
+      {
+        key: "shape",
+        label: "pattern",
+        values: ["checks", "stripes", "edge"],
+        def: "stripes",
+      },
+    ],
+  },
+  {
+    type: "spiral",
+    label: "spiral",
+    animated: true,
+    controls: [
+      speed(0.5),
+      scale(1),
+      { key: "density", label: "density", min: 0, max: 1, step: 0.05, def: 0.4 },
+      { key: "strokeWidth", label: "stroke", min: 0.05, max: 0.95, step: 0.05, def: 0.5 },
+      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0 },
+    ],
+  },
+  {
+    type: "smoke",
+    label: "smoke ring",
+    animated: true,
+    controls: [
+      speed(0.6),
+      scale(1),
+      { key: "thickness", label: "thickness", min: 0.1, max: 2, step: 0.05, def: 0.7 },
+      { key: "radius", label: "radius", min: 0, max: 1, step: 0.05, def: 0.5 },
+    ],
+  },
+];
+
+export const shaderDef = (type: ShaderType): ShaderDef =>
+  SHADERS.find((s) => s.type === type) ?? SHADERS[0];
+
+export function defaultShader(type: ShaderType): ShaderSpec {
+  const def = shaderDef(type);
+  const spec: ShaderSpec = { type };
+  for (const c of def.controls) spec[c.key] = c.def;
+  for (const c of def.choices ?? []) spec[c.key] = c.def;
+  return spec;
+}
+
+/* The whole tool is grayscale by contract: shader colors derive from the
+   slide theme, never from the spec. */
+export function tones(theme: Theme) {
+  const ink = theme === "dark" ? "#ffffff" : "#0d0d0d";
+  const bg = theme === "dark" ? "#0d0d0d" : "#ffffff";
+  const grays =
+    theme === "dark"
+      ? ["#0d0d0d", "#2e2e2e", "#6b6b6b", "#bdbdbd", "#ffffff"]
+      : ["#ffffff", "#e6e6e6", "#bdbdbd", "#6b6b6b", "#0d0d0d"];
+  return { ink, bg, grays };
+}
+
+/* ----------------------------------------------------------------- slides */
+
+export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
+  return {
+    kicker: "the Motion Social Club",
+    title: "You don't need more tutorials.\nYou need more practice.",
+    body: "",
+    footer: "@themotionsocialclub",
+    letter: "M",
+    titleFont: "serif",
+    italic: false,
+    titleSize: "m",
+    boxed: false,
+    plate: false,
+    align: "left",
+    ring: false,
+    veil: 0.25,
+    theme: "light",
+    shader: defaultShader("dithering"),
+    ...partial,
+  };
+}
+
+export function defaultSpec(): PostSpec {
+  return {
+    v: SPEC_VERSION,
+    format: "portrait",
+    duration: 6,
+    slides: [defaultSlide()],
+  };
+}
+
+/* Fill a possibly partial spec (e.g. handwritten by Claude) with defaults so
+   the tool never renders undefined fields. */
+export function normalizeSpec(raw: unknown): PostSpec {
+  const r = (raw ?? {}) as Partial<PostSpec>;
+  const format: PostFormat = r.format && FORMATS[r.format] ? r.format : "portrait";
+  const slides = (Array.isArray(r.slides) && r.slides.length ? r.slides : [{}]).map(
+    (s) => {
+      const slide = defaultSlide(s as Partial<SlideSpec>);
+      slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
+      const type = shaderDef(slide.shader?.type ?? "dithering").type;
+      slide.shader = { ...defaultShader(type), ...slide.shader, type };
+      return slide;
+    },
+  );
+  return {
+    v: SPEC_VERSION,
+    format,
+    duration: Math.min(15, Math.max(2, Number(r.duration) || 6)),
+    slides: slides.slice(0, 10),
+  };
+}
+
+/* ------------------------------------------------------------ spec in URL */
+
+export function encodeSpec(spec: PostSpec): string {
+  const json = JSON.stringify(spec);
+  const bytes = new TextEncoder().encode(json);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+export function decodeSpec(encoded: string): PostSpec | null {
+  try {
+    const b64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(b64);
+    const bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
+    return normalizeSpec(JSON.parse(new TextDecoder().decode(bytes)));
+  } catch {
+    return null;
+  }
+}
+
+/* ---------------------------------------------------------------- presets */
+
+export const PRESETS: { name: string; spec: PostSpec }[] = [
+  {
+    name: "Quote",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        defaultSlide({
+          kicker: "from the club",
+          title:
+            "Stop comparing your chapter one\nto someone else's chapter twenty.",
+          titleFont: "serif",
+          italic: true,
+          align: "center",
+          letter: "",
+          theme: "dark",
+          veil: 0.5,
+          shader: { ...defaultShader("dithering"), shape: "sphere", speed: 0.4 },
+        }),
+      ],
+    },
+  },
+  {
+    name: "Announcement",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        defaultSlide({
+          kicker: "new in the club",
+          title: "MOTION BASICS\nFOR DESIGNERS",
+          body: "A short course on the fundamentals that carry across every tool — made for designers stepping into motion.",
+          titleFont: "sans",
+          titleSize: "l",
+          boxed: true,
+          plate: true,
+          veil: 0,
+          shader: { ...defaultShader("waves"), rotation: 90 },
+        }),
+      ],
+    },
+  },
+  {
+    name: "Practice File",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        defaultSlide({
+          kicker: "the practice file — #01",
+          title: "Contrast",
+          body: "Start here — black and white only. One bounded exercise, no pressure for perfection.",
+          titleSize: "l",
+          letter: "P",
+          ring: true,
+          plate: true,
+          veil: 0.35,
+          shader: { ...defaultShader("spiral"), speed: 0.3 },
+        }),
+      ],
+    },
+  },
+  {
+    name: "Carousel",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "Three ideas\nthe club keeps\ncoming back to",
+          theme: "dark",
+          shader: { ...defaultShader("mesh"), speed: 0.4 },
+        }),
+        defaultSlide({
+          kicker: "01 — practice over tutorials",
+          title: "Watching is not\nthe same as learning.",
+          body: "Short, bounded exercises beat one more tutorial every time.",
+          letter: "1",
+          veil: 0.55,
+          shader: defaultShader("perlin"),
+        }),
+        defaultSlide({
+          kicker: "02 — fundamentals over tools",
+          title: "Tools are exhausting.\nFoundations are permanent.",
+          body: "Easing, timing, contrast, hierarchy.",
+          letter: "2",
+          veil: 0.55,
+          shader: defaultShader("voronoi"),
+        }),
+        defaultSlide({
+          kicker: "03 — small and consistent",
+          title: "The work no one sees\nshapes your skill.",
+          body: "The gym metaphor: short sessions, no pressure for perfection.",
+          letter: "3",
+          veil: 0.35,
+          shader: defaultShader("metaballs"),
+        }),
+      ],
+    },
+  },
+  {
+    name: "Reel",
+    spec: {
+      v: SPEC_VERSION,
+      format: "story",
+      duration: 8,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "Motion design\nshouldn't feel\nthis lonely.",
+          body: "Real conversations over algorithm-driven encounters.",
+          theme: "dark",
+          ring: true,
+          letter: "",
+          veil: 0.35,
+          shader: { ...defaultShader("smoke"), speed: 0.5 },
+        }),
+      ],
+    },
+  },
+];

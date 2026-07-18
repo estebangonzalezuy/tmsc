@@ -1,0 +1,100 @@
+// Machine-readable description of the Post Lab spec, served publicly so any
+// Claude session (claude.ai, Claude Code, a Notion workflow) can fetch it,
+// turn a prompt or document into a PostSpec, and hand back a ready-to-open
+// /postlab#spec=<base64url> link. No secrets, no state — documentation as an
+// endpoint.
+
+import { NextResponse } from "next/server";
+import {
+  FORMATS,
+  PRESETS,
+  SHADERS,
+  SPEC_VERSION,
+  defaultSpec,
+  encodeSpec,
+} from "@/lib/postlab";
+
+export const dynamic = "force-static";
+
+export function GET() {
+  const example = defaultSpec();
+  const body = {
+    tool: "the Post Lab — the Motion Social Club",
+    version: SPEC_VERSION,
+    about:
+      "Generates the club's animated Instagram posts, carousels, and reels: grayscale shader backgrounds with the club's typography. A PostSpec (JSON) fully describes a post. Open the tool with a spec preloaded via <site-origin>/postlab#spec=<encoded>.",
+    how_to_build_a_link: [
+      "1. Build a PostSpec JSON (see `spec` below; omitted fields fall back to defaults).",
+      "2. Encode it as base64url of the UTF-8 JSON string (standard base64 with + -> -, / -> _, padding stripped). Node: Buffer.from(JSON.stringify(spec)).toString('base64url').",
+      "3. Return <site-origin>/postlab#spec=<encoded> — opening it loads the post ready to tweak and export.",
+      "Alternatively hand the raw JSON to the user; the tool's 'claude' panel has a paste-to-load box that accepts JSON, a bare encoded spec, or a full link.",
+    ],
+    writing_guidance: [
+      "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
+      "Design is strictly black & white — there are no color options by design.",
+      "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
+      "Reels: format 'story', one slide, duration 6-10s, pick an animated shader.",
+    ],
+    spec: {
+      v: SPEC_VERSION,
+      format: {
+        options: Object.fromEntries(
+          Object.entries(FORMATS).map(([k, f]) => [
+            k,
+            `${f.w}x${f.h} — ${f.hint}`,
+          ]),
+        ),
+        default: "portrait",
+      },
+      duration: "seconds of video recorded for reels (2-15, default 6)",
+      slides: {
+        about: "1-10 slides; more than one makes a carousel",
+        fields: {
+          kicker: "small underlined label, top left (string)",
+          title: "headline; supports \\n for manual line breaks (string)",
+          body: "supporting paragraph under the title (string, optional)",
+          footer: "bottom-left line, default '@themotionsocialclub'",
+          letter: "single character drawn as a circled letter top right; '' hides it",
+          titleFont: "'serif' (Lora, editorial) | 'sans' (Archivo, poster)",
+          italic: "boolean, serif italic is the club's emphasis voice",
+          titleSize: "'s' | 'm' | 'l'",
+          boxed: "boolean — outlined box around the headline (poster motif)",
+          plate: "boolean — filled background behind the headline, guarantees legibility over busy shaders",
+          align: "'left' | 'center'",
+          ring: "boolean — orbit ring of circled letters behind the text",
+          veil: "number 0-0.9 — background-colored wash dimming the shader (default 0.25); raise it when text sits on dense patterns",
+          theme: "'light' (white bg, black ink) | 'dark' (inverted)",
+          shader: "see shaders below; { type, ...params }",
+        },
+      },
+      shaders: SHADERS.map((s) => ({
+        type: s.type,
+        label: s.label,
+        animated: s.animated,
+        params: Object.fromEntries([
+          ...s.controls.map((c) => [
+            c.key,
+            `number ${c.min}-${c.max} (default ${c.def})`,
+          ]),
+          ...(s.choices ?? []).map((c) => [
+            c.key,
+            `one of ${c.values.join(" | ")} (default ${c.def})`,
+          ]),
+        ]),
+      })),
+    },
+    example: {
+      spec: example,
+      encoded: encodeSpec(example),
+      link: "/postlab#spec=" + encodeSpec(example),
+    },
+    presets: PRESETS.map((p) => ({ name: p.name, spec: p.spec })),
+  };
+
+  return NextResponse.json(body, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}
