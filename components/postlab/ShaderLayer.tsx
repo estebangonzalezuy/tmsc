@@ -59,6 +59,11 @@ export default function ShaderLayer({
     // Lets the exporter read frames back out of the WebGL canvas.
     webGlContextAttributes: { preserveDrawingBuffer: true },
     minPixelRatio: 2,
+    // Layer transform (drag / wheel / shift-drag on the canvas).
+    scale: num(s.scale, 1),
+    rotation: num(s.rotation, 0),
+    offsetX: num(s.offsetX, 0),
+    offsetY: num(s.offsetY, 0),
   };
 
   switch (s.type) {

@@ -31,14 +31,25 @@ export function drawGenerative(
   const cycles = Math.max(1, Math.round(num(spec.speed, 0.5) * 3));
   const ph = tt * cycles; // grows by an integer over one loop
 
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
+
+  // Layer transform (drag / wheel / shift-drag on the canvas).
+  const cx = w / 2;
+  const cy = h / 2;
+  ctx.translate(cx + num(spec.offsetX, 0) * w, cy + num(spec.offsetY, 0) * h);
+  ctx.rotate((num(spec.rotation, 0) * Math.PI) / 180);
+  const sc = Math.max(0.1, num(spec.scale, 1));
+  ctx.scale(sc, sc);
+  ctx.translate(-cx, -cy);
+
   ctx.strokeStyle = ink;
   ctx.fillStyle = ink;
   ctx.lineCap = "round";
 
-  const cx = w / 2;
-  const cy = h / 2;
   const maxR = Math.hypot(w, h) / 2;
 
   switch (spec.type) {
@@ -192,4 +203,5 @@ export function drawGenerative(
       break;
     }
   }
+  ctx.restore();
 }

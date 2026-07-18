@@ -1,25 +1,43 @@
-// Export pipeline: composites the live shader canvas with the overlay canvas
+// Export pipeline: composites the slide's layer stack (shader / generative
+// canvases with their blend modes and opacities) plus the overlay canvas
 // into a full-resolution frame, then saves stills (PNG) or records the
 // animation (MP4 where the browser supports it, WebM otherwise).
 
-import { FORMATS, type PostSpec } from "@/lib/postlab";
+import { FORMATS, tones, type BlendMode, type PostSpec } from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
 
-function composite(
+// CSS mix-blend-mode → canvas globalCompositeOperation (same names except
+// "normal").
+const compositeOp = (blend: BlendMode): GlobalCompositeOperation =>
+  blend === "normal" ? "source-over" : blend;
+
+function drawLayers(
+  ctx: CanvasRenderingContext2D,
   spec: PostSpec,
-  shaderCanvas: HTMLCanvasElement | null,
-  overlay: HTMLCanvasElement,
-): HTMLCanvasElement {
-  const { w, h } = FORMATS[spec.format];
-  const out = document.createElement("canvas");
-  out.width = w;
-  out.height = h;
-  const ctx = out.getContext("2d")!;
-  ctx.fillStyle = "#ffffff";
+  index: number,
+  layerCanvases: (HTMLCanvasElement | null)[],
+  w: number,
+  h: number,
+) {
+  const slide = spec.slides[index];
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = tones(slide.theme).bg;
   ctx.fillRect(0, 0, w, h);
-  if (shaderCanvas) ctx.drawImage(shaderCanvas, 0, 0, w, h);
-  ctx.drawImage(overlay, 0, 0, w, h);
-  return out;
+  slide.layers.forEach((layer, i) => {
+    const canvas = layerCanvases[i];
+    ctx.globalAlpha = layer.opacity;
+    ctx.globalCompositeOperation = compositeOp(layer.blend);
+    if (canvas) {
+      ctx.drawImage(canvas, 0, 0, w, h);
+    } else {
+      // "plain" layers render as a solid div in the preview
+      ctx.fillStyle = tones(slide.theme).bg;
+      ctx.fillRect(0, 0, w, h);
+    }
+  });
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
 }
 
 function download(blob: Blob, filename: string) {
@@ -34,11 +52,17 @@ function download(blob: Blob, filename: string) {
 export function exportPng(
   spec: PostSpec,
   index: number,
-  shaderCanvas: HTMLCanvasElement | null,
+  layerCanvases: (HTMLCanvasElement | null)[],
   overlay: HTMLCanvasElement,
 ) {
-  const canvas = composite(spec, shaderCanvas, overlay);
-  canvas.toBlob((blob) => {
+  const { w, h } = FORMATS[spec.format];
+  const out = document.createElement("canvas");
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext("2d")!;
+  drawLayers(ctx, spec, index, layerCanvases, w, h);
+  ctx.drawImage(overlay, 0, 0, w, h);
+  out.toBlob((blob) => {
     if (blob)
       download(
         blob,
@@ -63,14 +87,14 @@ function pickMime(): { mime: string; ext: string } {
 }
 
 /**
- * Record `spec.duration` seconds of the animated slide. The shader keeps
- * animating on its own canvas; each frame we re-composite it with a freshly
- * drawn overlay (so the orbit ring spins too).
+ * Record `spec.duration` seconds of the animated slide. The layer canvases
+ * keep animating on their own; each frame we re-composite them (with blends)
+ * under a freshly drawn overlay (so the orbit ring spins too).
  */
 export function recordVideo(
   spec: PostSpec,
   index: number,
-  shaderCanvas: HTMLCanvasElement | null,
+  layerCanvases: (HTMLCanvasElement | null)[],
   fonts: Fonts,
   onProgress: (fraction: number) => void,
 ): Promise<void> {
@@ -126,9 +150,7 @@ export function recordVideo(
       if (now - lastPush >= 1000 / fps - 1) {
         lastPush = now;
         drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, w, h);
-        if (shaderCanvas) ctx.drawImage(shaderCanvas, 0, 0, w, h);
+        drawLayers(ctx, spec, index, layerCanvases, w, h);
         ctx.drawImage(overlay, 0, 0, w, h);
         track.requestFrame();
         onProgress(Math.min(1, elapsed / durationMs));

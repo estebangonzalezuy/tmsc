@@ -9,21 +9,24 @@ import Link from "next/link";
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import {
+  BLENDS,
   FORMATS,
+  MAX_LAYERS,
   PRESETS,
   SHADERS,
   decodeSpec,
-  defaultShader,
+  defaultLayer,
   defaultSpec,
   encodeSpec,
   normalizeSpec,
   shaderDef,
+  tones,
+  type LayerSpec,
   type PostSpec,
   type ShaderType,
   type SlideSpec,
@@ -138,6 +141,7 @@ function Button({
 export default function PostLab() {
   const [spec, setSpec] = useState<PostSpec>(defaultSpec);
   const [active, setActive] = useState(0);
+  const [activeLayer, setActiveLayer] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [fonts, setFonts] = useState<Fonts | null>(null);
   const [recording, setRecording] = useState(0); // 0 = idle, else fraction
@@ -151,9 +155,11 @@ export default function PostLab() {
   const [stageSize, setStageSize] = useState({ w: 400, h: 500 });
 
   const { w, h } = FORMATS[spec.format];
-  const slide = spec.slides[Math.min(active, spec.slides.length - 1)];
   const activeIndex = Math.min(active, spec.slides.length - 1);
-  const def = shaderDef(slide.shader.type);
+  const slide = spec.slides[activeIndex];
+  const layerIndex = Math.min(activeLayer, slide.layers.length - 1);
+  const layer = slide.layers[layerIndex];
+  const def = shaderDef(layer.type);
 
   /* Load fonts, then any spec passed in the URL (#spec=... or ?spec=...). */
   useEffect(() => {
@@ -230,11 +236,55 @@ export default function PostLab() {
     [activeIndex],
   );
 
-  const patchShader = (patch: Record<string, number | string>) =>
-    patchSlide({ shader: { ...slide.shader, ...patch } });
+  const patchLayer = (patch: Partial<LayerSpec> | Record<string, number | string>) =>
+    patchSlide({
+      layers: slide.layers.map((l, i) =>
+        i === layerIndex ? ({ ...l, ...patch } as LayerSpec) : l,
+      ),
+    });
 
+  // Changing the type keeps the layer's mixing and placement.
   const setShaderType = (type: ShaderType) =>
-    patchSlide({ shader: defaultShader(type) });
+    patchSlide({
+      layers: slide.layers.map((l, i) =>
+        i === layerIndex
+          ? {
+              ...defaultLayer(type),
+              opacity: l.opacity,
+              blend: l.blend,
+              offsetX: l.offsetX,
+              offsetY: l.offsetY,
+              rotation: l.rotation,
+            }
+          : l,
+      ),
+    });
+
+  const addLayer = () => {
+    if (slide.layers.length >= MAX_LAYERS) return;
+    patchSlide({
+      layers: [
+        ...slide.layers,
+        { ...defaultLayer("dithering"), blend: "multiply", opacity: 0.8 },
+      ],
+    });
+    setActiveLayer(slide.layers.length);
+  };
+
+  const removeLayer = () => {
+    if (slide.layers.length <= 1) return;
+    patchSlide({ layers: slide.layers.filter((_, i) => i !== layerIndex) });
+    setActiveLayer(Math.max(0, layerIndex - 1));
+  };
+
+  const moveLayer = (dir: -1 | 1) => {
+    const j = layerIndex + dir;
+    if (j < 0 || j >= slide.layers.length) return;
+    const layers = [...slide.layers];
+    [layers[layerIndex], layers[j]] = [layers[j], layers[layerIndex]];
+    patchSlide({ layers });
+    setActiveLayer(j);
+  };
 
   const addSlide = () => {
     setSpec((s) => ({
@@ -269,27 +319,108 @@ export default function PostLab() {
     setTimeout(() => setFlash(""), 2500);
   };
 
+  /* --------------------------------------- direct canvas manipulation */
+
+  const dragRef = useRef<{
+    x: number;
+    y: number;
+    ox: number;
+    oy: number;
+    rot: number;
+    shift: boolean;
+  } | null>(null);
+
+  const onStagePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      ox: layer.offsetX,
+      oy: layer.offsetY,
+      rot: layer.rotation,
+      shift: e.shiftKey,
+    };
+  };
+
+  const onStagePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dx = (e.clientX - d.x) / stageSize.w;
+    const dy = (e.clientY - d.y) / stageSize.h;
+    if (d.shift) {
+      patchLayer({ rotation: (((d.rot + dx * 360) % 360) + 360) % 360 });
+    } else {
+      patchLayer({
+        offsetX: Math.max(-1, Math.min(1, d.ox + dx)),
+        offsetY: Math.max(-1, Math.min(1, d.oy + dy)),
+      });
+    }
+  };
+
+  const onStagePointerUp = () => {
+    dragRef.current = null;
+  };
+
+  /* Wheel = scale the selected layer (non-passive so we can preventDefault). */
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setSpec((s) => {
+        const sl = s.slides[activeIndex];
+        if (!sl) return s;
+        const li = Math.min(layerIndex, sl.layers.length - 1);
+        return {
+          ...s,
+          slides: s.slides.map((sd, i) =>
+            i === activeIndex
+              ? {
+                  ...sd,
+                  layers: sd.layers.map((l, j) =>
+                    j === li
+                      ? {
+                          ...l,
+                          scale: Math.max(
+                            0.1,
+                            Math.min(4, l.scale * Math.exp(-e.deltaY * 0.001)),
+                          ),
+                        }
+                      : l,
+                  ),
+                }
+              : sd,
+          ),
+        };
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [activeIndex, layerIndex]);
+
   /* ------------------------------------------------------------ exports */
 
-  const shaderCanvas = () =>
-    shaderBoxRef.current?.querySelector("canvas") ?? null;
+  const layerCanvases = () => {
+    const wrappers = shaderBoxRef.current?.querySelectorAll("[data-layer]");
+    return Array.from(wrappers ?? []).map((el) => el.querySelector("canvas"));
+  };
 
   const savePng = () => {
     if (!overlayRef.current) return;
-    exportPng(spec, activeIndex, shaderCanvas(), overlayRef.current);
+    exportPng(spec, activeIndex, layerCanvases(), overlayRef.current);
   };
 
   const saveAllPngs = async () => {
     if (!fonts) return;
     for (let i = 0; i < spec.slides.length; i++) {
       setActive(i);
-      // give the shader a moment to remount and render the new slide
+      // give the shaders a moment to remount and render the new slide
       await new Promise((r) => setTimeout(r, 500));
       const overlay = overlayRef.current;
       if (!overlay) continue;
       const ctx = overlay.getContext("2d");
       if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
-      exportPng(spec, i, shaderCanvas(), overlay);
+      exportPng(spec, i, layerCanvases(), overlay);
     }
   };
 
@@ -297,7 +428,7 @@ export default function PostLab() {
     if (!fonts || recording) return;
     setRecording(0.001);
     try {
-      await recordVideo(spec, activeIndex, shaderCanvas(), fonts, setRecording);
+      await recordVideo(spec, activeIndex, layerCanvases(), fonts, setRecording);
       say("Video saved");
     } catch {
       say("Recording failed in this browser");
@@ -346,11 +477,6 @@ export default function PostLab() {
 
   /* -------------------------------------------------------------- render */
 
-  const shaderKey = useMemo(
-    () => `${activeIndex}-${slide.shader.type}-${slide.theme}-${spec.format}`,
-    [activeIndex, slide.shader.type, slide.theme, spec.format],
-  );
-
   return (
     <div className="h-dvh flex flex-col">
       <header className="border-b border-line px-5 py-3 flex items-center justify-between text-sm shrink-0">
@@ -380,25 +506,47 @@ export default function PostLab() {
           >
             <div
               ref={frameRef}
-              className="relative border border-line overflow-hidden"
+              className="relative border border-line overflow-hidden cursor-move touch-none"
               style={{ width: stageSize.w, height: stageSize.h }}
+              onPointerDown={onStagePointerDown}
+              onPointerMove={onStagePointerMove}
+              onPointerUp={onStagePointerUp}
+              onPointerCancel={onStagePointerUp}
             >
-              <div ref={shaderBoxRef} className="absolute inset-0">
-                <ShaderLayer
-                  key={shaderKey}
-                  shader={slide.shader}
-                  theme={slide.theme}
-                  playing={playing}
-                  width={w}
-                  height={h}
-                  duration={spec.duration}
-                />
+              <div
+                ref={shaderBoxRef}
+                className="absolute inset-0"
+                style={{
+                  background: tones(slide.theme).bg,
+                  isolation: "isolate",
+                }}
+              >
+                {slide.layers.map((l, i) => (
+                  <div
+                    key={`${i}-${l.type}-${slide.theme}-${spec.format}-${activeIndex}`}
+                    data-layer
+                    className="absolute inset-0"
+                    style={{
+                      opacity: l.opacity,
+                      mixBlendMode: l.blend === "normal" ? undefined : l.blend,
+                    }}
+                  >
+                    <ShaderLayer
+                      shader={l}
+                      theme={slide.theme}
+                      playing={playing}
+                      width={w}
+                      height={h}
+                      duration={spec.duration}
+                    />
+                  </div>
+                ))}
               </div>
               <canvas
                 ref={overlayRef}
                 width={w}
                 height={h}
-                className="absolute inset-0 w-full h-full"
+                className="absolute inset-0 w-full h-full pointer-events-none"
               />
             </div>
           </div>
@@ -581,7 +729,75 @@ export default function PostLab() {
             </div>
           </Section>
 
-          <Section title="background">
+          <Section title="layers">
+            <div className="border border-line divide-y divide-line">
+              {[...slide.layers].reverse().map((l, ri) => {
+                const i = slide.layers.length - 1 - ri; // top layer listed first
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveLayer(i)}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 text-xs text-left transition-colors ${
+                      i === layerIndex
+                        ? "bg-foreground text-background"
+                        : "hover:text-muted"
+                    }`}
+                  >
+                    <span className="flex-1">
+                      {String(i + 1).padStart(2, "0")} — {shaderDef(l.type).label}
+                    </span>
+                    <span className="opacity-60">
+                      {l.blend !== "normal" ? l.blend : ""}
+                      {l.opacity < 1 ? ` ${Math.round(l.opacity * 100)}%` : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={addLayer}
+                disabled={slide.layers.length >= MAX_LAYERS}
+              >
+                Add layer
+              </Button>
+              <Button onClick={() => moveLayer(1)}>↑</Button>
+              <Button onClick={() => moveLayer(-1)}>↓</Button>
+              <Button onClick={removeLayer} disabled={slide.layers.length <= 1}>
+                Delete
+              </Button>
+            </div>
+            <Row label="blend">
+              <select
+                value={layer.blend}
+                onChange={(e) =>
+                  patchLayer({ blend: e.target.value as LayerSpec["blend"] })
+                }
+                className="flex-1 border border-line bg-transparent px-2 py-1.5 text-xs focus:outline-none"
+              >
+                {BLENDS.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </Row>
+            <Row label="opacity">
+              <input
+                type="range"
+                min={0.05}
+                max={1}
+                step={0.05}
+                value={layer.opacity}
+                onChange={(e) =>
+                  patchLayer({ opacity: Number(e.target.value) })
+                }
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-10 text-right text-xs text-muted">
+                {Math.round(layer.opacity * 100)}%
+              </span>
+            </Row>
             {(
               [
                 ["generative", SHADERS.filter((s) => s.kind === "generative")],
@@ -598,7 +814,7 @@ export default function PostLab() {
                       key={s.type}
                       onClick={() => setShaderType(s.type)}
                       className={`px-2 py-1.5 text-xs text-left transition-colors ${
-                        slide.shader.type === s.type
+                        layer.type === s.type
                           ? "bg-foreground text-background"
                           : "bg-background hover:text-muted"
                       }`}
@@ -616,8 +832,8 @@ export default function PostLab() {
             {(def.choices ?? []).map((c) => (
               <Row key={c.key} label={c.label}>
                 <select
-                  value={String(slide.shader[c.key] ?? c.def)}
-                  onChange={(e) => patchShader({ [c.key]: e.target.value })}
+                  value={String(layer[c.key] ?? c.def)}
+                  onChange={(e) => patchLayer({ [c.key]: e.target.value })}
                   className="flex-1 border border-line bg-transparent px-2 py-1.5 text-xs focus:outline-none"
                 >
                   {c.values.map((v) => (
@@ -635,19 +851,56 @@ export default function PostLab() {
                   min={c.min}
                   max={c.max}
                   step={c.step}
-                  value={Number(slide.shader[c.key] ?? c.def)}
+                  value={Number(layer[c.key] ?? c.def)}
                   onChange={(e) =>
-                    patchShader({ [c.key]: Number(e.target.value) })
+                    patchLayer({ [c.key]: Number(e.target.value) })
                   }
                   className="flex-1 accent-foreground"
                 />
                 <span className="w-10 text-right text-xs text-muted">
-                  {Number(slide.shader[c.key] ?? c.def).toFixed(
-                    c.step < 1 ? 2 : 0,
-                  )}
+                  {Number(layer[c.key] ?? c.def).toFixed(c.step < 1 ? 2 : 0)}
                 </span>
               </Row>
             ))}
+            <p className="text-[10px] uppercase tracking-wide text-muted pt-1">
+              transform
+            </p>
+            {(
+              [
+                ["x", "offsetX", -1, 1, 0.01],
+                ["y", "offsetY", -1, 1, 0.01],
+                ["scale", "scale", 0.1, 4, 0.05],
+                ["rotation", "rotation", 0, 360, 1],
+              ] as const
+            ).map(([label, key, min, max, step]) => (
+              <Row key={key} label={label}>
+                <input
+                  type="range"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={layer[key]}
+                  onChange={(e) => patchLayer({ [key]: Number(e.target.value) })}
+                  className="flex-1 accent-foreground"
+                />
+                <span className="w-10 text-right text-xs text-muted">
+                  {Number(layer[key]).toFixed(step < 1 ? 2 : 0)}
+                </span>
+              </Row>
+            ))}
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={() =>
+                  patchLayer({ offsetX: 0, offsetY: 0, rotation: 0, scale: 1 })
+                }
+              >
+                Reset transform
+              </Button>
+            </div>
+            <p className="text-xs text-muted">
+              Drag the canvas to move the selected layer, scroll to scale,
+              shift-drag to rotate.
+            </p>
           </Section>
 
           <Section title="presets">

@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 1;
+export const SPEC_VERSION = 2;
 
 export type PostFormat = "square" | "portrait" | "story";
 
@@ -46,6 +46,45 @@ export type ShaderSpec = { type: ShaderType } & Record<
   number | string
 >;
 
+/* How stacked layers mix — CSS mix-blend-mode names, which map 1:1 onto
+   canvas globalCompositeOperation for export. */
+export const BLENDS = [
+  "normal",
+  "multiply",
+  "screen",
+  "overlay",
+  "darken",
+  "lighten",
+  "difference",
+  "exclusion",
+] as const;
+export type BlendMode = (typeof BLENDS)[number];
+
+/** One background layer: a shader/generative spec plus mixing + transform. */
+export type LayerSpec = ShaderSpec & {
+  opacity: number;
+  blend: BlendMode;
+  offsetX: number; // -1..1
+  offsetY: number; // -1..1
+  rotation: number; // degrees
+  scale: number;
+};
+
+export const MAX_LAYERS = 4;
+
+export function defaultLayer(type: ShaderType): LayerSpec {
+  const base = defaultShader(type);
+  return {
+    opacity: 1,
+    blend: "normal",
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    scale: typeof base.scale === "number" ? base.scale : 1,
+    ...base,
+  };
+}
+
 export type SlideSpec = {
   kicker: string;
   title: string;
@@ -65,7 +104,8 @@ export type SlideSpec = {
   /** 0-0.9 background-colored wash over the shader, for text legibility. */
   veil: number;
   theme: Theme;
-  shader: ShaderSpec;
+  /** Background layer stack, bottom first (1-4 layers). */
+  layers: LayerSpec[];
 };
 
 export type PostSpec = {
@@ -377,7 +417,7 @@ export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
     ring: false,
     veil: 0.25,
     theme: "light",
-    shader: defaultShader("dithering"),
+    layers: [defaultLayer("dithering")],
     ...partial,
   };
 }
@@ -397,11 +437,21 @@ export function normalizeSpec(raw: unknown): PostSpec {
   const r = (raw ?? {}) as Partial<PostSpec>;
   const format: PostFormat = r.format && FORMATS[r.format] ? r.format : "portrait";
   const slides = (Array.isArray(r.slides) && r.slides.length ? r.slides : [{}]).map(
-    (s) => {
-      const slide = defaultSlide(s as Partial<SlideSpec>);
+    (raw) => {
+      const s = raw as Partial<SlideSpec> & { shader?: ShaderSpec };
+      const slide = defaultSlide(s);
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
-      const type = shaderDef(slide.shader?.type ?? "dithering").type;
-      slide.shader = { ...defaultShader(type), ...slide.shader, type };
+      // v1 specs carried a single `shader`; lift it into the layer stack.
+      const layers =
+        Array.isArray(s.layers) && s.layers.length
+          ? s.layers
+          : s.shader
+            ? [s.shader as LayerSpec]
+            : slide.layers;
+      slide.layers = layers.slice(0, MAX_LAYERS).map((l) => {
+        const type = shaderDef(l?.type ?? "dithering").type;
+        return { ...defaultLayer(type), ...l, type };
+      });
       return slide;
     },
   );
@@ -454,7 +504,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           letter: "",
           theme: "dark",
           veil: 0.5,
-          shader: { ...defaultShader("dithering"), shape: "sphere", speed: 0.4 },
+          layers: [{ ...defaultLayer("dithering"), shape: "sphere", speed: 0.4 }],
         }),
       ],
     },
@@ -475,7 +525,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           boxed: true,
           plate: true,
           veil: 0,
-          shader: { ...defaultShader("waves"), rotation: 90 },
+          layers: [{ ...defaultLayer("waves"), rotation: 90 }],
         }),
       ],
     },
@@ -496,7 +546,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           ring: true,
           plate: true,
           veil: 0.35,
-          shader: { ...defaultShader("grid"), shape: "cross" },
+          layers: [{ ...defaultLayer("grid"), shape: "cross" }],
         }),
       ],
     },
@@ -512,7 +562,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           kicker: "the Motion Social Club",
           title: "Three ideas\nthe club keeps\ncoming back to",
           theme: "dark",
-          shader: { ...defaultShader("mesh"), speed: 0.4 },
+          layers: [{ ...defaultLayer("mesh"), speed: 0.4 }],
         }),
         defaultSlide({
           kicker: "01 — practice over tutorials",
@@ -520,7 +570,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "Short, bounded exercises beat one more tutorial every time.",
           letter: "1",
           veil: 0.55,
-          shader: defaultShader("field"),
+          layers: [defaultLayer("field")],
         }),
         defaultSlide({
           kicker: "02 — fundamentals over tools",
@@ -528,7 +578,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "Easing, timing, contrast, hierarchy.",
           letter: "2",
           veil: 0.55,
-          shader: defaultShader("voronoi"),
+          layers: [defaultLayer("voronoi")],
         }),
         defaultSlide({
           kicker: "03 — small and consistent",
@@ -536,7 +586,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "The gym metaphor: short sessions, no pressure for perfection.",
           letter: "3",
           veil: 0.45,
-          shader: defaultShader("bloom"),
+          layers: [defaultLayer("bloom")],
         }),
       ],
     },
@@ -555,7 +605,39 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           theme: "dark",
           letter: "",
           veil: 0.25,
-          shader: { ...defaultShader("orbits"), speed: 0.5 },
+          layers: [{ ...defaultLayer("orbits"), speed: 0.5 }],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Blend",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "Blend the noise\ninto something\nworth keeping.",
+          theme: "dark",
+          veil: 0.2,
+          layers: [
+            { ...defaultLayer("mesh"), speed: 0.4 },
+            {
+              ...defaultLayer("dithering"),
+              shape: "simplex",
+              size: 2,
+              blend: "multiply",
+              opacity: 0.8,
+            },
+            {
+              ...defaultLayer("tunnel"),
+              blend: "difference",
+              opacity: 0.5,
+              speed: 0.3,
+            },
+          ],
         }),
       ],
     },

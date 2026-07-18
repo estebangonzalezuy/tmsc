@@ -49,15 +49,25 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
     "plate": false,                             // filled bg behind headline (legibility)
     "align": "left" | "center",
     "ring": false,                              // orbit ring of circled letters
-    "veil": 0.25,                               // 0-0.9 wash dimming the shader
+    "veil": 0.25,                               // 0-0.9 wash dimming the background
     "theme": "light" | "dark",
-    "shader": { "type": "dithering", "shape": "sphere", "speed": 0.5 }
+    "layers": [                                 // 1-4 background layers, bottom first
+      { "type": "mesh", "speed": 0.4 },
+      { "type": "dithering", "shape": "simplex", "size": 2,
+        "blend": "multiply", "opacity": 0.8 }
+    ]
   }]
 }
 ```
 
-Backgrounds (`shader.type` + params, all optional with defaults) come in
-two kinds. **Generative** — Cavalry-style procedural motion that loops
+Each layer also accepts `opacity` (0-1), `blend` (normal | multiply |
+screen | overlay | darken | lighten | difference | exclusion), and a
+transform: `offsetX`/`offsetY` (-1..1), `rotation` (degrees), `scale`
+(0.1-4). Blending a texture over a gradient (mesh + dithering multiply)
+is the signature look. v1 specs with a single `shader` field still load.
+
+Background layer types (`type` + params, all optional with defaults) come
+in two kinds. **Generative** — Cavalry-style procedural motion that loops
 seamlessly over `duration`; prefer these for reels and motion-forward
 posts: `grid` (staggered pulsing grid; shape: circle|square|cross, density,
 size, stagger, speed), `rays` (radial burst; count, inner, weight, speed),
