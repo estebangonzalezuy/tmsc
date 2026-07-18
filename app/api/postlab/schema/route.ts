@@ -32,7 +32,8 @@ export function GET() {
     writing_guidance: [
       "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
       "Design is strictly black & white — there are no color options by design.",
-      "Backgrounds come in two kinds: kind 'generative' (Cavalry-style procedural motion — staggered grids, radial arrays, orbits, oscillating fields; these loop seamlessly over `duration`) and kind 'shader' (Paper Shaders textures). Prefer generative for reels and motion-forward posts.",
+      "Backgrounds come in two kinds: kind 'generative' (Cavalry-style procedural motion — staggered grids, lattices, radial arrays, orbits, oscillating fields; these loop seamlessly over `duration`) and kind 'shader' (Paper Shaders textures). Prefer generative for reels and motion-forward posts.",
+      "The club's signature style is griddy-minimal-but-deformed: crisp geometric repeaters with the `warp` param (0-1) bending the shapes themselves through a flow field. Prefer warp for grit over stacking texture layers.",
       "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
       "Reels: format 'story', one slide, duration 6-10s, pick an animated background — generative ones loop perfectly.",
     ],

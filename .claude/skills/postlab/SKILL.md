@@ -70,12 +70,16 @@ Background layer types (`type` + params, all optional with defaults) come
 in two kinds. **Generative** — Cavalry-style procedural motion that loops
 seamlessly over `duration`; prefer these for reels and motion-forward
 posts: `grid` (staggered pulsing grid; shape: circle|square|cross, density,
-size, stagger, speed), `rays` (radial burst; count, inner, weight, speed),
+size, stagger, speed), `lattice` (warped graph-paper grid lines; cells,
+weight, speed), `rays` (radial burst; count, inner, weight, speed),
 `tunnel` (expanding rings; shape: circle|square, count, weight, speed),
 `bars` (kinetic bar field; rows, phase, fill, speed), `orbits` (the club's
 orbit motif animated; rings, dots, dotSize, speed), `bloom` (golden-angle
 dot spiral; count, size, speed), `field` (oscillating line waves; rows,
-amplitude, frequency, speed). **Shaders** (Paper Shaders textures): `none`,
+amplitude, frequency, speed). Most generative types take `warp` (0-1): a
+flow field that deforms the geometry itself — blobby dots, bent crosses,
+wobbly rings, warped lines. Prefer warp for grit over stacking texture
+layers; the griddy-minimal-but-deformed look is the club's style. **Shaders** (Paper Shaders textures): `none`,
 `dithering` (shape: simplex|warp|dots|wave|ripple|swirl|sphere, size, speed,
 scale), `waves` (still; shape 0-3, amplitude, frequency, spacing, rotation),
 `mesh` (distortion, swirl, grainOverlay, speed), `perlin` (proportion,

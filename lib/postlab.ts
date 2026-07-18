@@ -34,6 +34,7 @@ export type ShaderType =
   | "smoke"
   // generative animators (Cavalry-style procedural motion, canvas 2D)
   | "grid"
+  | "lattice"
   | "rays"
   | "tunnel"
   | "bars"
@@ -286,7 +287,17 @@ const paperShaders: Omit<ShaderDef, "kind">[] = [
 
 /* Procedural animators in the spirit of Cavalry: staggered repeaters,
    oscillators, radial arrays. All loop seamlessly over the post duration
-   (speed picks a whole number of cycles per loop). */
+   (speed picks a whole number of cycles per loop). `warp` pushes the
+   geometry itself through a flow field — deformed shapes, not filters. */
+const warpCtl = (def: number): ShaderControl => ({
+  key: "warp",
+  label: "warp",
+  min: 0,
+  max: 1,
+  step: 0.05,
+  def,
+});
+
 const generative: Omit<ShaderDef, "kind">[] = [
   {
     type: "grid",
@@ -297,9 +308,21 @@ const generative: Omit<ShaderDef, "kind">[] = [
       { key: "density", label: "density", min: 4, max: 18, step: 1, def: 9 },
       { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
       { key: "spread", label: "stagger", min: 0, max: 3, step: 0.1, def: 1.2 },
+      warpCtl(0.2),
     ],
     choices: [
       { key: "shape", label: "shape", values: ["circle", "square", "cross"], def: "circle" },
+    ],
+  },
+  {
+    type: "lattice",
+    label: "lattice",
+    animated: true,
+    controls: [
+      speed(0.4),
+      { key: "cells", label: "cells", min: 6, max: 30, step: 1, def: 12 },
+      { key: "weight", label: "weight", min: 0.5, max: 6, step: 0.25, def: 1.5 },
+      warpCtl(0.45),
     ],
   },
   {
@@ -311,6 +334,7 @@ const generative: Omit<ShaderDef, "kind">[] = [
       { key: "count", label: "count", min: 8, max: 90, step: 1, def: 36 },
       { key: "inner", label: "inner", min: 0, max: 0.8, step: 0.05, def: 0.15 },
       { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
+      warpCtl(0.2),
     ],
   },
   {
@@ -321,6 +345,7 @@ const generative: Omit<ShaderDef, "kind">[] = [
       speed(0.5),
       { key: "count", label: "count", min: 4, max: 24, step: 1, def: 10 },
       { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
+      warpCtl(0.25),
     ],
     choices: [
       { key: "shape", label: "shape", values: ["circle", "square"], def: "circle" },
@@ -335,6 +360,7 @@ const generative: Omit<ShaderDef, "kind">[] = [
       { key: "rows", label: "rows", min: 6, max: 40, step: 1, def: 14 },
       { key: "phase", label: "phase", min: 0, max: 0.5, step: 0.01, def: 0.12 },
       { key: "fill", label: "fill", min: 0.2, max: 1, step: 0.05, def: 0.7 },
+      warpCtl(0.2),
     ],
   },
   {
@@ -356,6 +382,7 @@ const generative: Omit<ShaderDef, "kind">[] = [
       speed(0.3),
       { key: "count", label: "count", min: 60, max: 500, step: 10, def: 220 },
       { key: "size", label: "size", min: 0.3, max: 2, step: 0.05, def: 1 },
+      warpCtl(0.2),
     ],
   },
   {
@@ -367,6 +394,7 @@ const generative: Omit<ShaderDef, "kind">[] = [
       { key: "rows", label: "rows", min: 6, max: 30, step: 1, def: 12 },
       { key: "amplitude", label: "amplitude", min: 0, max: 1, step: 0.05, def: 0.5 },
       { key: "frequency", label: "frequency", min: 0.5, max: 4, step: 0.1, def: 1.5 },
+      warpCtl(0.3),
     ],
   },
 ];
@@ -546,7 +574,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           ring: true,
           plate: true,
           veil: 0.35,
-          layers: [{ ...defaultLayer("grid"), shape: "cross" }],
+          layers: [{ ...defaultLayer("grid"), shape: "cross", warp: 0.3 }],
         }),
       ],
     },
@@ -570,7 +598,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "Short, bounded exercises beat one more tutorial every time.",
           letter: "1",
           veil: 0.55,
-          layers: [defaultLayer("field")],
+          layers: [{ ...defaultLayer("field"), warp: 0.45 }],
         }),
         defaultSlide({
           kicker: "02 — fundamentals over tools",
@@ -611,7 +639,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
     },
   },
   {
-    name: "Blend",
+    name: "Warped",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
@@ -619,23 +647,19 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
       slides: [
         defaultSlide({
           kicker: "the Motion Social Club",
-          title: "Blend the noise\ninto something\nworth keeping.",
-          theme: "dark",
-          veil: 0.2,
+          title: "Bend the grid.\nKeep the rhythm.",
+          plate: true,
+          veil: 0,
           layers: [
-            { ...defaultLayer("mesh"), speed: 0.4 },
+            { ...defaultLayer("lattice"), warp: 0.55, cells: 14, speed: 0.4 },
             {
-              ...defaultLayer("dithering"),
-              shape: "simplex",
-              size: 2,
-              blend: "multiply",
-              opacity: 0.8,
-            },
-            {
-              ...defaultLayer("tunnel"),
+              ...defaultLayer("grid"),
+              shape: "circle",
+              density: 7,
+              size: 0.5,
+              warp: 0.5,
               blend: "difference",
-              opacity: 0.5,
-              speed: 0.3,
+              opacity: 0.9,
             },
           ],
         }),
