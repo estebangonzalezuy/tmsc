@@ -42,6 +42,7 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
     "body": "",                                // optional supporting sentence
     "footer": "@themotionsocialclub",
     "letter": "M",                             // circled letter top right, "" hides
+    "text": true,                              // false = pure background, no typography
     "titleFont": "serif" | "sans",             // serif = editorial, sans = poster
     "italic": false,                            // serif italic = the club's emphasis
     "titleSize": "s" | "m" | "l",
@@ -69,9 +70,14 @@ is the signature look. v1 specs with a single `shader` field still load.
 Background layer types (`type` + params, all optional with defaults) come
 in two kinds. **Generative** — Cavalry-style procedural motion that loops
 seamlessly over `duration`; prefer these for reels and motion-forward
-posts: `grid` (staggered pulsing grid; shape: circle|square|cross, density,
-size, stagger, speed), `lattice` (warped graph-paper grid lines; cells,
-weight, speed), `rays` (radial burst; count, inner, weight, speed),
+posts: `grid` (staggered pulsing grid; shape: circle|square|cross|tick,
+density, size, stagger, speed), `lattice` (warped graph-paper grid lines;
+cells, weight, speed), `maze` (10-PRINT diagonals flipping in waves;
+density, weight, speed), `scatter` (drifting marks; mark:
+tick|dot|dash|plus, count, size, speed), `ramp` (directional halftone dot
+ramp; density, size, angle, speed), `letters` (warped glyph grid; word:
+tMSC|MOTION|CLUB|PRACTICE, density, size, speed), `rays` (radial burst;
+count, inner, weight, speed),
 `tunnel` (expanding rings; shape: circle|square, count, weight, speed),
 `bars` (kinetic bar field; rows, phase, fill, speed), `orbits` (the club's
 orbit motif animated; rings, dots, dotSize, speed), `bloom` (golden-angle

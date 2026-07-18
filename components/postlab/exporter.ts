@@ -5,6 +5,7 @@
 
 import { FORMATS, tones, type BlendMode, type PostSpec } from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
+import { GifEncoder } from "./gif";
 
 // CSS mix-blend-mode → canvas globalCompositeOperation (same names except
 // "normal").
@@ -49,6 +50,11 @@ function download(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+const slideName = (spec: PostSpec, index: number, base: string, ext: string) =>
+  spec.slides.length > 1
+    ? `${base}-${String(index + 1).padStart(2, "0")}.${ext}`
+    : `${base}.${ext}`;
+
 export function exportPng(
   spec: PostSpec,
   index: number,
@@ -63,13 +69,7 @@ export function exportPng(
   drawLayers(ctx, spec, index, layerCanvases, w, h);
   ctx.drawImage(overlay, 0, 0, w, h);
   out.toBlob((blob) => {
-    if (blob)
-      download(
-        blob,
-        spec.slides.length > 1
-          ? `tmsc-post-${String(index + 1).padStart(2, "0")}.png`
-          : "tmsc-post.png",
-      );
+    if (blob) download(blob, slideName(spec, index, "tmsc-post", "png"));
   }, "image/png");
 }
 
@@ -137,7 +137,7 @@ export function recordVideo(
         reject(new Error("Recorder produced no data"));
         return;
       }
-      download(blob, `tmsc-reel.${ext}`);
+      download(blob, slideName(spec, index, "tmsc-reel", ext));
       resolve();
     };
     recorder.onerror = () => reject(new Error("Recording failed"));
@@ -165,5 +165,69 @@ export function recordVideo(
     // 1s timeslice makes the encoder flush as it goes instead of only at stop.
     recorder.start(1000);
     raf = requestAnimationFrame(frame);
+  });
+}
+
+/**
+ * Record `spec.duration` seconds as an animated GIF (grayscale palette,
+ * half resolution, 12.5fps) — captured live like the video path, encoded
+ * in-page with no external tooling.
+ */
+export function recordGif(
+  spec: PostSpec,
+  index: number,
+  layerCanvases: (HTMLCanvasElement | null)[],
+  fonts: Fonts,
+  onProgress: (fraction: number) => void,
+): Promise<void> {
+  const { w, h } = FORMATS[spec.format];
+  const gw = Math.round(w / 2);
+  const gh = Math.round(h / 2);
+  const delay = 8; // hundredths of a second → 12.5fps
+  const durationMs = spec.duration * 1000;
+
+  const overlay = document.createElement("canvas");
+  overlay.width = w;
+  overlay.height = h;
+  const overlayCtx = overlay.getContext("2d")!;
+
+  const full = document.createElement("canvas");
+  full.width = w;
+  full.height = h;
+  const fullCtx = full.getContext("2d")!;
+
+  const small = document.createElement("canvas");
+  small.width = gw;
+  small.height = gh;
+  const smallCtx = small.getContext("2d", { willReadFrequently: true })!;
+
+  const gif = new GifEncoder(gw, gh, delay);
+
+  return new Promise((resolve) => {
+    let raf = 0;
+    let lastPush = -Infinity;
+    const start = performance.now();
+
+    const frame = (now: number) => {
+      const elapsed = now - start;
+      if (now - lastPush >= delay * 10 - 1) {
+        lastPush = now;
+        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000);
+        drawLayers(fullCtx, spec, index, layerCanvases, w, h);
+        fullCtx.drawImage(overlay, 0, 0, w, h);
+        smallCtx.drawImage(full, 0, 0, gw, gh);
+        gif.addFrame(smallCtx.getImageData(0, 0, gw, gh).data);
+        onProgress(Math.min(1, elapsed / durationMs));
+      }
+      if (elapsed >= durationMs) {
+        download(gif.toBlob(), slideName(spec, index, "tmsc-post", "gif"));
+        onProgress(0);
+        resolve();
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    void raf;
   });
 }

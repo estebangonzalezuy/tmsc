@@ -99,6 +99,9 @@ export function drawOverlay(
     ctx.restore();
   }
 
+  /* Text switch off = pure background (the veil above still applies). */
+  if (slide.text === false) return;
+
   /* Orbit ring — behind the text, letters kept upright, slow spin. */
   if (slide.ring) {
     const R = Math.min(w, h) * 0.4;

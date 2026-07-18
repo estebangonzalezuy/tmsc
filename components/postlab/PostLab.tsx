@@ -33,7 +33,7 @@ import {
 } from "@/lib/postlab";
 import ShaderLayer from "./ShaderLayer";
 import { drawOverlay, loadFonts, type Fonts } from "./overlay";
-import { exportPng, recordVideo } from "./exporter";
+import { exportPng, recordGif, recordVideo } from "./exporter";
 
 /* ------------------------------------------------------------- panel bits */
 
@@ -144,7 +144,7 @@ export default function PostLab() {
   const [activeLayer, setActiveLayer] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [fonts, setFonts] = useState<Fonts | null>(null);
-  const [recording, setRecording] = useState(0); // 0 = idle, else fraction
+  const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
   const [importText, setImportText] = useState("");
 
@@ -410,32 +410,58 @@ export default function PostLab() {
     exportPng(spec, activeIndex, layerCanvases(), overlayRef.current);
   };
 
-  const saveAllPngs = async () => {
-    if (!fonts) return;
-    for (let i = 0; i < spec.slides.length; i++) {
-      setActive(i);
-      // give the shaders a moment to remount and render the new slide
-      await new Promise((r) => setTimeout(r, 500));
-      const overlay = overlayRef.current;
-      if (!overlay) continue;
-      const ctx = overlay.getContext("2d");
-      if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
-      exportPng(spec, i, layerCanvases(), overlay);
+  /* Batch runner: walks the slides, letting each remount and render before
+     the per-slide export (PNG capture, video or GIF recording). */
+  const eachSlide = async (
+    label: string,
+    fn: (i: number, report: (f: number) => void) => Promise<void> | void,
+    only?: number,
+  ) => {
+    if (!fonts || job) return;
+    const idx = only !== undefined ? [only] : spec.slides.map((_, i) => i);
+    try {
+      for (const i of idx) {
+        const tag = idx.length > 1 ? `${label} ${i + 1}/${idx.length}` : label;
+        setJob({ label: tag, frac: 0 });
+        setActive(i);
+        await new Promise((r) => setTimeout(r, 600));
+        await fn(i, (f) => setJob({ label: tag, frac: f }));
+      }
+      say("Saved");
+    } catch {
+      say(`${label} export failed in this browser`);
+    } finally {
+      setJob(null);
     }
   };
 
-  const saveVideo = async () => {
-    if (!fonts || recording) return;
-    setRecording(0.001);
-    try {
-      await recordVideo(spec, activeIndex, layerCanvases(), fonts, setRecording);
-      say("Video saved");
-    } catch {
-      say("Recording failed in this browser");
-    } finally {
-      setRecording(0);
-    }
+  const pngSlide = (i: number) => {
+    const overlay = overlayRef.current;
+    if (!overlay || !fonts) return;
+    const ctx = overlay.getContext("2d");
+    if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
+    exportPng(spec, i, layerCanvases(), overlay);
   };
+
+  const saveAllPngs = () => eachSlide("PNG", pngSlide);
+  const saveVideo = () =>
+    eachSlide(
+      "Video",
+      (i, rep) => recordVideo(spec, i, layerCanvases(), fonts!, rep),
+      activeIndex,
+    );
+  const saveAllVideos = () =>
+    eachSlide("Video", (i, rep) =>
+      recordVideo(spec, i, layerCanvases(), fonts!, rep),
+    );
+  const saveGif = () =>
+    eachSlide(
+      "GIF",
+      (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep),
+      activeIndex,
+    );
+  const saveAllGifs = () =>
+    eachSlide("GIF", (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep));
 
   /* ------------------------------------------------------- spec sharing */
 
@@ -690,6 +716,7 @@ export default function PostLab() {
             <div className="flex gap-4 text-xs pt-1">
               {(
                 [
+                  ["text", slide.text, () => patchSlide({ text: !slide.text })],
                   ["italic", slide.italic, () => patchSlide({ italic: !slide.italic })],
                   ["boxed", slide.boxed, () => patchSlide({ boxed: !slide.boxed })],
                   ["plate", slide.plate, () => patchSlide({ plate: !slide.plate })],
@@ -921,21 +948,40 @@ export default function PostLab() {
 
           <Section title="export">
             <div className="flex flex-wrap gap-2">
-              <Button onClick={savePng} primary>
+              <Button onClick={savePng} primary disabled={!!job}>
                 PNG — this slide
               </Button>
               {spec.slides.length > 1 && (
-                <Button onClick={saveAllPngs}>PNG — all slides</Button>
+                <Button onClick={saveAllPngs} disabled={!!job}>
+                  PNG × {spec.slides.length}
+                </Button>
               )}
-              <Button onClick={saveVideo} disabled={!!recording}>
-                {recording
-                  ? `Recording ${Math.round(recording * 100)}%`
-                  : `Video — ${spec.duration}s`}
+              <Button onClick={saveVideo} disabled={!!job}>
+                Video — {spec.duration}s
               </Button>
+              {spec.slides.length > 1 && (
+                <Button onClick={saveAllVideos} disabled={!!job}>
+                  Video × {spec.slides.length}
+                </Button>
+              )}
+              <Button onClick={saveGif} disabled={!!job}>
+                GIF — {spec.duration}s
+              </Button>
+              {spec.slides.length > 1 && (
+                <Button onClick={saveAllGifs} disabled={!!job}>
+                  GIF × {spec.slides.length}
+                </Button>
+              )}
             </div>
+            {job && (
+              <p className="text-xs">
+                {job.label} — {Math.round(job.frac * 100)}%
+              </p>
+            )}
             <p className="text-xs text-muted">
               Stills export at {w}×{h}. Video records the animated slide (MP4
-              where the browser supports it, WebM otherwise).
+              where the browser supports it, WebM otherwise); GIFs record at
+              half size and loop forever.
             </p>
           </Section>
 

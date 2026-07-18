@@ -19,6 +19,20 @@ const TAU = Math.PI * 2;
 const num = (v: number | string | undefined, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
 
+/* Deterministic per-cell pseudo-random in [0,1). */
+const hash = (a: number, b: number) => {
+  const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+/* The UI font (Archivo via next/font registers a hashed family name). */
+let cachedFont: string | null = null;
+const uiFont = () => {
+  if (!cachedFont && typeof document !== "undefined")
+    cachedFont = getComputedStyle(document.body).fontFamily;
+  return cachedFont || "sans-serif";
+};
+
 /* Smooth pseudo-noise flow field in ~[-1,1]². `ph` is the loop phase times
    whole cycles, so time only ever enters as sin/cos of TAU·ph — the field
    at ph=0 and ph=cycles is identical, keeping exports seamless. */
@@ -114,6 +128,16 @@ export function drawGenerative(
             });
             ctx.closePath();
             ctx.fill();
+          } else if (shape === "tick") {
+            // short strokes whose direction follows the flow field
+            const { fx, fy } = flow((p.x / m) * 2, (p.y / m) * 2, ph);
+            const a = Math.atan2(fy, fx);
+            const a2 = displace(p.x + Math.cos(a) * rad, p.y + Math.sin(a) * rad, amp * 0.4);
+            const b2 = displace(p.x - Math.cos(a) * rad, p.y - Math.sin(a) * rad, amp * 0.4);
+            ctx.beginPath();
+            ctx.moveTo(a2.x, a2.y);
+            ctx.lineTo(b2.x, b2.y);
+            ctx.stroke();
           } else if (shape === "cross") {
             // bent cross: each arm passes through a displaced midpoint
             ctx.beginPath();
@@ -337,6 +361,152 @@ export function drawGenerative(
         ctx.beginPath();
         ctx.arc(p.x, p.y, rad, 0, TAU);
         ctx.fill();
+      }
+      break;
+    }
+
+    case "maze": {
+      // 10 PRINT: one diagonal per cell, flipping in waves over the loop,
+      // each stroke bent through the flow field
+      const cols = Math.round(num(spec.density, 12));
+      const cell = w / cols;
+      const rows = Math.ceil(h / cell);
+      const amp = warp * cell * 0.6;
+      ctx.lineWidth = num(spec.weight, 3) * u;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const rnd = hash(c, r);
+          const dn = Math.hypot((c + 0.5) * cell - cx, (r + 0.5) * cell - cy) / maxR;
+          const flip =
+            Math.sin(TAU * (ph - dn * 0.8) + rnd * TAU) > 0 ? 1 : -1;
+          const x0 = c * cell;
+          const y0 = r * cell;
+          const a =
+            flip > 0
+              ? { x: x0, y: y0 + cell }
+              : { x: x0, y: y0 };
+          const b =
+            flip > 0
+              ? { x: x0 + cell, y: y0 }
+              : { x: x0 + cell, y: y0 + cell };
+          const pa = displace(a.x, a.y, amp);
+          const mid = displace((a.x + b.x) / 2, (a.y + b.y) / 2, amp * 1.4);
+          const pb = displace(b.x, b.y, amp);
+          ctx.beginPath();
+          ctx.moveTo(pa.x, pa.y);
+          ctx.quadraticCurveTo(mid.x, mid.y, pb.x, pb.y);
+          ctx.stroke();
+        }
+      }
+      break;
+    }
+
+    case "scatter": {
+      // deterministic dust of small marks drifting through the field
+      const count = Math.round(num(spec.count, 160));
+      const size = num(spec.size, 1.2);
+      const mark = String(spec.mark ?? "tick");
+      const amp = warp * 70 * u;
+      ctx.lineWidth = 2.5 * u;
+      for (let n = 0; n < count; n++) {
+        const bx = hash(n, 1) * w;
+        const by = hash(n, 2) * h;
+        const p = displace(bx, by, amp * (0.4 + hash(n, 3)));
+        const s2 = (4 + 10 * hash(n, 4)) * u * size;
+        const { fx, fy } = flow((p.x / m) * 2, (p.y / m) * 2, ph);
+        const a = Math.atan2(fy, fx) + hash(n, 5) * 0.8;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(a);
+        ctx.beginPath();
+        if (mark === "dot") {
+          ctx.arc(0, 0, s2 * 0.45, 0, TAU);
+          ctx.fill();
+        } else if (mark === "dash") {
+          ctx.moveTo(-s2, 0);
+          ctx.lineTo(s2, 0);
+          ctx.stroke();
+        } else if (mark === "plus") {
+          ctx.moveTo(-s2 * 0.7, 0);
+          ctx.lineTo(s2 * 0.7, 0);
+          ctx.moveTo(0, -s2 * 0.7);
+          ctx.lineTo(0, s2 * 0.7);
+          ctx.stroke();
+        } else {
+          ctx.moveTo(-s2 * 0.6, 0);
+          ctx.lineTo(s2 * 0.6, 0);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      break;
+    }
+
+    case "ramp": {
+      // halftone-style dot grid sized by a directional wave sweeping through
+      const cols = Math.round(num(spec.density, 12));
+      const size = num(spec.size, 0.8);
+      const angle = (num(spec.angle, 45) * Math.PI) / 180;
+      const cell = w / cols;
+      const rows = Math.ceil(h / cell);
+      const amp = warp * cell * 0.7;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const p = displace((c + 0.5) * cell, (r + 0.5) * cell, amp);
+          const proj =
+            ((p.x - cx) * Math.cos(angle) + (p.y - cy) * Math.sin(angle)) / m;
+          const s01 = 0.5 + 0.5 * Math.sin(TAU * (ph - proj * 1.6));
+          const rad = cell * 0.46 * size * Math.pow(s01, 1.4);
+          if (rad < 0.4) continue;
+          if (warp > 0) {
+            const cellPh = r * 1.7 + c * 2.3;
+            ctx.beginPath();
+            const steps = 12;
+            for (let i = 0; i <= steps; i++) {
+              const a = (i / steps) * TAU;
+              const rr =
+                rad * (1 + warp * 0.4 * Math.sin(3 * a + cellPh + TAU * ph));
+              if (i === 0) ctx.moveTo(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr);
+              else ctx.lineTo(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr);
+            }
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, rad, 0, TAU);
+            ctx.fill();
+          }
+        }
+      }
+      break;
+    }
+
+    case "letters": {
+      // a grid of glyphs from a club word, tilted and pushed by the field
+      const cols = Math.round(num(spec.density, 6));
+      const size = num(spec.size, 1);
+      const word = String(spec.word ?? "MOTION").replace(/\s+/g, "") || "M";
+      const cell = w / cols;
+      const rows = Math.ceil(h / cell);
+      const amp = warp * cell * 0.5;
+      const px = cell * 0.52 * size;
+      ctx.font = `600 ${px}px ${uiFont()}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const p = displace((c + 0.5) * cell, (r + 0.5) * cell, amp);
+          const ch = word[(r * cols + c) % word.length];
+          const { fx, fy } = flow((p.x / m) * 2, (p.y / m) * 2, ph);
+          const dn = Math.hypot(p.x - cx, p.y - cy) / maxR;
+          const pulse = 0.6 + 0.4 * Math.sin(TAU * (ph - dn * 1.2));
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(Math.atan2(fy, fx) * warp * 0.6);
+          ctx.scale(pulse, pulse);
+          ctx.fillText(ch, 0, 0);
+          ctx.restore();
+        }
       }
       break;
     }

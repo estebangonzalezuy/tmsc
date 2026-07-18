@@ -40,7 +40,11 @@ export type ShaderType =
   | "bars"
   | "orbits"
   | "bloom"
-  | "field";
+  | "field"
+  | "maze"
+  | "scatter"
+  | "ramp"
+  | "letters";
 
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
@@ -93,6 +97,9 @@ export type SlideSpec = {
   footer: string;
   /** Circled letter drawn top right; empty string hides it. */
   letter: string;
+  /** Master switch for the typographic layer (kicker, title, body, footer,
+      letter, ring). Off = pure background; the veil still applies. */
+  text: boolean;
   titleFont: "serif" | "sans";
   italic: boolean;
   titleSize: "s" | "m" | "l";
@@ -311,7 +318,73 @@ const generative: Omit<ShaderDef, "kind">[] = [
       warpCtl(0.2),
     ],
     choices: [
-      { key: "shape", label: "shape", values: ["circle", "square", "cross"], def: "circle" },
+      {
+        key: "shape",
+        label: "shape",
+        values: ["circle", "square", "cross", "tick"],
+        def: "circle",
+      },
+    ],
+  },
+  {
+    type: "maze",
+    label: "maze",
+    animated: true,
+    controls: [
+      speed(0.4),
+      { key: "density", label: "density", min: 6, max: 26, step: 1, def: 12 },
+      { key: "weight", label: "weight", min: 1, max: 8, step: 0.5, def: 3 },
+      warpCtl(0.2),
+    ],
+  },
+  {
+    type: "scatter",
+    label: "scatter",
+    animated: true,
+    controls: [
+      speed(0.4),
+      { key: "count", label: "count", min: 40, max: 400, step: 10, def: 160 },
+      { key: "size", label: "size", min: 0.5, max: 3, step: 0.05, def: 1.2 },
+      warpCtl(0.5),
+    ],
+    choices: [
+      {
+        key: "mark",
+        label: "mark",
+        values: ["tick", "dot", "dash", "plus"],
+        def: "tick",
+      },
+    ],
+  },
+  {
+    type: "ramp",
+    label: "ramp",
+    animated: true,
+    controls: [
+      speed(0.5),
+      { key: "density", label: "density", min: 6, max: 22, step: 1, def: 12 },
+      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
+      { key: "angle", label: "angle", min: 0, max: 360, step: 5, def: 45 },
+      warpCtl(0.2),
+    ],
+  },
+  {
+    type: "letters",
+    label: "letters",
+    animated: true,
+    controls: [
+      speed(0.4),
+      { key: "density", label: "density", min: 3, max: 12, step: 1, def: 6 },
+      { key: "size", label: "size", min: 0.4, max: 2, step: 0.05, def: 1 },
+      warpCtl(0.35),
+    ],
+    choices: [
+      {
+        key: "word",
+        label: "word",
+        values: ["tMSC", "MOTION", "CLUB", "PRACTICE"],
+        def: "MOTION",
+      },
     ],
   },
   {
@@ -436,6 +509,7 @@ export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
     body: "",
     footer: "@themotionsocialclub",
     letter: "M",
+    text: true,
     titleFont: "serif",
     italic: false,
     titleSize: "m",
@@ -487,7 +561,7 @@ export function normalizeSpec(raw: unknown): PostSpec {
     v: SPEC_VERSION,
     format,
     duration: Math.min(15, Math.max(2, Number(r.duration) || 6)),
-    slides: slides.slice(0, 10),
+    slides: slides.slice(0, 20),
   };
 }
 

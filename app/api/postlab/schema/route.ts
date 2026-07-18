@@ -57,6 +57,7 @@ export function GET() {
           body: "supporting paragraph under the title (string, optional)",
           footer: "bottom-left line, default '@themotionsocialclub'",
           letter: "single character drawn as a circled letter top right; '' hides it",
+          text: "boolean (default true) — false hides the whole typographic layer for a pure background slide",
           titleFont: "'serif' (Lora, editorial) | 'sans' (Archivo, poster)",
           italic: "boolean, serif italic is the club's emphasis voice",
           titleSize: "'s' | 'm' | 'l'",
