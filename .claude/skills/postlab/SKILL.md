@@ -121,6 +121,12 @@ can do it on demand):
    `https://themotionsocialclub.vercel.app/postlab#spec=<base64url>` and
    **Status** to `Generated`. Touch nothing else — never edit rows in
    other statuses, and never modify repo code for this task.
+4. If the row's Notes mention "canva", also produce a Canva design (for
+   editing in the Canva app on phone/tablet): copy the master design
+   `DAHPx9zFsfY` (poster — kicker/title/subtitle/footer) or `DAHPx5Abjpo`
+   (serif quote — kicker/title) with the Canva `copy-design` tool, fill
+   the copy's text via an editing transaction, commit, and write the
+   copy's edit URL into the row's **Canva link** property.
 
 ## Editorial defaults
 
