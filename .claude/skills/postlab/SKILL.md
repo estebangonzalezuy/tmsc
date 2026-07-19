@@ -67,37 +67,26 @@ transform: `offsetX`/`offsetY` (-1..1), `rotation` (degrees), `scale`
 (0.1-4). Blending a texture over a gradient (mesh + dithering multiply)
 is the signature look. v1 specs with a single `shader` field still load.
 
-Background layer types (`type` + params, all optional with defaults) come
-in two kinds. **Generative** — Cavalry-style procedural motion that loops
-seamlessly over `duration`; prefer these for reels and motion-forward
-posts: `grid` (staggered pulsing grid; shape: circle|square|cross|tick,
-density, size, stagger, speed), `lattice` (warped graph-paper grid lines;
-cells, weight, speed), `maze` (10-PRINT diagonals flipping in waves;
-density, weight, speed), `scatter` (drifting marks; mark:
-tick|dot|dash|plus, count, size, speed), `ramp` (directional halftone dot
-ramp; density, size, angle, speed), `letters` (warped glyph grid; word:
-tMSC|MOTION|CLUB|PRACTICE, density, size, speed), `rays` (radial burst;
-count, inner, weight, speed),
-`tunnel` (expanding rings; shape: circle|square, count, weight, speed),
-`bars` (kinetic bar field; rows, phase, fill, speed), `orbits` (the club's
-orbit motif animated; rings, dots, dotSize, speed), `bloom` (golden-angle
-dot spiral; count, size, speed), `field` (oscillating line waves; rows,
-amplitude, frequency, speed). Most generative types take `warp` (0-1): a
-flow field that deforms the geometry itself — blobby dots, bent crosses,
-wobbly rings, warped lines. Prefer warp for grit over stacking texture
-layers; the griddy-minimal-but-deformed look is the club's style. All
-generative types also take `ink` (0.1-1): the opacity of the marks
-themselves, so shapes can sit back in gray while the background stays
-solid (distinct from the layer-level `opacity`, which fades the whole
-layer into the layers beneath). **Shaders** (Paper Shaders textures): `none`,
-`dithering` (shape: simplex|warp|dots|wave|ripple|swirl|sphere, size, speed,
-scale), `waves` (still; shape 0-3, amplitude, frequency, spacing, rotation),
-`mesh` (distortion, swirl, grainOverlay, speed), `perlin` (proportion,
-softness, scale, speed), `voronoi` (gap, glow, scale, speed), `metaballs`
-(count, size, speed), `warp` (shape: checks|stripes|edge, distortion, swirl,
-speed), `spiral` (density, strokeWidth, distortion, speed), `smoke`
-(thickness, radius, speed). Colors are never specified — everything is
-black & white by design.
+The Post Lab is a **dithering instrument** — every background is dithered
+pixels in the slide's two tones. Two layer types (plus `none` for plain):
+
+- `dithering` (Paper Shaders): `shape` simplex|warp|dots|wave|ripple|swirl|
+  sphere, `dtype` 4x4|8x8|2x2|random, `size` (pixel 1-14), `speed`, `scale`.
+- `forms` (canvas ordered dither, shapes the shader lacks): `pattern`
+  rings|ramp|bars|letter (giant dithered type), `word` M|tMSC|MOTION|CLUB,
+  `pixel` (2-16), `density`, `warp` (0-1 flow-field deformation), `speed`.
+
+Colors are never specified — strictly black & white. Old type names from
+earlier spec versions (grid, mesh, orbits, lattice…) are auto-mapped to the
+closest dithering equivalent, so old links keep working.
+
+## Instant links (no AI needed)
+
+For a quick single-slide post, skip the spec entirely:
+`/postlab?title=Line one // line two&body=...&kicker=...&format=portrait&theme=dark&shape=sphere`
+— params build the spec in the browser; `//` becomes a line break. The
+Notion queue's "Instant link" formula column assembles these automatically.
+Use the encoded `#spec=` form when you need carousels or fine control.
 
 ## The queue automation (Notion → post)
 
@@ -115,8 +104,8 @@ can do it on demand):
    end quietly.
 2. For each Ready page: fetch its body and Notes, distill into a PostSpec
    per this skill (Format `carousel` → portrait multi-slide; `reel` →
-   story single slide, generative background; `auto` → judge from the
-   content). Respect the Notes.
+   story single slide, animated dithering background; `auto` → judge from
+   the content). Respect the Notes.
 3. Encode and write back: set **Post link** to
    `https://themotionsocialclub.vercel.app/postlab#spec=<base64url>` and
    **Status** to `Generated`. Touch nothing else — never edit rows in
@@ -131,12 +120,13 @@ can do it on demand):
 ## Editorial defaults
 
 - Single quote/thought → `square`, dark theme, `dithering` sphere, serif
-  italic, centered, no letter.
-- Announcement → `portrait`, light, `waves` rotated 90°, sans `l` boxed.
+  italic, centered, no letter, veil ~0.5.
+- Announcement → `portrait`, light, `dithering` wave, sans `l` boxed with
+  plate.
 - Carousel → `portrait`, dark hook slide first, then one idea per slide,
-  numbered circled letters ("1", "2", …), kickers like "01 — idea name".
-- Reel → `story`, one slide, a generative background (`orbits`, `bloom`,
-  `grid`), duration 6-10 — generative motion loops seamlessly at exactly
-  that length.
+  numbered circled letters ("1", "2", …), kickers like "01 — idea name";
+  vary the dithering shape (or a `forms` pattern) per slide.
+- Reel → `story`, one slide, `dithering` sphere or `forms` rings/letter,
+  duration 6-10 — everything loops seamlessly at exactly that length.
 - Content to draw from lives in `content/site.json` (quotes, threads,
   pillars, archive titles).

@@ -25,6 +25,7 @@ import {
   encodeSpec,
   normalizeSpec,
   shaderDef,
+  specFromQuery,
   tones,
   type LayerSpec,
   type PostSpec,
@@ -161,11 +162,14 @@ export default function PostLab() {
   const layer = slide.layers[layerIndex];
   const def = shaderDef(layer.type);
 
-  /* Load fonts, then any spec passed in the URL (#spec=... or ?spec=...). */
+  /* Load fonts, then any spec passed in the URL: #spec= / ?spec= (encoded),
+     or plain ?title=...&body=... params — the instant, zero-AI path that a
+     Notion formula can assemble. */
   useEffect(() => {
+    const search = new URLSearchParams(window.location.search);
     const fromHash = window.location.hash.match(/spec=([^&]+)/)?.[1];
-    const fromQuery = new URLSearchParams(window.location.search).get("spec");
-    const decoded = decodeSpec(fromHash ?? fromQuery ?? "");
+    const decoded =
+      decodeSpec(fromHash ?? search.get("spec") ?? "") ?? specFromQuery(search);
     loadFonts().then((f) => {
       setFonts(f);
       if (decoded) setSpec(decoded);
@@ -848,37 +852,21 @@ export default function PostLab() {
                 {Math.round(layer.opacity * 100)}%
               </span>
             </Row>
-            {(
-              [
-                ["generative", SHADERS.filter((s) => s.kind === "generative")],
-                ["shaders", SHADERS.filter((s) => s.kind === "shader")],
-              ] as const
-            ).map(([group, defs]) => (
-              <div key={group}>
-                <p className="text-[10px] uppercase tracking-wide text-muted mb-1.5">
-                  {group}
-                </p>
-                <div className="grid grid-cols-2 gap-px bg-line border border-line">
-                  {defs.map((s) => (
-                    <button
-                      key={s.type}
-                      onClick={() => setShaderType(s.type)}
-                      className={`px-2 py-1.5 text-xs text-left transition-colors ${
-                        layer.type === s.type
-                          ? "bg-foreground text-background"
-                          : "bg-background hover:text-muted"
-                      }`}
-                    >
-                      {s.label}
-                      {!s.animated && s.type !== "none" && (
-                        <span className="opacity-50"> · still</span>
-                      )}
-                    </button>
-                  ))}
-                  {defs.length % 2 === 1 && <div className="bg-background" />}
-                </div>
-              </div>
-            ))}
+            <div className="flex border border-line divide-x divide-line">
+              {SHADERS.map((s) => (
+                <button
+                  key={s.type}
+                  onClick={() => setShaderType(s.type)}
+                  className={`flex-1 px-2 py-1.5 text-xs transition-colors ${
+                    layer.type === s.type
+                      ? "bg-foreground text-background"
+                      : "bg-background hover:text-muted"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
             {(def.choices ?? []).map((c) => (
               <Row key={c.key} label={c.label}>
                 <select

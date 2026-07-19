@@ -56,11 +56,13 @@ browser). Therefore:
 ## The Post Lab (`/postlab`)
 
 An internal design tool (like `/studio`, not in the nav) for generating the
-club's animated Instagram posts, carousels, and reels: grayscale animated
-backgrounds under the club's typography, with PNG and video export.
-Backgrounds are either Paper Shaders (`@paper-design/shaders-react`) or
-Cavalry-style generative animators (`components/postlab/generative.ts`,
-canvas 2D) that loop seamlessly over the post duration.
+club's animated Instagram posts, carousels, and reels: dithered animated
+backgrounds under the club's typography, with PNG, video, and GIF export.
+The tool is deliberately a dithering instrument — backgrounds are Paper
+Shaders' Dithering (`@paper-design/shaders-react`) or the club's own
+ordered-dither forms renderer (`components/postlab/generative.ts`, canvas
+2D), looping seamlessly over the post duration. Don't add other shader
+families; extend the dithering vocabulary instead.
 
 - `lib/postlab.ts` — the **PostSpec** model: types, shader registry,
   presets, base64url encode/decode. The spec travels in the URL

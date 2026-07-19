@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 2;
+export const SPEC_VERSION = 3;
 
 export type PostFormat = "square" | "portrait" | "story";
 
@@ -21,30 +21,10 @@ export const FORMATS: Record<
 
 export type Theme = "light" | "dark";
 
-export type ShaderType =
-  | "none"
-  | "dithering"
-  | "waves"
-  | "mesh"
-  | "perlin"
-  | "voronoi"
-  | "metaballs"
-  | "warp"
-  | "spiral"
-  | "smoke"
-  // generative animators (Cavalry-style procedural motion, canvas 2D)
-  | "grid"
-  | "lattice"
-  | "rays"
-  | "tunnel"
-  | "bars"
-  | "orbits"
-  | "bloom"
-  | "field"
-  | "maze"
-  | "scatter"
-  | "ramp"
-  | "letters";
+/* The Post Lab is a dithering instrument: every background is either
+   Paper Shaders' Dithering ("dithering") or our own canvas-2D ordered-dither
+   renderer ("forms", for shapes the shader doesn't have). "none" = plain. */
+export type ShaderType = "none" | "dithering" | "forms";
 
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
@@ -170,327 +150,67 @@ const scale = (def = 1): ShaderControl => ({
   def,
 });
 
-const paperShaders: Omit<ShaderDef, "kind">[] = [
-  { type: "none", label: "plain", animated: false, controls: [] },
-  {
-    type: "dithering",
-    label: "dithering",
-    animated: true,
-    controls: [
-      speed(0.5),
-      scale(0.9),
-      { key: "size", label: "pixel", min: 1, max: 14, step: 0.5, def: 3 },
-    ],
-    choices: [
-      {
-        key: "shape",
-        label: "pattern",
-        values: ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"],
-        def: "sphere",
-      },
-    ],
-  },
-  {
-    type: "waves",
-    label: "waves",
-    animated: false,
-    controls: [
-      scale(1),
-      { key: "shape", label: "shape", min: 0, max: 3, step: 0.05, def: 1 },
-      { key: "amplitude", label: "amplitude", min: 0, max: 1, step: 0.05, def: 0.5 },
-      { key: "frequency", label: "frequency", min: 0, max: 2, step: 0.05, def: 0.5 },
-      { key: "spacing", label: "spacing", min: 0, max: 2, step: 0.05, def: 0.75 },
-      { key: "rotation", label: "rotation", min: 0, max: 360, step: 5, def: 0 },
-    ],
-  },
-  {
-    type: "mesh",
-    label: "mesh gradient",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0.8 },
-      { key: "swirl", label: "swirl", min: 0, max: 1, step: 0.05, def: 0.6 },
-      { key: "grainOverlay", label: "grain", min: 0, max: 1, step: 0.05, def: 0 },
-    ],
-  },
-  {
-    type: "perlin",
-    label: "perlin noise",
-    animated: true,
-    controls: [
-      speed(0.4),
-      scale(0.8),
-      { key: "proportion", label: "proportion", min: 0, max: 1, step: 0.05, def: 0.5 },
-      { key: "softness", label: "softness", min: 0, max: 1, step: 0.05, def: 0.1 },
-    ],
-  },
-  {
-    type: "voronoi",
-    label: "voronoi",
-    animated: true,
-    controls: [
-      speed(0.4),
-      scale(0.8),
-      { key: "gap", label: "gap", min: 0, max: 0.1, step: 0.005, def: 0.03 },
-      { key: "glow", label: "glow", min: 0, max: 1, step: 0.05, def: 0 },
-    ],
-  },
-  {
-    type: "metaballs",
-    label: "metaballs",
-    animated: true,
-    controls: [
-      speed(0.6),
-      scale(1),
-      { key: "count", label: "count", min: 1, max: 20, step: 1, def: 8 },
-      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
-    ],
-  },
-  {
-    type: "warp",
-    label: "warp",
-    animated: true,
-    controls: [
-      speed(0.4),
-      scale(1),
-      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0.25 },
-      { key: "swirl", label: "swirl", min: 0, max: 1, step: 0.05, def: 0.8 },
-      { key: "softness", label: "softness", min: 0, max: 1, step: 0.05, def: 0 },
-    ],
-    choices: [
-      {
-        key: "shape",
-        label: "pattern",
-        values: ["checks", "stripes", "edge"],
-        def: "stripes",
-      },
-    ],
-  },
-  {
-    type: "spiral",
-    label: "spiral",
-    animated: true,
-    controls: [
-      speed(0.5),
-      scale(1),
-      { key: "density", label: "density", min: 0, max: 1, step: 0.05, def: 0.4 },
-      { key: "strokeWidth", label: "stroke", min: 0.05, max: 0.95, step: 0.05, def: 0.5 },
-      { key: "distortion", label: "distortion", min: 0, max: 1, step: 0.05, def: 0 },
-    ],
-  },
-  {
-    type: "smoke",
-    label: "smoke ring",
-    animated: true,
-    controls: [
-      speed(0.6),
-      scale(1),
-      { key: "thickness", label: "thickness", min: 0.1, max: 2, step: 0.05, def: 0.7 },
-      { key: "radius", label: "radius", min: 0, max: 1, step: 0.05, def: 0.5 },
-    ],
-  },
-];
+const paperDithering: ShaderDef = {
+  type: "dithering",
+  label: "dithering",
+  animated: true,
+  kind: "shader",
+  controls: [
+    speed(0.5),
+    scale(0.9),
+    { key: "size", label: "pixel", min: 1, max: 14, step: 0.5, def: 3 },
+  ],
+  choices: [
+    {
+      key: "shape",
+      label: "shape",
+      values: ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"],
+      def: "sphere",
+    },
+    {
+      key: "dtype",
+      label: "dither",
+      values: ["4x4", "8x8", "2x2", "random"],
+      def: "4x4",
+    },
+  ],
+};
 
-/* Procedural animators in the spirit of Cavalry: staggered repeaters,
-   oscillators, radial arrays. All loop seamlessly over the post duration
-   (speed picks a whole number of cycles per loop). `warp` pushes the
-   geometry itself through a flow field — deformed shapes, not filters. */
-const warpCtl = (def: number): ShaderControl => ({
-  key: "warp",
-  label: "warp",
-  min: 0,
-  max: 1,
-  step: 0.05,
-  def,
-});
-
-const generative: Omit<ShaderDef, "kind">[] = [
-  {
-    type: "grid",
-    label: "grid",
-    animated: true,
-    controls: [
-      speed(0.6),
-      { key: "density", label: "density", min: 4, max: 18, step: 1, def: 9 },
-      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
-      { key: "spread", label: "stagger", min: 0, max: 3, step: 0.1, def: 1.2 },
-      warpCtl(0.2),
-    ],
-    choices: [
-      {
-        key: "shape",
-        label: "shape",
-        values: ["circle", "square", "cross", "tick"],
-        def: "circle",
-      },
-    ],
-  },
-  {
-    type: "maze",
-    label: "maze",
-    animated: true,
-    controls: [
-      speed(0.4),
-      { key: "density", label: "density", min: 6, max: 26, step: 1, def: 12 },
-      { key: "weight", label: "weight", min: 1, max: 8, step: 0.5, def: 3 },
-      warpCtl(0.2),
-    ],
-  },
-  {
-    type: "scatter",
-    label: "scatter",
-    animated: true,
-    controls: [
-      speed(0.4),
-      { key: "count", label: "count", min: 40, max: 400, step: 10, def: 160 },
-      { key: "size", label: "size", min: 0.5, max: 3, step: 0.05, def: 1.2 },
-      warpCtl(0.5),
-    ],
-    choices: [
-      {
-        key: "mark",
-        label: "mark",
-        values: ["tick", "dot", "dash", "plus"],
-        def: "tick",
-      },
-    ],
-  },
-  {
-    type: "ramp",
-    label: "ramp",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "density", label: "density", min: 6, max: 22, step: 1, def: 12 },
-      { key: "size", label: "size", min: 0.2, max: 1, step: 0.05, def: 0.8 },
-      { key: "angle", label: "angle", min: 0, max: 360, step: 5, def: 45 },
-      warpCtl(0.2),
-    ],
-  },
-  {
-    type: "letters",
-    label: "letters",
-    animated: true,
-    controls: [
-      speed(0.4),
-      { key: "density", label: "density", min: 3, max: 12, step: 1, def: 6 },
-      { key: "size", label: "size", min: 0.4, max: 2, step: 0.05, def: 1 },
-      warpCtl(0.35),
-    ],
-    choices: [
-      {
-        key: "word",
-        label: "word",
-        values: ["tMSC", "MOTION", "CLUB", "PRACTICE"],
-        def: "MOTION",
-      },
-    ],
-  },
-  {
-    type: "lattice",
-    label: "lattice",
-    animated: true,
-    controls: [
-      speed(0.4),
-      { key: "cells", label: "cells", min: 6, max: 30, step: 1, def: 12 },
-      { key: "weight", label: "weight", min: 0.5, max: 6, step: 0.25, def: 1.5 },
-      warpCtl(0.45),
-    ],
-  },
-  {
-    type: "rays",
-    label: "rays",
-    animated: true,
-    controls: [
-      speed(0.4),
-      { key: "count", label: "count", min: 8, max: 90, step: 1, def: 36 },
-      { key: "inner", label: "inner", min: 0, max: 0.8, step: 0.05, def: 0.15 },
-      { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
-      warpCtl(0.2),
-    ],
-  },
-  {
-    type: "tunnel",
-    label: "tunnel",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "count", label: "count", min: 4, max: 24, step: 1, def: 10 },
-      { key: "weight", label: "weight", min: 1, max: 10, step: 0.5, def: 2 },
-      warpCtl(0.25),
-    ],
-    choices: [
-      { key: "shape", label: "shape", values: ["circle", "square"], def: "circle" },
-    ],
-  },
-  {
-    type: "bars",
-    label: "bars",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "rows", label: "rows", min: 6, max: 40, step: 1, def: 14 },
-      { key: "phase", label: "phase", min: 0, max: 0.5, step: 0.01, def: 0.12 },
-      { key: "fill", label: "fill", min: 0.2, max: 1, step: 0.05, def: 0.7 },
-      warpCtl(0.2),
-    ],
-  },
-  {
-    type: "orbits",
-    label: "orbits",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "rings", label: "rings", min: 2, max: 8, step: 1, def: 4 },
-      { key: "dots", label: "dots", min: 1, max: 14, step: 1, def: 5 },
-      { key: "dotSize", label: "dot size", min: 0.3, max: 2, step: 0.05, def: 1 },
-    ],
-  },
-  {
-    type: "bloom",
-    label: "bloom",
-    animated: true,
-    controls: [
-      speed(0.3),
-      { key: "count", label: "count", min: 60, max: 500, step: 10, def: 220 },
-      { key: "size", label: "size", min: 0.3, max: 2, step: 0.05, def: 1 },
-      warpCtl(0.2),
-    ],
-  },
-  {
-    type: "field",
-    label: "wave field",
-    animated: true,
-    controls: [
-      speed(0.5),
-      { key: "rows", label: "rows", min: 6, max: 30, step: 1, def: 12 },
-      { key: "amplitude", label: "amplitude", min: 0, max: 1, step: 0.05, def: 0.5 },
-      { key: "frequency", label: "frequency", min: 0.5, max: 4, step: 0.1, def: 1.5 },
-      warpCtl(0.3),
-    ],
-  },
-];
-
-/* Every generative type also takes `ink`: the opacity of the marks
-   themselves (the background stays solid), so shapes can sit back in gray
-   or build up density where they overlap. */
-const inkCtl: ShaderControl = {
-  key: "ink",
-  label: "ink",
-  min: 0.1,
-  max: 1,
-  step: 0.05,
-  def: 1,
+/* Shapes the shader doesn't have, rendered grayscale on canvas 2D and pushed
+   through a Bayer ordered dither — same pixel language, new vocabulary.
+   All loop seamlessly over the post duration; `warp` bends the source
+   through a flow field before dithering. */
+const ditheredForms: ShaderDef = {
+  type: "forms",
+  label: "dithered forms",
+  animated: true,
+  kind: "generative",
+  controls: [
+    speed(0.5),
+    { key: "pixel", label: "pixel", min: 2, max: 16, step: 1, def: 6 },
+    { key: "density", label: "density", min: 1, max: 24, step: 1, def: 8 },
+    { key: "warp", label: "warp", min: 0, max: 1, step: 0.05, def: 0.2 },
+  ],
+  choices: [
+    {
+      key: "pattern",
+      label: "pattern",
+      values: ["rings", "ramp", "bars", "letter"],
+      def: "rings",
+    },
+    {
+      key: "word",
+      label: "word",
+      values: ["M", "tMSC", "MOTION", "CLUB"],
+      def: "M",
+    },
+  ],
 };
 
 export const SHADERS: ShaderDef[] = [
-  ...paperShaders.map((s) => ({ ...s, kind: "shader" as const })),
-  ...generative.map((s) => ({
-    ...s,
-    kind: "generative" as const,
-    controls: [...s.controls, inkCtl],
-  })),
+  { type: "none", label: "plain", animated: false, kind: "shader", controls: [] },
+  paperDithering,
+  ditheredForms,
 ];
 
 export const shaderDef = (type: ShaderType): ShaderDef =>
@@ -549,6 +269,39 @@ export function defaultSpec(): PostSpec {
   };
 }
 
+/* Older specs (and links in the wild) used a wider palette of shader and
+   generative types; map each onto its closest dithering equivalent so every
+   existing link keeps rendering, in the new all-dithered identity. */
+const LEGACY_TYPES: Record<string, Partial<ShaderSpec>> = {
+  waves: { type: "dithering", shape: "wave" },
+  mesh: { type: "dithering", shape: "simplex" },
+  perlin: { type: "dithering", shape: "simplex" },
+  voronoi: { type: "dithering", shape: "dots" },
+  metaballs: { type: "dithering", shape: "ripple" },
+  warp: { type: "dithering", shape: "warp" },
+  spiral: { type: "dithering", shape: "swirl" },
+  smoke: { type: "dithering", shape: "ripple" },
+  grid: { type: "dithering", shape: "dots" },
+  lattice: { type: "forms", pattern: "ramp" },
+  rays: { type: "forms", pattern: "rings" },
+  tunnel: { type: "forms", pattern: "rings" },
+  bars: { type: "forms", pattern: "bars" },
+  orbits: { type: "forms", pattern: "rings" },
+  bloom: { type: "dithering", shape: "sphere" },
+  field: { type: "forms", pattern: "ramp" },
+  maze: { type: "forms", pattern: "bars" },
+  scatter: { type: "dithering", shape: "dots" },
+  ramp: { type: "forms", pattern: "ramp" },
+  letters: { type: "forms", pattern: "letter" },
+};
+
+function mapLegacyLayer(l: Partial<LayerSpec> | undefined) {
+  const legacy = l?.type && LEGACY_TYPES[l.type as string];
+  if (!legacy) return l;
+  const { opacity, blend, offsetX, offsetY, rotation, speed } = l as LayerSpec;
+  return { opacity, blend, offsetX, offsetY, rotation, speed, ...legacy };
+}
+
 /* Fill a possibly partial spec (e.g. handwritten by Claude) with defaults so
    the tool never renders undefined fields. */
 export function normalizeSpec(raw: unknown): PostSpec {
@@ -567,8 +320,9 @@ export function normalizeSpec(raw: unknown): PostSpec {
             ? [s.shader as LayerSpec]
             : slide.layers;
       slide.layers = layers.slice(0, MAX_LAYERS).map((l) => {
-        const type = shaderDef(l?.type ?? "dithering").type;
-        return { ...defaultLayer(type), ...l, type };
+        const mapped = mapLegacyLayer(l);
+        const type = shaderDef(mapped?.type ?? "dithering").type;
+        return { ...defaultLayer(type), ...mapped, type };
       });
       return slide;
     },
@@ -643,7 +397,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           boxed: true,
           plate: true,
           veil: 0,
-          layers: [{ ...defaultLayer("waves"), rotation: 90 }],
+          layers: [{ ...defaultLayer("dithering"), shape: "wave", speed: 0.3 }],
         }),
       ],
     },
@@ -664,7 +418,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           ring: true,
           plate: true,
           veil: 0.35,
-          layers: [{ ...defaultLayer("grid"), shape: "cross", warp: 0.3 }],
+          layers: [{ ...defaultLayer("forms"), pattern: "rings", warp: 0.3 }],
         }),
       ],
     },
@@ -680,23 +434,23 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           kicker: "the Motion Social Club",
           title: "Three ideas\nthe club keeps\ncoming back to",
           theme: "dark",
-          layers: [{ ...defaultLayer("mesh"), speed: 0.4 }],
+          layers: [{ ...defaultLayer("dithering"), shape: "swirl", speed: 0.4 }],
         }),
         defaultSlide({
           kicker: "01 — practice over tutorials",
           title: "Watching is not\nthe same as learning.",
           body: "Short, bounded exercises beat one more tutorial every time.",
           letter: "1",
-          veil: 0.55,
-          layers: [{ ...defaultLayer("field"), warp: 0.45 }],
+          veil: 0.5,
+          layers: [{ ...defaultLayer("dithering"), shape: "simplex" }],
         }),
         defaultSlide({
           kicker: "02 — fundamentals over tools",
           title: "Tools are exhausting.\nFoundations are permanent.",
           body: "Easing, timing, contrast, hierarchy.",
           letter: "2",
-          veil: 0.55,
-          layers: [defaultLayer("voronoi")],
+          veil: 0.5,
+          layers: [{ ...defaultLayer("forms"), pattern: "ramp", warp: 0.25 }],
         }),
         defaultSlide({
           kicker: "03 — small and consistent",
@@ -704,7 +458,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "The gym metaphor: short sessions, no pressure for perfection.",
           letter: "3",
           veil: 0.45,
-          layers: [defaultLayer("bloom")],
+          layers: [{ ...defaultLayer("dithering"), shape: "ripple", speed: 0.35 }],
         }),
       ],
     },
@@ -722,14 +476,14 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           body: "Real conversations over algorithm-driven encounters.",
           theme: "dark",
           letter: "",
-          veil: 0.25,
-          layers: [{ ...defaultLayer("orbits"), speed: 0.5 }],
+          veil: 0.3,
+          layers: [{ ...defaultLayer("dithering"), shape: "sphere", speed: 0.5 }],
         }),
       ],
     },
   },
   {
-    name: "Warped",
+    name: "Type",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
@@ -741,15 +495,13 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
           plate: true,
           veil: 0,
           layers: [
-            { ...defaultLayer("lattice"), warp: 0.55, cells: 14, speed: 0.4 },
+            { ...defaultLayer("forms"), pattern: "letter", word: "M", warp: 0.35 },
             {
-              ...defaultLayer("grid"),
-              shape: "circle",
-              density: 7,
-              size: 0.5,
-              warp: 0.5,
-              blend: "difference",
-              opacity: 0.9,
+              ...defaultLayer("dithering"),
+              shape: "simplex",
+              size: 2,
+              blend: "multiply",
+              opacity: 0.5,
             },
           ],
         }),
@@ -757,3 +509,42 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
     },
   },
 ];
+
+/* ------------------------------------------------- instant links (no AI) */
+
+/**
+ * Build a spec straight from URL query params — the instant, zero-AI path:
+ * /postlab?title=...&body=...&format=portrait&theme=dark&shape=sphere
+ * "//" in title/body becomes a line break. A Notion formula column can
+ * assemble these links directly from a queue row's fields.
+ */
+export function specFromQuery(params: URLSearchParams): PostSpec | null {
+  const title = params.get("title");
+  if (!title) return null;
+  const nl = (s: string) => s.replace(/\s*\/\/\s*/g, "\n").trim();
+  const formatParam = params.get("format") ?? "";
+  const format: PostFormat = FORMATS[formatParam as PostFormat]
+    ? (formatParam as PostFormat)
+    : formatParam === "reel"
+      ? "story"
+      : "portrait";
+  const shapes = ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"];
+  const shape = shapes.includes(params.get("shape") ?? "")
+    ? (params.get("shape") as string)
+    : "sphere";
+  const slide = defaultSlide({
+    title: nl(title),
+    kicker: params.get("kicker") ?? "the Motion Social Club",
+    body: nl(params.get("body") ?? ""),
+    footer: params.get("footer") ?? "@themotionsocialclub",
+    theme: params.get("theme") === "dark" ? "dark" : "light",
+    veil: 0.4,
+    layers: [{ ...defaultLayer("dithering"), shape }],
+  });
+  return normalizeSpec({
+    v: SPEC_VERSION,
+    format,
+    duration: 6,
+    slides: [slide],
+  });
+}
