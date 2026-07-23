@@ -34,7 +34,7 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
 ```jsonc
 {
   "v": 1,
-  "format": "square" | "portrait" | "story",  // 1:1 post, 4:5 feed/carousel, 9:16 reel
+  "format": "square" | "portrait" | "story" | "landscape",  // 1:1 post, 4:5 feed/carousel, 9:16 reel, 16:9 link/video post
   "duration": 6,                               // seconds recorded for video export
   "slides": [{
     "kicker": "the Motion Social Club",        // small underlined label
@@ -128,5 +128,7 @@ can do it on demand):
   vary the dithering shape (or a `forms` pattern) per slide.
 - Reel → `story`, one slide, `dithering` sphere or `forms` rings/letter,
   duration 6-10 — everything loops seamlessly at exactly that length.
+- Link / video share (YouTube, article) → `landscape`, one slide, shorter
+  title (titleSize `s`/`m`), keep the block tight since the frame is short.
 - Content to draw from lives in `content/site.json` (quotes, threads,
   pillars, archive titles).

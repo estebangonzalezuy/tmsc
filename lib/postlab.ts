@@ -8,7 +8,7 @@
 
 export const SPEC_VERSION = 3;
 
-export type PostFormat = "square" | "portrait" | "story";
+export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
 export const FORMATS: Record<
   PostFormat,
@@ -17,6 +17,7 @@ export const FORMATS: Record<
   square: { w: 1080, h: 1080, label: "1:1", hint: "feed post" },
   portrait: { w: 1080, h: 1350, label: "4:5", hint: "feed / carousel" },
   story: { w: 1080, h: 1920, label: "9:16", hint: "reel / story" },
+  landscape: { w: 1080, h: 608, label: "16:9", hint: "link / video post" },
 };
 
 export type Theme = "light" | "dark";

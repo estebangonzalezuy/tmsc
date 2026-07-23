@@ -33,7 +33,7 @@ export function GET() {
       "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
       "Design is strictly black & white — there are no color options by design.",
       "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds patterns the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word), with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
-      "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
+      "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story|landscape&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
       "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
       "Reels: format 'story', one slide, duration 6-10s, pick an animated background — generative ones loop perfectly.",
     ],
