@@ -51,7 +51,8 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
     "align": "left" | "center",
     "ring": false,                              // orbit ring of circled letters
     "veil": 0.25,                               // 0-0.9 wash dimming the background
-    "textPixel": 0,                             // 0-32, mosaic-pixelates the whole text layer; 0 = off
+    "titlePixel": 0,                            // 0-32, dithers the title into sharp blocks; 0 = off
+    "metaPixel": 0,                             // 0-32, same dithering for kicker/body/footer/letter/ring
     "theme": "light" | "dark",
     "layers": [                                 // 1-4 background layers, bottom first
       { "type": "mesh", "speed": 0.4 },

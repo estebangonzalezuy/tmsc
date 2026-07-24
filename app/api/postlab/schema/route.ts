@@ -67,8 +67,10 @@ export function GET() {
           align: "'left' | 'center'",
           ring: "boolean — orbit ring of circled letters behind the text",
           veil: "number 0-0.9 — background-colored wash dimming the background (default 0.25); raise it when text sits on dense patterns",
-          textPixel:
-            "number 0-32 (default 0) — pixelates the whole typographic layer (kicker, title, body, letter, footer, ring) down to this mosaic block size in px and back up; 0 is off, the crisp default. An 8-bit poster look, same mosaic technique as the dithering shapes.",
+          titlePixel:
+            "number 0-32 (default 0) — ordered-dithers the title glyphs into sharp binary ink/transparent blocks at this cell size (px); 0 is off, the crisp default. Same Bayer-threshold technique as the dithering shapes, applied to rendered type — no gray, no gradient, hard edges.",
+          metaPixel:
+            "number 0-32 (default 0) — the same dithering, sized independently, applied to every other glyph: kicker, letter mark, body, footer, and the ring's circled letters.",
           theme: "'light' (white bg, black ink) | 'dark' (inverted)",
           layers:
             "array of 1-4 background layers, bottom first. Each layer is { type, ...params } (see backgrounds below) plus: opacity (0-1, default 1), blend ('normal'|'multiply'|'screen'|'overlay'|'darken'|'lighten'|'difference'|'exclusion', default 'normal'), offsetX/offsetY (-1..1 position, default 0), rotation (degrees, default 0), scale (0.1-4, default per type). Blending a texture over a gradient (e.g. mesh + dithering multiplied on top) is the tool's signature look.",

@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 3;
+export const SPEC_VERSION = 4;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -92,9 +92,12 @@ export type SlideSpec = {
   ring: boolean;
   /** 0-0.9 background-colored wash over the shader, for text legibility. */
   veil: number;
-  /** 0 = off; else the mosaic block size (px) the whole text layer is
-      pixelated down to and back up — an 8-bit poster look. */
-  textPixel: number;
+  /** 0 = off; else the ordered-dither cell size (px) the title glyphs are
+      thresholded into — sharp binary ink/transparent blocks, no gray. */
+  titlePixel: number;
+  /** Same dithering, applied to every other glyph: kicker, letter mark,
+      body, footer, and the ring's circled letters. */
+  metaPixel: number;
   theme: Theme;
   /** Background layer stack, bottom first (1-4 layers). */
   layers: LayerSpec[];
@@ -258,7 +261,8 @@ export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
     align: "left",
     ring: false,
     veil: 0.25,
-    textPixel: 0,
+    titlePixel: 0,
+    metaPixel: 0,
     theme: "light",
     layers: [defaultLayer("dithering")],
     ...partial,
@@ -317,7 +321,17 @@ export function normalizeSpec(raw: unknown): PostSpec {
       const s = raw as Partial<SlideSpec> & { shader?: ShaderSpec };
       const slide = defaultSlide(s);
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
-      slide.textPixel = Math.min(32, Math.max(0, Number(slide.textPixel) || 0));
+      // v3 specs carried a single `textPixel` for the whole layer; split it
+      // across both new controls so old links keep their look.
+      const legacyPixel = (s as { textPixel?: number }).textPixel;
+      slide.titlePixel = Math.min(
+        32,
+        Math.max(0, Number(s.titlePixel ?? legacyPixel) || 0),
+      );
+      slide.metaPixel = Math.min(
+        32,
+        Math.max(0, Number(s.metaPixel ?? legacyPixel) || 0),
+      );
       // v1 specs carried a single `shader`; lift it into the layer stack.
       const layers =
         Array.isArray(s.layers) && s.layers.length

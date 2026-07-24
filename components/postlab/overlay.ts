@@ -3,6 +3,7 @@
 // frames, so what you see is exactly what downloads.
 
 import { FORMATS, tones, type PostSpec, type SlideSpec } from "@/lib/postlab";
+import { BAYER4 } from "./generative";
 
 export type Fonts = { sans: string; serif: string; gothic: string };
 
@@ -49,8 +50,12 @@ function wrap(
   return lines;
 }
 
+/* Circled letter mark: the circle (frame, plus an optional bg backing disc
+   for legibility) is structural and always crisp; the character itself is
+   ink, drawn onto `textCtx` so it's subject to that group's dithering. */
 function circledLetter(
-  ctx: CanvasRenderingContext2D,
+  frameCtx: CanvasRenderingContext2D,
+  textCtx: CanvasRenderingContext2D,
   ch: string,
   x: number,
   y: number,
@@ -59,59 +64,91 @@ function circledLetter(
   bg: string | null,
   font: string,
 ) {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
+  frameCtx.beginPath();
+  frameCtx.arc(x, y, r, 0, Math.PI * 2);
   if (bg) {
-    ctx.fillStyle = bg;
-    ctx.fill();
+    frameCtx.fillStyle = bg;
+    frameCtx.fill();
   }
-  ctx.strokeStyle = ink;
-  ctx.stroke();
-  ctx.fillStyle = ink;
-  ctx.font = `400 ${Math.round(r * 0.9)}px ${font}`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(ch, x, y + r * 0.05);
+  frameCtx.strokeStyle = ink;
+  frameCtx.stroke();
+
+  textCtx.fillStyle = ink;
+  textCtx.font = `400 ${Math.round(r * 0.9)}px ${font}`;
+  textCtx.textAlign = "center";
+  textCtx.textBaseline = "middle";
+  textCtx.fillText(ch, x, y + r * 0.05);
 }
 
 const RING_TEXT = "THE MOTION SOCIAL CLUB — ";
 
-/* Scratch canvases reused across frames for the text-layer pixelation pass
-   (downsample with smoothing, then upsample nearest-neighbor — the same
-   mosaic trick as the dithering forms renderer, just on rendered type). */
-let pixelFull: HTMLCanvasElement | null = null;
-let pixelSmall: HTMLCanvasElement | null = null;
+/* Scratch canvases: an ink mask per pixelation group (title vs. everything
+   else), reused across frames, plus one for the dither downsample. */
+function sizedCanvas(cache: { c: HTMLCanvasElement | null }, w: number, h: number) {
+  if (!cache.c) cache.c = document.createElement("canvas");
+  if (cache.c.width !== w || cache.c.height !== h) {
+    cache.c.width = w;
+    cache.c.height = h;
+  }
+  return cache.c;
+}
+const titleMaskRef: { c: HTMLCanvasElement | null } = { c: null };
+const metaMaskRef: { c: HTMLCanvasElement | null } = { c: null };
+const ditherRef: { c: HTMLCanvasElement | null } = { c: null };
 
-function paintPixelated(
+/**
+ * Composite an ink mask (transparent everywhere but the glyphs, drawn in
+ * `ink`) onto the destination. `pixel` = 0 draws it crisp as-is; otherwise
+ * it's ordered-dithered — averaged into `pixel`-sized cells, each cell
+ * thresholded against the club's 4x4 Bayer matrix into pure ink or pure
+ * transparent — the same technique as the dithered-forms background, now
+ * applied to rendered type. No gray, no gradient: every cell is one flat
+ * color with a hard edge.
+ */
+function compositeMask(
   ctx: CanvasRenderingContext2D,
+  mask: HTMLCanvasElement,
   w: number,
   h: number,
-  block: number,
-  paint: (c: CanvasRenderingContext2D) => void,
+  pixel: number,
+  ink: string,
 ) {
-  if (!pixelFull || pixelFull.width !== w || pixelFull.height !== h) {
-    pixelFull = document.createElement("canvas");
-    pixelFull.width = w;
-    pixelFull.height = h;
+  if (pixel <= 0) {
+    ctx.drawImage(mask, 0, 0);
+    return;
   }
-  const fullCtx = pixelFull.getContext("2d")!;
-  fullCtx.clearRect(0, 0, w, h);
-  paint(fullCtx);
+  const cw = Math.max(1, Math.ceil(w / pixel));
+  const chh = Math.max(1, Math.ceil(h / pixel));
+  const small = sizedCanvas(ditherRef, cw, chh);
+  const sctx = small.getContext("2d", { willReadFrequently: true })!;
+  sctx.clearRect(0, 0, cw, chh);
+  sctx.imageSmoothingEnabled = true;
+  sctx.drawImage(mask, 0, 0, cw, chh); // per-cell average coverage
 
-  const gw = Math.max(1, Math.round(w / block));
-  const gh = Math.max(1, Math.round(h / block));
-  if (!pixelSmall || pixelSmall.width !== gw || pixelSmall.height !== gh) {
-    pixelSmall = document.createElement("canvas");
-    pixelSmall.width = gw;
-    pixelSmall.height = gh;
+  const img = sctx.getImageData(0, 0, cw, chh);
+  const data = img.data;
+  const inkR = parseInt(ink.slice(1, 3), 16);
+  const inkG = parseInt(ink.slice(3, 5), 16);
+  const inkB = parseInt(ink.slice(5, 7), 16);
+  for (let cy = 0; cy < chh; cy++) {
+    for (let cx = 0; cx < cw; cx++) {
+      const o = (cy * cw + cx) * 4;
+      const coverage = data[o + 3] / 255;
+      const threshold = (BAYER4[cy % 4][cx % 4] + 0.5) / 16;
+      if (coverage > threshold) {
+        data[o] = inkR;
+        data[o + 1] = inkG;
+        data[o + 2] = inkB;
+        data[o + 3] = 255;
+      } else {
+        data[o] = data[o + 1] = data[o + 2] = data[o + 3] = 0;
+      }
+    }
   }
-  const smallCtx = pixelSmall.getContext("2d")!;
-  smallCtx.clearRect(0, 0, gw, gh);
-  smallCtx.imageSmoothingEnabled = true;
-  smallCtx.drawImage(pixelFull, 0, 0, gw, gh);
+  sctx.putImageData(img, 0, 0);
 
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(pixelSmall, 0, 0, gw, gh, 0, 0, w, h);
+  ctx.drawImage(small, 0, 0, cw, chh, 0, 0, w, h);
   ctx.imageSmoothingEnabled = true;
 }
 
@@ -148,39 +185,28 @@ export function drawOverlay(
   /* Text switch off = pure background (the veil above still applies). */
   if (slide.text === false) return;
 
-  /* paintText draws onto whatever ctx it's given, so the pixelation pass can
-     render it to a scratch canvas first and blit the mosaic result back. */
-  const paint = (c: CanvasRenderingContext2D) => {
-    c.lineWidth = 2 * u;
-    paintText(c, slide, spec, index, fonts, time, w, h, ink, bg, u, pad, center);
-  };
+  /* Structural elements (plates, box outline, hairlines, circle frames)
+     draw straight onto ctx as they're reached below, in their original
+     order. Glyphs go into one of two ink masks — title vs. everything
+     else — composited on top at the end so each group can be dithered
+     independently at its own pixel size. */
+  const titleMask = sizedCanvas(titleMaskRef, w, h);
+  const metaMask = sizedCanvas(metaMaskRef, w, h);
+  const tctx = titleMask.getContext("2d")!;
+  const mctx = metaMask.getContext("2d")!;
+  tctx.clearRect(0, 0, w, h);
+  mctx.clearRect(0, 0, w, h);
 
-  if (slide.textPixel > 0) paintPixelated(ctx, w, h, slide.textPixel, paint);
-  else paint(ctx);
-}
-
-function paintText(
-  ctx: CanvasRenderingContext2D,
-  slide: SlideSpec,
-  spec: PostSpec,
-  index: number,
-  fonts: Fonts,
-  time: number,
-  w: number,
-  h: number,
-  ink: string,
-  bg: string,
-  u: number,
-  pad: number,
-  center: boolean,
-) {
-  /* Orbit ring — behind the text, letters kept upright, slow spin. */
+  /* Orbit ring — behind the text, letters kept upright, slow spin. The
+     circle is structural; the circled letters are ink (meta group). */
   if (slide.ring) {
     const R = Math.min(w, h) * 0.4;
     const cx = w / 2;
     const cy = h / 2;
     ctx.save();
+    mctx.save();
     ctx.globalAlpha = 0.5;
+    mctx.globalAlpha = 0.5;
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.strokeStyle = ink;
@@ -192,6 +218,7 @@ function paintText(
       const a = (i / letters.length) * Math.PI * 2 - Math.PI / 2 + spin;
       circledLetter(
         ctx,
+        mctx,
         ch,
         cx + Math.cos(a) * R,
         cy + Math.sin(a) * R,
@@ -202,26 +229,29 @@ function paintText(
       );
     });
     ctx.restore();
+    mctx.restore();
   }
 
-  /* Filled bg strip behind a run of text; only when the plate is on. */
+  /* Filled bg strip behind a run of text; only when the plate is on.
+     Structural — always crisp, drawn straight onto ctx. */
   const strip = (x: number, top: number, sw: number, sh: number) => {
     if (!slide.plate) return;
     ctx.fillStyle = bg;
     ctx.fillRect(x - 14 * u, top, sw + 28 * u, sh);
   };
 
-  /* Kicker — small underlined label, top left (or centered). */
+  /* Kicker — small underlined label, top left (or centered). Label is ink
+     (meta); the underline is structural. */
   if (slide.kicker) {
-    ctx.font = `400 ${30 * u}px ${fonts.sans}`;
-    ctx.textAlign = center ? "center" : "left";
-    ctx.textBaseline = "alphabetic";
+    mctx.font = `400 ${30 * u}px ${fonts.sans}`;
+    mctx.textAlign = center ? "center" : "left";
+    mctx.textBaseline = "alphabetic";
     const kx = center ? w / 2 : pad;
     const ky = pad + 30 * u;
-    const kw = ctx.measureText(slide.kicker).width;
+    const kw = mctx.measureText(slide.kicker).width;
     strip(center ? kx - kw / 2 : kx, ky - 34 * u, kw, 56 * u);
-    ctx.fillStyle = ink;
-    ctx.fillText(slide.kicker, kx, ky);
+    mctx.fillStyle = ink;
+    mctx.fillText(slide.kicker, kx, ky);
     ctx.beginPath();
     ctx.moveTo(center ? kx - kw / 2 : kx, ky + 12 * u);
     ctx.lineTo(center ? kx + kw / 2 : kx + kw, ky + 12 * u);
@@ -229,10 +259,11 @@ function paintText(
     ctx.stroke();
   }
 
-  /* Circled letter mark, top right. */
+  /* Circled letter mark, top right (meta group). */
   if (slide.letter) {
     circledLetter(
       ctx,
+      mctx,
       slide.letter,
       w - pad - 20 * u,
       pad + 24 * u,
@@ -243,7 +274,8 @@ function paintText(
     );
   }
 
-  /* Title + body block, vertically centered. */
+  /* Title + body block, vertically centered. Title is its own ink group;
+     body is meta. */
   const sizes = { s: 64, m: 92, l: 128 } as const;
   const titlePx = sizes[slide.titleSize] * u;
   const titleLH = titlePx * 1.12;
@@ -261,28 +293,29 @@ function paintText(
       : slide.titleFont === "gothic"
         ? fonts.gothic
         : fonts.sans;
-  ctx.font = `${style}${weight} ${titlePx}px ${family}`;
-  const titleLines = wrap(ctx, slide.title, maxW);
+  tctx.font = `${style}${weight} ${titlePx}px ${family}`;
+  const titleLines = wrap(tctx, slide.title, maxW);
 
-  ctx.font = `400 ${bodyPx}px ${fonts.sans}`;
-  const bodyLines = slide.body ? wrap(ctx, slide.body, Math.min(maxW, 720 * u)) : [];
+  mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
+  const bodyLines = slide.body ? wrap(mctx, slide.body, Math.min(maxW, 720 * u)) : [];
 
   const titleH = titleLines.length * titleLH;
   const bodyH = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
   const blockH = titleH + 2 * boxPad + bodyH;
   const y = (h - blockH) / 2 + boxPad;
 
-  ctx.textAlign = center ? "center" : "left";
-  ctx.textBaseline = "alphabetic";
+  tctx.textAlign = center ? "center" : "left";
+  tctx.textBaseline = "alphabetic";
   const tx = center ? w / 2 : pad + boxPad;
 
-  ctx.font = `${style}${weight} ${titlePx}px ${family}`;
+  tctx.font = `${style}${weight} ${titlePx}px ${family}`;
   let maxLineW = 0;
   for (const line of titleLines)
-    maxLineW = Math.max(maxLineW, ctx.measureText(line).width);
+    maxLineW = Math.max(maxLineW, tctx.measureText(line).width);
 
   /* Plate — filled background behind the headline. With a box it fills the
-     whole box; otherwise each line gets its own strip, editorial-style. */
+     whole box; otherwise each line gets its own strip, editorial-style.
+     Structural — drawn straight onto ctx. */
   if (slide.plate && titleLines.length) {
     ctx.fillStyle = bg;
     if (slide.boxed) {
@@ -291,7 +324,7 @@ function paintText(
     } else {
       const stripPad = 20 * u;
       titleLines.forEach((line, i) => {
-        const lw = ctx.measureText(line).width;
+        const lw = tctx.measureText(line).width;
         const lx = center ? w / 2 - lw / 2 : tx;
         ctx.fillRect(
           lx - stripPad,
@@ -303,9 +336,9 @@ function paintText(
     }
   }
 
-  ctx.fillStyle = ink;
+  tctx.fillStyle = ink;
   titleLines.forEach((line, i) => {
-    ctx.fillText(line, tx, y + titlePx * 0.82 + i * titleLH);
+    tctx.fillText(line, tx, y + titlePx * 0.82 + i * titleLH);
   });
 
   if (slide.boxed && titleLines.length) {
@@ -316,39 +349,43 @@ function paintText(
 
   if (bodyLines.length) {
     const by = y + titleH + boxPad + 40 * u;
-    ctx.font = `400 ${bodyPx}px ${fonts.sans}`;
+    mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
     bodyLines.forEach((line, i) => {
-      const lw = ctx.measureText(line).width;
+      const lw = mctx.measureText(line).width;
       const lx = center ? w / 2 - lw / 2 : pad;
       strip(lx, by + i * bodyLH - bodyPx * 0.1, lw, bodyLH);
     });
-    ctx.save();
-    ctx.globalAlpha = 0.78;
-    ctx.fillStyle = ink;
+    mctx.save();
+    mctx.globalAlpha = 0.78;
+    mctx.fillStyle = ink;
     bodyLines.forEach((line, i) => {
-      ctx.fillText(line, center ? w / 2 : pad, by + bodyPx * 0.8 + i * bodyLH);
+      mctx.fillText(line, center ? w / 2 : pad, by + bodyPx * 0.8 + i * bodyLH);
     });
-    ctx.restore();
+    mctx.restore();
   }
 
-  /* Footer — hairline + handle left, slide counter (or club short) right. */
+  /* Footer — hairline (structural) + handle left, slide counter (or club
+     short) right, both meta ink. */
   ctx.beginPath();
   ctx.moveTo(pad, h - pad - 44 * u);
   ctx.lineTo(w - pad, h - pad - 44 * u);
   ctx.strokeStyle = ink;
   ctx.stroke();
-  ctx.font = `400 ${28 * u}px ${fonts.sans}`;
+  mctx.font = `400 ${28 * u}px ${fonts.sans}`;
   const counter =
     spec.slides.length > 1
       ? `${String(index + 1).padStart(2, "0")} / ${String(spec.slides.length).padStart(2, "0")}`
       : "tMSC";
   if (slide.footer)
-    strip(pad, h - pad - 30 * u, ctx.measureText(slide.footer).width, 44 * u);
-  const cw = ctx.measureText(counter).width;
+    strip(pad, h - pad - 30 * u, mctx.measureText(slide.footer).width, 44 * u);
+  const cw = mctx.measureText(counter).width;
   strip(w - pad - cw, h - pad - 30 * u, cw, 44 * u);
-  ctx.textAlign = "left";
-  ctx.fillStyle = ink;
-  if (slide.footer) ctx.fillText(slide.footer, pad, h - pad);
-  ctx.textAlign = "right";
-  ctx.fillText(counter, w - pad, h - pad);
+  mctx.textAlign = "left";
+  mctx.fillStyle = ink;
+  if (slide.footer) mctx.fillText(slide.footer, pad, h - pad);
+  mctx.textAlign = "right";
+  mctx.fillText(counter, w - pad, h - pad);
+
+  compositeMask(ctx, titleMask, w, h, slide.titlePixel, ink);
+  compositeMask(ctx, metaMask, w, h, slide.metaPixel, ink);
 }

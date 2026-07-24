@@ -29,7 +29,7 @@ function flow(nx: number, ny: number, ph: number): { fx: number; fy: number } {
   return { fx, fy };
 }
 
-const BAYER4 = [
+export const BAYER4 = [
   [0, 8, 2, 10],
   [12, 4, 14, 6],
   [3, 11, 1, 9],

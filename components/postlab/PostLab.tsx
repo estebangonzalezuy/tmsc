@@ -774,18 +774,32 @@ export default function PostLab() {
                 {slide.veil.toFixed(2)}
               </span>
             </Row>
-            <Row label="pixel">
+            <Row label="title px">
               <input
                 type="range"
                 min={0}
                 max={24}
                 step={1}
-                value={slide.textPixel}
-                onChange={(e) => patchSlide({ textPixel: Number(e.target.value) })}
+                value={slide.titlePixel}
+                onChange={(e) => patchSlide({ titlePixel: Number(e.target.value) })}
                 className="flex-1 accent-foreground"
               />
               <span className="w-8 text-right text-xs text-muted">
-                {slide.textPixel || "off"}
+                {slide.titlePixel || "off"}
+              </span>
+            </Row>
+            <Row label="meta px">
+              <input
+                type="range"
+                min={0}
+                max={24}
+                step={1}
+                value={slide.metaPixel}
+                onChange={(e) => patchSlide({ metaPixel: Number(e.target.value) })}
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-8 text-right text-xs text-muted">
+                {slide.metaPixel || "off"}
               </span>
             </Row>
             <div className="flex gap-2 pt-1">
