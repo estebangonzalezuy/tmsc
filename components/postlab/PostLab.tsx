@@ -715,6 +715,7 @@ export default function PostLab() {
                 options={[
                   { value: "serif" as const, label: "serif" },
                   { value: "sans" as const, label: "sans" },
+                  { value: "gothic" as const, label: "gothic" },
                 ]}
                 onChange={(titleFont) => patchSlide({ titleFont })}
               />
@@ -771,6 +772,20 @@ export default function PostLab() {
               />
               <span className="w-8 text-right text-xs text-muted">
                 {slide.veil.toFixed(2)}
+              </span>
+            </Row>
+            <Row label="pixel">
+              <input
+                type="range"
+                min={0}
+                max={24}
+                step={1}
+                value={slide.textPixel}
+                onChange={(e) => patchSlide({ textPixel: Number(e.target.value) })}
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-8 text-right text-xs text-muted">
+                {slide.textPixel || "off"}
               </span>
             </Row>
             <div className="flex gap-2 pt-1">

@@ -4,19 +4,26 @@
 
 import { FORMATS, tones, type PostSpec, type SlideSpec } from "@/lib/postlab";
 
-export type Fonts = { sans: string; serif: string };
+export type Fonts = { sans: string; serif: string; gothic: string };
 
 // next/font registers hashed family names; read them off the live page.
 export async function loadFonts(): Promise<Fonts> {
   await document.fonts.ready;
   const sans = getComputedStyle(document.body).fontFamily;
-  const probe = document.createElement("span");
-  probe.className = "font-serif";
-  probe.textContent = "x";
-  document.body.appendChild(probe);
-  const serif = getComputedStyle(probe).fontFamily;
-  probe.remove();
-  return { sans, serif };
+  const probeFamily = (className: string) => {
+    const probe = document.createElement("span");
+    probe.className = className;
+    probe.textContent = "x";
+    document.body.appendChild(probe);
+    const family = getComputedStyle(probe).fontFamily;
+    probe.remove();
+    return family;
+  };
+  return {
+    sans,
+    serif: probeFamily("font-serif"),
+    gothic: probeFamily("font-gothic"),
+  };
 }
 
 function wrap(
@@ -69,6 +76,45 @@ function circledLetter(
 
 const RING_TEXT = "THE MOTION SOCIAL CLUB — ";
 
+/* Scratch canvases reused across frames for the text-layer pixelation pass
+   (downsample with smoothing, then upsample nearest-neighbor — the same
+   mosaic trick as the dithering forms renderer, just on rendered type). */
+let pixelFull: HTMLCanvasElement | null = null;
+let pixelSmall: HTMLCanvasElement | null = null;
+
+function paintPixelated(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  block: number,
+  paint: (c: CanvasRenderingContext2D) => void,
+) {
+  if (!pixelFull || pixelFull.width !== w || pixelFull.height !== h) {
+    pixelFull = document.createElement("canvas");
+    pixelFull.width = w;
+    pixelFull.height = h;
+  }
+  const fullCtx = pixelFull.getContext("2d")!;
+  fullCtx.clearRect(0, 0, w, h);
+  paint(fullCtx);
+
+  const gw = Math.max(1, Math.round(w / block));
+  const gh = Math.max(1, Math.round(h / block));
+  if (!pixelSmall || pixelSmall.width !== gw || pixelSmall.height !== gh) {
+    pixelSmall = document.createElement("canvas");
+    pixelSmall.width = gw;
+    pixelSmall.height = gh;
+  }
+  const smallCtx = pixelSmall.getContext("2d")!;
+  smallCtx.clearRect(0, 0, gw, gh);
+  smallCtx.imageSmoothingEnabled = true;
+  smallCtx.drawImage(pixelFull, 0, 0, gw, gh);
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(pixelSmall, 0, 0, gw, gh, 0, 0, w, h);
+  ctx.imageSmoothingEnabled = true;
+}
+
 /**
  * Draw the full text/motif layer for one slide onto a w×h canvas.
  * `time` (seconds) animates the orbit ring; pass 0 for stills.
@@ -102,6 +148,32 @@ export function drawOverlay(
   /* Text switch off = pure background (the veil above still applies). */
   if (slide.text === false) return;
 
+  /* paintText draws onto whatever ctx it's given, so the pixelation pass can
+     render it to a scratch canvas first and blit the mosaic result back. */
+  const paint = (c: CanvasRenderingContext2D) => {
+    c.lineWidth = 2 * u;
+    paintText(c, slide, spec, index, fonts, time, w, h, ink, bg, u, pad, center);
+  };
+
+  if (slide.textPixel > 0) paintPixelated(ctx, w, h, slide.textPixel, paint);
+  else paint(ctx);
+}
+
+function paintText(
+  ctx: CanvasRenderingContext2D,
+  slide: SlideSpec,
+  spec: PostSpec,
+  index: number,
+  fonts: Fonts,
+  time: number,
+  w: number,
+  h: number,
+  ink: string,
+  bg: string,
+  u: number,
+  pad: number,
+  center: boolean,
+) {
   /* Orbit ring — behind the text, letters kept upright, slow spin. */
   if (slide.ring) {
     const R = Math.min(w, h) * 0.4;
@@ -180,9 +252,15 @@ export function drawOverlay(
   const boxPad = slide.boxed ? 36 * u : 0;
   const maxW = w - 2 * pad - 2 * boxPad;
 
-  const weight = slide.titleFont === "serif" ? 500 : 600;
+  const weight =
+    slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600;
   const style = slide.italic ? "italic " : "";
-  const family = slide.titleFont === "serif" ? fonts.serif : fonts.sans;
+  const family =
+    slide.titleFont === "serif"
+      ? fonts.serif
+      : slide.titleFont === "gothic"
+        ? fonts.gothic
+        : fonts.sans;
   ctx.font = `${style}${weight} ${titlePx}px ${family}`;
   const titleLines = wrap(ctx, slide.title, maxW);
 

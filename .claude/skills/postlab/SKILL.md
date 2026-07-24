@@ -43,7 +43,7 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
     "footer": "@themotionsocialclub",
     "letter": "M",                             // circled letter top right, "" hides
     "text": true,                              // false = pure background, no typography
-    "titleFont": "serif" | "sans",             // serif = editorial, sans = poster
+    "titleFont": "serif" | "sans" | "gothic",  // serif = editorial, sans = poster, gothic = blackletter
     "italic": false,                            // serif italic = the club's emphasis
     "titleSize": "s" | "m" | "l",
     "boxed": false,                             // outlined box around headline
@@ -51,6 +51,7 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
     "align": "left" | "center",
     "ring": false,                              // orbit ring of circled letters
     "veil": 0.25,                               // 0-0.9 wash dimming the background
+    "textPixel": 0,                             // 0-32, mosaic-pixelates the whole text layer; 0 = off
     "theme": "light" | "dark",
     "layers": [                                 // 1-4 background layers, bottom first
       { "type": "mesh", "speed": 0.4 },

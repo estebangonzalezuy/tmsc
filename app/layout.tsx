@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Lora } from "next/font/google";
+import { Archivo, Lora, Pirata_One } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/data";
 
@@ -10,6 +10,14 @@ const archivo = Archivo({
 
 const lora = Lora({
   variable: "--font-lora",
+  subsets: ["latin"],
+});
+
+// Blackletter option for the Post Lab's title font — not part of the site's
+// own design system (Archivo/Lora only), just typographic material for posts.
+const pirata = Pirata_One({
+  weight: "400",
+  variable: "--font-pirata",
   subsets: ["latin"],
 });
 
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivo.variable} ${lora.variable} h-full antialiased`}
+      className={`${archivo.variable} ${lora.variable} ${pirata.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -81,7 +81,7 @@ export type SlideSpec = {
   /** Master switch for the typographic layer (kicker, title, body, footer,
       letter, ring). Off = pure background; the veil still applies. */
   text: boolean;
-  titleFont: "serif" | "sans";
+  titleFont: "serif" | "sans" | "gothic";
   italic: boolean;
   titleSize: "s" | "m" | "l";
   boxed: boolean;
@@ -92,6 +92,9 @@ export type SlideSpec = {
   ring: boolean;
   /** 0-0.9 background-colored wash over the shader, for text legibility. */
   veil: number;
+  /** 0 = off; else the mosaic block size (px) the whole text layer is
+      pixelated down to and back up — an 8-bit poster look. */
+  textPixel: number;
   theme: Theme;
   /** Background layer stack, bottom first (1-4 layers). */
   layers: LayerSpec[];
@@ -255,6 +258,7 @@ export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
     align: "left",
     ring: false,
     veil: 0.25,
+    textPixel: 0,
     theme: "light",
     layers: [defaultLayer("dithering")],
     ...partial,
@@ -313,6 +317,7 @@ export function normalizeSpec(raw: unknown): PostSpec {
       const s = raw as Partial<SlideSpec> & { shader?: ShaderSpec };
       const slide = defaultSlide(s);
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
+      slide.textPixel = Math.min(32, Math.max(0, Number(slide.textPixel) || 0));
       // v1 specs carried a single `shader`; lift it into the layer stack.
       const layers =
         Array.isArray(s.layers) && s.layers.length

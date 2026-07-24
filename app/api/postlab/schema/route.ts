@@ -58,7 +58,8 @@ export function GET() {
           footer: "bottom-left line, default '@themotionsocialclub'",
           letter: "single character drawn as a circled letter top right; '' hides it",
           text: "boolean (default true) — false hides the whole typographic layer for a pure background slide",
-          titleFont: "'serif' (Lora, editorial) | 'sans' (Archivo, poster)",
+          titleFont:
+            "'serif' (Lora, editorial) | 'sans' (Archivo, poster) | 'gothic' (Pirata One, blackletter)",
           italic: "boolean, serif italic is the club's emphasis voice",
           titleSize: "'s' | 'm' | 'l'",
           boxed: "boolean — outlined box around the headline (poster motif)",
@@ -66,6 +67,8 @@ export function GET() {
           align: "'left' | 'center'",
           ring: "boolean — orbit ring of circled letters behind the text",
           veil: "number 0-0.9 — background-colored wash dimming the background (default 0.25); raise it when text sits on dense patterns",
+          textPixel:
+            "number 0-32 (default 0) — pixelates the whole typographic layer (kicker, title, body, letter, footer, ring) down to this mosaic block size in px and back up; 0 is off, the crisp default. An 8-bit poster look, same mosaic technique as the dithering shapes.",
           theme: "'light' (white bg, black ink) | 'dark' (inverted)",
           layers:
             "array of 1-4 background layers, bottom first. Each layer is { type, ...params } (see backgrounds below) plus: opacity (0-1, default 1), blend ('normal'|'multiply'|'screen'|'overlay'|'darken'|'lighten'|'difference'|'exclusion', default 'normal'), offsetX/offsetY (-1..1 position, default 0), rotation (degrees, default 0), scale (0.1-4, default per type). Blending a texture over a gradient (e.g. mesh + dithering multiplied on top) is the tool's signature look.",
