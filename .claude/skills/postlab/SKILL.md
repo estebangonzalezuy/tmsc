@@ -92,32 +92,51 @@ Use the encoded `#spec=` form when you need carousels or fine control.
 
 ## The queue automation (Notion → post)
 
-The owner queues post ideas in the Notion database **"the Post Lab
-queue"** (data source `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d`,
-under "The Motion Social Club" hub page). Columns: Name (title), Status
-(Draft | Ready | Generated | Posted), Format (auto | square | portrait |
-story | carousel | reel), Post link (URL), Notes. The post content lives
-in the page body; Notes carries style direction.
+Three Notion databases under the "The Motion Social Club" hub page drive
+the club's content loop:
 
-To process the queue (a scheduled Routine does this hourly; any session
-can do it on demand):
+- **tMSC Pipeline** — `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d`
+  One row per idea. Status flows `Angle → Chosen → Drafted → Ready →
+  Generated → Scheduled → Posted`. Columns: Name, Angle, Pillar,
+  Objective (relation), Source (relation to a library post), Format,
+  Copy, Notes, LinkedIn draft, Post link, Canva link, Schedule,
+  Instant link (formula, zero-AI).
+- **tMSC Content library** — `collection://59421a28-6325-466b-848e-f59b8bcf0986`
+  Everything published (seeded with 51 Substack posts). Name, Channel,
+  Date, Type, Pillar, Link, How it landed.
+- **tMSC Objectives** — `collection://e57499ed-1671-4267-876b-5b9247aef1f3`
+  Name, Period (month|quarter|semester), Goal, Start, Status. The row
+  with Status `Active` aims the angle proposals.
 
-1. Query the data source for pages with `Status = 'Ready'`. None → done,
-   end quietly.
-2. For each Ready page: fetch its body and Notes, distill into a PostSpec
-   per this skill (Format `carousel` → portrait multi-slide; `reel` →
-   story single slide, animated dithering background; `auto` → judge from
-   the content). Respect the Notes.
-3. Encode and write back: set **Post link** to
-   `https://themotionsocialclub.vercel.app/postlab#spec=<base64url>` and
-   **Status** to `Generated`. Touch nothing else — never edit rows in
-   other statuses, and never modify repo code for this task.
-4. If the row's Notes mention "canva", also produce a Canva design (for
-   editing in the Canva app on phone/tablet): copy the master design
-   `DAHPx9zFsfY` (poster — kicker/title/subtitle/footer) or `DAHPx5Abjpo`
-   (serif quote — kicker/title) with the Canva `copy-design` tool, fill
-   the copy's text via an editing transaction, commit, and write the
-   copy's edit URL into the row's **Canva link** property.
+A weekly Routine (Mondays) runs two jobs; any session can run either on
+demand. Never modify rows in statuses you weren't asked to handle, and
+never commit or push repo code during a content run.
+
+**Job 1 — visuals.** For each Pipeline row with `Status = 'Ready'`:
+distill its body/Copy/Notes into a PostSpec per this skill, encode it,
+set **Post link** to
+`https://themotionsocialclub.vercel.app/postlab#spec=<base64url>`, set
+**Status** to `Generated`. If Notes mention "canva", also copy the
+master design `DAHPx9zFsfY` (poster — kicker/title/subtitle/footer) or
+`DAHPx5Abjpo` (serif quote — kicker/title) with the Canva `copy-design`
+tool, fill the copy's text via an editing transaction, commit, and put
+the copy's edit URL in **Canva link**.
+
+**Job 2 — angles.** Skip if 6+ rows already sit in `Angle`. Otherwise
+read the library (what's over/under-published, what's gone quiet), the
+active objective, and the pillars/threads in `content/site.json`, then
+create exactly 3 rows with `Status = 'Angle'`, each with a Name, a 2-3
+sentence Angle in the club's voice, a Pillar, the Objective relation,
+and a Source relation to the post it extends. Vary across pillars;
+prefer extending threads that worked over inventing new territory.
+
+**Drafting (on demand).** When a row is `Chosen` and the owner asks,
+write the **LinkedIn draft** — hook line, short paragraphs, no links in
+the body, no hashtag soup — and set Status to `Drafted`. LinkedIn is the
+club's primary channel (~26k followers); other channels only on request.
+
+**Closing the loop.** When a row reaches `Posted`, add it to the Content
+library (Channel, Date, Type, Pillar) so future angle proposals see it.
 
 ## Editorial defaults
 
