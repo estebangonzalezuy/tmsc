@@ -17,7 +17,7 @@ scheduled → posting writes it back into the library.**
 | tMSC Pipeline | Notion · `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d` | One row per idea, all the way through. |
 | tMSC Content library | Notion · `collection://59421a28-6325-466b-848e-f59b8bcf0986` | Everything published. Seeded with 51 Substack posts. |
 | tMSC Objectives | Notion · `collection://e57499ed-1671-4267-876b-5b9247aef1f3` | Month / quarter / semester goals. The `Active` row aims the angles. |
-| Canva masters | `DAHPx9zFsfY` (poster), `DAHPx5Abjpo` (serif quote) | Text fields tagged kicker / title / subtitle / footer. |
+| Canva masters | `DAHPx9zFsfY` (poster), `DAHPx5Abjpo` (serif quote) | Out of the loop — kept for one-off manual work only. See below. |
 | Voice & pillars | `content/site.json` in this repo | `pillars`, `threads`, `quotes`, `archive`. |
 | Post spec reference | `.claude/skills/postlab/SKILL.md` | How to build a Post Lab link. |
 
@@ -33,7 +33,7 @@ Angle → Chosen → Drafted → Ready → Generated → Scheduled → Posted
   │        │         │        │         │           │          │
   │        │         │        │         │           │          └─ copy into the Content library
   │        │         │        │         │           └─ Schedule date set, draft ready to paste
-  │        │         │        │         └─ Post link (and Canva link) filled in
+  │        │         │        │         └─ Post link filled in
   │        │         │        └─ you asking for a visual
   │        │         └─ LinkedIn draft written
   │        └─ you picked this one
@@ -65,33 +65,42 @@ the club's primary channel (~26k). Other channels only when asked.
 skill, encode it with
 `Buffer.from(JSON.stringify(spec)).toString('base64url')`, write
 `https://themotionsocialclub.vercel.app/postlab#spec=<encoded>` into
-**Post link**, set `Status = Generated`. If Notes mention "canva", also
-copy the matching Canva master, fill its text in an editing transaction,
-commit, and put the copy's edit URL in **Canva link**.
+**Post link**, set `Status = Generated`.
 
 **Close the loop.** When a row reaches `Posted`, create a Content library
 entry for it (Channel, Date, Type, Pillar) so future angles can see it.
 
 ## Zero-AI paths
 
-Two things need no model call at all:
-
 - **Instant link** — a formula column on every Pipeline row builds
   `…/postlab?title=…&body=…&format=…` from the Name, Copy and Format
   fields. It works the moment you type. `//` becomes a line break.
-- **Canva copy-fill** — duplicating a master and typing into it is
-  ordinary Canva work; you don't need Claude for it.
 
-Use these when you just want a post. Use Claude for the parts that need
+Use it when you just want a post. Use Claude for the parts that need
 judgment: angles and drafts.
+
+## Why Canva is not in the loop
+
+The Post Lab already makes the poster and the serif quote, it's
+mobile-friendly, and it exports PNG / MP4 / GIF. Canva was doing the same
+job through an MCP connector, and that connector was the **only** piece of
+the system that required a live chat session — automating it from a script
+would mean a Canva Connect OAuth app, refresh tokens rotating in the repo
+secrets, and a paid plan for Autofill, all to replace two minutes of
+manual work.
+
+So Canva is out of the automated path. The two masters still exist if you
+want to make something by hand; duplicating one and typing into it is
+ordinary Canva work and needs nothing from this system. The Pipeline's
+**Canva link** column is now unused — leave it or delete it, nothing reads
+it.
 
 ## The scheduler
 
-Two ways to run the jobs on a schedule. They do the same work and both are
-safe to run twice, because every job re-reads Notion and nothing is
-remembered between runs.
+One brain: GitHub Actions. Every job re-reads Notion and nothing is
+remembered between runs, so any of them is safe to run twice.
 
-### GitHub Actions — the one that outlives everything
+### GitHub Actions — the whole loop
 
 `.github/workflows/content-cycle.yml` runs `scripts/content-cycle` on
 ubuntu, calling the Notion REST API and the Claude API directly. No chat
@@ -115,22 +124,29 @@ The hourly poll is the instant path — mark a row `Ready` from your phone
 and the visual lands within the hour — and it costs nothing when the queue
 is empty, because the API is only touched once there's work.
 
-It does not do Canva (that needs a Canva Connect OAuth app) and it never
-publishes anything.
+It never publishes anything, and it doesn't touch Canva.
 
-### Claude Routines — the chat-bound ones
+### The one Claude Routine still running
 
-Scheduled prompts, nothing more, run by a Claude session with the Notion
-and Canva connectors attached. They can do the Canva step, which is their
-one advantage. They are **bound to a specific chat session**: if it's
-deleted they stop firing silently. To make them permanent, recreate them
-from the **Routines** section of claude.ai in *new session* mode with the
-connectors attached, using the prompts below verbatim.
+`tMSC objectives check-in`, 1st of the month, `0 12 1 * *` (UTC) — two
+minutes after the workflow. The workflow has already created the new
+period's row by then; the routine's job is to **nudge you to fill in the
+Goal**, which a CI run can't do. Its prompt is below.
 
-Run both and you'll get duplicate angles — pick one. Actions for the
-reliable loop, Routines when you want the Canva copies made for you.
+It's a convenience, not a dependency: it's bound to a chat session, so if
+that session is deleted it stops firing and all you lose is the reminder.
+The weekly content-cycle routine that used to sit beside it is **disabled**
+— Actions does that work now, and running both would produce duplicate
+angles every Monday.
 
-### Weekly content cycle — Mondays, `0 12 * * 1` (UTC)
+### If you ever want to run the cycle from a chat
+
+Any Claude session with the Notion connector can do it — paste the prompt
+below, or just say *"read `docs/CONTENT-SYSTEM.md` in the tmsc repo and run
+the angle job"*. This is also the prompt to restore if you ever want the
+weekly routine back instead of Actions.
+
+#### Weekly content cycle — Mondays, `0 12 * * 1` (UTC) · disabled
 
 > Run the club's content cycle. Two jobs, in order. Never commit or push
 > code, and never touch rows in statuses you weren't asked to handle.
@@ -143,10 +159,7 @@ reliable loop, Routines when you want the Canva copies made for you.
 > or `forms` with pattern rings|ramp|bars|letter + word + warp), encode
 > with `Buffer.from(JSON.stringify(spec)).toString('base64url')`, set
 > "Post link" = `https://themotionsocialclub.vercel.app/postlab#spec=<encoded>`,
-> and set Status = 'Generated'. If the row's Notes mention "canva", also
-> copy Canva master DAHPx9zFsfY (poster) or DAHPx5Abjpo (serif quote),
-> fill its text via an editing transaction, commit, and put the copy's
-> edit_url in "Canva link".
+> and set Status = 'Generated'.
 >
 > JOB 2 — propose three angles. First check the Pipeline for rows already
 > in Status 'Angle': if there are 6 or more sitting unactioned, skip this
@@ -163,7 +176,7 @@ reliable loop, Routines when you want the Canva copies made for you.
 >
 > Then reply with a two-line summary. If nothing happened, say nothing.
 
-### Objectives check-in — 1st of the month, `0 12 1 * *` (UTC)
+#### Objectives check-in — 1st of the month, `0 12 1 * *` (UTC) · running
 
 > It's the 1st. Open the Objectives db
 > (`collection://e57499ed-1671-4267-876b-5b9247aef1f3`). If there is no
@@ -183,9 +196,10 @@ reliable loop, Routines when you want the Canva copies made for you.
 - **A run failed halfway.** Fine. State lives in Notion, so the row is
   still in its old status and the next run picks it up. Nothing
   duplicates.
-- **Routines stopped firing.** The bound session was probably deleted.
-  Recreate them from the claude.ai Routines UI with the prompts above — or
-  move to the GitHub Actions workflow, which has nothing to lose.
+- **The objectives nudge stopped arriving.** Its chat session was probably
+  deleted. Nothing is broken — the workflow still creates the row on the
+  1st, you just have to remember the Goal yourself. Recreate the routine
+  from the claude.ai Routines UI with the prompt above if you miss it.
 - **The workflow failed.** Actions → the red run → its summary says which
   job and why. A bad `NOTION_TOKEN` shows up as a 401, a database that
   wasn't shared with the integration as a 404. Re-run it; nothing
@@ -196,8 +210,9 @@ reliable loop, Routines when you want the Canva copies made for you.
 
 ## Working from anywhere
 
-- **Phone / tablet** — Notion app for the pipeline, the Post Lab and
-  Studio are both mobile-friendly, Canva app for the design copies.
+- **Phone / tablet** — Notion app for the pipeline, the Post Lab for the
+  visual, the Studio for site copy. All three are mobile-friendly, and
+  nothing else is needed.
 - **Any Claude chat with the Notion connector** — say *"read
   docs/CONTENT-SYSTEM.md in the tmsc repo and run the angle job"* (or the
   draft job, or the visual job). Everything it needs is in this file.

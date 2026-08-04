@@ -99,8 +99,9 @@ the club's content loop:
   One row per idea. Status flows `Angle → Chosen → Drafted → Ready →
   Generated → Scheduled → Posted`. Columns: Name, Angle, Pillar,
   Objective (relation), Source (relation to a library post), Format,
-  Copy, Notes, LinkedIn draft, Post link, Canva link, Schedule,
-  Instant link (formula, zero-AI).
+  Copy, Notes, LinkedIn draft, Post link, Schedule, Instant link
+  (formula, zero-AI). ("Canva link" exists but is unused — Canva is out
+  of the loop; the Post Lab is the club's visual system.)
 - **tMSC Content library** — `collection://59421a28-6325-466b-848e-f59b8bcf0986`
   Everything published (seeded with 51 Substack posts). Name, Channel,
   Date, Type, Pillar, Link, How it landed.
@@ -108,19 +109,16 @@ the club's content loop:
   Name, Period (month|quarter|semester), Goal, Start, Status. The row
   with Status `Active` aims the angle proposals.
 
-A weekly Routine (Mondays) runs two jobs; any session can run either on
-demand. Never modify rows in statuses you weren't asked to handle, and
-never commit or push repo code during a content run.
+Both jobs below run on a schedule from `.github/workflows/content-cycle.yml`
+(see `docs/CONTENT-SYSTEM.md`); any session can also run either on demand.
+Never modify rows in statuses you weren't asked to handle, and never commit
+or push repo code during a content run.
 
 **Job 1 — visuals.** For each Pipeline row with `Status = 'Ready'`:
 distill its body/Copy/Notes into a PostSpec per this skill, encode it,
 set **Post link** to
 `https://themotionsocialclub.vercel.app/postlab#spec=<base64url>`, set
-**Status** to `Generated`. If Notes mention "canva", also copy the
-master design `DAHPx9zFsfY` (poster — kicker/title/subtitle/footer) or
-`DAHPx5Abjpo` (serif quote — kicker/title) with the Canva `copy-design`
-tool, fill the copy's text via an editing transaction, commit, and put
-the copy's edit URL in **Canva link**.
+**Status** to `Generated`.
 
 **Job 2 — angles.** Skip if 6+ rows already sit in `Angle`. Otherwise
 read the library (what's over/under-published, what's gone quiet), the

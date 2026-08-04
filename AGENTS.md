@@ -85,8 +85,8 @@ fields to the spec.
 ## The content system
 
 The club's posting loop — a Notion Pipeline, a Content library, monthly
-Objectives, the Canva masters, and the schedulers that tie them together —
-is documented in `docs/CONTENT-SYSTEM.md`. Read that before touching
+Objectives, and the scheduler that ties them together — is documented in
+`docs/CONTENT-SYSTEM.md`. Read that before touching
 anything content-workflow related; it carries the database IDs, the status
 lifecycle, and the routine prompts verbatim so the system can be rebuilt
 from scratch.

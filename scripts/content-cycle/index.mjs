@@ -197,10 +197,6 @@ async function jobVisuals() {
       Status: put.select("Generated"),
     });
     say(`visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}`);
-
-    if (/canva/i.test(get.text(row, "Notes"))) {
-      say(`  note: Canva step still manual — master DAHPx9zFsfY / DAHPx5Abjpo`);
-    }
   }
 }
 

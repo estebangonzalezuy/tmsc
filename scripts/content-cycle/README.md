@@ -80,11 +80,8 @@ data sources.
 
 ## What this does *not* do
 
-**Canva.** The MCP connector that filled the masters from chat has no
-equivalent here; doing it from a script means a Canva Connect OAuth app.
-Rows whose Notes mention canva still get their Post Lab link, and the run
-summary reminds you which master to copy by hand
-(`DAHPx9zFsfY` poster, `DAHPx5Abjpo` serif quote).
-
 **Publishing.** Nothing posts to LinkedIn. `Scheduled` → `Posted` stays a
 human move; the cycle only files the result back into the library.
+
+**Canva.** Deliberately — the Post Lab is the club's visual system now.
+See "Why Canva is not in the loop" in `docs/CONTENT-SYSTEM.md`.
