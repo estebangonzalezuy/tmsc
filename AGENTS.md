@@ -82,6 +82,15 @@ Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
 integration surface. Shader colors must stay theme-derived; never add color
 fields to the spec.
 
+## The content system
+
+The club's posting loop — a Notion Pipeline, a Content library, monthly
+Objectives, the Canva masters, and the scheduled routines that tie them
+together — is documented in `docs/CONTENT-SYSTEM.md`. Read that before
+touching anything content-workflow related; it carries the database IDs,
+the status lifecycle, and the routine prompts verbatim so the system can
+be rebuilt from scratch.
+
 ## When adding or changing a section
 
 1. Mark its wrapper with `{...studioSection("<id>", "<Label>")}`.
