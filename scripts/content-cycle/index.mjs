@@ -1,0 +1,324 @@
+// the tMSC content cycle, as a program.
+//
+// Same jobs the chat-bound routines ran, moved onto GitHub Actions so they
+// survive any single conversation. State lives entirely in Notion, so every
+// job is safe to run twice: it re-reads the pipeline, does whatever the
+// statuses ask for, and stops.
+//
+//   node index.mjs queue        drafts + visuals + library (the hourly poll)
+//   node index.mjs angles       propose three new angles (weekly)
+//   node index.mjs objectives   roll the month over (1st, no model call)
+//   node index.mjs all          everything
+//   node index.mjs queue --dry-run     read-only, prints what it would do
+//
+// Costs nothing when there's nothing to do: the polls are Notion reads, and
+// the Claude API is only touched once a row is actually waiting.
+
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+import { Notion, get, put } from "./notion.mjs";
+import * as ai from "./claude.mjs";
+import {
+  assembleSpec,
+  briefSchema,
+  fetchVocabulary,
+  formatFromRow,
+  postLink,
+} from "./postspec.mjs";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+const DB = {
+  pipeline: process.env.NOTION_PIPELINE ?? "de912cbf-c9df-440c-8a17-c1ef8a9c1d1d",
+  library: process.env.NOTION_LIBRARY ?? "59421a28-6325-466b-848e-f59b8bcf0986",
+  objectives:
+    process.env.NOTION_OBJECTIVES ?? "e57499ed-1671-4267-876b-5b9247aef1f3",
+};
+const ORIGIN = process.env.SITE_ORIGIN ?? "https://themotionsocialclub.vercel.app";
+const PILLARS = ["Structure", "Criticism", "Honesty"];
+/** Enough angles waiting means the bottleneck is decisions, not ideas. */
+const ANGLE_BACKLOG = 6;
+
+const args = process.argv.slice(2);
+const DRY = args.includes("--dry-run");
+const jobs = args.filter((a) => !a.startsWith("--"));
+
+const notes = [];
+const say = (line) => {
+  notes.push(line);
+  console.log(line);
+};
+
+const site = JSON.parse(
+  readFileSync(resolve(HERE, "../../content/site.json"), "utf8"),
+);
+const voice = ai.voiceBrief(site);
+
+if (!process.env.NOTION_TOKEN) {
+  console.error(
+    "NOTION_TOKEN is missing. Create an internal integration at\n" +
+      "notion.so/my-integrations, share the three tMSC databases with it,\n" +
+      "and put the secret in the repo's Actions secrets (or your shell).",
+  );
+  process.exit(2);
+}
+const notion = new Notion(process.env.NOTION_TOKEN);
+
+const today = () => new Date().toISOString().slice(0, 10);
+
+/** The Objectives row the angles should aim at. */
+async function activeObjective() {
+  const rows = await notion.byStatus(DB.objectives, "Active");
+  const month = rows.find((r) => get.select(r, "Period") === "month") ?? rows[0];
+  return month
+    ? { id: month.id, name: get.title(month), goal: get.text(month, "Goal") }
+    : null;
+}
+
+/* ------------------------------------------------------------- angles --- */
+
+async function jobAngles() {
+  const waiting = await notion.byStatus(DB.pipeline, "Angle");
+  if (waiting.length >= ANGLE_BACKLOG) {
+    say(`angles: skipped — ${waiting.length} already waiting`);
+    return;
+  }
+
+  const libraryRows = await notion.query(DB.library);
+  const library = libraryRows
+    .map((r) => ({
+      id: r.id,
+      name: get.title(r),
+      date: get.date(r, "Date"),
+      channel: get.select(r, "Channel"),
+      pillar: get.select(r, "Pillar"),
+      landed: get.text(r, "How it landed"),
+    }))
+    .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+
+  const objective = await activeObjective();
+  const { angles } = await ai.proposeAngles({
+    voice,
+    library,
+    objective,
+    pillars: PILLARS,
+    existing: waiting.map((r) => get.title(r)),
+  });
+
+  const byTitle = new Map(library.map((r) => [r.name.toLowerCase(), r.id]));
+  for (const a of angles.slice(0, 3)) {
+    const source = byTitle.get(String(a.source ?? "").toLowerCase());
+    if (DRY) {
+      say(`angles: would create "${a.name}" (${a.pillar})`);
+      continue;
+    }
+    await notion.createPage(DB.pipeline, {
+      Name: put.title(a.name),
+      Angle: put.text(a.angle),
+      Pillar: put.select(PILLARS.includes(a.pillar) ? a.pillar : null),
+      Status: put.select("Angle"),
+      Objective: put.relation(objective ? [objective.id] : []),
+      Source: put.relation(source ? [source] : []),
+    });
+    say(`angles: + ${a.name} (${a.pillar})`);
+  }
+}
+
+/* ------------------------------------------------------------- drafts --- */
+
+async function jobDrafts() {
+  const rows = await notion.byStatus(DB.pipeline, "Chosen");
+  if (!rows.length) return;
+  const objective = await activeObjective();
+
+  for (const row of rows) {
+    const name = get.title(row);
+    const { draft } = await ai.writeDraft({
+      voice,
+      objective,
+      row: {
+        name,
+        pillar: get.select(row, "Pillar"),
+        angle: get.text(row, "Angle"),
+        notes: get.text(row, "Notes"),
+      },
+    });
+    if (DRY) {
+      say(`drafts: would draft "${name}" (${draft.length} chars)`);
+      continue;
+    }
+    await notion.updatePage(row.id, {
+      "LinkedIn draft": put.text(draft),
+      Status: put.select("Drafted"),
+    });
+    say(`drafts: ✓ ${name}`);
+  }
+}
+
+/* ------------------------------------------------------------ visuals --- */
+
+async function jobVisuals() {
+  const rows = await notion.byStatus(DB.pipeline, "Ready");
+  if (!rows.length) return;
+
+  const vocab = await fetchVocabulary(ORIGIN);
+  const schema = briefSchema(vocab);
+
+  for (const row of rows) {
+    const name = get.title(row);
+    const rowFormat = get.select(row, "Format");
+    const brief = await ai.designPost({
+      voice,
+      vocab,
+      schema,
+      row: {
+        name,
+        angle: get.text(row, "Angle"),
+        copy: get.text(row, "Copy"),
+        draft: get.text(row, "LinkedIn draft"),
+        notes: get.text(row, "Notes"),
+        format: rowFormat,
+      },
+    });
+
+    const spec = assembleSpec(brief, vocab, {
+      format: formatFromRow(rowFormat, vocab),
+    });
+    const link = postLink(ORIGIN, spec);
+
+    if (DRY) {
+      say(`visuals: would generate "${name}" — ${brief.note ?? ""}`);
+      say(`  ${link}`);
+      continue;
+    }
+    await notion.updatePage(row.id, {
+      "Post link": put.url(link),
+      Status: put.select("Generated"),
+    });
+    say(`visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}`);
+
+    if (/canva/i.test(get.text(row, "Notes"))) {
+      say(`  note: Canva step still manual — master DAHPx9zFsfY / DAHPx5Abjpo`);
+    }
+  }
+}
+
+/* ------------------------------------------------------------ library --- */
+
+/* Closing the loop: a Posted row becomes a library entry, so the next round
+   of angles can see it. Deduped by title, which makes reruns harmless. */
+async function jobLibrary() {
+  const posted = await notion.byStatus(DB.pipeline, "Posted");
+  if (!posted.length) return;
+
+  const known = new Set(
+    (await notion.query(DB.library)).map((r) => get.title(r).toLowerCase()),
+  );
+
+  for (const row of posted) {
+    const name = get.title(row);
+    if (!name || known.has(name.toLowerCase())) continue;
+    if (DRY) {
+      say(`library: would file "${name}"`);
+      continue;
+    }
+    await notion.createPage(DB.library, {
+      Name: put.title(name),
+      Channel: put.select("LinkedIn"),
+      Date: put.date(get.date(row, "Schedule") || today()),
+      Pillar: put.select(get.select(row, "Pillar") || null),
+    });
+    say(`library: + ${name}`);
+  }
+}
+
+/* --------------------------------------------------------- objectives --- */
+
+/* Pure bookkeeping — no model call. Runs on the 1st, but is written as
+   "is there an Active row for the current period?", so a missed run
+   self-heals on the next one. */
+async function jobObjectives() {
+  const now = new Date();
+  const y = now.getUTCFullYear();
+  const m = now.getUTCMonth(); // 0-11
+  const start = `${y}-${String(m + 1).padStart(2, "0")}-01`;
+  const monthName = now.toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+
+  const wanted = [{ period: "month", name: `${monthName} ${y}`, start }];
+  if (m % 3 === 0)
+    wanted.push({ period: "quarter", name: `Q${m / 3 + 1} ${y}`, start });
+  if (m % 6 === 0)
+    wanted.push({ period: "semester", name: `H${m / 6 + 1} ${y}`, start });
+
+  const rows = await notion.query(DB.objectives);
+  for (const w of wanted) {
+    const existing = rows.filter((r) => get.select(r, "Period") === w.period);
+    if (existing.some((r) => get.date(r, "Start") === w.start)) continue;
+
+    for (const stale of existing.filter((r) => get.select(r, "Status") === "Active")) {
+      if (DRY) say(`objectives: would retire "${get.title(stale)}"`);
+      else await notion.updatePage(stale.id, { Status: put.select("Past") });
+    }
+    if (DRY) {
+      say(`objectives: would open "${w.name}"`);
+      continue;
+    }
+    await notion.createPage(DB.objectives, {
+      Name: put.title(w.name),
+      Period: put.select(w.period),
+      Start: put.date(w.start),
+      Status: put.select("Active"),
+    });
+    say(`objectives: + ${w.name} — fill in the Goal`);
+  }
+}
+
+/* ---------------------------------------------------------------- run --- */
+
+const ALL = {
+  angles: jobAngles,
+  drafts: jobDrafts,
+  visuals: jobVisuals,
+  library: jobLibrary,
+  objectives: jobObjectives,
+};
+const GROUPS = {
+  queue: ["drafts", "visuals", "library"],
+  weekly: ["drafts", "visuals", "library", "angles"],
+  all: Object.keys(ALL),
+};
+
+const requested = (jobs.length ? jobs : ["queue"]).flatMap(
+  (j) => GROUPS[j] ?? [j],
+);
+
+let failed = false;
+for (const name of [...new Set(requested)]) {
+  const job = ALL[name];
+  if (!job) {
+    console.error(`unknown job: ${name}`);
+    failed = true;
+    continue;
+  }
+  try {
+    await job();
+  } catch (err) {
+    failed = true;
+    say(`${name}: failed — ${err.message}`);
+  }
+}
+
+if (!notes.length) say("nothing to do");
+
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const { appendFileSync } = await import("node:fs");
+  appendFileSync(
+    process.env.GITHUB_STEP_SUMMARY,
+    `### content cycle — ${requested.join(", ")}${DRY ? " (dry run)" : ""}\n\n` +
+      notes.map((n) => `- ${n}`).join("\n") +
+      "\n",
+  );
+}
+
+process.exit(failed ? 1 : 0);

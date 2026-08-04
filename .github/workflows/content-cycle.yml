@@ -1,0 +1,72 @@
+name: content cycle
+
+# The club's posting loop, on a schedule that costs nothing when idle.
+# The hourly run only reads Notion; it touches the Claude API when — and
+# only when — a row is actually waiting in Chosen, Ready or Posted.
+#
+# Needs two repository secrets (Settings → Secrets and variables → Actions):
+#   ANTHROPIC_API_KEY  console.anthropic.com → API keys
+#   NOTION_TOKEN       notion.so/my-integrations → internal integration,
+#                      then share the three tMSC databases with it
+#
+# GitHub only runs scheduled workflows from the default branch, so this file
+# has to be on `main` to fire.
+
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly: drafts, visuals, library
+    - cron: "0 12 * * 1" # Mondays 12:00 UTC: the above + three new angles
+    - cron: "0 12 1 * *" # 1st of the month: roll the objective over
+  workflow_dispatch:
+    inputs:
+      job:
+        description: What to run
+        type: choice
+        default: queue
+        options: [queue, weekly, angles, drafts, visuals, library, objectives, all]
+      dry_run:
+        description: Read-only — print what it would do
+        type: boolean
+        default: false
+
+concurrency:
+  group: content-cycle
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scripts/content-cycle/package-lock.json
+
+      - run: npm ci
+        working-directory: scripts/content-cycle
+
+      - name: Pick the job
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 12 * * 1") job=weekly ;;
+            "0 12 1 * *") job=objectives ;;
+            "17 * * * *") job=queue ;;
+            *)            job="${{ inputs.job || 'queue' }}" ;;
+          esac
+          echo "job=$job" >> "$GITHUB_OUTPUT"
+
+      - name: Run the cycle
+        working-directory: scripts/content-cycle
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SITE_ORIGIN: https://themotionsocialclub.vercel.app
+        run: |
+          node index.mjs ${{ steps.pick.outputs.job }} \
+            ${{ inputs.dry_run && '--dry-run' || '' }}

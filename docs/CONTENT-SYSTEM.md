@@ -85,16 +85,50 @@ Two things need no model call at all:
 Use these when you just want a post. Use Claude for the parts that need
 judgment: angles and drafts.
 
-## Routines
+## The scheduler
 
-Scheduled prompts, nothing more. A routine has no memory — it re-reads
-Notion every time, which is why every job above is safe to run twice.
+Two ways to run the jobs on a schedule. They do the same work and both are
+safe to run twice, because every job re-reads Notion and nothing is
+remembered between runs.
 
-Currently **bound to a specific chat session**, which is what gives them
-access to the Notion and Canva connectors. If that session is deleted they
-stop firing silently. To make them permanent, recreate them from the
-**Routines** section of claude.ai in *new session* mode with the Notion
-and Canva connectors attached, using the prompts below verbatim.
+### GitHub Actions — the one that outlives everything
+
+`.github/workflows/content-cycle.yml` runs `scripts/content-cycle` on
+ubuntu, calling the Notion REST API and the Claude API directly. No chat
+session involved, no connectors, no memory. Setup and internals are in
+`scripts/content-cycle/README.md`; the short version:
+
+| Trigger | Job | Model calls |
+|---|---|---|
+| Hourly (`:17`) | drafts, visuals, library | only when a row is waiting |
+| Mondays 12:00 UTC | the above + three new angles | 1 |
+| 1st of the month | roll the objective period over | none, ever |
+| Actions → Run workflow | any job, `--dry-run` available | as needed |
+
+It needs two repository secrets — `ANTHROPIC_API_KEY` and `NOTION_TOKEN`
+(an internal Notion integration with the three databases shared to it) —
+and it must be on `main`, because GitHub only schedules from the default
+branch. The site itself stays untouched: no Vercel env vars, no new
+dependencies in the app's `package.json`.
+
+The hourly poll is the instant path — mark a row `Ready` from your phone
+and the visual lands within the hour — and it costs nothing when the queue
+is empty, because the API is only touched once there's work.
+
+It does not do Canva (that needs a Canva Connect OAuth app) and it never
+publishes anything.
+
+### Claude Routines — the chat-bound ones
+
+Scheduled prompts, nothing more, run by a Claude session with the Notion
+and Canva connectors attached. They can do the Canva step, which is their
+one advantage. They are **bound to a specific chat session**: if it's
+deleted they stop firing silently. To make them permanent, recreate them
+from the **Routines** section of claude.ai in *new session* mode with the
+connectors attached, using the prompts below verbatim.
+
+Run both and you'll get duplicate angles — pick one. Actions for the
+reliable loop, Routines when you want the Canva copies made for you.
 
 ### Weekly content cycle — Mondays, `0 12 * * 1` (UTC)
 
@@ -150,7 +184,12 @@ and Canva connectors attached, using the prompts below verbatim.
   still in its old status and the next run picks it up. Nothing
   duplicates.
 - **Routines stopped firing.** The bound session was probably deleted.
-  Recreate them from the claude.ai Routines UI with the prompts above.
+  Recreate them from the claude.ai Routines UI with the prompts above — or
+  move to the GitHub Actions workflow, which has nothing to lose.
+- **The workflow failed.** Actions → the red run → its summary says which
+  job and why. A bad `NOTION_TOKEN` shows up as a 401, a database that
+  wasn't shared with the integration as a 404. Re-run it; nothing
+  duplicates.
 - **A Post Lab link won't open.** Old links from earlier spec versions are
   auto-migrated; if one truly breaks, rebuild it from the row's fields.
 - **Angles feel generic.** The `Active` objective is probably empty.
@@ -164,3 +203,5 @@ and Canva connectors attached, using the prompts below verbatim.
   draft job, or the visual job). Everything it needs is in this file.
 - **A Claude Code session on this repo** — `AGENTS.md` and the postlab
   skill load automatically.
+- **Nobody at all** — the GitHub Actions workflow runs the loop whether or
+  not anyone opens a chat.

@@ -1,0 +1,18 @@
+{
+  "name": "tmsc-content-cycle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The club's content cycle as a scheduled program. Kept out of the site's package.json on purpose: the deployed app stays dependency- and secret-free.",
+  "scripts": {
+    "queue": "node index.mjs queue",
+    "weekly": "node index.mjs weekly",
+    "objectives": "node index.mjs objectives"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

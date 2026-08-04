@@ -85,11 +85,20 @@ fields to the spec.
 ## The content system
 
 The club's posting loop — a Notion Pipeline, a Content library, monthly
-Objectives, the Canva masters, and the scheduled routines that tie them
-together — is documented in `docs/CONTENT-SYSTEM.md`. Read that before
-touching anything content-workflow related; it carries the database IDs,
-the status lifecycle, and the routine prompts verbatim so the system can
-be rebuilt from scratch.
+Objectives, the Canva masters, and the schedulers that tie them together —
+is documented in `docs/CONTENT-SYSTEM.md`. Read that before touching
+anything content-workflow related; it carries the database IDs, the status
+lifecycle, and the routine prompts verbatim so the system can be rebuilt
+from scratch.
+
+The scheduled half of it lives in `scripts/content-cycle/` and runs from
+`.github/workflows/content-cycle.yml` — Notion REST + the Claude API, no
+chat session involved. It keeps its own `package.json` on purpose: the
+deployed app must stay dependency- and secret-free, so never move those
+dependencies into the root manifest or add env vars to Vercel for it. It
+reads the Post Lab vocabulary from the live `/api/postlab/schema` rather
+than duplicating `lib/postlab.ts`; keep that endpoint accurate and the
+automation follows.
 
 ## When adding or changing a section
 
