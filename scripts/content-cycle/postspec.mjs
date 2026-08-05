@@ -157,8 +157,30 @@ const pick = (value, allowed, def) =>
   allowed.includes(value) ? value : def ?? allowed[0];
 const numeric = (v, def) => (typeof v === "number" && Number.isFinite(v) ? v : def);
 
+/* A different-looking background every time, drawn from the documented
+   vocabulary rather than from the model — there is nothing to art-direct on
+   a post with no words on it, so this costs no tokens. Extremes are avoided
+   on purpose: a speed of 0 doesn't move and a warp of 1 is mush. */
+export function randomLayer(vocab, rand = Math.random) {
+  const types = Object.keys(vocab.backgrounds);
+  const type = types[Math.floor(rand() * types.length)] ?? "dithering";
+  const params = vocab.backgrounds[type] ?? {};
+  const layer = { type };
+  for (const [key, p] of Object.entries(params)) {
+    if (p.kind === "choice") {
+      layer[key] = p.values[Math.floor(rand() * p.values.length)];
+    } else {
+      const lo = p.min + (p.max - p.min) * 0.2;
+      const hi = p.min + (p.max - p.min) * 0.8;
+      const v = lo + rand() * (hi - lo);
+      layer[key] = Math.round(v * 100) / 100;
+    }
+  }
+  return layer;
+}
+
 /** Design brief + vocabulary → a PostSpec every value of which is legal. */
-export function assembleSpec(brief, vocab, { format } = {}) {
+export function assembleSpec(brief, vocab, { format, text } = {}) {
   const b = brief ?? {};
 
   const type = pick(b.background?.type, Object.keys(vocab.backgrounds));
@@ -174,7 +196,8 @@ export function assembleSpec(brief, vocab, { format } = {}) {
 
   const slide = {
     letter: String(b.letter ?? "M").slice(0, 1),
-    text: true,
+    /* false hides the whole typographic layer — a pure background post. */
+    text: text ?? true,
     titleFont: pick(b.titleFont, vocab.titleFonts, "serif"),
     italic: !!b.italic,
     titleSize: pick(b.titleSize, vocab.titleSizes, "m"),

@@ -14,6 +14,7 @@ scheduled → posting writes it back into the library.**
 |---|---|---|
 | the Post Lab | <https://themotionsocialclub.vercel.app/postlab> | Dithering instrument for posts, carousels, reels. PNG / MP4 / GIF export. |
 | the Studio | <https://themotionsocialclub.vercel.app/studio> | Edits site copy in `content/site.json`, publishes to `main`. |
+| tMSC Journal | Notion · `collection://90f76b2d-065b-4fe4-a3f6-3b2da5c9f727` | Raw capture. Set `Make post` and a run turns it into a finished post. |
 | tMSC Pipeline | Notion · `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d` | One row per idea, all the way through. |
 | tMSC Content library | Notion · `collection://59421a28-6325-466b-848e-f59b8bcf0986` | Everything published. Seeded with 51 Substack posts. |
 | tMSC Objectives | Notion · `collection://e57499ed-1671-4267-876b-5b9247aef1f3` | Month / quarter / semester goals. The `Active` row aims the angles. |
@@ -42,6 +43,31 @@ Angle → Chosen → Drafted → Ready → Generated → Scheduled → Posted
 
 `Ready` is the trigger word: it means "make me a visual". Everything else
 moves when a human decides it moves.
+
+## Capture → post, without touching a keyboard properly
+
+The Journal is the front door for days that start with a thought rather
+than a plan.
+
+1. New row in **tMSC Journal**. Type it, or hold the mic key on the phone
+   keyboard and talk — the words land as text either way, in **Entry** or
+   in the page body; the run reads both.
+2. Status → **`Make post`**. Tick **Text on visual** only if you want the
+   words *on the image*; left off (the default) the visual is a pure
+   generative background with no type at all.
+3. The next run reads the capture against the whole library, and creates a
+   Pipeline row already at `Generated`: title, angle, pillar, sources,
+   LinkedIn draft, Post link. The Journal row flips to `Used` and links to
+   the post it became.
+
+One model call for the whole thing. The no-text visual costs nothing extra
+— there is no art direction to do, so the shader and its parameters are
+picked at random from the documented vocabulary, and no two look alike.
+
+**Voice notes:** Notion can hold an audio file, but no Claude model reads
+audio, and transcribing would mean a third vendor. Dictating with the
+phone keyboard's mic gets you the same result — your voice, straight into
+text the run can read — for nothing.
 
 ## The jobs
 
@@ -110,7 +136,7 @@ session involved, no connectors, no memory. Setup and internals are in
 | Trigger | Job | Model calls |
 |---|---|---|
 | Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 2 per row |
-| Every 15 min | drafts, visuals, library | only when a row is waiting |
+| Every 5 min | journal, drafts, visuals, library | only when a row is waiting |
 | Mondays 12:00 UTC | the above + three new angles | 1 |
 | 1st of the month | roll the objective period over | none, ever |
 
@@ -129,6 +155,23 @@ because the API is only touched once there's work.
 The staged statuses exist so you can review the draft before the visual is
 designed from it. `now` skips that gate deliberately — use it when you'd
 rather edit both together than wait between them.
+
+### Firing a run from the phone, without opening GitHub
+
+The workflow also answers to `repository_dispatch`, so a **Notion button**
+can start it. Requires Notion Plus or above (webhook actions are a paid
+feature) and a GitHub fine-grained token with *Actions: read and write* on
+this repo only.
+
+Button → *Send webhook*:
+
+- URL `https://api.github.com/repos/estebangonzalezuy/tmsc/dispatches`
+- Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`
+- Body: `{"event_type":"content-cycle","client_payload":{"job":"journal"}}`
+
+Without it, the 5-minute poll is the phone path: set the status and the
+run picks it up on its own. Note GitHub's scheduler drifts under load, so
+5 minutes is the floor, not a promise.
 
 It never publishes anything, and it doesn't touch Canva.
 

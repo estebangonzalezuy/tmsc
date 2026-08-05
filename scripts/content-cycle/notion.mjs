@@ -69,6 +69,28 @@ export class Notion {
     });
   }
 
+  /* A page's body as plain text. Dictating into the page rather than into a
+     property is the natural thing to do on a phone, so read both. */
+  async blockText(pageId) {
+    const out = [];
+    let cursor;
+    do {
+      const page = await this.req(
+        "GET",
+        `/blocks/${pageId}/children?page_size=100` +
+          (cursor ? `&start_cursor=${cursor}` : ""),
+      );
+      for (const b of page.results) {
+        const rich = b[b.type]?.rich_text;
+        if (Array.isArray(rich) && rich.length) {
+          out.push(rich.map((t) => t.plain_text).join(""));
+        }
+      }
+      cursor = page.has_more ? page.next_cursor : undefined;
+    } while (cursor);
+    return out.join("\n");
+  }
+
   createPage(dataSource, properties) {
     return this.req("POST", "/pages", {
       parent: { type: "data_source_id", data_source_id: dataSource },

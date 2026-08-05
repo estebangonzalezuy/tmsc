@@ -190,6 +190,87 @@ export function writeDraft({ voice, row, objective }) {
   });
 }
 
+/* ------------------------------------------------------------ journal --- */
+
+/* One call turns a raw capture — typed or dictated, unpunctuated, half a
+   thought — into everything a Pipeline row needs. Doing it in one request
+   rather than three keeps a journal entry about as cheap as an angle. */
+
+const journalSchema = (pillars, formats) => ({
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "name",
+    "angle",
+    "pillar",
+    "sources",
+    "builds_on",
+    "draft",
+    "format",
+    "onimage",
+  ],
+  properties: {
+    name: { type: "string", description: "working title for the post" },
+    angle: { type: "string", description: "2-3 sentences: the take, and why now" },
+    pillar: { type: "string", enum: pillars },
+    sources: {
+      type: "array",
+      description: "[n] of the library pieces this connects to, if any",
+      items: { type: "integer" },
+    },
+    builds_on: { type: "string", description: "one sentence, or empty" },
+    draft: { type: "string", description: "the full LinkedIn post" },
+    format: { type: "string", enum: formats },
+    onimage: {
+      type: "object",
+      additionalProperties: false,
+      required: ["kicker", "title", "body", "footer"],
+      description: "words for the image, used only if asked for",
+      properties: {
+        kicker: { type: "string" },
+        title: { type: "string", description: "short; \\n for line breaks" },
+        body: { type: "string", description: "may be empty" },
+        footer: { type: "string" },
+      },
+    },
+  },
+});
+
+export function readJournal({ voice, entry, library, objective, pillars, formats }) {
+  const shelf = library
+    .map((r, i) => `[${i}] ${r.date || "?"} · ${r.pillar || "—"} · ${r.name}`)
+    .join("\n");
+
+  return ask({
+    system:
+      voice +
+      "\n\nEsteban captured a raw thought — typed fast or spoken aloud, so " +
+      "expect no punctuation, false starts, and half-finished sentences. " +
+      "Find what he actually means and turn it into a post. Keep his words " +
+      "and his phrasing wherever they're good; you are editing, not " +
+      "replacing. Don't smooth it into something more polished than he is.",
+    effort: "high",
+    max: 12000,
+    schema: journalSchema(pillars, formats),
+    prompt: [
+      "The capture:",
+      entry,
+      "",
+      "What the club has published, numbered so you can cite by [n]:",
+      shelf || "(nothing yet)",
+      "",
+      objective?.goal ? `This month's objective: ${objective.goal}` : "",
+      "",
+      "Turn it into a post: a working title, the angle, the pillar it fits,",
+      "any library pieces it connects to, and the LinkedIn draft itself.",
+      "Also write `onimage` — the few words that would go on the image if",
+      "one were used: a short headline, not the whole post.",
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  });
+}
+
 /* ------------------------------------------------------------- visual --- */
 
 export function designPost({ voice, row, vocab, schema }) {

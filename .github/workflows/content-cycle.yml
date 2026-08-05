@@ -19,16 +19,22 @@ name: content cycle
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # drafts, visuals, library
+    - cron: "*/5 * * * *" # journal, drafts, visuals, library
     - cron: "0 12 * * 1" # Mondays 12:00 UTC: the above + three new angles
     - cron: "0 12 1 * *" # 1st of the month: roll the objective over
+  # Lets a Notion button fire a run straight from the phone — POST to
+  # /repos/:owner/:repo/dispatches with {"event_type":"content-cycle",
+  # "client_payload":{"job":"journal"}}. See docs/CONTENT-SYSTEM.md.
+  repository_dispatch:
+    types: [content-cycle]
   workflow_dispatch:
     inputs:
       job:
         description: What to run
         type: choice
         default: now
-        options: [now, queue, weekly, angles, drafts, visuals, library, objectives, all]
+        options:
+          [now, journal, queue, weekly, angles, drafts, visuals, library, objectives, all]
       dry_run:
         description: Read-only — print what it would do
         type: boolean
@@ -61,8 +67,8 @@ jobs:
           case "${{ github.event.schedule }}" in
             "0 12 * * 1")  job=weekly ;;
             "0 12 1 * *")  job=objectives ;;
-            "*/15 * * * *") job=queue ;;
-            *)             job="${{ inputs.job || 'now' }}" ;;
+            "*/5 * * * *") job=queue ;;
+            *)             job="${{ inputs.job || github.event.client_payload.job || 'now' }}" ;;
           esac
           echo "job=$job" >> "$GITHUB_OUTPUT"
 
