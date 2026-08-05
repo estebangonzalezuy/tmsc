@@ -5,7 +5,8 @@
 // job is safe to run twice: it re-reads the pipeline, does whatever the
 // statuses ask for, and stops.
 //
-//   node index.mjs queue        drafts + visuals + library (the hourly poll)
+//   node index.mjs now          every `Chosen` row → draft + visual, one pass
+//   node index.mjs queue        drafts + visuals + library (the poll)
 //   node index.mjs angles       propose three new angles (weekly)
 //   node index.mjs objectives   roll the month over (1st, no model call)
 //   node index.mjs all          everything
@@ -141,7 +142,46 @@ async function jobAngles() {
   }
 }
 
-/* ------------------------------------------------------------- drafts --- */
+/* ---------------------------------------------------- draft + visual --- */
+
+/* The two pieces of work, separated from the schedules that call them, so
+   the same code serves the patient path (one status at a time) and the
+   impatient one (everything for a row in a single run). */
+
+const draftFor = async (row, objective) =>
+  (
+    await ai.writeDraft({
+      voice,
+      objective,
+      row: {
+        name: get.title(row),
+        pillar: get.select(row, "Pillar"),
+        angle: get.text(row, "Angle"),
+        notes: get.text(row, "Notes"),
+      },
+    })
+  ).draft;
+
+async function visualFor(row, vocab, schema, draft) {
+  const rowFormat = get.select(row, "Format");
+  const brief = await ai.designPost({
+    voice,
+    vocab,
+    schema,
+    row: {
+      name: get.title(row),
+      angle: get.text(row, "Angle"),
+      copy: get.text(row, "Copy"),
+      draft: draft ?? get.text(row, "LinkedIn draft"),
+      notes: get.text(row, "Notes"),
+      format: rowFormat,
+    },
+  });
+  const spec = assembleSpec(brief, vocab, {
+    format: formatFromRow(rowFormat, vocab),
+  });
+  return { spec, link: postLink(ORIGIN, spec), note: brief.note ?? "" };
+}
 
 async function jobDrafts() {
   const rows = await notion.byStatus(DB.pipeline, "Chosen");
@@ -150,16 +190,7 @@ async function jobDrafts() {
 
   for (const row of rows) {
     const name = get.title(row);
-    const { draft } = await ai.writeDraft({
-      voice,
-      objective,
-      row: {
-        name,
-        pillar: get.select(row, "Pillar"),
-        angle: get.text(row, "Angle"),
-        notes: get.text(row, "Notes"),
-      },
-    });
+    const draft = await draftFor(row, objective);
     if (DRY) {
       say(`drafts: would draft "${name}" (${draft.length} chars)`);
       continue;
@@ -172,8 +203,6 @@ async function jobDrafts() {
   }
 }
 
-/* ------------------------------------------------------------ visuals --- */
-
 async function jobVisuals() {
   const rows = await notion.byStatus(DB.pipeline, "Ready");
   if (!rows.length) return;
@@ -183,28 +212,9 @@ async function jobVisuals() {
 
   for (const row of rows) {
     const name = get.title(row);
-    const rowFormat = get.select(row, "Format");
-    const brief = await ai.designPost({
-      voice,
-      vocab,
-      schema,
-      row: {
-        name,
-        angle: get.text(row, "Angle"),
-        copy: get.text(row, "Copy"),
-        draft: get.text(row, "LinkedIn draft"),
-        notes: get.text(row, "Notes"),
-        format: rowFormat,
-      },
-    });
-
-    const spec = assembleSpec(brief, vocab, {
-      format: formatFromRow(rowFormat, vocab),
-    });
-    const link = postLink(ORIGIN, spec);
-
+    const { spec, link, note } = await visualFor(row, vocab, schema);
     if (DRY) {
-      say(`visuals: would generate "${name}" — ${brief.note ?? ""}`);
+      say(`visuals: would generate "${name}" — ${note}`);
       say(`  ${link}`);
       continue;
     }
@@ -213,6 +223,44 @@ async function jobVisuals() {
       Status: put.select("Generated"),
     });
     say(`visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}`);
+  }
+}
+
+/* ---------------------------------------------------------------- now --- */
+
+/* For sitting down to make a post: takes every row you've marked `Chosen`
+   all the way to `Generated` in one pass — draft and visual, both model
+   calls back to back, no waiting for a second poll. The review gate between
+   them is the whole point of the slow path, so this is a separate job you
+   ask for, never something a schedule does on its own. */
+async function jobNow() {
+  const rows = await notion.byStatus(DB.pipeline, "Chosen");
+  if (!rows.length) {
+    say("now: nothing marked Chosen");
+    return;
+  }
+  const objective = await activeObjective();
+  const vocab = await fetchVocabulary(ORIGIN);
+  const schema = briefSchema(vocab);
+
+  for (const row of rows) {
+    const name = get.title(row);
+    /* Keep a draft you've already written or edited; only write a missing one. */
+    const existing = get.text(row, "LinkedIn draft");
+    const draft = existing || (await draftFor(row, objective));
+    const { spec, link } = await visualFor(row, vocab, schema, draft);
+
+    if (DRY) {
+      say(`now: would finish "${name}" — draft ${draft.length} chars, ${spec.format}`);
+      say(`  ${link}`);
+      continue;
+    }
+    await notion.updatePage(row.id, {
+      "LinkedIn draft": put.text(draft),
+      "Post link": put.url(link),
+      Status: put.select("Generated"),
+    });
+    say(`now: ✓ ${name} — draft + ${spec.format} visual ready`);
   }
 }
 
@@ -292,6 +340,7 @@ const ALL = {
   angles: jobAngles,
   drafts: jobDrafts,
   visuals: jobVisuals,
+  now: jobNow,
   library: jobLibrary,
   objectives: jobObjectives,
 };

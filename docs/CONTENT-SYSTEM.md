@@ -109,10 +109,10 @@ session involved, no connectors, no memory. Setup and internals are in
 
 | Trigger | Job | Model calls |
 |---|---|---|
-| Hourly (`:17`) | drafts, visuals, library | only when a row is waiting |
+| Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 2 per row |
+| Every 15 min | drafts, visuals, library | only when a row is waiting |
 | Mondays 12:00 UTC | the above + three new angles | 1 |
 | 1st of the month | roll the objective period over | none, ever |
-| Actions → Run workflow | any job, `--dry-run` available | as needed |
 
 It needs two repository secrets — `ANTHROPIC_API_KEY` and `NOTION_TOKEN`
 (an internal Notion integration with the three databases shared to it) —
@@ -120,9 +120,15 @@ and it must be on `main`, because GitHub only schedules from the default
 branch. The site itself stays untouched: no Vercel env vars, no new
 dependencies in the app's `package.json`.
 
-The hourly poll is the instant path — mark a row `Ready` from your phone
-and the visual lands within the hour — and it costs nothing when the queue
-is empty, because the API is only touched once there's work.
+Two speeds, on purpose. **Sitting down to make a post: run `now`** — it
+takes every `Chosen` row to a finished draft *and* Post link in a single
+run, about a minute. **Leaving work behind:** mark the row and let the
+15-minute poll pick it up. The poll costs nothing when the queue is empty,
+because the API is only touched once there's work.
+
+The staged statuses exist so you can review the draft before the visual is
+designed from it. `now` skips that gate deliberately — use it when you'd
+rather edit both together than wait between them.
 
 It never publishes anything, and it doesn't touch Canva.
 

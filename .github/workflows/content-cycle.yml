@@ -1,8 +1,13 @@
 name: content cycle
 
 # The club's posting loop, on a schedule that costs nothing when idle.
-# The hourly run only reads Notion; it touches the Claude API when — and
-# only when — a row is actually waiting in Chosen, Ready or Posted.
+# The quarter-hourly run only reads Notion; it touches the Claude API when —
+# and only when — a row is actually waiting in Chosen, Ready or Posted.
+#
+# Sitting down to make a post? Don't wait for the schedule: Run workflow →
+# `now` takes every Chosen row to a finished draft + Post link in one pass,
+# in about a minute. GitHub's cron drifts by several minutes under load, so
+# the button is the fast path, not the schedule.
 #
 # Needs two repository secrets (Settings → Secrets and variables → Actions):
 #   ANTHROPIC_API_KEY  console.anthropic.com → API keys
@@ -14,7 +19,7 @@ name: content cycle
 
 on:
   schedule:
-    - cron: "17 * * * *" # hourly: drafts, visuals, library
+    - cron: "*/15 * * * *" # drafts, visuals, library
     - cron: "0 12 * * 1" # Mondays 12:00 UTC: the above + three new angles
     - cron: "0 12 1 * *" # 1st of the month: roll the objective over
   workflow_dispatch:
@@ -22,8 +27,8 @@ on:
       job:
         description: What to run
         type: choice
-        default: queue
-        options: [queue, weekly, angles, drafts, visuals, library, objectives, all]
+        default: now
+        options: [now, queue, weekly, angles, drafts, visuals, library, objectives, all]
       dry_run:
         description: Read-only — print what it would do
         type: boolean
@@ -54,10 +59,10 @@ jobs:
         id: pick
         run: |
           case "${{ github.event.schedule }}" in
-            "0 12 * * 1") job=weekly ;;
-            "0 12 1 * *") job=objectives ;;
-            "17 * * * *") job=queue ;;
-            *)            job="${{ inputs.job || 'queue' }}" ;;
+            "0 12 * * 1")  job=weekly ;;
+            "0 12 1 * *")  job=objectives ;;
+            "*/15 * * * *") job=queue ;;
+            *)             job="${{ inputs.job || 'now' }}" ;;
           esac
           echo "job=$job" >> "$GITHUB_OUTPUT"
 

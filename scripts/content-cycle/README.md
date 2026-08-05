@@ -13,14 +13,20 @@ the site's stays untouched.
 
 | Trigger | Job | Model calls |
 |---|---|---|
-| Hourly (`:17`) | `queue` — drafts, visuals, library | only if a row is waiting |
+| Actions → Run workflow | `now` — every `Chosen` row → draft + Post link | 2 per row |
+| Every 15 min | `queue` — drafts, visuals, library | only if a row is waiting |
 | Mondays 12:00 UTC | `weekly` — the queue + three new angles | 1 for the angles |
 | 1st of the month | `objectives` — roll the period over | none, ever |
-| Actions → Run workflow | anything, including `--dry-run` | as needed |
 
-The hourly poll is the "instant" path: mark a row `Ready` on your phone and
-the visual shows up within the hour. It costs nothing when the queue is
-empty — three Notion reads, no API call.
+**`now` is the one to use when you're actually making a post.** The staged
+path (`Chosen` → draft → you review → `Ready` → visual) costs two polls;
+`now` does both in one run, about a minute end to end. That review gate is
+the point of the slow path, so no schedule ever runs `now` — you ask for it.
+
+The 15-minute poll is for work you leave behind: mark a row and walk away.
+It costs nothing when the queue is empty — three Notion reads, no API call.
+Don't rely on it for speed; GitHub's cron drifts by several minutes under
+load.
 
 ## Setup (once)
 
