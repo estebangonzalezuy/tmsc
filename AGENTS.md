@@ -38,6 +38,11 @@ browser). Therefore:
 - `app/api/studio/content/route.ts` — dev-only filesystem helper; returns
   404 in production. Do not add secrets or env-var requirements: the Studio
   is deliberately zero-config (GitHub token pasted in the browser).
+- `app/desk/` + `components/runs/RunsPanel.tsx` — the Desk, the owner's
+  control panel for the content cycle (starts the GitHub Actions jobs,
+  shows what's running). Same zero-config contract as the Studio: the
+  token is pasted in the browser and every call goes straight to
+  api.github.com. Never move it server-side.
 - `lib/data.ts` — typed re-exports of the JSON for server components.
 
 ## Design rules

@@ -541,8 +541,8 @@ export default function PostLab() {
         </div>
         <div className="flex items-center gap-5 text-xs">
           {flash && <span className="text-muted">{flash}</span>}
-          <Link href="/" className="underline underline-offset-4">
-            the site
+          <Link href="/desk" className="underline underline-offset-4">
+            the Desk
           </Link>
           <Link href="/studio" className="underline underline-offset-4">
             the Studio

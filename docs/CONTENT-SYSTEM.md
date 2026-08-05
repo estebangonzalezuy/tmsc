@@ -12,6 +12,7 @@ scheduled → posting writes it back into the library.**
 
 | Piece | Where | Notes |
 |---|---|---|
+| the Desk | <https://themotionsocialclub.vercel.app/desk> | Starts the runs. Four buttons and a live view — the phone-friendly front of the whole system. |
 | the Post Lab | <https://themotionsocialclub.vercel.app/postlab> | Dithering instrument for posts, carousels, reels. PNG / MP4 / GIF export. |
 | the Studio | <https://themotionsocialclub.vercel.app/studio> | Edits site copy in `content/site.json`, publishes to `main`. |
 | tMSC Journal | Notion · `collection://90f76b2d-065b-4fe4-a3f6-3b2da5c9f727` | Raw capture. Set `Make post` and a run turns it into a finished post. |
@@ -156,22 +157,28 @@ The staged statuses exist so you can review the draft before the visual is
 designed from it. `now` skips that gate deliberately — use it when you'd
 rather edit both together than wait between them.
 
-### Firing a run from the phone, without opening GitHub
+### Starting a run without opening GitHub
 
-The workflow also answers to `repository_dispatch`, so a **Notion button**
-can start it. Requires Notion Plus or above (webhook actions are a paid
-feature) and a GitHub fine-grained token with *Actions: read and write* on
-this repo only.
+**the Desk** (`/desk`) is the front door: four buttons, a live view of
+what's running, and nothing else. It works on a phone.
 
-Button → *Send webhook*:
+It holds no secret. Like the Studio, you paste a GitHub fine-grained token
+once (repository access limited to this repo, *Actions: read and write*)
+and it lives in that browser's localStorage; every call goes straight from
+the page to api.github.com. Vercel stores nothing, which is what keeps the
+deployed app free of environment variables.
+
+There is also a `repository_dispatch` trigger on the workflow, for a
+**Notion button** — but webhook actions need Notion Plus or above, so on
+the free plan the Desk is the answer. If you ever upgrade:
 
 - URL `https://api.github.com/repos/estebangonzalezuy/tmsc/dispatches`
 - Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`
 - Body: `{"event_type":"content-cycle","client_payload":{"job":"journal"}}`
 
-Without it, the 5-minute poll is the phone path: set the status and the
-run picks it up on its own. Note GitHub's scheduler drifts under load, so
-5 minutes is the floor, not a promise.
+And if you touch nothing at all, the 5-minute poll picks the work up on
+its own. GitHub's scheduler drifts under load, so 5 minutes is the floor,
+not a promise — which is exactly why the Desk exists.
 
 It never publishes anything, and it doesn't touch Canva.
 
