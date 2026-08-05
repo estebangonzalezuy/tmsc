@@ -106,22 +106,38 @@ async function jobAngles() {
     existing: waiting.map((r) => get.title(r)),
   });
 
-  const byTitle = new Map(library.map((r) => [r.name.toLowerCase(), r.id]));
   for (const a of angles.slice(0, 3)) {
-    const source = byTitle.get(String(a.source ?? "").toLowerCase());
+    /* Sources come back as indices into the numbered list we sent, so a
+       paraphrased title can't silently drop the reference. */
+    const cited = (a.sources ?? [])
+      .map((i) => library[i])
+      .filter(Boolean)
+      .slice(0, 2);
+
+    /* The relation is clickable in Notion; the sentence is readable at a
+       glance in the Angle itself, without opening anything. */
+    const angleText = cited.length
+      ? `${a.angle}\n\nBuilds on: ${cited.map((c) => `"${c.name}"`).join(" + ")}` +
+        (a.builds_on ? ` — ${a.builds_on}` : "")
+      : a.angle;
+
+    const trail = cited.length
+      ? ` ← ${cited.map((c) => c.name).join(" + ")}`
+      : " ← (no source)";
+
     if (DRY) {
-      say(`angles: would create "${a.name}" (${a.pillar})`);
+      say(`angles: would create "${a.name}" (${a.pillar})${trail}`);
       continue;
     }
     await notion.createPage(DB.pipeline, {
       Name: put.title(a.name),
-      Angle: put.text(a.angle),
+      Angle: put.text(angleText),
       Pillar: put.select(PILLARS.includes(a.pillar) ? a.pillar : null),
       Status: put.select("Angle"),
       Objective: put.relation(objective ? [objective.id] : []),
-      Source: put.relation(source ? [source] : []),
+      Source: put.relation(cited.map((c) => c.id)),
     });
-    say(`angles: + ${a.name} (${a.pillar})`);
+    say(`angles: + ${a.name} (${a.pillar})${trail}`);
   }
 }
 

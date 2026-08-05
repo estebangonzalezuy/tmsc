@@ -78,7 +78,7 @@ const anglesSchema = (pillars) => ({
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["name", "angle", "pillar", "source"],
+        required: ["name", "angle", "pillar", "sources", "builds_on"],
         properties: {
           name: { type: "string", description: "the working title" },
           angle: {
@@ -86,10 +86,18 @@ const anglesSchema = (pillars) => ({
             description: "2-3 sentences: the specific take, and why now",
           },
           pillar: { type: "string", enum: pillars },
-          source: {
+          sources: {
+            type: "array",
+            description:
+              "the [n] numbers of the library pieces this extends — one, " +
+              "or two at most. Empty only if it genuinely extends nothing.",
+            items: { type: "integer" },
+          },
+          builds_on: {
             type: "string",
             description:
-              "exact title of the library post this extends, or empty if none",
+              "one sentence: what this takes from those pieces, and what it " +
+              "adds that they didn't say. Empty if sources is empty.",
           },
         },
       },
@@ -98,10 +106,13 @@ const anglesSchema = (pillars) => ({
 });
 
 export function proposeAngles({ voice, library, objective, pillars, existing }) {
+  /* Numbered, so the model can point at a piece by index instead of
+     retyping its title — a paraphrased title would silently fail to match
+     and the angle would land in Notion with no source attached. */
   const shelf = library
     .map(
-      (r) =>
-        `- ${r.date || "?"} · ${r.channel || "?"} · ${r.pillar || "—"} · ${r.name}` +
+      (r, i) =>
+        `[${i}] ${r.date || "?"} · ${r.channel || "?"} · ${r.pillar || "—"} · ${r.name}` +
         (r.landed ? ` (landed: ${r.landed})` : ""),
     )
     .join("\n");
@@ -114,7 +125,8 @@ export function proposeAngles({ voice, library, objective, pillars, existing }) 
     effort: "high",
     schema: anglesSchema(pillars),
     prompt: [
-      "Everything the club has published, oldest first:",
+      "Everything the club has published, oldest first, numbered so you can",
+      "cite a piece by its [n]:",
       shelf || "(nothing yet)",
       "",
       objective
@@ -129,7 +141,10 @@ export function proposeAngles({ voice, library, objective, pillars, existing }) 
       "- Vary them across the three pillars; look at which pillar is thin",
       "  in the library and correct the imbalance.",
       "- Prefer extending a thread that already landed over inventing new",
-      "  territory. Name the library post each one builds on.",
+      "  territory. Cite the piece(s) by [n] in `sources`, and say in",
+      "  `builds_on` what you're taking from them and what you're adding.",
+      "  Only cite something you'd actually reference — an unrelated number",
+      "  is worse than none.",
       "- Each angle must be specific enough that someone could write the",
       "  post from it — a take, not a topic.",
       "- If the objective is filled in, aim all three at it.",
