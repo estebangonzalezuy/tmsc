@@ -9,7 +9,7 @@
 import { Dithering } from "@paper-design/shaders-react";
 import type { DitheringShape, DitheringType } from "@paper-design/shaders";
 import {
-  paletteAt,
+  paletteInk,
   shaderDef,
   tones,
   type ShaderSpec,
@@ -76,7 +76,7 @@ export default function ShaderLayer({
       colorBack={bg}
       /* The WebGL dithering only has two tones, so colour here means one
          palette pick for the whole layer rather than per-pixel. */
-      colorFront={color?.on ? paletteAt(color.seed, 0, color.palette) : ink}
+      colorFront={color?.on ? paletteInk(color.seed, theme, color.palette) : ink}
       shape={shape as DitheringShape}
       type={dtype as DitheringType}
       size={num(s.size, 3)}

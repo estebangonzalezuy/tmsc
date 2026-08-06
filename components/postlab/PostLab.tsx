@@ -23,6 +23,7 @@ import {
   decodeSpec,
   defaultLayer,
   defaultSpec,
+  randomShader,
   encodeSpec,
   normalizeSpec,
   shaderDef,
@@ -288,6 +289,27 @@ export default function PostLab() {
             }
           : l,
       ),
+    });
+
+  /* Reroll the background: a new family, new shape and new parameters, but
+     the same place in the stack and the same mixing, so a randomised layer
+     drops into a composition you've already built. */
+  const randomizeLayer = () =>
+    patchSlide({
+      layers: slide.layers.map((l, i) =>
+        i === layerIndex
+          ? ({
+              ...defaultLayer("dithering"),
+              opacity: l.opacity,
+              blend: l.blend,
+              offsetX: l.offsetX,
+              offsetY: l.offsetY,
+              rotation: l.rotation,
+              ...randomShader(),
+            } as LayerSpec)
+          : l,
+      ),
+      colorSeed: Math.floor(Math.random() * 9999) + 1,
     });
 
   const addLayer = () => {
@@ -780,7 +802,6 @@ export default function PostLab() {
                   ["boxed", slide.boxed, () => patchSlide({ boxed: !slide.boxed })],
                   ["plate", slide.plate, () => patchSlide({ plate: !slide.plate })],
                   ["ring", slide.ring, () => patchSlide({ ring: !slide.ring })],
-                  ["color", slide.color, () => patchSlide({ color: !slide.color })],
                 ] as const
               ).map(([label, on, toggle]) => (
                 <button
@@ -791,49 +812,7 @@ export default function PostLab() {
                   {on ? "◉" : "○"} {label}
                 </button>
               ))}
-              {slide.color && (
-                <button
-                  onClick={() =>
-                    patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
-                  }
-                  className="text-muted hover:text-foreground underline underline-offset-4"
-                >
-                  shuffle
-                </button>
-              )}
             </div>
-            {slide.color && (
-              <div className="flex items-center gap-2 pt-1">
-                {(slide.palette ?? PALETTE).map((hex, i) => (
-                  <label
-                    key={i}
-                    className="relative size-6 border border-line cursor-pointer shrink-0"
-                    style={{ background: hex }}
-                    title={hex}
-                  >
-                    <input
-                      type="color"
-                      value={hex}
-                      onChange={(e) => {
-                        const next = [...(slide.palette ?? PALETTE)];
-                        next[i] = e.target.value;
-                        patchSlide({ palette: next });
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </label>
-                ))}
-                {slide.palette && (
-                  <button
-                    onClick={() => patchSlide({ palette: undefined })}
-                    className="text-xs text-muted hover:text-foreground underline underline-offset-4 ml-1"
-                    title="Back to the club palette — this post then follows any change made to it"
-                  >
-                    reset
-                  </button>
-                )}
-              </div>
-            )}
             <Row label="veil">
               <input
                 type="range"
@@ -886,6 +865,63 @@ export default function PostLab() {
             </div>
           </Section>
 
+          <Section title="colour">
+            <Seg
+              value={slide.color ? "on" : "off"}
+              options={[
+                { value: "off", label: "black & white" },
+                { value: "on", label: "colour" },
+              ]}
+              onChange={(v) => patchSlide({ color: v === "on" })}
+            />
+            {slide.color && (
+              <>
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  {(slide.palette ?? PALETTE).map((hex, i) => (
+                    <label
+                      key={i}
+                      className="relative size-7 border border-line cursor-pointer shrink-0"
+                      style={{ background: hex }}
+                      title={hex}
+                    >
+                      <input
+                        type="color"
+                        value={hex}
+                        onChange={(e) => {
+                          const next = [...(slide.palette ?? PALETTE)];
+                          next[i] = e.target.value;
+                          patchSlide({ palette: next });
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    onClick={() =>
+                      patchSlide({
+                        colorSeed: Math.floor(Math.random() * 9999) + 1,
+                      })
+                    }
+                  >
+                    Shuffle
+                  </Button>
+                  {slide.palette && (
+                    <Button onClick={() => patchSlide({ palette: undefined })}>
+                      Club palette
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted leading-relaxed pt-1">
+                  {slide.palette
+                    ? "Custom colours — this post no longer follows the club palette."
+                    : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}
+                </p>
+              </>
+            )}
+          </Section>
+
           <Section title="layers">
             <div className="border border-line divide-y divide-line">
               {[...slide.layers].reverse().map((l, ri) => {
@@ -922,6 +958,11 @@ export default function PostLab() {
               <Button onClick={() => moveLayer(-1)}>↓</Button>
               <Button onClick={removeLayer} disabled={slide.layers.length <= 1}>
                 Delete
+              </Button>
+            </div>
+            <div className="flex">
+              <Button onClick={randomizeLayer} primary>
+                Randomise this layer
               </Button>
             </div>
             <Row label="blend">

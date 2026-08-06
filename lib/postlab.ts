@@ -232,6 +232,24 @@ export const SHADERS: ShaderDef[] = [
 export const shaderDef = (type: ShaderType): ShaderDef =>
   SHADERS.find((s) => s.type === type) ?? SHADERS[0];
 
+/* A usable random background rather than a uniform one: parameters land in
+   the middle 60% of each range, because the ends are where posts stop
+   working — speed 0 doesn't move, warp 1 is mush, density 1 is empty. */
+export function randomShader(type?: ShaderType): ShaderSpec {
+  const pool = SHADERS.filter((s) => s.type !== "none");
+  const def = type ? shaderDef(type) : pool[Math.floor(Math.random() * pool.length)];
+  const spec: ShaderSpec = { type: def.type };
+  for (const c of def.controls) {
+    const lo = c.min + (c.max - c.min) * 0.2;
+    const hi = c.min + (c.max - c.min) * 0.8;
+    const stepped = Math.round((lo + Math.random() * (hi - lo)) / c.step) * c.step;
+    spec[c.key] = Math.round(stepped * 100) / 100;
+  }
+  for (const c of def.choices ?? [])
+    spec[c.key] = c.values[Math.floor(Math.random() * c.values.length)];
+  return spec;
+}
+
 export function defaultShader(type: ShaderType): ShaderSpec {
   const def = shaderDef(type);
   const spec: ShaderSpec = { type };
@@ -265,6 +283,31 @@ export function paletteAt(
   const x = Math.sin(seed * 127.1 + n * 311.7) * 43758.5453;
   const f = x - Math.floor(x);
   return list[Math.floor(f * list.length) % list.length];
+}
+
+const luminance = (hex: string) => {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+};
+
+/* A single flat colour has to be visible against the slide's background —
+   the palette holds white and cream, and either of those on a light theme
+   is a blank post. Only used where one colour stands for the whole layer;
+   the pixel mosaic keeps every colour, since there the pale ones read as
+   holes rather than as nothing. */
+export function paletteInk(
+  seed: number,
+  theme: Theme,
+  palette?: readonly string[],
+): string {
+  const { ink, bg } = tones(theme);
+  const bgLum = luminance(bg);
+  const list = (palette?.length ? palette : PALETTE).filter(
+    (hex) => Math.abs(luminance(hex) - bgLum) > 0.25,
+  );
+  return list.length ? paletteAt(seed, 0, list) : ink;
 }
 
 const HEX = /^#[0-9a-f]{6}$/i;
