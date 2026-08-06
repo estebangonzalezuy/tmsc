@@ -11,7 +11,7 @@ import { PALETTE, tones, type ShaderSpec, type Theme } from "@/lib/postlab";
 
 const TAU = Math.PI * 2;
 
-const num = (v: number | string | undefined, def: number) =>
+const num = (v: number | string | boolean | undefined, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
 
 /* Smooth pseudo-noise flow field in ~[-1,1]²; time only enters as sin/cos of

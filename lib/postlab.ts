@@ -27,9 +27,11 @@ export type Theme = "light" | "dark";
    renderer ("forms", for shapes the shader doesn't have). "none" = plain. */
 export type ShaderType = "none" | "dithering" | "forms";
 
+/* Boolean is in the index signature only for the layer's `color` switch;
+   every shader parameter is still a number or a choice string. */
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
-  number | string
+  number | string | boolean | undefined
 >;
 
 /* How stacked layers mix — CSS mix-blend-mode names, which map 1:1 onto
@@ -48,6 +50,10 @@ export type BlendMode = (typeof BLENDS)[number];
 
 /** One background layer: a shader/generative spec plus mixing + transform. */
 export type LayerSpec = ShaderSpec & {
+  /** Whether this layer paints from the palette. Absent means "whatever the
+      slide said", which is how every link written before colour became a
+      per-layer choice keeps rendering. */
+  color?: boolean;
   opacity: number;
   blend: BlendMode;
   offsetX: number; // -1..1
@@ -440,7 +446,12 @@ export function normalizeSpec(raw: unknown): PostSpec {
       slide.layers = layers.slice(0, MAX_LAYERS).map((l) => {
         const mapped = mapLegacyLayer(l);
         const type = shaderDef(mapped?.type ?? "dithering").type;
-        return { ...defaultLayer(type), ...mapped, type };
+        const merged = { ...defaultLayer(type), ...mapped, type } as LayerSpec;
+        /* Colour used to be a slide-wide switch; fall back to it so older
+           links land where they always did. */
+        merged.color =
+          typeof merged.color === "boolean" ? merged.color : slide.color;
+        return merged;
       });
       return slide;
     },

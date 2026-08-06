@@ -17,7 +17,7 @@ import {
 } from "@/lib/postlab";
 import GenerativeLayer from "./GenerativeLayer";
 
-const num = (v: number | string | undefined, def: number) =>
+const num = (v: number | string | boolean | undefined, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
 
 const SHAPES = ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"];

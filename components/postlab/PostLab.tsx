@@ -650,7 +650,7 @@ export default function PostLab() {
                       height={h}
                       duration={spec.duration}
                       color={{
-                        on: slide.color,
+                        on: l.color === true,
                         seed: slide.colorSeed,
                         palette: slide.palette,
                       }}
@@ -875,61 +875,73 @@ export default function PostLab() {
             </div>
           </Section>
 
-          <Section title="colour">
-            <Seg
-              value={slide.color ? "on" : "off"}
-              options={[
-                { value: "off", label: "black & white" },
-                { value: "on", label: "colour" },
-              ]}
-              onChange={(v) => patchSlide({ color: v === "on" })}
-            />
-            {slide.color && (
-              <>
-                <div className="flex items-center gap-2 flex-wrap pt-1">
-                  {(slide.palette ?? PALETTE).map((hex, i) => (
-                    <label
-                      key={i}
-                      className="relative size-7 border border-line cursor-pointer shrink-0"
-                      style={{ background: hex }}
-                      title={hex}
-                    >
-                      <input
-                        type="color"
-                        value={hex}
-                        onChange={(e) => {
-                          const next = [...(slide.palette ?? PALETTE)];
-                          next[i] = e.target.value;
-                          patchSlide({ palette: next });
-                        }}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                    </label>
-                  ))}
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    onClick={() =>
-                      patchSlide({
-                        colorSeed: Math.floor(Math.random() * 9999) + 1,
-                      })
-                    }
+          <Section title="palette">
+            <div className="flex items-center gap-2 flex-wrap">
+              {(slide.palette ?? PALETTE).map((hex, i) => (
+                <span key={i} className="relative shrink-0">
+                  <label
+                    className="block size-7 border border-line cursor-pointer"
+                    style={{ background: hex }}
+                    title={`${hex} — click to change`}
                   >
-                    Shuffle
-                  </Button>
-                  {slide.palette && (
-                    <Button onClick={() => patchSlide({ palette: undefined })}>
-                      Club palette
-                    </Button>
+                    <input
+                      type="color"
+                      value={hex}
+                      onChange={(e) => {
+                        const next = [...(slide.palette ?? PALETTE)];
+                        next[i] = e.target.value;
+                        patchSlide({ palette: next });
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </label>
+                  {(slide.palette ?? PALETTE).length > 2 && (
+                    <button
+                      onClick={() => {
+                        const next = (slide.palette ?? [...PALETTE]).filter(
+                          (_, j) => j !== i,
+                        );
+                        patchSlide({ palette: next });
+                      }}
+                      title="Remove this colour"
+                      className="absolute -top-2 -right-2 size-4 leading-none text-[10px] border border-line bg-background text-muted hover:text-foreground"
+                    >
+                      ×
+                    </button>
                   )}
-                </div>
-                <p className="text-xs text-muted leading-relaxed pt-1">
-                  {slide.palette
-                    ? "Custom colours — this post no longer follows the club palette."
-                    : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}
-                </p>
-              </>
-            )}
+                </span>
+              ))}
+              <button
+                onClick={() => {
+                  const cur = slide.palette ?? [...PALETTE];
+                  patchSlide({ palette: [...cur, PALETTE[cur.length % PALETTE.length]] });
+                }}
+                title="Add a colour"
+                className="size-7 border border-line text-muted hover:text-foreground shrink-0"
+              >
+                +
+              </button>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button
+                onClick={() =>
+                  patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
+                }
+              >
+                Shuffle
+              </Button>
+              {slide.palette && (
+                <Button onClick={() => patchSlide({ palette: undefined })}>
+                  Club palette
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted leading-relaxed pt-1">
+              {slide.palette
+                ? `${slide.palette.length} custom colours — this post no longer follows the club palette.`
+                : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}{" "}
+              Turn colour on per layer, below.
+            </p>
           </Section>
 
           <Section title="layers">
@@ -989,6 +1001,16 @@ export default function PostLab() {
                   </option>
                 ))}
               </select>
+            </Row>
+            <Row label="colour">
+              <Seg
+                value={layer.color === true ? "on" : "off"}
+                options={[
+                  { value: "off", label: "black & white" },
+                  { value: "on", label: "palette" },
+                ]}
+                onChange={(v) => patchLayer({ color: v === "on" })}
+              />
             </Row>
             <Row label="opacity">
               <input
