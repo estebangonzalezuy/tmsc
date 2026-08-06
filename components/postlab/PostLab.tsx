@@ -152,6 +152,9 @@ export default function PostLab() {
   const stageRef = useRef<HTMLDivElement>(null);
   const shaderBoxRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
+  /* The last hash this component wrote, so its own serialisation is never
+     mistaken for someone opening a link. */
+  const ownHashRef = useRef<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState({ w: 400, h: 500 });
 
@@ -179,10 +182,32 @@ export default function PostLab() {
   /* Keep the URL shareable as the spec changes. */
   useEffect(() => {
     const id = setTimeout(() => {
-      window.history.replaceState(null, "", `#spec=${encodeSpec(spec)}`);
+      const encoded = encodeSpec(spec);
+      ownHashRef.current = encoded;
+      window.history.replaceState(null, "", `#spec=${encoded}`);
     }, 400);
     return () => clearTimeout(id);
   }, [spec]);
+
+  /* Following a #spec= link while the tool is already open changes the hash
+     without remounting, so the mount-time read above never fires and the
+     writer above would then overwrite the incoming link with whatever was
+     already loaded. Listen for the navigation instead: opening a post from
+     Notion has to work in a reused tab, which is what a phone always does. */
+  useEffect(() => {
+    const onHashChange = () => {
+      const encoded = window.location.hash.match(/spec=([^&]+)/)?.[1];
+      if (!encoded || encoded === ownHashRef.current) return;
+      const decoded = decodeSpec(encoded);
+      if (!decoded) return;
+      ownHashRef.current = encoded;
+      setSpec(decoded);
+      setActive(0);
+      setActiveLayer(0);
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   /* Fit the slide into the available stage area. */
   useEffect(() => {
