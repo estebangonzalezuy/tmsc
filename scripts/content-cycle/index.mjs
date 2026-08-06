@@ -183,7 +183,8 @@ async function visualFor(row, vocab, schema, draft) {
   const spec = assembleSpec(brief, vocab, {
     format: formatFromRow(rowFormat, vocab),
   });
-  return { spec, link: postLink(ORIGIN, spec), note: brief.note ?? "" };
+  const { link, dropped } = postLink(ORIGIN, spec, vocab);
+  return { spec, link, dropped, note: brief.note ?? "" };
 }
 
 async function jobDrafts() {
@@ -215,7 +216,10 @@ async function jobVisuals() {
 
   for (const row of rows) {
     const name = get.title(row);
-    const { spec, link, note } = await visualFor(row, vocab, schema);
+    const { spec, link, note, dropped } = await visualFor(row, vocab, schema);
+    if (dropped) {
+      say(`visuals: "${name}" — dropped ${dropped} slide(s); the link hit Notion's 2000-character limit`);
+    }
     if (DRY) {
       say(`visuals: would generate "${name}" — ${note}`);
       say(`  ${link}`);
@@ -251,7 +255,10 @@ async function jobNow() {
     /* Keep a draft you've already written or edited; only write a missing one. */
     const existing = get.text(row, "LinkedIn draft");
     const draft = existing || (await draftFor(row, objective));
-    const { spec, link } = await visualFor(row, vocab, schema, draft);
+    const { spec, link, dropped } = await visualFor(row, vocab, schema, draft);
+    if (dropped) {
+      say(`now: "${name}" — dropped ${dropped} slide(s); the link hit Notion's 2000-character limit`);
+    }
 
     if (DRY) {
       say(`now: would finish "${name}" — draft ${draft.length} chars, ${spec.format}`);
@@ -335,7 +342,7 @@ async function jobJournal() {
         colorSeed: Math.floor(Math.random() * 9999) + 1,
       },
     );
-    const link = postLink(ORIGIN, spec);
+    const { link } = postLink(ORIGIN, spec, vocab);
 
     if (DRY) {
       say(`journal: would post "${out.name}" (${out.pillar}, ${spec.format}, ${withText ? "with text" : "no text"})`);

@@ -55,9 +55,15 @@ export async function fetchVocabulary(origin) {
     backgrounds[s.type] = params;
   }
 
+  /* The endpoint publishes the tool's own default spec as its example, so
+     the defaults used for minifying below can never drift from the ones
+     the Post Lab fills back in. */
+  const exampleSlide = doc.example?.spec?.slides?.[0] ?? {};
+
   return {
     version: doc.version ?? 4,
     guidance: doc.writing_guidance ?? [],
+    defaultSlide: exampleSlide,
     formats: Object.keys(doc.spec?.format?.options ?? {}),
     formatHints: doc.spec?.format?.options ?? {},
     themes: quoted(fields.theme, ["light", "dark"]),
@@ -253,11 +259,68 @@ export function assembleSpec(
   };
 }
 
-export const encodeSpec = (spec) =>
-  Buffer.from(JSON.stringify(spec), "utf8").toString("base64url");
+/* Every field already at its default is dropped before serialising — the
+   Post Lab fills them back in on read. Without this a five-slide carousel
+   encodes to ~3600 characters and Notion rejects the URL property, which
+   caps at 2000. */
+function layerDefaults(vocab, type) {
+  const params = vocab.backgrounds[type] ?? {};
+  const def = {
+    opacity: 1,
+    blend: "normal",
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    scale: params.scale?.def ?? 1,
+  };
+  for (const [key, p] of Object.entries(params)) def[key] = p.def;
+  return def;
+}
 
-export const postLink = (origin, spec) =>
-  `${origin}/postlab#spec=${encodeSpec(spec)}`;
+export function minifySpec(spec, vocab) {
+  const base = vocab.defaultSlide ?? {};
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const out = { v: spec.v, format: spec.format };
+  if (spec.duration !== 6) out.duration = spec.duration;
+
+  out.slides = spec.slides.map((slide) => {
+    const s = {};
+    for (const [k, v] of Object.entries(slide)) {
+      if (k === "layers") continue;
+      if (!same(v, base[k])) s[k] = v;
+    }
+    s.layers = slide.layers.map((layer) => {
+      const def = layerDefaults(vocab, layer.type);
+      const l = { type: layer.type };
+      for (const [k, v] of Object.entries(layer)) {
+        if (k !== "type" && !same(v, def[k])) l[k] = v;
+      }
+      return l;
+    });
+    return s;
+  });
+  return out;
+}
+
+export const encodeSpec = (spec, vocab) =>
+  Buffer.from(JSON.stringify(vocab ? minifySpec(spec, vocab) : spec), "utf8")
+    .toString("base64url");
+
+/** Notion URL properties reject anything longer than this. */
+export const NOTION_URL_LIMIT = 2000;
+
+/* Returns the link plus however many slides actually fit. A carousel long
+   enough to blow the limit even after minifying is rare, but dropping the
+   tail loudly beats a run that dies and leaves the row stuck. */
+export function postLink(origin, spec, vocab) {
+  let slides = spec.slides;
+  let link = `${origin}/postlab#spec=${encodeSpec(spec, vocab)}`;
+  while (link.length > NOTION_URL_LIMIT && slides.length > 1) {
+    slides = slides.slice(0, -1);
+    link = `${origin}/postlab#spec=${encodeSpec({ ...spec, slides }, vocab)}`;
+  }
+  return { link, kept: slides.length, dropped: spec.slides.length - slides.length };
+}
 
 /** The Pipeline's Format select doesn't map 1:1 onto the spec's formats. */
 export function formatFromRow(rowFormat, vocab) {

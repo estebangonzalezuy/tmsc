@@ -455,8 +455,38 @@ export function normalizeSpec(raw: unknown): PostSpec {
 
 /* ------------------------------------------------------------ spec in URL */
 
+/* Drop everything already at its default before serialising. normalizeSpec
+   fills them back in on read, so this is lossless — and it matters: a link
+   goes in a Notion URL property, which rejects anything over 2000
+   characters, and a five-slide carousel spelled out in full runs to 3600. */
+export function minifySpec(spec: PostSpec): Record<string, unknown> {
+  const base = defaultSlide();
+  const out: Record<string, unknown> = { v: spec.v, format: spec.format };
+  if (spec.duration !== 6) out.duration = spec.duration;
+
+  out.slides = spec.slides.map((slide) => {
+    const s: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(slide)) {
+      if (k === "layers" || k === "palette") continue;
+      if (JSON.stringify(v) !== JSON.stringify(base[k as keyof SlideSpec])) s[k] = v;
+    }
+    if (slide.palette) s.palette = slide.palette;
+    s.layers = slide.layers.map((layer) => {
+      const def = defaultLayer(layer.type);
+      const l: Record<string, unknown> = { type: layer.type };
+      for (const [k, v] of Object.entries(layer)) {
+        if (k === "type") continue;
+        if (JSON.stringify(v) !== JSON.stringify(def[k as keyof LayerSpec])) l[k] = v;
+      }
+      return l;
+    });
+    return s;
+  });
+  return out;
+}
+
 export function encodeSpec(spec: PostSpec): string {
-  const json = JSON.stringify(spec);
+  const json = JSON.stringify(minifySpec(spec));
   const bytes = new TextEncoder().encode(json);
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
