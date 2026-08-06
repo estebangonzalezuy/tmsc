@@ -55,7 +55,7 @@ export function drawGenerative(
   duration: number,
   w: number,
   h: number,
-  color?: { on: boolean; seed: number },
+  color?: { on: boolean; seed: number; palette?: readonly string[] },
 ) {
   const { ink, bg } = tones(theme);
   const u = w / 1080;
@@ -149,7 +149,9 @@ export function drawGenerative(
     parseInt(hex.slice(3, 5), 16),
     parseInt(hex.slice(5, 7), 16),
   ];
-  const inks = color?.on ? PALETTE.map(rgb) : [rgb(ink)];
+  const inks = color?.on
+    ? (color.palette?.length ? color.palette : PALETTE).map(rgb)
+    : [rgb(ink)];
   const seed = color?.seed ?? 1;
   /* Coarser than one cell: colour moves in small blocks, which reads as a
      mosaic rather than as noise. */

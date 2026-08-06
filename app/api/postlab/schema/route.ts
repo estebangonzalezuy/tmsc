@@ -70,6 +70,8 @@ export function GET() {
             "boolean (default false) — paint the dithered pixels from the club palette instead of the two theme tones. The canvas 'forms' renderer colours pixel by pixel; the WebGL 'dithering' shader has only two tones, so it takes a single palette colour for the whole layer.",
           colorSeed:
             "number (default 1) — which colours land where. Change it to re-roll; the same seed always renders the same post.",
+          palette:
+            "optional array of hex strings — overrides the club palette for this slide only. Leave it out (the normal case) and the slide follows the palette in the code, so changing the club's colours restyles every post that never overrode them.",
           veil: "number 0-0.9 — background-colored wash dimming the background (default 0.25); raise it when text sits on dense patterns",
           titlePixel:
             "number 0-32 (default 0) — ordered-dithers the title glyphs into sharp binary ink/transparent blocks at this cell size (px); 0 is off, the crisp default. Same Bayer-threshold technique as the dithering shapes, applied to rendered type — no gray, no gradient, hard edges.",

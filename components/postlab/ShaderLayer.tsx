@@ -38,7 +38,7 @@ export default function ShaderLayer({
   width: number;
   height: number;
   duration: number;
-  color?: { on: boolean; seed: number };
+  color?: { on: boolean; seed: number; palette?: string[] };
 }) {
   if (shaderDef(shader.type).kind === "generative") {
     return (
@@ -51,6 +51,7 @@ export default function ShaderLayer({
         duration={duration}
         colorOn={color?.on}
         colorSeed={color?.seed}
+        colorPalette={color?.palette?.join(",") ?? ""}
       />
     );
   }
@@ -75,7 +76,7 @@ export default function ShaderLayer({
       colorBack={bg}
       /* The WebGL dithering only has two tones, so colour here means one
          palette pick for the whole layer rather than per-pixel. */
-      colorFront={color?.on ? paletteAt(color.seed, 0) : ink}
+      colorFront={color?.on ? paletteAt(color.seed, 0, color.palette) : ink}
       shape={shape as DitheringShape}
       type={dtype as DitheringType}
       size={num(s.size, 3)}

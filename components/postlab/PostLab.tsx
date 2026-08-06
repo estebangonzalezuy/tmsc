@@ -17,6 +17,7 @@ import {
   BLENDS,
   FORMATS,
   MAX_LAYERS,
+  PALETTE,
   PRESETS,
   SHADERS,
   decodeSpec,
@@ -616,7 +617,11 @@ export default function PostLab() {
                       width={w}
                       height={h}
                       duration={spec.duration}
-                      color={{ on: slide.color, seed: slide.colorSeed }}
+                      color={{
+                        on: slide.color,
+                        seed: slide.colorSeed,
+                        palette: slide.palette,
+                      }}
                     />
                   </div>
                 ))}
@@ -797,6 +802,38 @@ export default function PostLab() {
                 </button>
               )}
             </div>
+            {slide.color && (
+              <div className="flex items-center gap-2 pt-1">
+                {(slide.palette ?? PALETTE).map((hex, i) => (
+                  <label
+                    key={i}
+                    className="relative size-6 border border-line cursor-pointer shrink-0"
+                    style={{ background: hex }}
+                    title={hex}
+                  >
+                    <input
+                      type="color"
+                      value={hex}
+                      onChange={(e) => {
+                        const next = [...(slide.palette ?? PALETTE)];
+                        next[i] = e.target.value;
+                        patchSlide({ palette: next });
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </label>
+                ))}
+                {slide.palette && (
+                  <button
+                    onClick={() => patchSlide({ palette: undefined })}
+                    className="text-xs text-muted hover:text-foreground underline underline-offset-4 ml-1"
+                    title="Back to the club palette — this post then follows any change made to it"
+                  >
+                    reset
+                  </button>
+                )}
+              </div>
+            )}
             <Row label="veil">
               <input
                 type="range"

@@ -1,7 +1,7 @@
-// Minimal animated GIF89a encoder. Posts are two-tone or drawn from a
-// seven-colour palette, so a fixed table of 128 grays plus the palette
-// (and a little headroom for the blends between them) encodes frames with no
-// quantization step — no ffmpeg payload needed for a format this simple.
+// Minimal animated GIF89a encoder. Posts are two-tone or drawn from a small
+// palette, so a table of grays plus the colours actually in play encodes
+// frames with no real quantization step — no ffmpeg payload needed for a
+// format this simple.
 
 import { PALETTE } from "@/lib/postlab";
 
@@ -68,16 +68,18 @@ function lzwEncode(indices: Uint8Array): number[] {
   return out.bytes;
 }
 
-/* Build the fixed table once: 128 grays, the palette, and the palette mixed
-   halfway to black and to white. */
-const GIF_TABLE: [number, number, number][] = (() => {
+/* 128 grays — the monochrome case stays effectively lossless — then the
+   colours actually in play plus each mixed halfway to black and to white, so
+   anti-aliased edges have somewhere to land. Built per encode, because a
+   slide may override the club palette. */
+function buildTable(palette: readonly string[]): [number, number, number][] {
   const table: [number, number, number][] = [];
   for (let i = 0; i < 128; i++) {
     const v = Math.round((i * 255) / 127);
     table.push([v, v, v]);
   }
   const mix = (c: number, t: number, k: number) => Math.round(c + (t - c) * k);
-  for (const hex of PALETTE) {
+  for (const hex of palette.length ? palette : PALETTE) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
@@ -91,52 +93,52 @@ const GIF_TABLE: [number, number, number][] = (() => {
   }
   while (table.length < 256) table.push([0, 0, 0]);
   return table.slice(0, 256);
-})();
-
-/* Nearest table entry by squared distance. The table is small and the source
-   only ever holds a handful of distinct colours, so a cache makes this cheap
-   across every pixel of every frame. */
-const nearestCache = new Map<number, number>();
-function nearest(r: number, g: number, b: number): number {
-  const key = (r << 16) | (g << 8) | b;
-  const hit = nearestCache.get(key);
-  if (hit !== undefined) return hit;
-  let best = 0;
-  let bestD = Infinity;
-  for (let i = 0; i < GIF_TABLE.length; i++) {
-    const [tr, tg, tb] = GIF_TABLE[i];
-    const d = (tr - r) ** 2 + (tg - g) ** 2 + (tb - b) ** 2;
-    if (d < bestD) {
-      bestD = d;
-      best = i;
-    }
-  }
-  nearestCache.set(key, best);
-  return best;
 }
 
 export class GifEncoder {
   private parts: number[] = [];
+
+  private table: [number, number, number][];
+  /* The source only ever holds a handful of distinct colours, so caching the
+     nearest-entry lookup makes it cheap across every pixel of every frame. */
+  private cache = new Map<number, number>();
 
   constructor(
     private w: number,
     private h: number,
     /** Frame delay in hundredths of a second. */
     private delay: number,
+    /** Colours in play; empty means the club palette. */
+    palette: readonly string[] = PALETTE,
   ) {
+    this.table = buildTable(palette);
     const p = this.parts;
     // header + logical screen descriptor with a global 256-color table
     for (const ch of "GIF89a") p.push(ch.charCodeAt(0));
     p.push(w & 0xff, w >> 8, h & 0xff, h >> 8, 0xf7, 0, 0);
-    /* Global colour table: 128 evenly spaced grays in the first half — the
-       monochrome case stays effectively lossless — then the club palette,
-       then the palette blended toward black and white so anti-aliased edges
-       have somewhere to land. */
-    for (const [r, g, b] of GIF_TABLE) p.push(r, g, b);
+    for (const [r, g, b] of this.table) p.push(r, g, b);
     // NETSCAPE2.0 loop-forever extension
     p.push(0x21, 0xff, 11);
     for (const ch of "NETSCAPE2.0") p.push(ch.charCodeAt(0));
     p.push(3, 1, 0, 0, 0);
+  }
+
+  private nearest(r: number, g: number, b: number): number {
+    const key = (r << 16) | (g << 8) | b;
+    const hit = this.cache.get(key);
+    if (hit !== undefined) return hit;
+    let best = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < this.table.length; i++) {
+      const [tr, tg, tb] = this.table[i];
+      const d = (tr - r) ** 2 + (tg - g) ** 2 + (tb - b) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    this.cache.set(key, best);
+    return best;
   }
 
   /** Add a frame from RGBA pixels, mapped to the nearest table entry. */
@@ -145,7 +147,7 @@ export class GifEncoder {
     const indices = new Uint8Array(w * h);
     for (let i = 0; i < indices.length; i++) {
       const o = i * 4;
-      indices[i] = nearest(rgba[o], rgba[o + 1], rgba[o + 2]);
+      indices[i] = this.nearest(rgba[o], rgba[o + 1], rgba[o + 2]);
     }
     // graphic control extension
     p.push(0x21, 0xf9, 4, 0, delay & 0xff, delay >> 8, 0, 0);

@@ -97,6 +97,10 @@ export type SlideSpec = {
   color: boolean;
   /** Which colors get picked, and where. Change it to re-roll. */
   colorSeed: number;
+  /** Override the club palette for this slide only. Absent — the normal
+      case — means the palette in this file, so editing it there restyles
+      every post that never overrode it. */
+  palette?: string[];
   /** 0 = off; else the ordered-dither cell size (px) the title glyphs are
       thresholded into — sharp binary ink/transparent blocks, no gray. */
   titlePixel: number;
@@ -252,10 +256,27 @@ export const PALETTE = [
 
 /* Deterministic pick, so preview and export agree and a link always renders
    the same post. */
-export function paletteAt(seed: number, n: number): string {
+export function paletteAt(
+  seed: number,
+  n: number,
+  palette: readonly string[] = PALETTE,
+): string {
+  const list = palette.length ? palette : PALETTE;
   const x = Math.sin(seed * 127.1 + n * 311.7) * 43758.5453;
   const f = x - Math.floor(x);
-  return PALETTE[Math.floor(f * PALETTE.length) % PALETTE.length];
+  return list[Math.floor(f * list.length) % list.length];
+}
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/** Keep only real hexes; an empty result means "use the club palette". */
+export function cleanPalette(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const list = raw
+    .filter((c): c is string => typeof c === "string" && HEX.test(c))
+    .map((c) => c.toLowerCase())
+    .slice(0, 8);
+  return list.length ? list : undefined;
 }
 
 /* Tones for the monochrome contract: shader colors derive from the slide
@@ -352,6 +373,9 @@ export function normalizeSpec(raw: unknown): PostSpec {
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
       slide.color = slide.color === true;
       slide.colorSeed = Number(slide.colorSeed) || 1;
+      const custom = cleanPalette(s.palette);
+      if (custom) slide.palette = custom;
+      else delete slide.palette;
       // v3 specs carried a single `textPixel` for the whole layer; split it
       // across both new controls so old links keep their look.
       const legacyPixel = (s as { textPixel?: number }).textPixel;

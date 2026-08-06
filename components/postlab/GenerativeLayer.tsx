@@ -17,6 +17,7 @@ export default function GenerativeLayer({
   duration,
   colorOn = false,
   colorSeed = 1,
+  colorPalette = "",
 }: {
   shader: ShaderSpec;
   theme: Theme;
@@ -28,6 +29,9 @@ export default function GenerativeLayer({
      fresh object each render would restart the loop every frame. */
   colorOn?: boolean;
   colorSeed?: number;
+  /** Comma-joined hexes rather than an array, so the animation effect can
+      depend on it without restarting whenever the parent re-renders. */
+  colorPalette?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const timeRef = useRef(0); // survives pauses and param tweaks
@@ -39,6 +43,7 @@ export default function GenerativeLayer({
       drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
         on: colorOn,
         seed: colorSeed,
+        palette: colorPalette ? colorPalette.split(",") : undefined,
       });
       return;
     }
@@ -50,12 +55,13 @@ export default function GenerativeLayer({
       drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
         on: colorOn,
         seed: colorSeed,
+        palette: colorPalette ? colorPalette.split(",") : undefined,
       });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [shader, theme, playing, width, height, duration, colorOn, colorSeed]);
+  }, [shader, theme, playing, width, height, duration, colorOn, colorSeed, colorPalette]);
 
   return (
     <canvas

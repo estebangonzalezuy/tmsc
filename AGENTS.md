@@ -87,9 +87,13 @@ families; extend the dithering vocabulary instead.
 
 Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
 `normalizeSpec` if it must change) — links and the schema endpoint are the
-integration surface. The spec carries no hex values: a slide has `color`
-(on/off) and `colorSeed`, and the palette itself stays in `lib/postlab.ts`,
-so the club can restyle every existing link by editing one array.
+integration surface. Colour is a switch, not a value, by default: a slide
+has `color` (on/off) and `colorSeed`, and the palette lives in `PALETTE` in
+`lib/postlab.ts` — so editing that one array restyles every post that never
+overrode it. A slide may carry its own `palette` (array of hexes) when the
+owner picks colours by hand; that slide then stops following the club
+palette, which is the deliberate cost of the picker. Generated posts never
+set it.
 
 ## The content system
 

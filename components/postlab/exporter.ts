@@ -201,7 +201,7 @@ export function recordGif(
   small.height = gh;
   const smallCtx = small.getContext("2d", { willReadFrequently: true })!;
 
-  const gif = new GifEncoder(gw, gh, delay);
+  const gif = new GifEncoder(gw, gh, delay, spec.slides[index]?.palette ?? []);
 
   return new Promise((resolve) => {
     let raf = 0;
