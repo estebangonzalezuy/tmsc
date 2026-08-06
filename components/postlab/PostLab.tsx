@@ -616,6 +616,7 @@ export default function PostLab() {
                       width={w}
                       height={h}
                       duration={spec.duration}
+                      color={{ on: slide.color, seed: slide.colorSeed }}
                     />
                   </div>
                 ))}
@@ -774,6 +775,7 @@ export default function PostLab() {
                   ["boxed", slide.boxed, () => patchSlide({ boxed: !slide.boxed })],
                   ["plate", slide.plate, () => patchSlide({ plate: !slide.plate })],
                   ["ring", slide.ring, () => patchSlide({ ring: !slide.ring })],
+                  ["color", slide.color, () => patchSlide({ color: !slide.color })],
                 ] as const
               ).map(([label, on, toggle]) => (
                 <button
@@ -784,6 +786,16 @@ export default function PostLab() {
                   {on ? "◉" : "○"} {label}
                 </button>
               ))}
+              {slide.color && (
+                <button
+                  onClick={() =>
+                    patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
+                  }
+                  className="text-muted hover:text-foreground underline underline-offset-4"
+                >
+                  shuffle
+                </button>
+              )}
             </div>
             <Row label="veil">
               <input

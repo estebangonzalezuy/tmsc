@@ -92,6 +92,11 @@ export type SlideSpec = {
   ring: boolean;
   /** 0-0.9 background-colored wash over the shader, for text legibility. */
   veil: number;
+  /** Paint the dithered pixels from the club palette instead of the two
+      theme tones. Off is the original black-and-white look. */
+  color: boolean;
+  /** Which colors get picked, and where. Change it to re-roll. */
+  colorSeed: number;
   /** 0 = off; else the ordered-dither cell size (px) the title glyphs are
       thresholded into — sharp binary ink/transparent blocks, no gray. */
   titlePixel: number;
@@ -231,8 +236,30 @@ export function defaultShader(type: ShaderType): ShaderSpec {
   return spec;
 }
 
-/* The whole tool is grayscale by contract: shader colors derive from the
-   slide theme, never from the spec. */
+/* The club's palette. Colour is off by default and the spec never carries a
+   hex — a slide says only whether colour is on and which seed picks from
+   this list, so the palette stays a design decision in one place and every
+   existing link keeps working untouched. */
+export const PALETTE = [
+  "#adb4f5", // periwinkle
+  "#2e7d46", // green
+  "#000000", // black
+  "#ffffff", // white
+  "#ee4b2b", // orange red
+  "#3d3deb", // indigo
+  "#fffdf0", // cream
+] as const;
+
+/* Deterministic pick, so preview and export agree and a link always renders
+   the same post. */
+export function paletteAt(seed: number, n: number): string {
+  const x = Math.sin(seed * 127.1 + n * 311.7) * 43758.5453;
+  const f = x - Math.floor(x);
+  return PALETTE[Math.floor(f * PALETTE.length) % PALETTE.length];
+}
+
+/* Tones for the monochrome contract: shader colors derive from the slide
+   theme, never from the spec. */
 export function tones(theme: Theme) {
   const ink = theme === "dark" ? "#ffffff" : "#0d0d0d";
   const bg = theme === "dark" ? "#0d0d0d" : "#ffffff";
@@ -261,6 +288,8 @@ export function defaultSlide(partial: Partial<SlideSpec> = {}): SlideSpec {
     align: "left",
     ring: false,
     veil: 0.25,
+    color: false,
+    colorSeed: 1,
     titlePixel: 0,
     metaPixel: 0,
     theme: "light",
@@ -321,6 +350,8 @@ export function normalizeSpec(raw: unknown): PostSpec {
       const s = raw as Partial<SlideSpec> & { shader?: ShaderSpec };
       const slide = defaultSlide(s);
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
+      slide.color = slide.color === true;
+      slide.colorSeed = Number(slide.colorSeed) || 1;
       // v3 specs carried a single `textPixel` for the whole layer; split it
       // across both new controls so old links keep their look.
       const legacyPixel = (s as { textPixel?: number }).textPixel;

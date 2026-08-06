@@ -1,12 +1,20 @@
 "use client";
 
-// The Post Lab's single shader: Paper Shaders' Dithering, always in the
-// slide theme's two tones. Everything else renders through the canvas-2D
-// dithered-forms engine (GenerativeLayer). Colors never come from the spec.
+// The Post Lab's single shader: Paper Shaders' Dithering, in the slide
+// theme's two tones or — when colour is on — with its ink taken from the
+// club palette. Everything else renders through the canvas-2D
+// dithered-forms engine (GenerativeLayer), which can colour every pixel.
+// The spec still carries no hex: only a switch and a seed.
 
 import { Dithering } from "@paper-design/shaders-react";
 import type { DitheringShape, DitheringType } from "@paper-design/shaders";
-import { shaderDef, tones, type ShaderSpec, type Theme } from "@/lib/postlab";
+import {
+  paletteAt,
+  shaderDef,
+  tones,
+  type ShaderSpec,
+  type Theme,
+} from "@/lib/postlab";
 import GenerativeLayer from "./GenerativeLayer";
 
 const num = (v: number | string | undefined, def: number) =>
@@ -22,6 +30,7 @@ export default function ShaderLayer({
   width,
   height,
   duration,
+  color,
 }: {
   shader: ShaderSpec;
   theme: Theme;
@@ -29,6 +38,7 @@ export default function ShaderLayer({
   width: number;
   height: number;
   duration: number;
+  color?: { on: boolean; seed: number };
 }) {
   if (shaderDef(shader.type).kind === "generative") {
     return (
@@ -39,6 +49,8 @@ export default function ShaderLayer({
         width={width}
         height={height}
         duration={duration}
+        colorOn={color?.on}
+        colorSeed={color?.seed}
       />
     );
   }
@@ -61,7 +73,9 @@ export default function ShaderLayer({
       webGlContextAttributes={{ preserveDrawingBuffer: true }}
       minPixelRatio={2}
       colorBack={bg}
-      colorFront={ink}
+      /* The WebGL dithering only has two tones, so colour here means one
+         palette pick for the whole layer rather than per-pixel. */
+      colorFront={color?.on ? paletteAt(color.seed, 0) : ink}
       shape={shape as DitheringShape}
       type={dtype as DitheringType}
       size={num(s.size, 3)}

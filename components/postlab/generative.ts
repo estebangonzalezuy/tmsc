@@ -7,7 +7,7 @@
 // Loop contract: every pattern is periodic in `duration` seconds (speeds
 // resolve to whole cycles per loop), so recorded reels loop seamlessly.
 
-import { tones, type ShaderSpec, type Theme } from "@/lib/postlab";
+import { PALETTE, tones, type ShaderSpec, type Theme } from "@/lib/postlab";
 
 const TAU = Math.PI * 2;
 
@@ -55,6 +55,7 @@ export function drawGenerative(
   duration: number,
   w: number,
   h: number,
+  color?: { on: boolean; seed: number },
 ) {
   const { ink, bg } = tones(theme);
   const u = w / 1080;
@@ -139,18 +140,37 @@ export function drawGenerative(
   const octx = outCanvas.getContext("2d", { willReadFrequently: true })!;
   const img = octx.createImageData(cw, chh);
   const data = img.data;
-  const inkR = parseInt(ink.slice(1, 3), 16);
-  const inkG = parseInt(ink.slice(3, 5), 16);
-  const inkB = parseInt(ink.slice(5, 7), 16);
+  /* One ink, or the palette scattered across the cells. The colour of a
+     cell depends on its position and the seed only — never on time — so the
+     mosaic holds still while the pattern moves through it, and a recorded
+     loop matches the preview frame for frame. */
+  const rgb = (hex: string) => [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+  const inks = color?.on ? PALETTE.map(rgb) : [rgb(ink)];
+  const seed = color?.seed ?? 1;
+  /* Coarser than one cell: colour moves in small blocks, which reads as a
+     mosaic rather than as noise. */
+  const BLOCK = 3;
   for (let cy = 0; cy < chh; cy++) {
     for (let cx = 0; cx < cw; cx++) {
       const d = darkness(cx, cy);
       const threshold = (BAYER4[cy % 4][cx % 4] + 0.5) / 16;
       if (d > threshold) {
+        let pick = 0;
+        if (inks.length > 1) {
+          const bx = Math.floor(cx / BLOCK);
+          const by = Math.floor(cy / BLOCK);
+          const x = Math.sin(bx * 127.1 + by * 311.7 + seed * 74.7) * 43758.5453;
+          pick = Math.floor((x - Math.floor(x)) * inks.length) % inks.length;
+        }
+        const [r, g, bb] = inks[pick];
         const o = (cy * cw + cx) * 4;
-        data[o] = inkR;
-        data[o + 1] = inkG;
-        data[o + 2] = inkB;
+        data[o] = r;
+        data[o + 1] = g;
+        data[o + 2] = bb;
         data[o + 3] = 255;
       }
     }

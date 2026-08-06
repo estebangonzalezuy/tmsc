@@ -31,7 +31,7 @@ export function GET() {
     ],
     writing_guidance: [
       "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
-      "Design is strictly black & white — there are no color options by design.",
+      "Design is black & white by default. A slide can opt into the club palette with `color: true` — the dithered pixels are then painted from a fixed seven-colour set (periwinkle, green, black, white, orange red, indigo, cream) chosen by `colorSeed`. The spec never carries a hex; the palette lives in the code.",
       "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds patterns the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word), with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
       "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story|landscape&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
       "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
@@ -66,6 +66,10 @@ export function GET() {
           plate: "boolean — filled background behind the headline, guarantees legibility over busy shaders",
           align: "'left' | 'center'",
           ring: "boolean — orbit ring of circled letters behind the text",
+          color:
+            "boolean (default false) — paint the dithered pixels from the club palette instead of the two theme tones. The canvas 'forms' renderer colours pixel by pixel; the WebGL 'dithering' shader has only two tones, so it takes a single palette colour for the whole layer.",
+          colorSeed:
+            "number (default 1) — which colours land where. Change it to re-roll; the same seed always renders the same post.",
           veil: "number 0-0.9 — background-colored wash dimming the background (default 0.25); raise it when text sits on dense patterns",
           titlePixel:
             "number 0-32 (default 0) — ordered-dithers the title glyphs into sharp binary ink/transparent blocks at this cell size (px); 0 is off, the crisp default. Same Bayer-threshold technique as the dithering shapes, applied to rendered type — no gray, no gradient, hard edges.",

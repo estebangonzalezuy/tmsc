@@ -47,8 +47,11 @@ browser). Therefore:
 
 ## Design rules
 
-- **Black and white only.** `--background` white, `--foreground` near-black,
-  grays for hierarchy. No color, ever.
+- **Black and white by default.** `--background` white, `--foreground`
+  near-black, grays for hierarchy. The site itself stays monochrome. The one
+  exception is the Post Lab, where a slide can opt into the club palette
+  (`PALETTE` in `lib/postlab.ts`) for the dithered pixels — off unless asked
+  for, and never anywhere else in the UI.
 - **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
   emphasis) via `next/font`. No other fonts.
 - **Motifs:** outlined circles, circled letters, orbital rings, boxed
@@ -74,8 +77,8 @@ families; extend the dithering vocabulary instead.
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
 - `components/postlab/` — `PostLab.tsx` (tool UI), `ShaderLayer.tsx`
-  (spec → Paper Shaders, colors always derived from the theme — grayscale
-  only), `overlay.ts` (canvas 2D text/motif renderer shared by preview and
+  (spec → Paper Shaders, tones from the slide theme or the palette when
+  `color` is on), `overlay.ts` (canvas 2D text/motif renderer shared by preview and
   export), `exporter.ts` (PNG + MediaRecorder video).
 - `app/api/postlab/schema/route.ts` — public, static JSON description of
   the spec so a Claude session anywhere can fetch it and generate links.
@@ -84,8 +87,9 @@ families; extend the dithering vocabulary instead.
 
 Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
 `normalizeSpec` if it must change) — links and the schema endpoint are the
-integration surface. Shader colors must stay theme-derived; never add color
-fields to the spec.
+integration surface. The spec carries no hex values: a slide has `color`
+(on/off) and `colorSeed`, and the palette itself stays in `lib/postlab.ts`,
+so the club can restyle every existing link by editing one array.
 
 ## The content system
 
