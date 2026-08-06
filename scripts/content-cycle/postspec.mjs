@@ -160,10 +160,15 @@ const numeric = (v, def) => (typeof v === "number" && Number.isFinite(v) ? v : d
 /* A different-looking background every time, drawn from the documented
    vocabulary rather than from the model — there is nothing to art-direct on
    a post with no words on it, so this costs no tokens. Extremes are avoided
-   on purpose: a speed of 0 doesn't move and a warp of 1 is mush. */
-export function randomLayer(vocab, rand = Math.random) {
+   on purpose: a speed of 0 doesn't move and a warp of 1 is mush. Pass
+   `only` to pin the family: the WebGL dithering shader has two tones and so
+   comes out one flat colour, which is not what "in the palette" means. */
+export function randomLayer(vocab, rand = Math.random, only) {
   const types = Object.keys(vocab.backgrounds);
-  const type = types[Math.floor(rand() * types.length)] ?? "dithering";
+  const type =
+    only && types.includes(only)
+      ? only
+      : (types[Math.floor(rand() * types.length)] ?? "dithering");
   const params = vocab.backgrounds[type] ?? {};
   const layer = { type };
   for (const [key, p] of Object.entries(params)) {

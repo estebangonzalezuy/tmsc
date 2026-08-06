@@ -324,7 +324,7 @@ async function jobJournal() {
       : out.angle;
 
     const spec = assembleSpec(
-      { slides: [out.onimage], background: randomLayer(vocab) },
+      { slides: [out.onimage], background: randomLayer(vocab, Math.random, "forms") },
       vocab,
       {
         format: out.format,
@@ -359,9 +359,9 @@ async function jobJournal() {
       Status: put.select("Used"),
       Post: put.relation([page.id]),
     });
-    const look = spec.slides[0].layers[0].type === "forms" ? "mosaic" : "one colour";
+    const bg = spec.slides[0].layers[0];
     say(
-      `journal: ✓ ${out.name} — draft + ${spec.format} visual, ${look}` +
+      `journal: ✓ ${out.name} — draft + ${spec.format} visual, ${bg.pattern}` +
         (withText ? "" : ", no text"),
     );
   }
