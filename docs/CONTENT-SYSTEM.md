@@ -62,8 +62,11 @@ than a plan.
    the post it became.
 
 One model call for the whole thing. The no-text visual costs nothing extra
-— there is no art direction to do, so the shader and its parameters are
-picked at random from the documented vocabulary, and no two look alike.
+— there is no art direction to do, so the shader, its parameters and the
+colour seed are picked at random, and no two look alike. Journal posts come
+out in the club palette; the dithered-forms backgrounds get the full
+mosaic, the WebGL dithering one takes a single colour, since that shader
+only has two tones.
 
 **Voice notes:** Notion can hold an audio file, but no Claude model reads
 audio, and transcribing would mean a third vendor. Dictating with the

@@ -180,7 +180,11 @@ export function randomLayer(vocab, rand = Math.random) {
 }
 
 /** Design brief + vocabulary → a PostSpec every value of which is legal. */
-export function assembleSpec(brief, vocab, { format, text } = {}) {
+export function assembleSpec(
+  brief,
+  vocab,
+  { format, text, color, colorSeed } = {},
+) {
   const b = brief ?? {};
 
   const type = pick(b.background?.type, Object.keys(vocab.backgrounds));
@@ -206,6 +210,10 @@ export function assembleSpec(brief, vocab, { format, text } = {}) {
     align: pick(b.align, vocab.aligns, "left"),
     ring: !!b.ring,
     veil: clamp(numeric(b.veil, 0.25), 0, 0.9),
+    /* The palette lives in the site's code; the spec only says on/off and
+       which seed places the colours. */
+    color: color === true,
+    colorSeed: Math.max(1, Math.round(numeric(colorSeed, 1))),
     titlePixel: clamp(Math.round(numeric(b.titlePixel, 0)), 0, 32),
     metaPixel: clamp(Math.round(numeric(b.metaPixel, 0)), 0, 32),
     theme: pick(b.theme, vocab.themes, "light"),

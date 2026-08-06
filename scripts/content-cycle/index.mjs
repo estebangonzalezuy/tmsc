@@ -326,7 +326,14 @@ async function jobJournal() {
     const spec = assembleSpec(
       { slides: [out.onimage], background: randomLayer(vocab) },
       vocab,
-      { format: out.format, text: withText },
+      {
+        format: out.format,
+        text: withText,
+        /* Journal posts come out in the club palette. A fresh seed each time
+           is what keeps two posts from looking like the same picture. */
+        color: true,
+        colorSeed: Math.floor(Math.random() * 9999) + 1,
+      },
     );
     const link = postLink(ORIGIN, spec);
 
@@ -352,7 +359,11 @@ async function jobJournal() {
       Status: put.select("Used"),
       Post: put.relation([page.id]),
     });
-    say(`journal: ✓ ${out.name} — draft + ${spec.format} visual${withText ? "" : " (no text)"}`);
+    const look = spec.slides[0].layers[0].type === "forms" ? "mosaic" : "one colour";
+    say(
+      `journal: ✓ ${out.name} — draft + ${spec.format} visual, ${look}` +
+        (withText ? "" : ", no text"),
+    );
   }
 }
 
