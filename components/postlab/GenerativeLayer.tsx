@@ -15,7 +15,7 @@ export default function GenerativeLayer({
   width,
   height,
   duration,
-  colorOn = false,
+  ink = "",
   colorSeed = 1,
   colorPalette = "",
 }: {
@@ -27,7 +27,7 @@ export default function GenerativeLayer({
   duration: number;
   /* Primitives rather than an object: this feeds an animation effect, and a
      fresh object each render would restart the loop every frame. */
-  colorOn?: boolean;
+  ink?: string;
   colorSeed?: number;
   /** Comma-joined hexes rather than an array, so the animation effect can
       depend on it without restarting whenever the parent re-renders. */
@@ -41,7 +41,7 @@ export default function GenerativeLayer({
     if (!ctx) return;
     if (!playing) {
       drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
-        on: colorOn,
+        ink: ink || undefined,
         seed: colorSeed,
         palette: colorPalette ? colorPalette.split(",") : undefined,
       });
@@ -53,7 +53,7 @@ export default function GenerativeLayer({
       timeRef.current += (now - last) / 1000;
       last = now;
       drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
-        on: colorOn,
+        ink: ink || undefined,
         seed: colorSeed,
         palette: colorPalette ? colorPalette.split(",") : undefined,
       });
@@ -61,7 +61,7 @@ export default function GenerativeLayer({
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [shader, theme, playing, width, height, duration, colorOn, colorSeed, colorPalette]);
+  }, [shader, theme, playing, width, height, duration, ink, colorSeed, colorPalette]);
 
   return (
     <canvas

@@ -50,9 +50,12 @@ export type BlendMode = (typeof BLENDS)[number];
 
 /** One background layer: a shader/generative spec plus mixing + transform. */
 export type LayerSpec = ShaderSpec & {
-  /** Whether this layer paints from the palette. Absent means "whatever the
-      slide said", which is how every link written before colour became a
-      per-layer choice keeps rendering. */
+  /** What colour this layer's pixels are: a hex for one colour, "mix" for
+      the palette scattered across them, absent for the theme's ink. */
+  ink?: string;
+  /** Superseded by `ink`. Kept so links written when colour was a switch
+      still open; normalizeSpec turns it into an `ink` and it is never
+      written again. */
   color?: boolean;
   opacity: number;
   blend: BlendMode;
@@ -101,8 +104,11 @@ export type SlideSpec = {
   /** Paint the dithered pixels from the club palette instead of the two
       theme tones. Off is the original black-and-white look. */
   color: boolean;
-  /** Which colors get picked, and where. Change it to re-roll. */
+  /** Only used by layers set to "mix": which colour lands on which block.
+      Nothing else reads it. */
   colorSeed: number;
+  /** The slide's background. A hex, or absent for the theme's. */
+  background?: string;
   /** Override the club palette for this slide only. Absent — the normal
       case — means the palette in this file, so editing it there restyles
       every post that never overrode it. */
@@ -322,24 +328,15 @@ export function paletteInk(
    only ever recolours the ink reads as one accent on a fixed backdrop. */
 export function slideTones(slide: {
   theme: Theme;
-  colorSeed: number;
-  palette?: string[];
-  layers: { color?: boolean }[];
+  background?: string;
+  layers: { ink?: string }[];
 }): { ink: string; bg: string; grays: string[] } {
   const base = tones(slide.theme);
-  if (!slide.layers.some((l) => l.color === true)) return base;
-
-  const list = slide.palette?.length ? slide.palette : PALETTE;
-  const bg = paletteAt(slide.colorSeed, 3, list);
-  const bgLum = luminance(bg);
-  /* The ink has to survive whatever background just came up. */
-  const inks = list.filter((hex) => Math.abs(luminance(hex) - bgLum) > 0.3);
-  const ink = inks.length
-    ? paletteAt(slide.colorSeed, 0, inks)
-    : bgLum > 0.5
-      ? "#0d0d0d"
-      : "#ffffff";
-  return { ink, bg, grays: base.grays };
+  if (!slide.background) return base;
+  /* Type has to survive whatever background was chosen, so it flips rather
+     than following the theme off a cliff. */
+  const ink = luminance(slide.background) > 0.5 ? "#0d0d0d" : "#ffffff";
+  return { ink, bg: slide.background, grays: base.grays };
 }
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -473,12 +470,36 @@ export function normalizeSpec(raw: unknown): PostSpec {
         const mapped = mapLegacyLayer(l);
         const type = shaderDef(mapped?.type ?? "dithering").type;
         const merged = { ...defaultLayer(type), ...mapped, type } as LayerSpec;
-        /* Colour used to be a slide-wide switch; fall back to it so older
-           links land where they always did. */
-        merged.color =
+
+        /* Colour was a switch before it was a choice — first slide-wide,
+           then per layer. Resolve either into an explicit `ink` here so
+           every renderer downstream sees one model, and old links keep the
+           colours they were shared with. */
+        const legacyOn =
           typeof merged.color === "boolean" ? merged.color : slide.color;
+        const list = slide.palette?.length ? slide.palette : PALETTE;
+        if (merged.ink === "mix" || (typeof merged.ink === "string" && HEX.test(merged.ink))) {
+          // already explicit
+        } else if (legacyOn) {
+          merged.ink =
+            type === "forms" ? "mix" : paletteInk(slide.colorSeed, slide.theme, list);
+        } else {
+          delete merged.ink;
+        }
+        delete merged.color;
         return merged;
       });
+
+      /* Same for the background: a coloured legacy slide had one picked
+         from the seed, so pin it rather than let it drift. */
+      if (typeof s.background === "string" && HEX.test(s.background)) {
+        slide.background = s.background;
+      } else if (slide.layers.some((l) => l.ink) && slide.color) {
+        const list = slide.palette?.length ? slide.palette : PALETTE;
+        slide.background = paletteAt(slide.colorSeed, 3, list);
+      } else {
+        delete slide.background;
+      }
       return slide;
     },
   );

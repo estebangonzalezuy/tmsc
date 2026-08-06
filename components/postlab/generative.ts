@@ -55,7 +55,7 @@ export function drawGenerative(
   duration: number,
   w: number,
   h: number,
-  color?: { on: boolean; seed: number; palette?: readonly string[] },
+  color?: { ink?: string; seed: number; palette?: readonly string[] },
 ) {
   const { ink } = tones(theme);
   const u = w / 1080;
@@ -151,9 +151,11 @@ export function drawGenerative(
     parseInt(hex.slice(3, 5), 16),
     parseInt(hex.slice(5, 7), 16),
   ];
-  const inks = color?.on
-    ? (color.palette?.length ? color.palette : PALETTE).map(rgb)
-    : [rgb(ink)];
+  /* One colour, the whole palette, or the theme's ink. */
+  const inks =
+    color?.ink === "mix"
+      ? (color.palette?.length ? color.palette : PALETTE).map(rgb)
+      : [rgb(color?.ink || ink)];
   const seed = color?.seed ?? 1;
   /* Whole rotations of the palette per loop — an integer, so colour lands
      back where it started at the end of the loop. */

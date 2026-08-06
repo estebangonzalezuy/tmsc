@@ -139,6 +139,51 @@ function Button({
   );
 }
 
+/* A colour choice made by pointing at it. `value` is a hex, or one of the
+   named options ("" for the theme's own, "mix" for the whole palette). */
+function Swatches({
+  palette,
+  value,
+  options,
+  onChange,
+}: {
+  palette: readonly string[];
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          className={`h-7 px-2 border text-xs transition-colors ${
+            value === o.value
+              ? "border-foreground bg-foreground text-background"
+              : "border-line text-muted hover:text-foreground"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+      {palette.map((hex) => (
+        <button
+          key={hex}
+          onClick={() => onChange(hex)}
+          title={hex}
+          style={{ background: hex }}
+          className={`size-7 border transition-transform ${
+            value === hex
+              ? "border-foreground scale-110"
+              : "border-line hover:scale-110"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ tool */
 
 export default function PostLab() {
@@ -650,7 +695,7 @@ export default function PostLab() {
                       height={h}
                       duration={spec.duration}
                       color={{
-                        on: l.color === true,
+                        ink: l.ink,
                         seed: slide.colorSeed,
                         palette: slide.palette,
                       }}
@@ -875,7 +920,18 @@ export default function PostLab() {
             </div>
           </Section>
 
-          <Section title="palette">
+          <Section title="colour">
+            <p className="text-xs text-muted">background</p>
+            <Swatches
+              palette={slide.palette ?? PALETTE}
+              value={slide.background ?? ""}
+              options={[{ value: "", label: "theme" }]}
+              onChange={(v) =>
+                patchSlide({ background: v === "" ? undefined : v })
+              }
+            />
+
+            <p className="text-xs text-muted pt-2">the palette</p>
             <div className="flex items-center gap-2 flex-wrap">
               {(slide.palette ?? PALETTE).map((hex, i) => (
                 <span key={i} className="relative shrink-0">
@@ -921,18 +977,9 @@ export default function PostLab() {
               >
                 +
               </button>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button
-                onClick={() =>
-                  patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
-                }
-              >
-                Shuffle
-              </Button>
               {slide.palette && (
                 <Button onClick={() => patchSlide({ palette: undefined })}>
-                  Club palette
+                  Reset
                 </Button>
               )}
             </div>
@@ -940,7 +987,7 @@ export default function PostLab() {
               {slide.palette
                 ? `${slide.palette.length} custom colours — this post no longer follows the club palette.`
                 : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}{" "}
-              Turn colour on per layer, below.
+              Each layer picks its ink from here, below.
             </p>
           </Section>
 
@@ -1002,16 +1049,36 @@ export default function PostLab() {
                 ))}
               </select>
             </Row>
-            <Row label="colour">
-              <Seg
-                value={layer.color === true ? "on" : "off"}
+            <div className="space-y-2">
+              <p className="text-xs text-muted">ink</p>
+              <Swatches
+                palette={slide.palette ?? PALETTE}
+                value={typeof layer.ink === "string" ? layer.ink : ""}
                 options={[
-                  { value: "off", label: "black & white" },
-                  { value: "on", label: "palette" },
+                  { value: "", label: "theme" },
+                  ...(layer.type === "forms"
+                    ? [{ value: "mix", label: "mix" }]
+                    : []),
                 ]}
-                onChange={(v) => patchLayer({ color: v === "on" })}
+                onChange={(v) =>
+                  patchLayer({ ink: v === "" ? undefined : v } as Partial<LayerSpec>)
+                }
               />
-            </Row>
+              {layer.ink === "mix" && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() =>
+                      patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
+                    }
+                  >
+                    Rearrange
+                  </Button>
+                  <span className="text-xs text-muted">
+                    which colour lands on which block
+                  </span>
+                </div>
+              )}
+            </div>
             <Row label="opacity">
               <input
                 type="range"
