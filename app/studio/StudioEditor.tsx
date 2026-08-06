@@ -844,8 +844,11 @@ export default function StudioEditor() {
     <div className="h-dvh flex flex-col">
       <header className="flex items-center justify-between gap-4 border-b border-line bg-background px-5 py-3">
         <div className="flex items-center gap-6 min-w-0">
-          <p className="text-sm whitespace-nowrap">
+          <p className="text-sm whitespace-nowrap flex items-center gap-3">
             <span className="underline underline-offset-4">the Studio</span>
+            <a href="/desk" className="text-muted hover:text-foreground">
+              the Desk
+            </a>
           </p>
           <nav className="hidden lg:flex items-center gap-1 text-sm">
             {pageTabs.map((t) => (
