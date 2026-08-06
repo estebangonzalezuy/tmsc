@@ -387,50 +387,57 @@ export default function RunsPanel() {
             })}
           </ul>
 
-          <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
-            In Notion
-          </h2>
-          <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
-            {[
-              [NOTION.journal, "the Journal", "where a thought goes in"],
-              [NOTION.pipeline, "the Pipeline", "every post, start to finish"],
-              [NOTION.library, "the library", "everything published"],
-              [NOTION.objectives, "the Objectives", "what this month is for"],
-            ].map(([href, name, what]) => (
-              <li key={name}>
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-background flex items-baseline justify-between gap-4 px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
-                >
-                  <span>{name}</span>
-                  <span className="text-xs opacity-60">{what}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          {/* Two maps side by side on a desk, stacked on a phone. */}
+          <div className="mt-10 grid gap-8 md:grid-cols-2">
+            <section>
+              <h2 className="text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+                In Notion
+              </h2>
+              <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
+                {[
+                  [NOTION.journal, "the Journal", "where a thought goes in"],
+                  [NOTION.pipeline, "the Pipeline", "every post, start to finish"],
+                  [NOTION.library, "the library", "everything published"],
+                  [NOTION.objectives, "the Objectives", "what this month is for"],
+                ].map(([href, name, what]) => (
+                  <li key={name}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-background flex items-baseline justify-between gap-4 px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
+                    >
+                      <span>{name}</span>
+                      <span className="text-xs opacity-60 text-right">{what}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
-          <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
-            On the site
-          </h2>
-          <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
-            {[
-              ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
-              ["/studio", "the Studio", "the site's own words"],
-              ["/", "the site", "what everyone else sees"],
-            ].map(([href, name, what]) => (
-              <li key={name}>
-                <Link
-                  href={href}
-                  className="bg-background flex items-baseline justify-between gap-4 px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
-                >
-                  <span>{name}</span>
-                  <span className="text-xs opacity-60">{what}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+            <section>
+              <h2 className="text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+                On the site
+              </h2>
+              <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
+                {[
+                  ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
+                  ["/studio", "the Studio", "the site's own words"],
+                  ["/hub", "the Hub", "everything tMSC, in one list"],
+                ].map(([href, name, what]) => (
+                  <li key={name}>
+                    <Link
+                      href={href}
+                      className="bg-background flex items-baseline justify-between gap-4 px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
+                    >
+                      <span>{name}</span>
+                      <span className="text-xs opacity-60 text-right">{what}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
 
           <p className="mt-10 text-xs text-muted leading-relaxed">
             Results land in Notion, not here. A run takes about a minute.
