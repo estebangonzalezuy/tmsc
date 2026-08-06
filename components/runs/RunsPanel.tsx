@@ -16,12 +16,23 @@ const GH_REPO = "estebangonzalezuy/tmsc";
 const WORKFLOW = "content-cycle.yml";
 const TOKEN_KEY = "desk-github-token";
 
+/* Notion's app.notion.com links open the native app on a phone, which is
+   where this gets used. */
+const NOTION = {
+  journal: "https://app.notion.com/p/a1760675de4644978f03e1d158aa2817",
+  pipeline: "https://app.notion.com/p/646f0309b2d34014904569d0ed95ad93",
+  library: "https://app.notion.com/p/d368165d8fd54e548aea7eaecf27d9e7",
+  objectives: "https://app.notion.com/p/d33ba4bc712b422f8bfecfb653a3507c",
+};
+
 type Job = {
   id: string;
   label: string;
   blurb: string;
   /** Roughly what it spends, so nothing is a surprise. */
   cost: string;
+  /** Where the result shows up — the run finishes in Notion, not here. */
+  lands: { href: string; name: string };
 };
 
 /* The four things worth a button. The rest of the jobs still exist on the
@@ -34,6 +45,7 @@ const JOBS: Job[] = [
     blurb:
       "Every Journal entry marked “Make post” becomes a finished post — draft, visual and all.",
     cost: "one call per entry",
+    lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {
     id: "angles",
@@ -41,6 +53,7 @@ const JOBS: Job[] = [
     blurb:
       "Reads everything the club has published and proposes three things to write next.",
     cost: "one call",
+    lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {
     id: "now",
@@ -48,6 +61,7 @@ const JOBS: Job[] = [
     blurb:
       "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass.",
     cost: "two calls per row",
+    lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {
     id: "queue",
@@ -55,6 +69,7 @@ const JOBS: Job[] = [
     blurb:
       "Runs the whole queue once: journal, drafts, visuals, and files anything posted into the library.",
     cost: "nothing if the queue is empty",
+    lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
 ];
 
@@ -127,6 +142,9 @@ export default function RunsPanel() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState("");
+  /* The job you last started, so the page can point at where its result
+     lands the moment it lands there. */
+  const [started, setStarted] = useState<Job | null>(null);
 
   /** Refreshes the list; answers whether anything is still in flight. */
   const loadRuns = useCallback(async (t: string) => {
@@ -200,6 +218,7 @@ export default function RunsPanel() {
     if (!token) return;
     setBusy(job.id);
     setFlash("");
+    setStarted(null);
     try {
       const res = await fetch(
         `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches`,
@@ -210,7 +229,7 @@ export default function RunsPanel() {
         },
       );
       if (!res.ok) throw new Error(`GitHub said ${res.status}`);
-      setFlash(`${job.label} — started. About a minute.`);
+      setStarted(job);
       /* The run takes a moment to appear in the list. */
       setTimeout(() => loadRuns(token), 3000);
     } catch (err) {
@@ -223,7 +242,10 @@ export default function RunsPanel() {
   function forget() {
     tokenStore.set(null);
     setRuns([]);
+    setStarted(null);
   }
+
+  const working = runs.some((r) => r.status !== "completed");
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -302,6 +324,24 @@ export default function RunsPanel() {
             ))}
           </div>
 
+          {started && (
+            <div className="mt-px border border-line border-t-0 px-5 py-4 flex items-center justify-between gap-4 text-sm">
+              <span>
+                {working
+                  ? `${started.label} — running, about a minute.`
+                  : `${started.label} — done.`}
+              </span>
+              <a
+                href={started.lands.href}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4 shrink-0"
+              >
+                Open {started.lands.name} →
+              </a>
+            </div>
+          )}
+
           {flash && <p className="mt-4 text-sm">{flash}</p>}
 
           <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
@@ -345,6 +385,30 @@ export default function RunsPanel() {
                 </li>
               );
             })}
+          </ul>
+
+          <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+            In Notion
+          </h2>
+          <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
+            {[
+              [NOTION.journal, "the Journal", "where a thought goes in"],
+              [NOTION.pipeline, "the Pipeline", "every post, start to finish"],
+              [NOTION.library, "the library", "everything published"],
+              [NOTION.objectives, "the Objectives", "what this month is for"],
+            ].map(([href, name, what]) => (
+              <li key={name}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-background flex items-baseline justify-between gap-4 px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
+                >
+                  <span>{name}</span>
+                  <span className="text-xs opacity-60">{what}</span>
+                </a>
+              </li>
+            ))}
           </ul>
 
           <p className="mt-10 text-xs text-muted leading-relaxed">
