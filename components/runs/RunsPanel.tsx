@@ -59,8 +59,8 @@ const JOBS: Job[] = [
     id: "now",
     label: "Finish what I chose",
     blurb:
-      "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass.",
-    cost: "two calls per row",
+      "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
+    cost: "one call per row, two with text",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {

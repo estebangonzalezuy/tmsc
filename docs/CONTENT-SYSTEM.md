@@ -95,7 +95,10 @@ the club's primary channel (~26k). Other channels only when asked.
 skill, encode it with
 `Buffer.from(JSON.stringify(spec)).toString('base64url')`, write
 `https://themotionsocialclub.vercel.app/postlab#spec=<encoded>` into
-**Post link**, set `Status = Generated`.
+**Post link**, set `Status = Generated`. The row's **Text on visual**
+checkbox decides the treatment: off (the default) gives a pure generative
+background in the club palette and costs no model call at all, since there
+are no words to art-direct; on puts the headline over it.
 
 **Close the loop.** When a row reaches `Posted`, create a Content library
 entry for it (Channel, Date, Type, Pillar) so future angles can see it.
@@ -139,7 +142,7 @@ session involved, no connectors, no memory. Setup and internals are in
 
 | Trigger | Job | Model calls |
 |---|---|---|
-| Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 2 per row |
+| Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 1 per row, 2 with text on the visual |
 | Every 5 min | journal, drafts, visuals, library | only when a row is waiting |
 | Mondays 12:00 UTC | the above + three new angles | 1 |
 | 1st of the month | roll the objective period over | none, ever |

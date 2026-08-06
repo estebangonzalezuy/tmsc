@@ -167,6 +167,27 @@ const draftFor = async (row, objective) =>
 
 async function visualFor(row, vocab, schema, draft) {
   const rowFormat = get.select(row, "Format");
+  const withText = row.properties?.["Text on visual"]?.checkbox === true;
+
+  /* No words on the image means nothing to art-direct, so this path skips
+     the model entirely: a random dithered-forms background in the club
+     palette, same as the Journal produces. Free, and different every time. */
+  if (!withText) {
+    const spec = assembleSpec(
+      { slides: [{ kicker: "", title: "", body: "", footer: "" }],
+        background: randomLayer(vocab, Math.random, "forms") },
+      vocab,
+      {
+        format: formatFromRow(rowFormat, vocab) ?? "portrait",
+        text: false,
+        color: true,
+        colorSeed: Math.floor(Math.random() * 9999) + 1,
+      },
+    );
+    const { link, dropped } = postLink(ORIGIN, spec, vocab);
+    return { spec, link, dropped, note: "no text, club palette" };
+  }
+
   const brief = await ai.designPost({
     voice,
     vocab,
@@ -182,6 +203,10 @@ async function visualFor(row, vocab, schema, draft) {
   });
   const spec = assembleSpec(brief, vocab, {
     format: formatFromRow(rowFormat, vocab),
+    /* Words on the image get the palette too — the model picks veil and
+       plate, which is what keeps them readable over it. */
+    color: true,
+    colorSeed: Math.floor(Math.random() * 9999) + 1,
   });
   const { link, dropped } = postLink(ORIGIN, spec, vocab);
   return { spec, link, dropped, note: brief.note ?? "" };
@@ -229,7 +254,10 @@ async function jobVisuals() {
       "Post link": put.url(link),
       Status: put.select("Generated"),
     });
-    say(`visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}`);
+    say(
+      `visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}` +
+        (spec.slides[0].text ? "" : ", no text"),
+    );
   }
 }
 
@@ -270,7 +298,10 @@ async function jobNow() {
       "Post link": put.url(link),
       Status: put.select("Generated"),
     });
-    say(`now: ✓ ${name} — draft + ${spec.format} visual ready`);
+    say(
+      `now: ✓ ${name} — draft + ${spec.format} visual` +
+        (spec.slides[0].text ? "" : " (no text, club palette)"),
+    );
   }
 }
 
