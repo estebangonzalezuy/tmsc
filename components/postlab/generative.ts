@@ -140,10 +140,12 @@ export function drawGenerative(
   const octx = outCanvas.getContext("2d", { willReadFrequently: true })!;
   const img = octx.createImageData(cw, chh);
   const data = img.data;
-  /* One ink, or the palette scattered across the cells. The colour of a
-     cell depends on its position and the seed only — never on time — so the
-     mosaic holds still while the pattern moves through it, and a recorded
-     loop matches the preview frame for frame. */
+  /* One ink, or the palette moving across the cells. Each block starts on a
+     colour of its own and rotates through the palette, but every block is
+     offset in phase from its neighbours, so the mosaic shifts continuously
+     instead of flashing over all at once. The rotation completes a whole
+     number of times per loop, which is what keeps a recorded export looping
+     seamlessly; the layer's speed sets how many. */
   const rgb = (hex: string) => [
     parseInt(hex.slice(1, 3), 16),
     parseInt(hex.slice(3, 5), 16),
@@ -153,6 +155,13 @@ export function drawGenerative(
     ? (color.palette?.length ? color.palette : PALETTE).map(rgb)
     : [rgb(ink)];
   const seed = color?.seed ?? 1;
+  /* Whole rotations of the palette per loop — an integer, so colour lands
+     back where it started at the end of the loop. */
+  const rots = Math.max(1, Math.round(num(spec.speed, 0.5) * 2));
+  const hash01 = (a: number, b: number, c: number) => {
+    const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453;
+    return x - Math.floor(x);
+  };
   /* Coarser than one cell: colour moves in small blocks, which reads as a
      mosaic rather than as noise. */
   const BLOCK = 3;
@@ -165,8 +174,10 @@ export function drawGenerative(
         if (inks.length > 1) {
           const bx = Math.floor(cx / BLOCK);
           const by = Math.floor(cy / BLOCK);
-          const x = Math.sin(bx * 127.1 + by * 311.7 + seed * 74.7) * 43758.5453;
-          pick = Math.floor((x - Math.floor(x)) * inks.length) % inks.length;
+          const base = Math.floor(hash01(bx, by, seed) * inks.length);
+          const offset = hash01(bx, by, seed + 17);
+          const step = Math.floor((tt + offset) * inks.length * rots);
+          pick = (base + step) % inks.length;
         }
         const [r, g, bb] = inks[pick];
         const o = (cy * cw + cx) * 4;
