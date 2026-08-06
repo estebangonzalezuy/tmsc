@@ -121,6 +121,19 @@ function runState(r: Run): { text: string; done: boolean; bad: boolean } {
   return { text: r.conclusion ?? "failed", done: true, bad: true };
 }
 
+/* Say what to do about it, not what the wire said. */
+function explain(status?: number): string {
+  if (status === 401 || status === 403)
+    return "GitHub rejected the token — it may have expired. Forget it below and paste a new one.";
+  if (status === 404)
+    return "GitHub can't see the workflow with this token — it needs Actions: read and write.";
+  if (status === 422)
+    return "GitHub refused the request — the workflow may not be on main yet.";
+  if (status && status >= 500)
+    return "GitHub is having a moment — tried three times. Give it a minute and press again.";
+  return "Couldn't start it.";
+}
+
 const ago = (iso: string) => {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "just now";
@@ -220,15 +233,23 @@ export default function RunsPanel() {
     setFlash("");
     setStarted(null);
     try {
-      const res = await fetch(
-        `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches`,
-        {
-          method: "POST",
-          headers: { ...ghHeaders(token), "Content-Type": "application/json" },
-          body: JSON.stringify({ ref: "main", inputs: { job: job.id } }),
-        },
-      );
-      if (!res.ok) throw new Error(`GitHub said ${res.status}`);
+      /* GitHub returns a 500 on dispatch every so often for no reason of
+         ours — the same request succeeds a moment later. Retry rather than
+         handing that back as if the setup were broken. */
+      let res: Response | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        res = await fetch(
+          `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+          {
+            method: "POST",
+            headers: { ...ghHeaders(token), "Content-Type": "application/json" },
+            body: JSON.stringify({ ref: "main", inputs: { job: job.id } }),
+          },
+        );
+        if (res.ok || res.status < 500) break;
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
+      if (!res || !res.ok) throw new Error(explain(res?.status));
       setStarted(job);
       /* The run takes a moment to appear in the list. */
       setTimeout(() => loadRuns(token), 3000);
