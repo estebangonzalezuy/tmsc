@@ -162,9 +162,15 @@ export function drawOverlay(
   index: number,
   fonts: Fonts,
   time = 0,
+  /* Export resolution multiplier. Every measurement below is derived from
+     `u`, so the type is redrawn at the target size rather than scaled up
+     from 1080 — which is the whole point of exporting bigger. */
+  scale = 1,
 ) {
   const slide: SlideSpec = spec.slides[index];
-  const { w, h } = FORMATS[spec.format];
+  const base = FORMATS[spec.format];
+  const w = Math.round(base.w * scale);
+  const h = Math.round(base.h * scale);
   const { ink, bg } = tones(slide.theme);
   const u = w / 1080; // design unit: layout was drawn at 1080 wide
   const pad = 96 * u;
@@ -386,6 +392,8 @@ export function drawOverlay(
   mctx.textAlign = "right";
   mctx.fillText(counter, w - pad, h - pad);
 
-  compositeMask(ctx, titleMask, w, h, slide.titlePixel, ink);
-  compositeMask(ctx, metaMask, w, h, slide.metaPixel, ink);
+  /* Cell sizes scale with the canvas so the dithered type keeps the same
+     coarseness at 4K instead of turning into fine grain. */
+  compositeMask(ctx, titleMask, w, h, slide.titlePixel * u, ink);
+  compositeMask(ctx, metaMask, w, h, slide.metaPixel * u, ink);
 }

@@ -21,6 +21,10 @@ function drawLayers(
   h: number,
 ) {
   const slide = spec.slides[index];
+  /* The layer canvases render at the base size; scaling them up must stay
+     nearest-neighbour, or a dithered post exports as blurred mush instead
+     of bigger, harder-edged blocks. */
+  ctx.imageSmoothingEnabled = false;
   ctx.globalCompositeOperation = "source-over";
   ctx.globalAlpha = 1;
   ctx.fillStyle = tones(slide.theme).bg;
@@ -60,14 +64,30 @@ export function exportPng(
   index: number,
   layerCanvases: (HTMLCanvasElement | null)[],
   overlay: HTMLCanvasElement,
+  fonts: Fonts | null = null,
+  scale = 1,
 ) {
-  const { w, h } = FORMATS[spec.format];
+  const base = FORMATS[spec.format];
+  const w = Math.round(base.w * scale);
+  const h = Math.round(base.h * scale);
   const out = document.createElement("canvas");
   out.width = w;
   out.height = h;
   const ctx = out.getContext("2d")!;
   drawLayers(ctx, spec, index, layerCanvases, w, h);
-  ctx.drawImage(overlay, 0, 0, w, h);
+  /* Redraw the type at the target size when we can; the preview overlay is
+     only 1080 wide and would arrive soft. */
+  if (fonts && scale !== 1) {
+    const big = document.createElement("canvas");
+    big.width = w;
+    big.height = h;
+    drawOverlay(big.getContext("2d")!, spec, index, fonts, 0, scale);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(big, 0, 0, w, h);
+  } else {
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(overlay, 0, 0, w, h);
+  }
   out.toBlob((blob) => {
     if (blob) download(blob, slideName(spec, index, "tmsc-post", "png"));
   }, "image/png");
@@ -97,8 +117,11 @@ export function recordVideo(
   layerCanvases: (HTMLCanvasElement | null)[],
   fonts: Fonts,
   onProgress: (fraction: number) => void,
+  scale = 1,
 ): Promise<void> {
-  const { w, h } = FORMATS[spec.format];
+  const base = FORMATS[spec.format];
+  const w = Math.round(base.w * scale);
+  const h = Math.round(base.h * scale);
   const fps = 30;
   const durationMs = spec.duration * 1000;
 
@@ -149,7 +172,7 @@ export function recordVideo(
       const elapsed = now - start;
       if (now - lastPush >= 1000 / fps - 1) {
         lastPush = now;
-        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000);
+        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000, scale);
         drawLayers(ctx, spec, index, layerCanvases, w, h);
         ctx.drawImage(overlay, 0, 0, w, h);
         track.requestFrame();
@@ -179,8 +202,15 @@ export function recordGif(
   layerCanvases: (HTMLCanvasElement | null)[],
   fonts: Fonts,
   onProgress: (fraction: number) => void,
+  scale = 1,
 ): Promise<void> {
-  const { w, h } = FORMATS[spec.format];
+  const base = FORMATS[spec.format];
+  /* GIF weight grows with the square of the size and there is no
+     inter-frame compression worth the name here, so the ceiling is 2x —
+     past that a six-second loop runs to hundreds of megabytes. */
+  const gifScale = Math.min(2, scale);
+  const w = Math.round(base.w * gifScale);
+  const h = Math.round(base.h * gifScale);
   const gw = Math.round(w / 2);
   const gh = Math.round(h / 2);
   const delay = 8; // hundredths of a second → 12.5fps
@@ -212,7 +242,7 @@ export function recordGif(
       const elapsed = now - start;
       if (now - lastPush >= delay * 10 - 1) {
         lastPush = now;
-        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000);
+        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000, gifScale);
         drawLayers(fullCtx, spec, index, layerCanvases, w, h);
         fullCtx.drawImage(overlay, 0, 0, w, h);
         smallCtx.drawImage(full, 0, 0, gw, gh);

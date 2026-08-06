@@ -150,6 +150,9 @@ export default function PostLab() {
   const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
   const [importText, setImportText] = useState("");
+  /* An export setting, not a design one, so it stays out of the spec and
+     out of shared links. */
+  const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const shaderBoxRef = useRef<HTMLDivElement>(null);
@@ -475,6 +478,11 @@ export default function PostLab() {
 
   /* ------------------------------------------------------------ exports */
 
+  /* 1080 is the Instagram baseline; "max" targets 4K on the long-ish edge. */
+  const scale = quality === "mid" ? 1 : quality === "high" ? 2 : 3840 / 1080;
+  const outW = Math.round(FORMATS[spec.format].w * scale);
+  const outH = Math.round(FORMATS[spec.format].h * scale);
+
   const layerCanvases = () => {
     const wrappers = shaderBoxRef.current?.querySelectorAll("[data-layer]");
     return Array.from(wrappers ?? []).map((el) => el.querySelector("canvas"));
@@ -482,7 +490,7 @@ export default function PostLab() {
 
   const savePng = () => {
     if (!overlayRef.current) return;
-    exportPng(spec, activeIndex, layerCanvases(), overlayRef.current);
+    exportPng(spec, activeIndex, layerCanvases(), overlayRef.current, fonts, scale);
   };
 
   /* Batch runner: walks the slides, letting each remount and render before
@@ -515,28 +523,30 @@ export default function PostLab() {
     if (!overlay || !fonts) return;
     const ctx = overlay.getContext("2d");
     if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
-    exportPng(spec, i, layerCanvases(), overlay);
+    exportPng(spec, i, layerCanvases(), overlay, fonts, scale);
   };
 
   const saveAllPngs = () => eachSlide("PNG", pngSlide);
   const saveVideo = () =>
     eachSlide(
       "Video",
-      (i, rep) => recordVideo(spec, i, layerCanvases(), fonts!, rep),
+      (i, rep) => recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
       activeIndex,
     );
   const saveAllVideos = () =>
     eachSlide("Video", (i, rep) =>
-      recordVideo(spec, i, layerCanvases(), fonts!, rep),
+      recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
     );
   const saveGif = () =>
     eachSlide(
       "GIF",
-      (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep),
+      (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep, scale),
       activeIndex,
     );
   const saveAllGifs = () =>
-    eachSlide("GIF", (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep));
+    eachSlide("GIF", (i, rep) =>
+      recordGif(spec, i, layerCanvases(), fonts!, rep, scale),
+    );
 
   /* ------------------------------------------------------- spec sharing */
 
@@ -1102,6 +1112,20 @@ export default function PostLab() {
           </Section>
 
           <Section title="export">
+            <Seg
+              value={quality}
+              options={[
+                { value: "mid", label: "mid" },
+                { value: "high", label: "high" },
+                { value: "max", label: "4K" },
+              ]}
+              onChange={setQuality}
+            />
+            <p className="text-xs text-muted">
+              {outW}×{outH}
+              {quality === "max" &&
+                " — GIF caps at 2×; video this size is slow and some browsers refuse it"}
+            </p>
             <div className="flex flex-wrap gap-2">
               <Button onClick={savePng} primary disabled={!!job}>
                 PNG — this slide
