@@ -9,12 +9,14 @@
 //   node index.mjs journal      every "Make post" capture → a finished post
 //   node index.mjs queue        journal + drafts + visuals + library (the poll)
 //   node index.mjs angles       propose three new angles (weekly)
-//   node index.mjs objectives   roll the month over (1st, no model call)
+//   node index.mjs objectives   roll the month over (no model call; every
+//                               run does this first anyway)
 //   node index.mjs all          everything
 //   node index.mjs queue --dry-run     read-only, prints what it would do
 //
-// Costs nothing when there's nothing to do: the polls are Notion reads, and
-// the Claude API is only touched once a row is actually waiting.
+// Nothing here runs on a schedule — the Desk starts every run. Costs
+// nothing when there's nothing to do: the queries are Notion reads, and the
+// Claude API is only touched once a row is actually waiting.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -492,9 +494,16 @@ const GROUPS = {
   all: Object.keys(ALL),
 };
 
-const requested = (jobs.length ? jobs : ["queue"]).flatMap(
-  (j) => GROUPS[j] ?? [j],
-);
+/* Rolling the month over costs one Notion read and no model call, and the
+   angles read the active objective to aim themselves — so every run does
+   it, whatever it was asked for. With no schedule left, this is what keeps
+   the objective current without anyone remembering to. */
+const requested = [
+  ...new Set([
+    "objectives",
+    ...(jobs.length ? jobs : ["queue"]).flatMap((j) => GROUPS[j] ?? [j]),
+  ]),
+];
 
 let failed = false;
 for (const name of [...new Set(requested)]) {

@@ -11,25 +11,28 @@ the site's stays untouched.
 
 ## What runs when
 
-| Trigger | Job | Model calls |
+No schedule. Every run is started from the Desk (`/desk` on the site), or
+from Actions → Run workflow, or from the CLI below.
+
+| Job | What it does | Model calls |
 |---|---|---|
-| Actions → Run workflow | `now` — every `Chosen` row → draft + Post link | 1 per row, 2 with text |
-| Hourly, best-effort | `queue` — drafts, visuals, library | only if a row is waiting |
-| Mondays 12:00 UTC | `weekly` — the queue + three new angles | 1 for the angles |
-| 1st of the month | `objectives` — roll the period over | none, ever |
+| `now` | every `Chosen` row → draft + Post link | 1 per row, 2 with text |
+| `journal` | every `Make post` capture → a finished post | 1 per entry |
+| `angles` | three things to write next | 1 |
+| `queue` | journal, drafts, visuals, library | only if a row is waiting |
+
+Every run rolls the objective period over first: one Notion read, no model
+call, idempotent.
 
 **`now` is the one to use when you're actually making a post.** The staged
 path (`Chosen` → draft → you review → `Ready` → visual) costs two polls;
 `now` does both in one run, about a minute end to end. That review gate is
 the point of the slow path, so no schedule ever runs `now` — you ask for it.
 
-The poll is for work you leave behind: mark a row and walk away. It costs
-nothing when the queue is empty — three Notion reads, no API call.
-
-Don't rely on it for speed. Asked for every five minutes over a day and a
-half, GitHub delivered 15 runs out of 347, one to three hours apart —
-scheduled workflows are best-effort and asking more often doesn't help. The
-cron asks hourly and the button is the only path that runs when you say so.
+There used to be a cron. Asked for a run every five minutes over a day and
+a half, GitHub delivered 15 out of 347, one to three hours apart, and
+emailed a failure whenever its runner pool was unhappy. A button is faster
+than that and doesn't send mail about it.
 
 ## Setup (once)
 

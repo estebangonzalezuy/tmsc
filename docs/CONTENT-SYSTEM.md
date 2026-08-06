@@ -39,7 +39,7 @@ Angle → Chosen → Drafted → Ready → Generated → Scheduled → Posted
   │        │         │        └─ you asking for a visual
   │        │         └─ LinkedIn draft written
   │        └─ you picked this one
-  └─ proposed by the weekly cycle
+  └─ proposed when you press "Give me three angles"
 ```
 
 `Ready` is the trigger word: it means "make me a visual". Everything else
@@ -75,8 +75,8 @@ text the run can read — for nothing.
 
 ## The jobs
 
-Any session can run these on demand — just ask. Two of them also run on a
-schedule (see Routines below).
+Any session can run these on demand — just ask. The Desk runs them with a
+button; nothing runs on its own.
 
 **Propose angles.** Skip if 6+ rows already sit in `Angle`. Otherwise read
 the Content library (what's over- and under-published, what's gone quiet),
@@ -140,12 +140,21 @@ ubuntu, calling the Notion REST API and the Claude API directly. No chat
 session involved, no connectors, no memory. Setup and internals are in
 `scripts/content-cycle/README.md`; the short version:
 
-| Trigger | Job | Model calls |
+**Nothing runs on a schedule.** Every run starts from the Desk. GitHub's
+cron delivered 15 of 347 requested runs over a day and a half, one to three
+hours apart, and emailed a failure every time its runner pool wobbled — a
+promise nobody was keeping, plus noise. A button you press is both faster
+and quieter.
+
+| Button on the Desk | Job | Model calls |
 |---|---|---|
-| Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 1 per row, 2 with text on the visual |
-| Hourly, best-effort | journal, drafts, visuals, library | only when a row is waiting |
-| Mondays 12:00 UTC | the above + three new angles | 1 |
-| 1st of the month | roll the objective period over | none, ever |
+| Make the journal posts | `journal` — every `Make post` capture → a finished post | 1 per entry |
+| Give me three angles | `angles` | 1 |
+| Finish what I chose | `now` — every `Chosen` row → draft + Post link | 1 per row, 2 with text on the visual |
+| Catch up | `queue` — journal, drafts, visuals, library | only when a row is waiting |
+
+Every run also rolls the objective period over first — one Notion read, no
+model call — so the month stays current without a schedule to do it.
 
 It needs two repository secrets — `ANTHROPIC_API_KEY` and `NOTION_TOKEN`
 (an internal Notion integration with the three databases shared to it) —
@@ -153,17 +162,14 @@ and it must be on `main`, because GitHub only schedules from the default
 branch. The site itself stays untouched: no Vercel env vars, no new
 dependencies in the app's `package.json`.
 
-Two speeds, on purpose. **Sitting down to make a post: run `now`** — it
-takes every `Chosen` row to a finished draft *and* Post link in a single
-run, about a minute. **Leaving work behind:** mark the row and let the
-poll pick it up whenever it arrives. The poll costs nothing when the queue
+**Sitting down to make a post: run `now`** — it takes every `Chosen` row to
+a finished draft *and* Post link in a single run, about a minute. Mark
+several rows first and one press finishes them all. The poll costs nothing when the queue
 is empty, because the API is only touched once there's work.
 
-**How best-effort is it?** Measured over a day and a half asking for every
-five minutes: 15 runs delivered out of 347 due, spaced one to three hours
-apart. GitHub drops scheduled runs freely and asking more often doesn't get
-you more of them, so the cron asks hourly now. If you want something to
-happen at a time you choose, press the button.
+If you want the old background behaviour back — three angles every Monday
+without asking — a `schedule:` block in the workflow restores it, with the
+caveats above.
 
 The staged statuses exist so you can review the draft before the visual is
 designed from it. `now` skips that gate deliberately — use it when you'd
@@ -188,9 +194,8 @@ the free plan the Desk is the answer. If you ever upgrade:
 - Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`
 - Body: `{"event_type":"content-cycle","client_payload":{"job":"journal"}}`
 
-And if you touch nothing at all, the poll picks the work up on its own
-eventually — see the measurement above for what "eventually" really means.
-That gap is exactly why the Desk exists.
+Nothing happens on its own — which is the point. The Desk is the only
+trigger, so the system is never quietly halfway through something.
 
 It never publishes anything, and it doesn't touch Canva.
 

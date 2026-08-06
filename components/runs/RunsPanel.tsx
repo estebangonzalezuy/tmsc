@@ -35,9 +35,9 @@ type Job = {
   lands: { href: string; name: string };
 };
 
-/* The four things worth a button. The rest of the jobs still exist on the
-   command line and on their schedules; these are the ones you'd reach for
-   standing in a kitchen. */
+/* The four things worth a button. Nothing runs on a schedule, so these are
+   the whole system's trigger surface — the rest of the jobs exist only on
+   the command line. */
 const JOBS: Job[] = [
   {
     id: "journal",
@@ -461,6 +461,7 @@ export default function RunsPanel() {
           </div>
 
           <p className="mt-10 text-xs text-muted leading-relaxed">
+            Nothing runs on a schedule — these buttons are the only trigger.
             Results land in Notion, not here. A run takes about a minute.
           </p>
           <button

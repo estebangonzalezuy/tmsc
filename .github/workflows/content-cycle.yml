@@ -1,31 +1,22 @@
 name: content cycle
 
-# The club's posting loop, on a schedule that costs nothing when idle. The
-# hourly run only reads Notion; it touches the Claude API when — and only
-# when — a row is actually waiting in Chosen, Ready or Posted.
+# The club's posting loop. There is no schedule: every run is started by
+# hand from the Desk (/desk on the site), which is the only trigger with a
+# latency you can predict.
 #
-# The schedule is best-effort and GitHub means it: asked for every five
-# minutes over a day and a half it delivered 15 runs out of 347, arriving
-# one to three hours apart. Asking more often does not get you more runs,
-# so this asks hourly, which is roughly what arrives anyway.
-#
-# Sitting down to make a post? Don't wait for it. Run workflow → `now`
-# takes every Chosen row to a finished draft + Post link in about a minute.
-# The button is the only path with a predictable latency.
+# The cron that used to be here asked for a run every five minutes and
+# GitHub delivered 15 out of 347 over a day and a half, one to three hours
+# apart — and failed loudly whenever its runner pool was unhappy, which is
+# email you can do nothing about. Pressing a button beats waiting for a
+# promise nobody was keeping. `repository_dispatch` stays for a Notion
+# button, if that plan ever gets paid for.
 #
 # Needs two repository secrets (Settings → Secrets and variables → Actions):
 #   ANTHROPIC_API_KEY  console.anthropic.com → API keys
 #   NOTION_TOKEN       notion.so/my-integrations → internal integration,
-#                      then share the three tMSC databases with it
-#
-# GitHub only runs scheduled workflows from the default branch, so this file
-# has to be on `main` to fire.
+#                      then share the tMSC databases with it
 
 on:
-  schedule:
-    - cron: "17 * * * *" # journal, drafts, visuals, library — when GitHub feels like it
-    - cron: "0 12 * * 1" # Mondays 12:00 UTC: the above + three new angles
-    - cron: "0 12 1 * *" # 1st of the month: roll the objective over
   # Lets a Notion button fire a run straight from the phone — POST to
   # /repos/:owner/:repo/dispatches with {"event_type":"content-cycle",
   # "client_payload":{"job":"journal"}}. See docs/CONTENT-SYSTEM.md.
@@ -65,17 +56,6 @@ jobs:
       - run: npm ci
         working-directory: scripts/content-cycle
 
-      - name: Pick the job
-        id: pick
-        run: |
-          case "${{ github.event.schedule }}" in
-            "0 12 * * 1")  job=weekly ;;
-            "0 12 1 * *")  job=objectives ;;
-            "17 * * * *")  job=queue ;;
-            *)             job="${{ inputs.job || github.event.client_payload.job || 'now' }}" ;;
-          esac
-          echo "job=$job" >> "$GITHUB_OUTPUT"
-
       - name: Run the cycle
         working-directory: scripts/content-cycle
         env:
@@ -83,5 +63,5 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           SITE_ORIGIN: https://themotionsocialclub.vercel.app
         run: |
-          node index.mjs ${{ steps.pick.outputs.job }} \
+          node index.mjs ${{ inputs.job || github.event.client_payload.job || 'now' }} \
             ${{ inputs.dry_run && '--dry-run' || '' }}
