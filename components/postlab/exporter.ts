@@ -3,7 +3,12 @@
 // into a full-resolution frame, then saves stills (PNG) or records the
 // animation (MP4 where the browser supports it, WebM otherwise).
 
-import { FORMATS, tones, type BlendMode, type PostSpec } from "@/lib/postlab";
+import {
+  FORMATS,
+  slideTones,
+  type BlendMode,
+  type PostSpec,
+} from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
 import { GifEncoder } from "./gif";
 
@@ -27,7 +32,7 @@ function drawLayers(
   ctx.imageSmoothingEnabled = false;
   ctx.globalCompositeOperation = "source-over";
   ctx.globalAlpha = 1;
-  ctx.fillStyle = tones(slide.theme).bg;
+  ctx.fillStyle = slideTones(slide).bg;
   ctx.fillRect(0, 0, w, h);
   slide.layers.forEach((layer, i) => {
     const canvas = layerCanvases[i];
@@ -36,9 +41,7 @@ function drawLayers(
     if (canvas) {
       ctx.drawImage(canvas, 0, 0, w, h);
     } else {
-      // "plain" layers render as a solid div in the preview
-      ctx.fillStyle = tones(slide.theme).bg;
-      ctx.fillRect(0, 0, w, h);
+      /* "plain" adds nothing — the background is already painted. */
     }
   });
   ctx.globalAlpha = 1;

@@ -316,6 +316,32 @@ export function paletteInk(
   return list.length ? paletteAt(seed, 0, list) : ink;
 }
 
+/* Ink and background for a slide. Monochrome slides use the theme's two
+   tones; a slide with any coloured layer takes both from the palette, so
+   shuffling moves the background as well as the pixels — a palette that
+   only ever recolours the ink reads as one accent on a fixed backdrop. */
+export function slideTones(slide: {
+  theme: Theme;
+  colorSeed: number;
+  palette?: string[];
+  layers: { color?: boolean }[];
+}): { ink: string; bg: string; grays: string[] } {
+  const base = tones(slide.theme);
+  if (!slide.layers.some((l) => l.color === true)) return base;
+
+  const list = slide.palette?.length ? slide.palette : PALETTE;
+  const bg = paletteAt(slide.colorSeed, 3, list);
+  const bgLum = luminance(bg);
+  /* The ink has to survive whatever background just came up. */
+  const inks = list.filter((hex) => Math.abs(luminance(hex) - bgLum) > 0.3);
+  const ink = inks.length
+    ? paletteAt(slide.colorSeed, 0, inks)
+    : bgLum > 0.5
+      ? "#0d0d0d"
+      : "#ffffff";
+  return { ink, bg, grays: base.grays };
+}
+
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** Keep only real hexes; an empty result means "use the club palette". */

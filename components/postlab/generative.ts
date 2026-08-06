@@ -57,7 +57,7 @@ export function drawGenerative(
   h: number,
   color?: { on: boolean; seed: number; palette?: readonly string[] },
 ) {
-  const { ink, bg } = tones(theme);
+  const { ink } = tones(theme);
   const u = w / 1080;
   const D = Math.max(2, duration);
   const tt = (((t % D) + D) % D) / D;
@@ -190,13 +190,15 @@ export function drawGenerative(
   }
   octx.putImageData(img, 0, 0);
 
-  /* Composite: solid background, then the dithered pixels scaled up crisp,
-     honoring the layer transform (drag / pinch / rotate). */
+  /* Composite the dithered pixels scaled up crisp, honoring the layer
+     transform (drag / pinch / rotate). Nothing fills the background: the
+     canvas stays transparent where the dither is off, so stacked layers
+     combine on their own and the slide's background shows through without
+     anyone having to reach for a blend mode. */
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, w, h);
   ctx.globalAlpha = 1;
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
 
   const c2x = w / 2;
   const c2y = h / 2;

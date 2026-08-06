@@ -27,8 +27,8 @@ import {
   encodeSpec,
   normalizeSpec,
   shaderDef,
+  slideTones,
   specFromQuery,
-  tones,
   type LayerSpec,
   type PostSpec,
   type ShaderType,
@@ -628,7 +628,7 @@ export default function PostLab() {
                 ref={shaderBoxRef}
                 className="absolute inset-0"
                 style={{
-                  background: tones(slide.theme).bg,
+                  background: slideTones(slide).bg,
                   isolation: "isolate",
                 }}
               >

@@ -56,12 +56,12 @@ export default function ShaderLayer({
     );
   }
 
-  const { ink, bg } = tones(theme);
+  const { ink } = tones(theme);
   const s = shader;
 
-  if (s.type !== "dithering") {
-    return <div style={{ position: "absolute", inset: 0, background: bg }} />;
-  }
+  /* "plain" contributes nothing of its own — the slide's background is
+     painted behind the whole stack. */
+  if (s.type !== "dithering") return null;
 
   const shape = SHAPES.includes(String(s.shape)) ? String(s.shape) : "sphere";
   const dtype = DTYPES.includes(String(s.dtype)) ? String(s.dtype) : "4x4";
@@ -73,7 +73,9 @@ export default function ShaderLayer({
       // Lets the exporter read frames back out of the WebGL canvas.
       webGlContextAttributes={{ preserveDrawingBuffer: true }}
       minPixelRatio={2}
-      colorBack={bg}
+      /* Transparent, so a layer only ever adds its own pixels and stacked
+         layers combine without a blend mode. */
+      colorBack="rgba(0,0,0,0)"
       /* The WebGL dithering only has two tones, so colour here means one
          palette pick for the whole layer rather than per-pixel. */
       colorFront={color?.on ? paletteInk(color.seed, theme, color.palette) : ink}

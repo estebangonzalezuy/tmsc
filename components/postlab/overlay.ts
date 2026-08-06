@@ -2,7 +2,7 @@
 // code produces the on-screen preview overlay and the exported PNG / video
 // frames, so what you see is exactly what downloads.
 
-import { FORMATS, tones, type PostSpec, type SlideSpec } from "@/lib/postlab";
+import { FORMATS, slideTones, type PostSpec, type SlideSpec } from "@/lib/postlab";
 import { BAYER4 } from "./generative";
 
 export type Fonts = { sans: string; serif: string; gothic: string };
@@ -171,7 +171,7 @@ export function drawOverlay(
   const base = FORMATS[spec.format];
   const w = Math.round(base.w * scale);
   const h = Math.round(base.h * scale);
-  const { ink, bg } = tones(slide.theme);
+  const { ink, bg } = slideTones(slide);
   const u = w / 1080; // design unit: layout was drawn at 1080 wide
   const pad = 96 * u;
   const center = slide.align === "center";
