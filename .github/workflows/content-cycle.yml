@@ -1,13 +1,17 @@
 name: content cycle
 
-# The club's posting loop, on a schedule that costs nothing when idle.
-# The quarter-hourly run only reads Notion; it touches the Claude API when —
-# and only when — a row is actually waiting in Chosen, Ready or Posted.
+# The club's posting loop, on a schedule that costs nothing when idle. The
+# hourly run only reads Notion; it touches the Claude API when — and only
+# when — a row is actually waiting in Chosen, Ready or Posted.
 #
-# Sitting down to make a post? Don't wait for the schedule: Run workflow →
-# `now` takes every Chosen row to a finished draft + Post link in one pass,
-# in about a minute. GitHub's cron drifts by several minutes under load, so
-# the button is the fast path, not the schedule.
+# The schedule is best-effort and GitHub means it: asked for every five
+# minutes over a day and a half it delivered 15 runs out of 347, arriving
+# one to three hours apart. Asking more often does not get you more runs,
+# so this asks hourly, which is roughly what arrives anyway.
+#
+# Sitting down to make a post? Don't wait for it. Run workflow → `now`
+# takes every Chosen row to a finished draft + Post link in about a minute.
+# The button is the only path with a predictable latency.
 #
 # Needs two repository secrets (Settings → Secrets and variables → Actions):
 #   ANTHROPIC_API_KEY  console.anthropic.com → API keys
@@ -19,7 +23,7 @@ name: content cycle
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # journal, drafts, visuals, library
+    - cron: "17 * * * *" # journal, drafts, visuals, library — when GitHub feels like it
     - cron: "0 12 * * 1" # Mondays 12:00 UTC: the above + three new angles
     - cron: "0 12 1 * *" # 1st of the month: roll the objective over
   # Lets a Notion button fire a run straight from the phone — POST to
@@ -67,7 +71,7 @@ jobs:
           case "${{ github.event.schedule }}" in
             "0 12 * * 1")  job=weekly ;;
             "0 12 1 * *")  job=objectives ;;
-            "*/5 * * * *") job=queue ;;
+            "17 * * * *")  job=queue ;;
             *)             job="${{ inputs.job || github.event.client_payload.job || 'now' }}" ;;
           esac
           echo "job=$job" >> "$GITHUB_OUTPUT"

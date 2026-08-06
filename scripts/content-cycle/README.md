@@ -13,8 +13,8 @@ the site's stays untouched.
 
 | Trigger | Job | Model calls |
 |---|---|---|
-| Actions → Run workflow | `now` — every `Chosen` row → draft + Post link | 2 per row |
-| Every 15 min | `queue` — drafts, visuals, library | only if a row is waiting |
+| Actions → Run workflow | `now` — every `Chosen` row → draft + Post link | 1 per row, 2 with text |
+| Hourly, best-effort | `queue` — drafts, visuals, library | only if a row is waiting |
 | Mondays 12:00 UTC | `weekly` — the queue + three new angles | 1 for the angles |
 | 1st of the month | `objectives` — roll the period over | none, ever |
 
@@ -23,10 +23,13 @@ path (`Chosen` → draft → you review → `Ready` → visual) costs two polls;
 `now` does both in one run, about a minute end to end. That review gate is
 the point of the slow path, so no schedule ever runs `now` — you ask for it.
 
-The 15-minute poll is for work you leave behind: mark a row and walk away.
-It costs nothing when the queue is empty — three Notion reads, no API call.
-Don't rely on it for speed; GitHub's cron drifts by several minutes under
-load.
+The poll is for work you leave behind: mark a row and walk away. It costs
+nothing when the queue is empty — three Notion reads, no API call.
+
+Don't rely on it for speed. Asked for every five minutes over a day and a
+half, GitHub delivered 15 runs out of 347, one to three hours apart —
+scheduled workflows are best-effort and asking more often doesn't help. The
+cron asks hourly and the button is the only path that runs when you say so.
 
 ## Setup (once)
 

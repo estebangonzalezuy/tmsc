@@ -143,7 +143,7 @@ session involved, no connectors, no memory. Setup and internals are in
 | Trigger | Job | Model calls |
 |---|---|---|
 | Actions → Run workflow | `now` — every `Chosen` row to a finished draft + Post link, one pass | 1 per row, 2 with text on the visual |
-| Every 5 min | journal, drafts, visuals, library | only when a row is waiting |
+| Hourly, best-effort | journal, drafts, visuals, library | only when a row is waiting |
 | Mondays 12:00 UTC | the above + three new angles | 1 |
 | 1st of the month | roll the objective period over | none, ever |
 
@@ -156,8 +156,14 @@ dependencies in the app's `package.json`.
 Two speeds, on purpose. **Sitting down to make a post: run `now`** — it
 takes every `Chosen` row to a finished draft *and* Post link in a single
 run, about a minute. **Leaving work behind:** mark the row and let the
-15-minute poll pick it up. The poll costs nothing when the queue is empty,
-because the API is only touched once there's work.
+poll pick it up whenever it arrives. The poll costs nothing when the queue
+is empty, because the API is only touched once there's work.
+
+**How best-effort is it?** Measured over a day and a half asking for every
+five minutes: 15 runs delivered out of 347 due, spaced one to three hours
+apart. GitHub drops scheduled runs freely and asking more often doesn't get
+you more of them, so the cron asks hourly now. If you want something to
+happen at a time you choose, press the button.
 
 The staged statuses exist so you can review the draft before the visual is
 designed from it. `now` skips that gate deliberately — use it when you'd
@@ -182,9 +188,9 @@ the free plan the Desk is the answer. If you ever upgrade:
 - Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`
 - Body: `{"event_type":"content-cycle","client_payload":{"job":"journal"}}`
 
-And if you touch nothing at all, the 5-minute poll picks the work up on
-its own. GitHub's scheduler drifts under load, so 5 minutes is the floor,
-not a promise — which is exactly why the Desk exists.
+And if you touch nothing at all, the poll picks the work up on its own
+eventually — see the measurement above for what "eventually" really means.
+That gap is exactly why the Desk exists.
 
 It never publishes anything, and it doesn't touch Canva.
 
