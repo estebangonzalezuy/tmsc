@@ -10,7 +10,7 @@ export default function PostList({ posts }: { posts: Post[] }) {
       {posts.map((p) => (
         <li key={`${p.date}-${p.title}`}>
           <a
-            href={site.substack}
+            href={p.href || site.substack}
             target="_blank"
             rel="noreferrer"
             className="group grid grid-cols-[4.5rem_1fr_auto] items-baseline gap-4 py-4"

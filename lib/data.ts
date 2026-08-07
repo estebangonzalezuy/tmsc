@@ -37,7 +37,13 @@ export type Offering = {
   href: string;
   cta: string;
 };
-export type Post = { date: string; title: string; type: string };
+export type Post = {
+  date: string;
+  title: string;
+  type: string;
+  /** Direct Substack permalink. Falls back to the publication home when absent. */
+  href?: string;
+};
 export type ArchiveYear = { year: string; posts: Post[] };
 
 export const site = content.site;

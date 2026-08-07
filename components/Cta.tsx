@@ -16,7 +16,7 @@ export default function Cta() {
       </h2>
       <p className="mt-6 max-w-md mx-auto text-sm text-muted leading-relaxed">
         One honest letter at a time. Exercises, resources, and real
-        conversations about the practice — free, in your inbox.
+        conversations about the practice. Free, in your inbox.
       </p>
       <div className="mt-10">
         <a href={site.subscribe} target="_blank" rel="noreferrer">
