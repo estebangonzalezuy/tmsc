@@ -659,17 +659,20 @@
         {
           "date": "Jun 30",
           "title": "How to present your work w/ Giovanna Crise",
-          "type": "Interview"
+          "type": "Interview",
+          "href": "https://humanandmotion.substack.com/p/how-to-present-your-work-wgiovanna"
         },
         {
           "date": "May 05",
           "title": "Why does motion design feel so lonely? Yes, we are",
-          "type": "Essay"
+          "type": "Essay",
+          "href": "https://humanandmotion.substack.com/p/why-does-motion-design-feels-so-lonely"
         },
         {
           "date": "Jan 27",
           "title": "Tools are exhausting. Foundations are permanent",
-          "type": "Manifesto"
+          "type": "Manifesto",
+          "href": "https://humanandmotion.substack.com/p/going-back-to-the-foundations-to"
         }
       ]
     },
@@ -679,17 +682,20 @@
         {
           "date": "Dec 23",
           "title": "Start 2026 getting clients",
-          "type": "Podcast"
+          "type": "Podcast",
+          "href": "https://humanandmotion.substack.com/p/how-i-try-to-get-clients"
         },
         {
           "date": "Dec 17",
           "title": "the Club next program + Gift",
-          "type": "Update"
+          "type": "Update",
+          "href": "https://humanandmotion.substack.com/p/the-club-next-program-gift"
         },
         {
           "date": "Dec 11",
           "title": "Quantity First w/ Hitoshi Morita",
-          "type": "Interview"
+          "type": "Interview",
+          "href": "https://humanandmotion.substack.com/p/the-quantity-first-approach-whitoshi"
         },
         {
           "date": "Dec 01",
@@ -699,47 +705,56 @@
         {
           "date": "Nov 26",
           "title": "3 resources to fuel your next sprint",
-          "type": "Resources"
+          "type": "Resources",
+          "href": "https://humanandmotion.substack.com/p/3-resources-i-use-to-organize-my"
         },
         {
           "date": "Nov 13",
           "title": "Some news",
-          "type": "Update"
+          "type": "Update",
+          "href": "https://humanandmotion.substack.com/p/some-news"
         },
         {
           "date": "Nov 11",
           "title": "Stopping tutorials, starting practice",
-          "type": "Essay"
+          "type": "Essay",
+          "href": "https://humanandmotion.substack.com/p/stopping-tutorials-starting-to-practice"
         },
         {
           "date": "Nov 03",
           "title": "Exploration Lab #06: Morphing Magic",
-          "type": "Practice File"
+          "type": "Practice File",
+          "href": "https://humanandmotion.substack.com/p/exploration-lab-06-morphing-magic"
         },
         {
           "date": "Oct 07",
           "title": "Animate a short experience like this",
-          "type": "Essay"
+          "type": "Essay",
+          "href": "https://humanandmotion.substack.com/p/animate-a-short-experience-like-this"
         },
         {
           "date": "Oct 01",
           "title": "Practice File #05: Not just Easy Ease",
-          "type": "Practice File"
+          "type": "Practice File",
+          "href": "https://humanandmotion.substack.com/p/the-practice-file-05-its-not-just"
         },
         {
           "date": "Sep 29",
           "title": "Pick your journey over here",
-          "type": "Update"
+          "type": "Update",
+          "href": "https://humanandmotion.substack.com/p/pick-your-journey-over-here"
         },
         {
           "date": "Sep 23",
           "title": "Learning by practice w/ Carol Wang",
-          "type": "Interview"
+          "type": "Interview",
+          "href": "https://humanandmotion.substack.com/p/carol-wangs-take-on-learning-and"
         },
         {
           "date": "Sep 16",
           "title": "Checking in: All good over there?",
-          "type": "Check-in"
+          "type": "Check-in",
+          "href": "https://humanandmotion.substack.com/p/checking-in-all-good-over-there"
         },
         {
           "date": "Sep 08",
@@ -749,22 +764,26 @@
         {
           "date": "Sep 08",
           "title": "Still waiting for 'the right time'?",
-          "type": "Essay"
+          "type": "Essay",
+          "href": "https://humanandmotion.substack.com/p/if-you-need-a-starting-point-here"
         },
         {
           "date": "Sep 02",
           "title": "One small shift in focus (Figure/Ground)",
-          "type": "Practice File"
+          "type": "Practice File",
+          "href": "https://humanandmotion.substack.com/p/one-small-shift-in-focus"
         },
         {
           "date": "Aug 26",
           "title": "Motion Basics for Designers!",
-          "type": "Announcement"
+          "type": "Announcement",
+          "href": "https://humanandmotion.substack.com/p/pov-your-first-day-learning-motion"
         },
         {
           "date": "Aug 19",
           "title": "Steal these 3 Motion Exercises",
-          "type": "Exercises"
+          "type": "Exercises",
+          "href": "https://humanandmotion.substack.com/p/3-motion-exercises-worth-your-time"
         },
         {
           "date": "Aug 12",
@@ -774,7 +793,8 @@
         {
           "date": "Aug 05",
           "title": "List of resources to start in Motion Design today",
-          "type": "Resources"
+          "type": "Resources",
+          "href": "https://humanandmotion.substack.com/p/start-motion-design-today-list-of"
         },
         {
           "date": "Jul 31",
@@ -814,7 +834,8 @@
         {
           "date": "Jun 10",
           "title": "101 to start in Motion Design",
-          "type": "Guide"
+          "type": "Guide",
+          "href": "https://humanandmotion.substack.com/p/101-to-start-in-motion-design"
         },
         {
           "date": "Jun 02",
@@ -824,7 +845,8 @@
         {
           "date": "May 30",
           "title": "the Exploration Lab",
-          "type": "Announcement"
+          "type": "Announcement",
+          "href": "https://humanandmotion.substack.com/p/the-practice-file"
         },
         {
           "date": "May 27",
@@ -869,7 +891,8 @@
         {
           "date": "Feb 18",
           "title": "Building an Identity w/ Andreas Maris",
-          "type": "Interview"
+          "type": "Interview",
+          "href": "https://humanandmotion.substack.com/p/buiilding-an-identity-wandreas-maris"
         },
         {
           "date": "Feb 04",
@@ -914,12 +937,14 @@
         {
           "date": "Sep 11",
           "title": "Tackling the 5 biggest challenges in Motion Design learning",
-          "type": "Podcast"
+          "type": "Podcast",
+          "href": "https://humanandmotion.substack.com/p/tackling-the-5-biggest-challenges"
         },
         {
           "date": "Jul 02",
           "title": "How to start working as a Motion Designer (w/ Alejandra)",
-          "type": "Guidance call"
+          "type": "Guidance call",
+          "href": "https://humanandmotion.substack.com/p/how-to-start-working-as-a-motion"
         }
       ]
     }

@@ -512,6 +512,7 @@ const postFields: Field[] = [
   { key: "date", label: "Date (e.g. Jun 30)" },
   { key: "title", label: "Title" },
   { key: "type", label: "Type" },
+  { key: "href", label: "Link (leave empty for the Substack home)" },
 ];
 
 function ArchiveEditor({

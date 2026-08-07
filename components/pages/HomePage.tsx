@@ -16,7 +16,6 @@ export default function HomePage() {
   const {
     site,
     stats,
-    pillars,
     practiceFiles,
     learningPaths,
     resources,
@@ -99,7 +98,7 @@ export default function HomePage() {
         <div className="mt-10 grid gap-10 md:grid-cols-2">
           <p className="text-sm leading-relaxed text-muted max-w-md">
             {site.positioning} Motion design is not just for
-            &ldquo;rock stars&rdquo; — it is a profession with diverse paths to
+            &ldquo;rock stars&rdquo;. It is a profession with diverse paths to
             success, and the club exists to make those paths less lonely:
             fundamentals over tools, practice over tutorials, people over
             algorithms.
@@ -112,35 +111,6 @@ export default function HomePage() {
               </div>
             ))}
           </dl>
-        </div>
-      </section>
-      )}
-
-      {/* Pillars */}
-      {!hidden.has("pillars") && (
-      <section
-        {...studioSection("pillars", "Pillars")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
-      >
-        <SectionHeading
-          label="How we look at the work"
-          title={
-            <>
-              Three layers: <em>structure</em>, <em>criticism</em>, and{" "}
-              <em>honesty</em>.
-            </>
-          }
-        />
-        <div className="mt-12 grid gap-px bg-line border border-line md:grid-cols-3">
-          {pillars.map((p) => (
-            <article key={p.number} className="bg-background p-8">
-              <p className="text-xs text-muted">{p.number}</p>
-              <h3 className="mt-4 font-serif text-2xl">{p.name}</h3>
-              <p className="mt-4 text-sm text-muted leading-relaxed">
-                {p.text}
-              </p>
-            </article>
-          ))}
         </div>
       </section>
       )}
@@ -202,7 +172,7 @@ export default function HomePage() {
         />
         <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
           Six fundamentals, six files. Short, bounded exercises made to be
-          finished — because the work no one sees is the work that shapes your
+          finished, because the work no one sees is the work that shapes your
           skill.
         </p>
         <div className="mt-12 grid gap-px bg-line border border-line sm:grid-cols-2 md:grid-cols-3">
@@ -339,27 +309,6 @@ export default function HomePage() {
         </div>
       </section>
       )}
-
-      {/* Human + Motion band */}
-      <section
-        {...studioSection("site", "Site & links")}
-        className="relative overflow-hidden border-t border-line px-5 md:px-6 py-32 text-center"
-      >
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <OrbitRing
-            letters={["H", "U", "M", "A", "N", "M", "O", "T", "I", "O", "N"]}
-            size={640}
-            duration="100s"
-          />
-        </div>
-        <p className="relative inline-block bg-background px-4 font-serif text-4xl md:text-6xl">
-          Human + Motion
-        </p>
-        <p className="relative mt-6 text-sm text-muted max-w-sm mx-auto leading-relaxed">
-          Tools are exhausting. Foundations are permanent. The human criteria
-          behind the keyframes is the one thing worth training.
-        </p>
-      </section>
 
       <Cta />
     </>
