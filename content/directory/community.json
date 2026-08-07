@@ -3,7 +3,7 @@
   "shelf": "work",
   "name": "Communities & Podcasts",
   "letter": "J",
-  "blurb": "Forums, podcasts and newsletters — including the ones about rates and contracts rather than keyframes.",
+  "blurb": "Forums, podcasts and newsletters: including the ones about rates and contracts rather than keyframes.",
   "action": "Open",
   "source": "seed",
   "count": 15,
@@ -107,7 +107,7 @@
         ]
       },
       "href": "https://motionhatch.com/",
-      "note": "The business side of motion design — rates, clients, contracts."
+      "note": "The business side of motion design: rates, clients, contracts."
     },
     {
       "id": "motion-hatch-podcast",

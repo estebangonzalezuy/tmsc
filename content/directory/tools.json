@@ -3,7 +3,7 @@
   "shelf": "make",
   "name": "Tools & Plugins",
   "letter": "H",
-  "blurb": "Software, plugins, sound, assets and the small utilities — grouped by the job they do rather than by vendor.",
+  "blurb": "Software, plugins, sound, assets and the small utilities: grouped by the job they do rather than by vendor.",
   "action": "Open",
   "source": "seed",
   "count": 44,
@@ -201,7 +201,7 @@
         ]
       },
       "href": "https://battleaxe.co/",
-      "note": "RubberHose and Overlord — rigging and Illustrator-to-AE, solved."
+      "note": "RubberHose and Overlord: rigging and Illustrator-to-AE, solved."
     },
     {
       "id": "blender",
@@ -229,7 +229,7 @@
         ]
       },
       "href": "https://cavalry.scenegroup.co/",
-      "note": "Procedural 2D animation — the tool for data-driven and generative motion."
+      "note": "Procedural 2D animation: the tool for data-driven and generative motion."
     },
     {
       "id": "cinema-4d",
@@ -243,7 +243,7 @@
         ]
       },
       "href": "https://www.maxon.net/en/cinema-4d",
-      "note": "The motion designer's 3D package — MoGraph is why."
+      "note": "The motion designer's 3D package: MoGraph is why."
     },
     {
       "id": "coolors",
@@ -448,7 +448,7 @@
         ]
       },
       "href": "https://www.mtmograph.com/",
-      "note": "Motion — the keyframe and easing toolkit most people install first."
+      "note": "Motion: the keyframe and easing toolkit most people install first."
     },
     {
       "id": "musicbed",
@@ -538,7 +538,7 @@
     },
     {
       "id": "rainbox-duik",
-      "name": "Rainbox — Duik",
+      "name": "Rainbox Duik",
       "facets": {
         "kind": [
           "Plugin"
@@ -623,7 +623,7 @@
         ]
       },
       "href": "https://derivative.ca/",
-      "note": "Node-based real-time visuals — installations, live, generative."
+      "note": "Node-based real-time visuals: installations, live, generative."
     },
     {
       "id": "unreal-engine",

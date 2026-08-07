@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds content/directory/*.json (the Directory's data) from the TSV sources in
-// scripts/directory/sources/. The TSVs are the editable form — one line per entry,
-// no punctuation to get wrong — and the JSON is what the site imports.
+// scripts/directory/sources/. The TSVs are the editable form: one line per entry,
+// no punctuation to get wrong: and the JSON is what the site imports.
 //
 //   node scripts/directory/build.mjs
 //
@@ -39,7 +39,7 @@ const COLLECTIONS = [
     shelf: "learn",
     name: "YouTube Channels",
     letter: "A",
-    blurb: "The channels worth subscribing to, tagged by software and by what you actually get — tutorials, rigs, breakdowns, scripts.",
+    blurb: "The channels worth subscribing to, tagged by software and by what you actually get: tutorials, rigs, breakdowns, scripts.",
     action: "Watch",
   },
   {
@@ -47,7 +47,7 @@ const COLLECTIONS = [
     shelf: "learn",
     name: "Courses",
     letter: "B",
-    blurb: "Paid and subscription courses, filterable by level, skill, school and price — so you can tell a €20 class from a €1,000 bootcamp before you click.",
+    blurb: "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a €20 class from a €1,000 bootcamp before you click.",
     action: "Open",
   },
   {
@@ -71,7 +71,7 @@ const COLLECTIONS = [
     shelf: "look",
     name: "Studios",
     letter: "E",
-    blurb: "Nearly four hundred studios with their sites and cities — for reference, for job hunting, and for seeing who works near you.",
+    blurb: "Nearly four hundred studios with their sites and cities: for reference, for job hunting, and for seeing who works near you.",
     action: "Visit",
   },
   {
@@ -95,7 +95,7 @@ const COLLECTIONS = [
     shelf: "make",
     name: "Tools & Plugins",
     letter: "H",
-    blurb: "Software, plugins, sound, assets and the small utilities — grouped by the job they do rather than by vendor.",
+    blurb: "Software, plugins, sound, assets and the small utilities: grouped by the job they do rather than by vendor.",
     action: "Open",
   },
   {
@@ -111,7 +111,7 @@ const COLLECTIONS = [
     shelf: "work",
     name: "Communities & Podcasts",
     letter: "J",
-    blurb: "Forums, podcasts and newsletters — including the ones about rates and contracts rather than keyframes.",
+    blurb: "Forums, podcasts and newsletters: including the ones about rates and contracts rather than keyframes.",
     action: "Open",
   },
   {
@@ -127,7 +127,7 @@ const COLLECTIONS = [
     shelf: "know",
     name: "Timeline",
     letter: "L",
-    blurb: "How motion design got here, from Fantasmagorie to real-time — because the field did not start with After Effects.",
+    blurb: "How motion design got here, from Fantasmagorie to real-time: because the field did not start with After Effects.",
     action: "",
   },
 ];

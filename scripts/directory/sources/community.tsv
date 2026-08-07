@@ -1,8 +1,8 @@
 # Where motion designers actually talk to each other, and where the business questions get answered.
-# SEEDED, NOT VERIFIED — run `node scripts/directory/check-links.mjs community` before trusting the links.
+# SEEDED, NOT VERIFIED: run `node scripts/directory/check-links.mjs community` before trusting the links.
 #source: seed
 #cols: name	href	note	kind
-Motion Hatch	https://motionhatch.com/	The business side of motion design — rates, clients, contracts.	Business
+Motion Hatch	https://motionhatch.com/	The business side of motion design: rates, clients, contracts.	Business
 r/MotionDesign	https://www.reddit.com/r/MotionDesign/	Portfolio critique, career questions, and the occasional real argument.	Forum
 r/AfterEffects	https://www.reddit.com/r/AfterEffects/	Technical help, fast. Search before posting.	Forum
 r/blender	https://www.reddit.com/r/blender/	Enormous, active, and generous with beginners.	Forum

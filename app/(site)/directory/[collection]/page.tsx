@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collection = getCollection((await params).collection);
   if (!collection) return {};
   return {
-    title: `${collection.name} — the Directory — the Motion Social Club`,
+    title: `${collection.name} | the Directory | the Motion Social Club`,
     description: collection.blurb,
   };
 }

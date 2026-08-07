@@ -1,5 +1,5 @@
-# Galleries, archives and places to look — indexed, not judged.
-# SEEDED, NOT VERIFIED — run `node scripts/directory/check-links.mjs reference` before trusting the links.
+# Galleries, archives and places to look: indexed, not judged.
+# SEEDED, NOT VERIFIED: run `node scripts/directory/check-links.mjs reference` before trusting the links.
 #source: seed
 #cols: name	href	note	kind
 Motionographer	https://motionographer.com/	The long-running record of what the field is making and arguing about.	Archive

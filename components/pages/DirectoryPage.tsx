@@ -34,7 +34,7 @@ export default function DirectoryPage() {
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
           {directory?.intro ??
-            "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place — organised, filterable, and honest about where each entry came from."}
+            "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place: organised, filterable, and honest about where each entry came from."}
         </p>
       </section>
 
@@ -99,7 +99,7 @@ export default function DirectoryPage() {
 
       {!hidden.has("directoryNote") && (
         <section
-          {...studioSection("directoryNote", "Directory — how it's kept")}
+          {...studioSection("directoryNote", "Directory: how it's kept")}
           className="border-t border-line px-5 md:px-6 py-20 md:py-24"
         >
           <SectionHeading

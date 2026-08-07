@@ -90,7 +90,7 @@
           "Technical"
         ]
       },
-      "note": "The frame's proportions. 16:9, 1:1, 9:16 — plan for all three from the start."
+      "note": "The frame's proportions. 16:9, 1:1, 9:16: plan for all three from the start."
     },
     {
       "id": "bit-depth",
@@ -140,7 +140,7 @@
           "Technical"
         ]
       },
-      "note": "The defined range of colour a file describes — sRGB, Rec.709, and the source of most mismatches."
+      "note": "The defined range of colour a file describes: sRGB, Rec.709, and the source of most mismatches."
     },
     {
       "id": "compositing",
@@ -230,7 +230,7 @@
           "Craft"
         ]
       },
-      "note": "A keyframe with no interpolation — the value jumps. The basis of frame-by-frame in a keyframed tool."
+      "note": "A keyframe with no interpolation: the value jumps. The basis of frame-by-frame in a keyframed tool."
     },
     {
       "id": "interpolation",
@@ -240,7 +240,7 @@
           "Craft"
         ]
       },
-      "note": "How the software fills the frames between keyframes — linear, bezier, hold."
+      "note": "How the software fills the frames between keyframes: linear, bezier, hold."
     },
     {
       "id": "keyframe",

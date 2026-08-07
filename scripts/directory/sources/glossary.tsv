@@ -1,4 +1,4 @@
-# The vocabulary. Plain definitions, no links — the point is to stop bluffing in briefs.
+# The vocabulary. Plain definitions, no links: the point is to stop bluffing in briefs.
 #source: seed
 #cols: name	href	note	subject
 Timing		How long an action takes. The single biggest lever on how something feels.	Principle
@@ -15,9 +15,9 @@ Exaggeration		Pushing past the literal to make the read clearer, not merely loud
 Appeal		Whether the thing is pleasant to look at. Vague, unfashionable, and real.	Principle
 Weight		The impression of mass, communicated almost entirely through timing and easing.	Principle
 Keyframe		A recorded value at a point in time. Everything between them is interpolated.	Craft
-Interpolation		How the software fills the frames between keyframes — linear, bezier, hold.	Craft
+Interpolation		How the software fills the frames between keyframes: linear, bezier, hold.	Craft
 Graph editor		Where you edit the speed and value curves directly, rather than guessing at handles.	Craft
-Hold		A keyframe with no interpolation — the value jumps. The basis of frame-by-frame in a keyframed tool.	Craft
+Hold		A keyframe with no interpolation: the value jumps. The basis of frame-by-frame in a keyframed tool.	Craft
 Onion skinning		Seeing neighbouring frames faintly, so you can draw or place against them.	Craft
 Loop		An animation whose last frame flows into its first. Seamlessness is a timing problem.	Craft
 Cel animation		Frame-by-frame drawing, named for the transparent celluloid sheets it used to need.	Craft
@@ -39,10 +39,10 @@ Boardomatic		An animatic built straight from boards, before any animation exists
 Pitch deck		The document that sells the direction. Often the actual deliverable of week one.	Process
 Frame rate		Frames per second. 24 for film feel, 25 or 30 for broadcast, 60 for interfaces.	Technical
 Resolution		Pixel dimensions of the frame. Not the same thing as quality.	Technical
-Aspect ratio		The frame's proportions. 16:9, 1:1, 9:16 — plan for all three from the start.	Technical
+Aspect ratio		The frame's proportions. 16:9, 1:1, 9:16: plan for all three from the start.	Technical
 Codec		How the video is compressed. ProRes to edit, H.264 to deliver, rarely both.	Technical
 Bit depth		How many values each colour channel can hold. 8-bit banding is the usual symptom.	Technical
-Colour space		The defined range of colour a file describes — sRGB, Rec.709, and the source of most mismatches.	Technical
+Colour space		The defined range of colour a file describes: sRGB, Rec.709, and the source of most mismatches.	Technical
 Render		Turning the project into frames. Also the thing that always takes longer than the estimate.	Technical
 Lottie		A JSON format that carries vector animation into apps and the web at any size.	Technical
 Dithering		Trading colour depth for texture with a pattern of pixels. The club's house look.	Technical

@@ -1,5 +1,5 @@
-# Where to submit, and where to watch. Deadlines move every year — check before you plan.
-# SEEDED, NOT VERIFIED — run `node scripts/directory/check-links.mjs awards` before trusting the links.
+# Where to submit, and where to watch. Deadlines move every year: check before you plan.
+# SEEDED, NOT VERIFIED: run `node scripts/directory/check-links.mjs awards` before trusting the links.
 #source: seed
 #cols: name	href	note	kind
 Vimeo Staff Picks	https://vimeo.com/channels/staffpicks	Free to be considered. Upload well, tag properly, and hope.	Free

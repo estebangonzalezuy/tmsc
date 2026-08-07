@@ -32,7 +32,7 @@
       "shelf": "learn",
       "name": "YouTube Channels",
       "letter": "A",
-      "blurb": "The channels worth subscribing to, tagged by software and by what you actually get — tutorials, rigs, breakdowns, scripts.",
+      "blurb": "The channels worth subscribing to, tagged by software and by what you actually get: tutorials, rigs, breakdowns, scripts.",
       "source": "notion",
       "count": 41,
       "facets": [
@@ -45,7 +45,7 @@
       "shelf": "learn",
       "name": "Courses",
       "letter": "B",
-      "blurb": "Paid and subscription courses, filterable by level, skill, school and price — so you can tell a €20 class from a €1,000 bootcamp before you click.",
+      "blurb": "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a €20 class from a €1,000 bootcamp before you click.",
       "source": "notion",
       "count": 102,
       "facets": [
@@ -84,7 +84,7 @@
       "shelf": "look",
       "name": "Studios",
       "letter": "E",
-      "blurb": "Nearly four hundred studios with their sites and cities — for reference, for job hunting, and for seeing who works near you.",
+      "blurb": "Nearly four hundred studios with their sites and cities: for reference, for job hunting, and for seeing who works near you.",
       "source": "notion",
       "count": 393,
       "facets": [
@@ -122,7 +122,7 @@
       "shelf": "make",
       "name": "Tools & Plugins",
       "letter": "H",
-      "blurb": "Software, plugins, sound, assets and the small utilities — grouped by the job they do rather than by vendor.",
+      "blurb": "Software, plugins, sound, assets and the small utilities: grouped by the job they do rather than by vendor.",
       "source": "seed",
       "count": 44,
       "facets": [
@@ -148,7 +148,7 @@
       "shelf": "work",
       "name": "Communities & Podcasts",
       "letter": "J",
-      "blurb": "Forums, podcasts and newsletters — including the ones about rates and contracts rather than keyframes.",
+      "blurb": "Forums, podcasts and newsletters: including the ones about rates and contracts rather than keyframes.",
       "source": "seed",
       "count": 15,
       "facets": [
@@ -172,7 +172,7 @@
       "shelf": "know",
       "name": "Timeline",
       "letter": "L",
-      "blurb": "How motion design got here, from Fantasmagorie to real-time — because the field did not start with After Effects.",
+      "blurb": "How motion design got here, from Fantasmagorie to real-time: because the field did not start with After Effects.",
       "source": "seed",
       "count": 22,
       "facets": [
