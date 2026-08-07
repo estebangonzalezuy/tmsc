@@ -3,7 +3,26 @@
 // cycle is deterministic code, so these are the only calls that cost tokens —
 // and each is a single request, not an agent loop.
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const readDoc = (name) => {
+  try {
+    return readFileSync(resolve(HERE, "../../docs/voice", name), "utf8");
+  } catch {
+    return "";
+  }
+};
+
+/* Esteban's own voice document and a batch of posts he actually published.
+   Read from the repo rather than paraphrased here, so editing the source of
+   truth changes what comes out — and so nobody has to trust a summary of
+   how someone writes. */
+const PROFILE = readDoc("PROFILE.md");
+const EXAMPLES = readDoc("EXAMPLES.md");
 
 const MODEL = "claude-opus-5";
 
@@ -44,7 +63,29 @@ async function ask({ system, prompt, schema, effort = "medium", max = 8000 }) {
   }
 }
 
-/** The club's voice, straight from the site's own copy. */
+/* The rules Esteban states most strongly, repeated at the end of the system
+   prompt because the last thing read is the thing best obeyed. Everything
+   here is quoted from his profile, not inferred. */
+const HARD_RULES = `
+Before writing anything, these are absolute:
+- Never the "it's not X, it's Y" structure. He rejects this above all else.
+- Never these words: unveil, uncover, enhance, realm, breathes, symphony,
+  unfolds. Also avoid "value" and "content" as nouns.
+- Never em dashes.
+- Never inflate a simple idea into something grander than it is.
+- Never guru formatting: one sentence per line, each trying to be a mic drop.
+- Always the simplest word that does the job. If "use" works, never
+  "leverage".
+- Write as a colleague suggesting, not a guru instructing. "I suggest",
+  not "you need to".
+- Small imperfections are welcome. He is not a native English speaker and
+  does not polish that away.
+
+Ask yourself before finishing: does this sound like something he would
+actually write, or like an AI trying hard to imitate him? If it feels
+forced, pull back.`;
+
+/** Who the club is, from its own site, plus how Esteban actually writes. */
 export function voiceBrief(site) {
   const list = (arr, f) => (arr ?? []).map(f).join("\n");
   return [
@@ -57,13 +98,19 @@ export function voiceBrief(site) {
     list(site.threads, (t) => `- ${t.name}: ${t.text}`),
     site.quotes?.length ? "\nHouse lines:" : "",
     list(site.quotes, (q) => `- "${typeof q === "string" ? q : q.text}"`),
-    "\nVoice: honest, human, anti-hype. Short lines. Lowercase is fine.",
-    "No hashtag soup, no engagement bait, no em-dash-heavy AI cadence,",
-    "no 'in today's fast-paced world'. Say the true thing plainly.",
+    PROFILE ? `\n\n--- HOW ESTEBAN WRITES ---\n${PROFILE}` : "",
+    HARD_RULES,
   ]
     .filter(Boolean)
     .join("\n");
 }
+
+/* Twenty posts he published. Worth the tokens where a draft is being
+   written, not where a two-sentence angle is. */
+const withExamples = (system) =>
+  EXAMPLES
+    ? `${system}\n\n--- POSTS HE ACTUALLY PUBLISHED, for rhythm and shape ---\n${EXAMPLES}`
+    : system;
 
 /* ------------------------------------------------------------- angles --- */
 
@@ -105,7 +152,7 @@ const anglesSchema = (pillars) => ({
   },
 });
 
-export function proposeAngles({ voice, library, objective, pillars, existing }) {
+export function proposeAngles({ voice, library, objective, pillars, existing, inFlight }) {
   /* Numbered, so the model can point at a piece by index instead of
      retyping its title — a paraphrased title would silently fail to match
      and the angle would land in Notion with no source attached. */
@@ -129,9 +176,15 @@ export function proposeAngles({ voice, library, objective, pillars, existing }) 
       "cite a piece by its [n]:",
       shelf || "(nothing yet)",
       "",
-      objective
-        ? `The active objective (${objective.name}): ${objective.goal || "(not filled in yet)"}`
-        : "No active objective is set.",
+      objective?.goal
+        ? `THE OBJECTIVE for ${objective.name}, in his own words:\n"${objective.goal}"\n\nThis is what the next posts are for. Every angle has to move it.`
+        : objective
+          ? `The objective for ${objective.name} has no goal written yet, so aim at what the library shows is missing instead.`
+          : "No active objective is set.",
+      "",
+      inFlight?.length
+        ? `Already written or scheduled this period (don't propose these again, and don't propose the same beat):\n${inFlight.map((r) => `- ${r}`).join("\n")}`
+        : "",
       "",
       existing.length
         ? `Angles already waiting in the pipeline (don't repeat them):\n${existing.map((e) => `- ${e}`).join("\n")}`
@@ -147,7 +200,10 @@ export function proposeAngles({ voice, library, objective, pillars, existing }) 
       "  is worse than none.",
       "- Each angle must be specific enough that someone could write the",
       "  post from it — a take, not a topic.",
-      "- If the objective is filled in, aim all three at it.",
+      "- If the objective is written, all three angles must serve it, and",
+      "  `angle` should say plainly how. Not decoration: if an angle doesn't",
+      "  move the objective, it's the wrong angle this month.",
+      "- Write the `angle` in his voice, the way he'd say it to a colleague.",
     ].join("\n"),
   });
 }
@@ -168,12 +224,15 @@ const draftSchema = {
 
 export function writeDraft({ voice, row, objective }) {
   return ask({
-    system:
+    system: withExamples(
       voice +
-      "\n\nYou write the club's LinkedIn posts. LinkedIn is the primary " +
-      "channel (~26k people). Hook line first, then short paragraphs with " +
-      "blank lines between them. No links in the body, no hashtags, no " +
-      "call-to-action boilerplate. 120-220 words.",
+        "\n\nYou write Esteban's LinkedIn posts, in his voice, as him. " +
+        "LinkedIn is the club's primary channel (~26k people). An emoji " +
+        "marker then the hook on the first line, then short paragraphs with " +
+        "blank lines between them. 100-150 words is the target; 220 is the " +
+        "ceiling. No links in the body, no hashtags, no CTA boilerplate. " +
+        "Rarely open with 'I' — speak to the reader.",
+    ),
     effort: "high",
     schema: draftSchema,
     prompt: [
@@ -242,13 +301,14 @@ export function readJournal({ voice, entry, library, objective, pillars, formats
     .join("\n");
 
   return ask({
-    system:
+    system: withExamples(
       voice +
       "\n\nEsteban captured a raw thought — typed fast or spoken aloud, so " +
       "expect no punctuation, false starts, and half-finished sentences. " +
       "Find what he actually means and turn it into a post. Keep his words " +
       "and his phrasing wherever they're good; you are editing, not " +
       "replacing. Don't smooth it into something more polished than he is.",
+    ),
     effort: "high",
     max: 12000,
     schema: journalSchema(pillars, formats),
@@ -268,6 +328,65 @@ export function readJournal({ voice, entry, library, objective, pillars, formats
     ]
       .filter(Boolean)
       .join("\n"),
+  });
+}
+
+/* ------------------------------------------------------------- review --- */
+
+const reviewSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["standing", "verdict", "working", "missing", "next"],
+  properties: {
+    standing: {
+      type: "string",
+      description:
+        "one sentence on where the month is against the objective, said plainly",
+    },
+    verdict: {
+      type: "string",
+      enum: ["on track", "slipping", "off track", "too early to tell"],
+    },
+    working: { type: "string", description: "what's actually going well, or empty" },
+    missing: {
+      type: "string",
+      description: "the gap between what was published and what the goal needs",
+    },
+    next: {
+      type: "string",
+      description:
+        "the two or three concrete things to do in the rest of the period, as a short list separated by newlines",
+    },
+  },
+};
+
+export function reviewObjective({ voice, objective, published, pipeline, daysIn, daysLeft }) {
+  return ask({
+    system:
+      voice +
+      "\n\nYou're looking at how the month is going against what Esteban " +
+      "said he wanted, and reporting back to him. Be a colleague reading the " +
+      "situation honestly, not a coach. If the month is going badly, say so " +
+      "in one plain sentence; if it's fine, don't invent a problem to look " +
+      "useful. Judge against the objective he wrote, not against some idea " +
+      "of how much one should post.",
+    effort: "high",
+    schema: reviewSchema,
+    prompt: [
+      `Objective for ${objective.name}: "${objective.goal}"`,
+      `Started ${objective.start}. ${daysIn} days in, ${daysLeft} left.`,
+      "",
+      published.length
+        ? `Published in this period (${published.length}):\n${published.map((p) => `- ${p.date || "?"} · ${p.channel || "?"} · ${p.pillar || "—"} · ${p.name}`).join("\n")}`
+        : "Nothing published in this period yet.",
+      "",
+      pipeline.length
+        ? `In the pipeline right now:\n${pipeline.map((p) => `- [${p.status}] ${p.name}`).join("\n")}`
+        : "The pipeline is empty.",
+      "",
+      "Read it and answer the schema. `next` should be things he can do,",
+      "not principles he should hold.",
+    ].join("\n"),
   });
 }
 

@@ -29,7 +29,19 @@ on:
         type: choice
         default: now
         options:
-          [now, journal, queue, weekly, angles, drafts, visuals, library, objectives, all]
+          [
+            now,
+            journal,
+            queue,
+            weekly,
+            angles,
+            review,
+            drafts,
+            visuals,
+            library,
+            objectives,
+            all,
+          ]
       dry_run:
         description: Read-only — print what it would do
         type: boolean

@@ -18,7 +18,8 @@ from Actions → Run workflow, or from the CLI below.
 |---|---|---|
 | `now` | every `Chosen` row → draft + Post link | 1 per row, 2 with text |
 | `journal` | every `Make post` capture → a finished post | 1 per entry |
-| `angles` | three things to write next | 1 |
+| `angles` | three things to write next, aimed at the objective | 1 |
+| `review` | how the month is going against its objective | 1 |
 | `queue` | journal, drafts, visuals, library | only if a row is waiting |
 
 Every run rolls the objective period over first: one Notion read, no model
@@ -83,11 +84,16 @@ data sources.
   against that vocabulary and assembles the PostSpec, so a hallucinated
   shape name falls back to the documented default instead of shipping a
   broken link.
-- `claude.mjs` — the only three places that need judgment: proposing angles,
-  writing the LinkedIn draft, choosing a visual treatment. One structured
-  request each (`claude-opus-5`, adaptive thinking, `output_config.format`),
-  not an agent loop. The club's voice is read from `content/site.json`, so
-  editing the site in the Studio also steers the writing.
+- `claude.mjs` — the places that need judgment: proposing angles, writing the
+  LinkedIn draft, choosing a visual treatment, reading a journal capture, and
+  judging the month against its objective. One structured request each
+  (`claude-opus-5`, adaptive thinking, `output_config.format`), not an agent
+  loop. The voice comes from `docs/voice/PROFILE.md` (how Esteban writes, with
+  the hard rules quoted last so they stay in recency) and
+  `docs/voice/EXAMPLES.md` (twenty published posts, attached only to the jobs
+  that actually write prose). Club facts still come from
+  `content/site.json`, so editing the site in the Studio also steers the
+  writing.
 - `index.mjs` — the jobs, and a CLI over them.
 
 ## What this does *not* do

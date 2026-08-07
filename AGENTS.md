@@ -113,6 +113,12 @@ reads the Post Lab vocabulary from the live `/api/postlab/schema` rather
 than duplicating `lib/postlab.ts`; keep that endpoint accurate and the
 automation follows.
 
+The writing voice lives in `docs/voice/` — `PROFILE.md` (how Esteban
+writes, ending in the hard rules) and `EXAMPLES.md` (twenty published
+posts). `claude.mjs` reads both at run time, so tuning the writing is
+editing those files, not the prompts. Keep the hard rules last in the
+profile: they're appended to every system prompt for recency.
+
 ## When adding or changing a section
 
 1. Mark its wrapper with `{...studioSection("<id>", "<Label>")}`.

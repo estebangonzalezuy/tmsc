@@ -7,6 +7,7 @@
 //
 //   node index.mjs now          every `Chosen` row → draft + visual, one pass
 //   node index.mjs journal      every "Make post" capture → a finished post
+//   node index.mjs review       how the month is going against its objective
 //   node index.mjs queue        journal + drafts + visuals + library (the poll)
 //   node index.mjs angles       propose three new angles (weekly)
 //   node index.mjs objectives   roll the month over (no model call; every
@@ -78,7 +79,12 @@ async function activeObjective() {
   const rows = await notion.byStatus(DB.objectives, "Active");
   const month = rows.find((r) => get.select(r, "Period") === "month") ?? rows[0];
   return month
-    ? { id: month.id, name: get.title(month), goal: get.text(month, "Goal") }
+    ? {
+        id: month.id,
+        name: get.title(month),
+        goal: get.text(month, "Goal"),
+        start: get.date(month, "Start"),
+      }
     : null;
 }
 
@@ -104,12 +110,20 @@ async function jobAngles() {
     .sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 
   const objective = await activeObjective();
+  /* Everything already moving, so a "new" angle isn't last week's post
+     wearing a different hat. */
+  const busy = (await notion.query(DB.pipeline)).filter((r) =>
+    ["Chosen", "Drafted", "Ready", "Generated", "Scheduled"].includes(
+      get.select(r, "Status"),
+    ),
+  );
   const { angles } = await ai.proposeAngles({
     voice,
     library,
     objective,
     pillars: PILLARS,
     existing: waiting.map((r) => get.title(r)),
+    inFlight: busy.map((r) => get.title(r)),
   });
 
   for (const a of angles.slice(0, 3)) {
@@ -407,6 +421,80 @@ async function jobJournal() {
   }
 }
 
+/* ------------------------------------------------------------- review --- */
+
+/* How the month is going against what the owner said he wanted. Reads the
+   objective, what actually got published inside the period, and what's in
+   flight; writes the reading back onto the objective row so it sits next to
+   the goal it's judging. */
+async function jobReview() {
+  const objective = await activeObjective();
+  if (!objective) {
+    say("review: no active objective to review");
+    return;
+  }
+  if (!objective.goal.trim()) {
+    say(`review: "${objective.name}" has no Goal written — nothing to judge against`);
+    return;
+  }
+
+  const start = objective.start || `${today().slice(0, 7)}-01`;
+  const now = new Date();
+  const startDate = new Date(`${start}T00:00:00Z`);
+  const daysIn = Math.max(0, Math.round((now - startDate) / 86400000));
+  const end = new Date(startDate);
+  end.setUTCMonth(end.getUTCMonth() + 1);
+  const daysLeft = Math.max(0, Math.round((end - now) / 86400000));
+
+  const published = (await notion.query(DB.library))
+    .map((r) => ({
+      name: get.title(r),
+      date: get.date(r, "Date"),
+      channel: get.select(r, "Channel"),
+      pillar: get.select(r, "Pillar"),
+    }))
+    .filter((r) => r.date >= start)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const pipeline = (await notion.query(DB.pipeline))
+    .map((r) => ({ name: get.title(r), status: get.select(r, "Status") }))
+    .filter((r) => r.status && r.status !== "Posted");
+
+  const out = await ai.reviewObjective({
+    voice,
+    objective: { ...objective, start },
+    published,
+    pipeline,
+    daysIn,
+    daysLeft,
+  });
+
+  const body = [
+    out.standing,
+    out.working ? `\nWorking: ${out.working}` : "",
+    out.missing ? `\nMissing: ${out.missing}` : "",
+    out.next ? `\nNext:\n${out.next}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  if (DRY) {
+    say(`review: ${objective.name} — ${out.verdict}`);
+    say(`  ${out.standing}`);
+    return;
+  }
+  await notion.updatePage(objective.id, {
+    Review: put.text(body),
+    Standing: put.select(out.verdict),
+    Reviewed: put.date(today()),
+  });
+  say(
+    `review: ${objective.name} — ${out.verdict}, ${published.length} published, ` +
+      `${daysLeft} days left`,
+  );
+  say(`  ${out.standing}`);
+}
+
 /* ------------------------------------------------------------ library --- */
 
 /* Closing the loop: a Posted row becomes a library entry, so the next round
@@ -485,6 +573,7 @@ const ALL = {
   visuals: jobVisuals,
   now: jobNow,
   journal: jobJournal,
+  review: jobReview,
   library: jobLibrary,
   objectives: jobObjectives,
 };

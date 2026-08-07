@@ -35,7 +35,7 @@ type Job = {
   lands: { href: string; name: string };
 };
 
-/* The four things worth a button. Nothing runs on a schedule, so these are
+/* The five things worth a button. Nothing runs on a schedule, so these are
    the whole system's trigger surface — the rest of the jobs exist only on
    the command line. */
 const JOBS: Job[] = [
@@ -51,7 +51,7 @@ const JOBS: Job[] = [
     id: "angles",
     label: "Give me three angles",
     blurb:
-      "Reads everything the club has published and proposes three things to write next.",
+      "Reads everything the club has published and proposes three things to write next, aimed at this month's objective.",
     cost: "one call",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
@@ -62,6 +62,14 @@ const JOBS: Job[] = [
       "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
     cost: "one call per row, two with text",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
+  },
+  {
+    id: "review",
+    label: "How is the month going",
+    blurb:
+      "Reads this month's objective against what actually got published and says where it stands, what's working, and what to do next.",
+    cost: "one call",
+    lands: { href: NOTION.objectives, name: "the Objectives" },
   },
   {
     id: "queue",
