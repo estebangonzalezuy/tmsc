@@ -33,7 +33,7 @@
     {
       "number": "01",
       "name": "Structure",
-      "text": "Helping someone find their way in — curated paths, resources, and exercises that make the first steps in motion design less lonely."
+      "text": "Helping someone find their way in: curated paths, resources, and exercises that make the first steps in motion design less lonely."
     },
     {
       "number": "02",
@@ -43,7 +43,7 @@
     {
       "number": "03",
       "name": "Honesty",
-      "text": "Naming the human experience of the work — the doubts, the mistakes, the real life around the practice."
+      "text": "Naming the human experience of the work: the doubts, the mistakes, the real life around the practice."
     }
   ],
   "threads": [
@@ -72,7 +72,7 @@
     {
       "number": "#01",
       "name": "Contrast",
-      "note": "Start here — black and white only"
+      "note": "Start here, black and white only"
     },
     {
       "number": "#02",
@@ -156,10 +156,10 @@
       "minutes": "30",
       "tool": "After Effects",
       "goal": "Break the gap between watching and doing.",
-      "brief": "Import the design you sketched.\nPick ONE element — the title, one shape, one icon.\nAnimate it with Position or Scale. Nothing else.\nApply Easy Ease, then open the Graph Editor and drag the handles.\nLoop the preview ten times.",
+      "brief": "Import the design you sketched.\nPick ONE element: the title, one shape, one icon.\nAnimate it with Position or Scale. Nothing else.\nApply Easy Ease, then open the Graph Editor and drag the handles.\nLoop the preview ten times.",
       "constraint": "One element. Two properties, maximum. Resist the second element.",
       "done": "Something moves, and you can say why it moves that way.",
-      "watch": "Learn After Effects in 10 Minutes — Ben Marriott",
+      "watch": "Learn After Effects in 10 Minutes by Ben Marriott",
       "watchHref": "https://www.youtube.com/watch?v=hb2bbfiNBXA"
     },
     {
@@ -168,11 +168,11 @@
       "track": "Foundations",
       "minutes": "60",
       "tool": "After Effects",
-      "goal": "Know where things are — not how everything works.",
+      "goal": "Know where things are, not how everything works.",
       "brief": "Watch one intro tutorial. One.\nAs you watch, make a composition, drop in a shape and set two keyframes.\nStop at sixty minutes even if the video isn't over.",
       "constraint": "One hour, then close the video. Theory without practice doesn't stick.",
       "done": "You can make a comp, import a file and set a keyframe without looking it up.",
-      "watch": "I'll Teach You After Effects in 60 Minutes — Ben Marriott",
+      "watch": "I'll Teach You After Effects in 60 Minutes by Ben Marriott",
       "watchHref": "https://www.youtube.com/watch?v=jFbRZZmMW7c"
     },
     {
@@ -185,7 +185,7 @@
       "brief": "Take a square. Move it left to right over one second.\nDuplicate it twice.\nOne linear, one Easy Ease, one with custom curves in the Graph Editor.\nStack them and play all three together.",
       "constraint": "Same distance, same duration, every time. Only the curve changes.",
       "done": "You can name which one feels expensive, and say why.",
-      "watch": "The LAST Graph Editor Tutorial You'll Ever Need — Jake In Motion",
+      "watch": "The LAST Graph Editor Tutorial You'll Ever Need by Jake In Motion",
       "watchHref": "https://www.youtube.com/watch?v=7pOCtlrrE3Y"
     },
     {
@@ -211,7 +211,7 @@
       "brief": "Find a five-second piece you love.\nWatch it five times without pausing.\nWrite down the three moments where something changes.\nNote the gap between them in frames, not in feelings.",
       "constraint": "No recreating. Only watching and counting.",
       "done": "Three timestamps and the rhythm between them.",
-      "watch": "How to Keyframe Like a Pro — Alex Grigg",
+      "watch": "How to Keyframe Like a Pro by Alex Grigg",
       "watchHref": "https://www.youtube.com/watch?v=E-sF_1FgpJw"
     },
     {
@@ -234,10 +234,10 @@
       "minutes": "30",
       "tool": "After Effects",
       "goal": "Move a group without touching the group.",
-      "brief": "Take three elements you've already animated.\nCreate a Null Object.\nParent all three to it.\nAnimate only the null — the whole set should travel together.\nThen move one child on its own and watch it keep its own life.",
+      "brief": "Take three elements you've already animated.\nCreate a Null Object.\nParent all three to it.\nAnimate only the null: the whole set should travel together.\nThen move one child on its own and watch it keep its own life.",
       "constraint": "Don't touch the children's Position once they're parented.",
       "done": "One controller driving a group, children still free.",
-      "watch": "Parenting and Null Objects — Adobe",
+      "watch": "Parenting and Null Objects by Adobe",
       "watchHref": "https://www.youtube.com/watch?v=TP1fEnJkzmQ"
     },
     {
@@ -260,10 +260,10 @@
       "minutes": "30",
       "tool": "After Effects",
       "goal": "Build once, reuse everywhere.",
-      "brief": "Animate one small loop — a dot pulsing, a line drawing on.\nPre-compose it.\nDuplicate the pre-comp five times.\nSlide each copy a few frames later in the timeline.\nChange the original and watch all five update.",
+      "brief": "Animate one small loop: a dot pulsing, a line drawing on.\nPre-compose it.\nDuplicate the pre-comp five times.\nSlide each copy a few frames later in the timeline.\nChange the original and watch all five update.",
       "constraint": "Edit only the source comp. Never the copies.",
       "done": "A sequence built from one asset you can restyle in one place.",
-      "watch": "Understanding Precomps — Adobe",
+      "watch": "Understanding Precomps by Adobe",
       "watchHref": "https://www.youtube.com/watch?v=7qzH89Skq4c"
     },
     {
@@ -299,7 +299,7 @@
       "minutes": "45",
       "tool": "After Effects",
       "goal": "Motion hierarchy: what moves first tells people where to look.",
-      "brief": "Take a layout with three parts — a headline, an image, a label.\nAnimate all three arriving.\nBuild version A: headline first.\nBuild version B: image first.\nWatch both. Notice where your eye goes.",
+      "brief": "Take a layout with three parts: a headline, an image, a label.\nAnimate all three arriving.\nBuild version A: headline first.\nBuild version B: image first.\nWatch both. Notice where your eye goes.",
       "constraint": "Same timing, same easing. Only the order changes.",
       "done": "Two versions, and a clear read on what each one says.",
       "watch": "",
@@ -338,7 +338,7 @@
       "minutes": "45",
       "tool": "After Effects",
       "goal": "Give a brand one curve and use it everywhere.",
-      "brief": "Pick a brand. Write down its speed: quick and decisive, or slow and considered?\nBuild one easing curve that matches.\nApply that same curve to three different moves — a fade, a slide, a scale.\nSave it as an animation preset.",
+      "brief": "Pick a brand. Write down its speed: quick and decisive, or slow and considered?\nBuild one easing curve that matches.\nApply that same curve to three different moves: a fade, a slide, a scale.\nSave it as an animation preset.",
       "constraint": "One curve. Every move. If one move needs a different curve, change all of them.",
       "done": "A preset file with the brand's name on it.",
       "watch": "",
@@ -380,7 +380,7 @@
       "brief": "Draw a simple shape in Design Mode.\nMake two timelines: Idle and Active.\nCreate a State Machine and wire Entry to Idle.\nAdd a transition from Idle to Active.\nPlay it, and watch nothing happen until the condition is met.",
       "constraint": "Two states. No listeners yet.",
       "done": "A graph where you can see why it moves.",
-      "watch": "Rive 101 — State Machine Overview",
+      "watch": "Rive 101: State Machine Overview",
       "watchHref": "https://www.youtube.com/watch?v=0Hb7SlEW6MI"
     },
     {
@@ -403,10 +403,10 @@
       "minutes": "45",
       "tool": "Rive",
       "goal": "Hand control to the person using it.",
-      "brief": "Draw an invisible rectangle over your shape — the hitbox.\nAdd a Listener: Pointer Enter sets 'on' to true.\nAdd another: Pointer Exit sets it false.\nHover. Then make the hitbox slightly bigger than the shape and hover again.",
+      "brief": "Draw an invisible rectangle over your shape: the hitbox.\nAdd a Listener: Pointer Enter sets 'on' to true.\nAdd another: Pointer Exit sets it false.\nHover. Then make the hitbox slightly bigger than the shape and hover again.",
       "constraint": "Hover only. Clicks are tomorrow.",
       "done": "Something that reacts to you, not to a playhead.",
-      "watch": "Rive 101 — Listeners",
+      "watch": "Rive 101: Listeners",
       "watchHref": "https://www.youtube.com/watch?v=25uQiqdmT9c"
     },
     {
@@ -416,10 +416,10 @@
       "minutes": "30",
       "tool": "Rive",
       "goal": "Stop animations from cutting each other off.",
-      "brief": "Build a press animation that plays on click.\nLeave the transition instant — click twice fast and watch it jump.\nNow set Exit Time to 100%.\nClick twice fast again.",
+      "brief": "Build a press animation that plays on click.\nLeave the transition instant: click twice fast and watch it jump.\nNow set Exit Time to 100%.\nClick twice fast again.",
       "constraint": "Change one setting. Notice everything it fixes.",
       "done": "A press that always finishes what it started.",
-      "watch": "Rive 101 — Transitions",
+      "watch": "Rive 101: Transitions",
       "watchHref": "https://www.youtube.com/watch?v=C4KNgrrqt7k"
     },
     {
@@ -484,7 +484,7 @@
       "brief": "Build a five to eight second vertical post at 1080×1920.\nOne hero transition. One line of type. One accent.\nGrade it, add grain, export an MP4.\nPost it, or send it to one person.",
       "constraint": "Under ten seconds, and out the door today.",
       "done": "A file with today's date in its name, seen by someone who isn't you.",
-      "watch": "2 Modern Instagram Reel Animations — Dope Motions",
+      "watch": "2 Modern Instagram Reel Animations by Dope Motions",
       "watchHref": "https://www.youtube.com/watch?v=Dy9LJ83X7Lo"
     },
     {
@@ -494,8 +494,8 @@
       "minutes": "90",
       "tool": "After Effects",
       "goal": "Two seconds that say what a brand is like.",
-      "brief": "Take a logo — yours, or one you admire.\nWrite the three adjectives first.\nBuild a two-second entrance using Position, Scale and Rotation.\nMatch the easing to the adjectives: elegant means slow settles, energetic means overshoot.\nRender it as a loop.",
-      "constraint": "Two seconds. No effects, no plugins — transforms and curves only.",
+      "brief": "Take a logo: yours, or one you admire.\nWrite the three adjectives first.\nBuild a two-second entrance using Position, Scale and Rotation.\nMatch the easing to the adjectives: elegant means slow settles, energetic means overshoot.\nRender it as a loop.",
+      "constraint": "Two seconds. No effects, no plugins: transforms and curves only.",
       "done": "A sting where the movement matches the words you wrote first.",
       "watch": "How Dawn Creative Approaches Brand Animation",
       "watchHref": "https://www.youtube.com/watch?v=ZYto_7cnBoU"
@@ -520,7 +520,7 @@
       "minutes": "90",
       "tool": "After Effects",
       "goal": "Motion that guides instead of decorating.",
-      "brief": "Take a screen you designed.\nAnimate the entrance: what appears first, what follows, what never moves.\nAdd one micro-interaction — a button press or a loading state.\nKeep the whole entrance under 800ms.",
+      "brief": "Take a screen you designed.\nAnimate the entrance: what appears first, what follows, what never moves.\nAdd one micro-interaction: a button press or a loading state.\nKeep the whole entrance under 800ms.",
       "constraint": "If a movement doesn't tell the user something, delete it.",
       "done": "A screen transition you'd defend in a design review.",
       "watch": "",
@@ -594,7 +594,7 @@
     },
     {
       "name": "List of Motion Resources",
-      "blurb": "The most-shared list of the club — everything you need to start in motion design today.",
+      "blurb": "The most-shared list of the club: everything you need to start in motion design today.",
       "href": "https://notion.so/2471c0b2f62f800b8aa6d8f5e2499c0c"
     },
     {
@@ -611,35 +611,19 @@
   "worksheets": [
     {
       "name": "Idea Mining Worksheet",
-      "href": ""
-    },
-    {
-      "name": "Motion Skill Audit / Self-Assessment",
-      "href": ""
+      "href": "https://drive.google.com/drive/u/0/my-drive"
     },
     {
       "name": "Critical Thinking Worksheet",
-      "href": ""
-    },
-    {
-      "name": "Motion Course List",
-      "href": ""
+      "href": "https://drive.google.com/drive/u/0/search?q=critical%20thinking"
     },
     {
       "name": "Projects Bank Template",
-      "href": ""
-    },
-    {
-      "name": "Designer → Motion transition worksheet",
-      "href": ""
-    },
-    {
-      "name": "Fix this for better motion projects",
-      "href": ""
+      "href": "https://www.notion.so/f082871bda254af5ac4567a3a0848e8e"
     },
     {
       "name": "Weekly motion practice planner",
-      "href": ""
+      "href": "https://www.notion.so/4aa8db9d2fe3435e81c4ab37ef077705"
     }
   ],
   "offerings": [
@@ -647,7 +631,7 @@
       "name": "Motion Basics for Designers",
       "status": "Live",
       "price": "€49",
-      "blurb": "A short course on the fundamentals that carry across every tool — made for designers stepping into motion.",
+      "blurb": "A short course on the fundamentals that carry across every tool, made for designers stepping into motion.",
       "href": "https://humanandmotion.substack.com/",
       "cta": "Get the course"
     },
@@ -655,7 +639,7 @@
       "name": "the Practice File",
       "status": "Paused",
       "price": "",
-      "blurb": "The club's creative gym — six published exercises on contrast, lines, balance, figure/ground, easing, and morphing.",
+      "blurb": "The club's creative gym: six published exercises on contrast, lines, balance, figure/ground, easing, and morphing.",
       "href": "https://humanandmotion.substack.com/",
       "cta": "Browse the exercises"
     },
@@ -671,7 +655,7 @@
       "name": "the Residency",
       "status": "In design",
       "price": "",
-      "blurb": "A place to learn motion from the base — sprints, feedback, and human criteria. Fully designed, waiting for its moment.",
+      "blurb": "A place to learn motion from the base: sprints, feedback, and human criteria. Fully designed, waiting for its moment.",
       "href": "https://humanandmotion.substack.com/",
       "cta": "Follow along"
     }

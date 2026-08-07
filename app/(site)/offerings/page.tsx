@@ -3,7 +3,7 @@ import { site } from "@/lib/data";
 import OfferingsPage from "@/components/pages/OfferingsPage";
 
 export const metadata: Metadata = {
-  title: `Offerings — ${site.name}`,
+  title: `Offerings | ${site.name}`,
 };
 
 export default function Offerings() {
