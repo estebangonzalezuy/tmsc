@@ -21,7 +21,7 @@ export default function ResourcesPage() {
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
           The club exists because good resources were hard to find. These are
-          the ones worth your attention — collected, organized, and kept alive.
+          the ones worth your attention: collected, organized, and kept alive.
         </p>
       </section>
 

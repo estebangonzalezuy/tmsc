@@ -173,7 +173,7 @@ export default function PracticePage() {
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
           Tell us how long you&apos;ve got and where you are on the path. You
-          get one thing to do — a goal, a constraint, and something to watch if
+          get one thing to do: a goal, a constraint, and something to watch if
           you get stuck. Not a library to browse.
         </p>
       </section>
@@ -346,7 +346,7 @@ export default function PracticePage() {
           />
           <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
             Nobody starts at the timeline. Pick the stage you&apos;re actually
-            in — the picker above will only hand you exercises from there.
+            in. The picker above will only hand you exercises from there.
           </p>
           <ul className="mt-12 grid gap-px bg-line border border-line md:grid-cols-2">
             {practiceStages.map((s) => (

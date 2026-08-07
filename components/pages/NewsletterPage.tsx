@@ -21,7 +21,7 @@ export default function NewsletterPage() {
           Every letter the club has sent, <em>since day one</em>.
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          Essays, exercises, interviews, and honest check-ins — published on
+          Essays, exercises, interviews, and honest check-ins, published on
           Substack, free to read. This is the full archive.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
