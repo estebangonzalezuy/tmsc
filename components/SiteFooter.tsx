@@ -18,6 +18,7 @@ const allColumns = [
       { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
       { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
       { label: "Resources", href: "/resources", section: "resources", navId: "resources" },
+      { label: "the Directory", href: "/directory", section: "directory", navId: "directory" },
     ],
   },
 ];

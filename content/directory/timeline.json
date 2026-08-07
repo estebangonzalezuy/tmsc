@@ -1,0 +1,282 @@
+{
+  "id": "timeline",
+  "shelf": "know",
+  "name": "Timeline",
+  "letter": "L",
+  "blurb": "How motion design got here, from Fantasmagorie to real-time — because the field did not start with After Effects.",
+  "action": "",
+  "source": "seed",
+  "count": 22,
+  "facets": [
+    {
+      "key": "era",
+      "label": "Era",
+      "values": [
+        {
+          "value": "Desktop era",
+          "count": 5
+        },
+        {
+          "value": "Open era",
+          "count": 5
+        },
+        {
+          "value": "Origins",
+          "count": 5
+        },
+        {
+          "value": "Broadcast era",
+          "count": 4
+        },
+        {
+          "value": "Studio era",
+          "count": 3
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "emile-cohl-fantasmagorie",
+      "name": "Émile Cohl, Fantasmagorie",
+      "facets": {
+        "era": [
+          "Origins"
+        ]
+      },
+      "note": "Widely treated as the first fully animated film — drawn line, no photography of objects.",
+      "meta": "1908"
+    },
+    {
+      "id": "walther-ruttmann-and-viking-eggeling",
+      "name": "Walther Ruttmann and Viking Eggeling",
+      "facets": {
+        "era": [
+          "Origins"
+        ]
+      },
+      "note": "Abstract film in Germany: motion as composition rather than as story.",
+      "meta": "1920s"
+    },
+    {
+      "id": "oskar-fischinger",
+      "name": "Oskar Fischinger",
+      "facets": {
+        "era": [
+          "Origins"
+        ]
+      },
+      "note": "Visual music. Shape and colour cut to sound, decades before anyone said \"motion graphics\".",
+      "meta": "1930s"
+    },
+    {
+      "id": "len-lye-direct-animation",
+      "name": "Len Lye, direct animation",
+      "facets": {
+        "era": [
+          "Origins"
+        ]
+      },
+      "note": "Painting and scratching straight onto film stock. The first camera-less motion design.",
+      "meta": "1930s"
+    },
+    {
+      "id": "norman-mclaren-at-the-nfb",
+      "name": "Norman McLaren at the NFB",
+      "facets": {
+        "era": [
+          "Origins"
+        ]
+      },
+      "note": "Drawn sound, pixilation, and a lifetime of technique invented per film.",
+      "meta": "1940s"
+    },
+    {
+      "id": "saul-bass-title-sequences",
+      "name": "Saul Bass, title sequences",
+      "facets": {
+        "era": [
+          "Broadcast era"
+        ]
+      },
+      "note": "Title design becomes authored work — Anatomy of a Murder, Vertigo, North by Northwest.",
+      "meta": "1950s"
+    },
+    {
+      "id": "pablo-ferro",
+      "name": "Pablo Ferro",
+      "facets": {
+        "era": [
+          "Broadcast era"
+        ]
+      },
+      "note": "Fast-cut, hand-lettered titles. Dr. Strangelove set the template for kinetic type.",
+      "meta": "1960s"
+    },
+    {
+      "id": "john-whitney-analogue-computing",
+      "name": "John Whitney, analogue computing",
+      "facets": {
+        "era": [
+          "Broadcast era"
+        ]
+      },
+      "note": "Mechanical computers driving film cameras. The direct ancestor of procedural motion.",
+      "meta": "1960s"
+    },
+    {
+      "id": "mtv-launches",
+      "name": "MTV launches",
+      "facets": {
+        "era": [
+          "Broadcast era"
+        ]
+      },
+      "note": "A whole channel of identity design. Motion graphics becomes an industry with clients.",
+      "meta": "1981"
+    },
+    {
+      "id": "adobe-photoshop-ships",
+      "name": "Adobe Photoshop ships",
+      "facets": {
+        "era": [
+          "Desktop era"
+        ]
+      },
+      "note": "The raster foundation everything else in the pipeline assumed.",
+      "meta": "1990"
+    },
+    {
+      "id": "cosa-after-effects-1-0",
+      "name": "CoSA After Effects 1.0",
+      "facets": {
+        "era": [
+          "Desktop era"
+        ]
+      },
+      "note": "Compositing and keyframing on a desktop. The tool that defined the job title.",
+      "meta": "1993"
+    },
+    {
+      "id": "cinema-4d-on-desktop",
+      "name": "Cinema 4D on desktop",
+      "facets": {
+        "era": [
+          "Desktop era"
+        ]
+      },
+      "note": "Accessible 3D for designers, and later MoGraph — procedural motion without scripting.",
+      "meta": "1990s"
+    },
+    {
+      "id": "kyle-cooper-se7en-titles",
+      "name": "Kyle Cooper, Se7en titles",
+      "facets": {
+        "era": [
+          "Desktop era"
+        ]
+      },
+      "note": "Title design as graphic authorship again, and the start of the modern title sequence.",
+      "meta": "1995"
+    },
+    {
+      "id": "the-matrix-and-bullet-time",
+      "name": "The Matrix and bullet time",
+      "facets": {
+        "era": [
+          "Desktop era"
+        ]
+      },
+      "note": "Effects language leaks into commercial motion work for a decade.",
+      "meta": "1999"
+    },
+    {
+      "id": "motionographer-founded",
+      "name": "Motionographer founded",
+      "facets": {
+        "era": [
+          "Studio era"
+        ]
+      },
+      "note": "The field gets a public record, a critical voice, and a job board.",
+      "meta": "2000s"
+    },
+    {
+      "id": "vimeo-becomes-the-reel",
+      "name": "Vimeo becomes the reel",
+      "facets": {
+        "era": [
+          "Studio era"
+        ]
+      },
+      "note": "Portfolio distribution moves from showreels on tape to a public URL.",
+      "meta": "2000s"
+    },
+    {
+      "id": "blender-goes-open-source",
+      "name": "Blender goes open source",
+      "facets": {
+        "era": [
+          "Studio era"
+        ]
+      },
+      "note": "A free, complete 3D pipeline. Two decades later it is a real production option.",
+      "meta": "2002"
+    },
+    {
+      "id": "school-of-motion-opens",
+      "name": "School of Motion opens",
+      "facets": {
+        "era": [
+          "Open era"
+        ]
+      },
+      "note": "Structured motion education outside universities. Bootcamps, cohorts, feedback.",
+      "meta": "2013"
+    },
+    {
+      "id": "lottie-released",
+      "name": "Lottie released",
+      "facets": {
+        "era": [
+          "Open era"
+        ]
+      },
+      "note": "Vector animation ships into apps at any resolution. UI motion becomes a discipline.",
+      "meta": "2017"
+    },
+    {
+      "id": "rive-and-real-time-motion",
+      "name": "Rive and real-time motion",
+      "facets": {
+        "era": [
+          "Open era"
+        ]
+      },
+      "note": "Interactive, state-driven animation designed once and run live in product.",
+      "meta": "2020s"
+    },
+    {
+      "id": "real-time-and-generative",
+      "name": "Real-time and generative",
+      "facets": {
+        "era": [
+          "Open era"
+        ]
+      },
+      "note": "Unreal, TouchDesigner and shader work move from experiment to client deliverable.",
+      "meta": "2020s"
+    },
+    {
+      "id": "generative-ai-arrives",
+      "name": "Generative AI arrives",
+      "facets": {
+        "era": [
+          "Open era"
+        ]
+      },
+      "note": "The tools change weekly. Judgement, taste and direction become the scarce part.",
+      "meta": "2020s"
+    }
+  ]
+}

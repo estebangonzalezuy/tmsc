@@ -18,6 +18,7 @@ type Content = {
   practiceRules: string[];
   learningPaths: Item[];
   resources: Item[];
+  directory: Item;
   worksheets: string[];
   offerings: Item[];
   archive: { year: string; posts: Item[] }[];
@@ -38,6 +39,8 @@ type ListKey =
 
 type StringsKey = "worksheets" | "quotes" | "practiceRules";
 
+type ObjectKey = "site" | "directory";
+
 /* ---------- section schema ---------- */
 
 type Field = {
@@ -48,7 +51,7 @@ type Field = {
 };
 
 type Section =
-  | { id: "site"; title: string; note: string; kind: "object"; fields: Field[] }
+  | { id: ObjectKey; title: string; note: string; kind: "object"; fields: Field[] }
   | {
       id: ListKey;
       title: string;
@@ -220,6 +223,17 @@ const sections: Section[] = [
       { key: "name", label: "Name" },
       { key: "blurb", label: "Blurb", kind: "textarea" },
       { key: "href", label: "Link" },
+    ],
+  },
+  {
+    id: "directory",
+    title: "the Directory",
+    note: "Intro copy for the Directory — the entries themselves are data, not copy",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "How it's kept", kind: "textarea" },
     ],
   },
   {
@@ -559,6 +573,7 @@ const navItems = [
   { id: "about", label: "About", section: "" },
   { id: "newsletter", label: "Newsletter", section: "archive" },
   { id: "resources", label: "Resources", section: "resources" },
+  { id: "directory", label: "the Directory", section: "directory" },
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
@@ -701,6 +716,7 @@ const pageTabs = [
   { id: "about", label: "About" },
   { id: "newsletter", label: "Newsletter" },
   { id: "resources", label: "Resources" },
+  { id: "directory", label: "the Directory" },
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },
@@ -1124,8 +1140,10 @@ export default function StudioEditor() {
             {section.kind === "object" && (
               <ObjectEditor
                 fields={section.fields}
-                value={content.site}
-                onChange={(site) => setContent({ ...content, site })}
+                value={content[section.id]}
+                onChange={(value) =>
+                  setContent({ ...content, [section.id]: value })
+                }
               />
             )}
             {section.kind === "list" && (

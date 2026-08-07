@@ -1,0 +1,186 @@
+{
+  "id": "reference",
+  "shelf": "look",
+  "name": "Galleries & Archives",
+  "letter": "F",
+  "blurb": "The places that already collect the work. Start here instead of scrolling a feed.",
+  "action": "Open",
+  "source": "seed",
+  "count": 14,
+  "facets": [
+    {
+      "key": "kind",
+      "label": "Kind",
+      "values": [
+        {
+          "value": "Gallery",
+          "count": 8
+        },
+        {
+          "value": "Archive",
+          "count": 3
+        },
+        {
+          "value": "Reading",
+          "count": 3
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "aiga-eye-on-design",
+      "name": "AIGA Eye on Design",
+      "facets": {
+        "kind": [
+          "Reading"
+        ]
+      },
+      "href": "https://eyeondesign.aiga.org/",
+      "note": "Design criticism that takes the discipline seriously."
+    },
+    {
+      "id": "art-of-the-title",
+      "name": "Art of the Title",
+      "facets": {
+        "kind": [
+          "Archive"
+        ]
+      },
+      "href": "https://www.artofthetitle.com/",
+      "note": "Title sequences, taken apart shot by shot, with the people who made them."
+    },
+    {
+      "id": "awwwards",
+      "name": "Awwwards",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://www.awwwards.com/",
+      "note": "Web motion and interaction, judged in public."
+    },
+    {
+      "id": "behance",
+      "name": "Behance",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://www.behance.net/",
+      "note": "Everything, searchable by tool and style. Sort by curated."
+    },
+    {
+      "id": "cosmos",
+      "name": "Cosmos",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://www.cosmos.so/",
+      "note": "Newer visual collection tool, strong motion and 3D corners."
+    },
+    {
+      "id": "creative-review",
+      "name": "Creative Review",
+      "facets": {
+        "kind": [
+          "Reading"
+        ]
+      },
+      "href": "https://www.creativereview.co.uk/",
+      "note": "Industry reporting with actual editorial judgement."
+    },
+    {
+      "id": "dribbble",
+      "name": "Dribbble",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://dribbble.com/",
+      "note": "Short loops and UI motion. Good for micro-interaction reference."
+    },
+    {
+      "id": "fwa",
+      "name": "FWA",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://thefwa.com/",
+      "note": "Daily awards for digital and interactive work."
+    },
+    {
+      "id": "it-s-nice-that",
+      "name": "It's Nice That",
+      "facets": {
+        "kind": [
+          "Reading"
+        ]
+      },
+      "href": "https://www.itsnicethat.com/",
+      "note": "Daily design writing, wider than motion but consistently good."
+    },
+    {
+      "id": "motionographer",
+      "name": "Motionographer",
+      "facets": {
+        "kind": [
+          "Archive"
+        ]
+      },
+      "href": "https://motionographer.com/",
+      "note": "The long-running record of what the field is making and arguing about."
+    },
+    {
+      "id": "savee",
+      "name": "Savee",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://savee.it/",
+      "note": "Visual bookmarking that the design world actually uses."
+    },
+    {
+      "id": "siteinspire",
+      "name": "siteInspire",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://www.siteinspire.com/",
+      "note": "Web design reference, filterable by style and type."
+    },
+    {
+      "id": "stash",
+      "name": "STASH",
+      "facets": {
+        "kind": [
+          "Archive"
+        ]
+      },
+      "href": "https://www.stashmedia.tv/",
+      "note": "Curated monthly reel of animation, VFX and motion."
+    },
+    {
+      "id": "vimeo-staff-picks",
+      "name": "Vimeo Staff Picks",
+      "facets": {
+        "kind": [
+          "Gallery"
+        ]
+      },
+      "href": "https://vimeo.com/channels/staffpicks",
+      "note": "Still the most useful single feed of work worth watching."
+    }
+  ]
+}

@@ -603,6 +603,11 @@
       "href": "https://notion.so/25a1c0b2f62f80f782f2ebac83d0aa6c"
     }
   ],
+  "directory": {
+    "label": "the Directory",
+    "intro": "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place — organised, filterable, and honest about where each entry came from.",
+    "note": "The Directory is generated from plain text files, not typed into a page. Entries exported from the club's own databases are marked as such; entries seeded from experience are marked too, so you know which ones have been checked and which are still on trust."
+  },
   "worksheets": [
     "Idea Mining Worksheet",
     "Motion Skill Audit / Self-Assessment",

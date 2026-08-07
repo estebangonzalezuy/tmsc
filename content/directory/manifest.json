@@ -1,0 +1,184 @@
+{
+  "shelves": [
+    {
+      "id": "learn",
+      "name": "Learning, centralised",
+      "note": "The scattered stuff, in one place and filterable."
+    },
+    {
+      "id": "look",
+      "name": "Reference and inspiration",
+      "note": "Indexed, not judged. Where to look, not what to think."
+    },
+    {
+      "id": "make",
+      "name": "Tools and technique",
+      "note": "What to install, what to open, what it costs."
+    },
+    {
+      "id": "work",
+      "name": "Community and opportunity",
+      "note": "Other people, and how the work becomes a living."
+    },
+    {
+      "id": "know",
+      "name": "Context and language",
+      "note": "The words and the history nobody hands you."
+    }
+  ],
+  "collections": [
+    {
+      "id": "channels",
+      "shelf": "learn",
+      "name": "YouTube Channels",
+      "letter": "A",
+      "blurb": "The channels worth subscribing to, tagged by software and by what you actually get — tutorials, rigs, breakdowns, scripts.",
+      "source": "notion",
+      "count": 41,
+      "facets": [
+        "Software",
+        "Content"
+      ]
+    },
+    {
+      "id": "courses",
+      "shelf": "learn",
+      "name": "Courses",
+      "letter": "B",
+      "blurb": "Paid and subscription courses, filterable by level, skill, school and price — so you can tell a €20 class from a €1,000 bootcamp before you click.",
+      "source": "notion",
+      "count": 102,
+      "facets": [
+        "School",
+        "Skill",
+        "Price"
+      ]
+    },
+    {
+      "id": "schools",
+      "shelf": "learn",
+      "name": "Schools & Teachers",
+      "letter": "C",
+      "blurb": "Where the courses come from, sorted by what they cost and how they teach.",
+      "source": "seed",
+      "count": 13,
+      "facets": [
+        "Budget",
+        "Kind"
+      ]
+    },
+    {
+      "id": "books",
+      "shelf": "learn",
+      "name": "Books",
+      "letter": "D",
+      "blurb": "Animation principles, design theory and the few books about storytelling that change how you time a cut.",
+      "source": "seed",
+      "count": 18,
+      "facets": [
+        "Subject"
+      ]
+    },
+    {
+      "id": "studios",
+      "shelf": "look",
+      "name": "Studios",
+      "letter": "E",
+      "blurb": "Nearly four hundred studios with their sites and cities — for reference, for job hunting, and for seeing who works near you.",
+      "source": "notion",
+      "count": 393,
+      "facets": [
+        "City",
+        "Style",
+        "Country"
+      ]
+    },
+    {
+      "id": "reference",
+      "shelf": "look",
+      "name": "Galleries & Archives",
+      "letter": "F",
+      "blurb": "The places that already collect the work. Start here instead of scrolling a feed.",
+      "source": "seed",
+      "count": 14,
+      "facets": [
+        "Kind"
+      ]
+    },
+    {
+      "id": "awards",
+      "shelf": "look",
+      "name": "Awards & Festivals",
+      "letter": "G",
+      "blurb": "Where to submit and where to go, split by what it costs to enter.",
+      "source": "seed",
+      "count": 15,
+      "facets": [
+        "Kind"
+      ]
+    },
+    {
+      "id": "tools",
+      "shelf": "make",
+      "name": "Tools & Plugins",
+      "letter": "H",
+      "blurb": "Software, plugins, sound, assets and the small utilities — grouped by the job they do rather than by vendor.",
+      "source": "seed",
+      "count": 44,
+      "facets": [
+        "Kind",
+        "Software"
+      ]
+    },
+    {
+      "id": "freebies",
+      "shelf": "make",
+      "name": "Free Files",
+      "letter": "I",
+      "blurb": "Rigs, scripts, project files and presets that working motion designers give away.",
+      "source": "notion",
+      "count": 21,
+      "facets": [
+        "What",
+        "Software"
+      ]
+    },
+    {
+      "id": "community",
+      "shelf": "work",
+      "name": "Communities & Podcasts",
+      "letter": "J",
+      "blurb": "Forums, podcasts and newsletters — including the ones about rates and contracts rather than keyframes.",
+      "source": "seed",
+      "count": 15,
+      "facets": [
+        "Kind"
+      ]
+    },
+    {
+      "id": "glossary",
+      "shelf": "know",
+      "name": "Glossary",
+      "letter": "K",
+      "blurb": "The vocabulary, in plain sentences. Principles, craft, process and the technical terms that show up in delivery specs.",
+      "source": "seed",
+      "count": 46,
+      "facets": [
+        "Subject"
+      ]
+    },
+    {
+      "id": "timeline",
+      "shelf": "know",
+      "name": "Timeline",
+      "letter": "L",
+      "blurb": "How motion design got here, from Fantasmagorie to real-time — because the field did not start with After Effects.",
+      "source": "seed",
+      "count": 22,
+      "facets": [
+        "Era"
+      ]
+    }
+  ],
+  "total": 744
+}

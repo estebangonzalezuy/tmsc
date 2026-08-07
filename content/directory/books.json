@@ -1,0 +1,242 @@
+{
+  "id": "books",
+  "shelf": "learn",
+  "name": "Books",
+  "letter": "D",
+  "blurb": "Animation principles, design theory and the few books about storytelling that change how you time a cut.",
+  "action": "",
+  "source": "seed",
+  "count": 18,
+  "facets": [
+    {
+      "key": "subject",
+      "label": "Subject",
+      "values": [
+        {
+          "value": "Animation principles",
+          "count": 5
+        },
+        {
+          "value": "Design theory",
+          "count": 4
+        },
+        {
+          "value": "Motion design",
+          "count": 3
+        },
+        {
+          "value": "Practice",
+          "count": 2
+        },
+        {
+          "value": "Storytelling",
+          "count": 2
+        },
+        {
+          "value": "Typography",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "cartoon-animation",
+      "name": "Cartoon Animation",
+      "facets": {
+        "subject": [
+          "Animation principles"
+        ]
+      },
+      "note": "Preston Blair's classic. Cheap, old, still the fastest route into construction and squash.",
+      "meta": "Preston Blair"
+    },
+    {
+      "id": "design-for-motion",
+      "name": "Design for Motion",
+      "facets": {
+        "subject": [
+          "Motion design"
+        ]
+      },
+      "note": "The closest thing to a motion design textbook — process, not software.",
+      "meta": "Austin Shaw"
+    },
+    {
+      "id": "grid-systems-in-graphic-design",
+      "name": "Grid Systems in Graphic Design",
+      "facets": {
+        "subject": [
+          "Design theory"
+        ]
+      },
+      "note": "Composition, structure, and the discipline of a layout that holds.",
+      "meta": "Josef Müller-Brockmann"
+    },
+    {
+      "id": "in-the-blink-of-an-eye",
+      "name": "In the Blink of an Eye",
+      "facets": {
+        "subject": [
+          "Storytelling"
+        ]
+      },
+      "note": "Why a cut works. Short, and it will change how you time everything.",
+      "meta": "Walter Murch"
+    },
+    {
+      "id": "interaction-of-color",
+      "name": "Interaction of Color",
+      "facets": {
+        "subject": [
+          "Design theory"
+        ]
+      },
+      "note": "Colour is relative. This is the book that proves it to you.",
+      "meta": "Josef Albers"
+    },
+    {
+      "id": "motion-design-moving-graphics-for-television-music-video-cinema-and-digital-interfaces",
+      "name": "Motion Design: Moving Graphics for Television, Music Video, Cinema, and Digital Interfaces",
+      "facets": {
+        "subject": [
+          "Motion design"
+        ]
+      },
+      "note": "A survey of the discipline across every screen it landed on.",
+      "meta": "Matt Woolman"
+    },
+    {
+      "id": "motion-graphic-design-applied-history-and-aesthetics",
+      "name": "Motion Graphic Design: Applied History and Aesthetics",
+      "facets": {
+        "subject": [
+          "Motion design"
+        ]
+      },
+      "note": "Where motion graphics came from and why it looks the way it does.",
+      "meta": "Jon Krasner"
+    },
+    {
+      "id": "show-your-work",
+      "name": "Show Your Work!",
+      "facets": {
+        "subject": [
+          "Practice"
+        ]
+      },
+      "note": "How to be found without becoming a marketer. Relevant to every freelancer here.",
+      "meta": "Austin Kleon"
+    },
+    {
+      "id": "steal-like-an-artist",
+      "name": "Steal Like an Artist",
+      "facets": {
+        "subject": [
+          "Practice"
+        ]
+      },
+      "note": "Permission to build on what came before, which is what everyone does anyway.",
+      "meta": "Austin Kleon"
+    },
+    {
+      "id": "the-animation-book",
+      "name": "The Animation Book",
+      "facets": {
+        "subject": [
+          "Animation principles"
+        ]
+      },
+      "note": "A broad practical survey, useful for seeing the whole field at once.",
+      "meta": "Kit Laybourne"
+    },
+    {
+      "id": "the-animator-s-survival-kit",
+      "name": "The Animator's Survival Kit",
+      "facets": {
+        "subject": [
+          "Animation principles"
+        ]
+      },
+      "note": "The one everyone means when they say \"read the book\". Timing, spacing, weight, walks.",
+      "meta": "Richard Williams"
+    },
+    {
+      "id": "the-art-of-looking-sideways",
+      "name": "The Art of Looking Sideways",
+      "facets": {
+        "subject": [
+          "Design theory"
+        ]
+      },
+      "note": "A commonplace book for the eye. Open it anywhere.",
+      "meta": "Alan Fletcher"
+    },
+    {
+      "id": "the-elements-of-typographic-style",
+      "name": "The Elements of Typographic Style",
+      "facets": {
+        "subject": [
+          "Typography"
+        ]
+      },
+      "note": "The reference. Dense, beautiful, worth returning to.",
+      "meta": "Robert Bringhurst"
+    },
+    {
+      "id": "the-illusion-of-life-disney-animation",
+      "name": "The Illusion of Life: Disney Animation",
+      "facets": {
+        "subject": [
+          "Animation principles"
+        ]
+      },
+      "note": "Where the twelve principles were written down. Also a history of how a craft got invented.",
+      "meta": "Frank Thomas & Ollie Johnston"
+    },
+    {
+      "id": "thinking-with-type",
+      "name": "Thinking with Type",
+      "facets": {
+        "subject": [
+          "Typography"
+        ]
+      },
+      "note": "Type as a system. Read it before you animate another word.",
+      "meta": "Ellen Lupton"
+    },
+    {
+      "id": "timing-for-animation",
+      "name": "Timing for Animation",
+      "facets": {
+        "subject": [
+          "Animation principles"
+        ]
+      },
+      "note": "Short, precise, entirely about the thing beginners get wrong.",
+      "meta": "Harold Whitaker & John Halas"
+    },
+    {
+      "id": "understanding-comics",
+      "name": "Understanding Comics",
+      "facets": {
+        "subject": [
+          "Storytelling"
+        ]
+      },
+      "note": "Time, sequence and the space between frames — the best book about editing that is not about editing.",
+      "meta": "Scott McCloud"
+    },
+    {
+      "id": "universal-principles-of-design",
+      "name": "Universal Principles of Design",
+      "facets": {
+        "subject": [
+          "Design theory"
+        ]
+      },
+      "note": "One principle per spread. Good for filling in the gaps you did not know you had.",
+      "meta": "Lidwell, Holden & Butler"
+    }
+  ]
+}

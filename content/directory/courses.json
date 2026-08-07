@@ -1,0 +1,3014 @@
+{
+  "id": "courses",
+  "shelf": "learn",
+  "name": "Courses",
+  "letter": "B",
+  "blurb": "Paid and subscription courses, filterable by level, skill, school and price — so you can tell a €20 class from a €1,000 bootcamp before you click.",
+  "action": "Open",
+  "source": "notion",
+  "count": 102,
+  "facets": [
+    {
+      "key": "school",
+      "label": "School",
+      "values": [
+        {
+          "value": "Domestika",
+          "count": 52
+        },
+        {
+          "value": "Motion Design School",
+          "count": 23
+        },
+        {
+          "value": "School of Motion",
+          "count": 11
+        },
+        {
+          "value": "Skillshare",
+          "count": 9
+        },
+        {
+          "value": "Professor",
+          "count": 3
+        },
+        {
+          "value": "LearnSquared",
+          "count": 2
+        },
+        {
+          "value": "Division05",
+          "count": 1
+        },
+        {
+          "value": "Motion Science",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "skill",
+      "label": "Skill",
+      "values": [
+        {
+          "value": "2D Motion",
+          "count": 63
+        },
+        {
+          "value": "After Effects",
+          "count": 43
+        },
+        {
+          "value": "3D",
+          "count": 16
+        },
+        {
+          "value": "Cel Animation",
+          "count": 13
+        },
+        {
+          "value": "3D Motion",
+          "count": 12
+        },
+        {
+          "value": "Illustration",
+          "count": 10
+        },
+        {
+          "value": "Cinema 4D",
+          "count": 9
+        },
+        {
+          "value": "Graphic Design",
+          "count": 7
+        },
+        {
+          "value": "Character",
+          "count": 5
+        },
+        {
+          "value": "Blender",
+          "count": 3
+        },
+        {
+          "value": "Typography",
+          "count": 3
+        },
+        {
+          "value": "VFX",
+          "count": 3
+        },
+        {
+          "value": "Expressions",
+          "count": 2
+        },
+        {
+          "value": "UI",
+          "count": 2
+        },
+        {
+          "value": "Brand",
+          "count": 1
+        },
+        {
+          "value": "Cavalry",
+          "count": 1
+        },
+        {
+          "value": "Rive",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "price",
+      "label": "Price",
+      "values": [
+        {
+          "value": "Under $50",
+          "count": 52
+        },
+        {
+          "value": "$200–$600",
+          "count": 25
+        },
+        {
+          "value": "$600+",
+          "count": 11
+        },
+        {
+          "value": "Subscription",
+          "count": 9
+        },
+        {
+          "value": "$50–$200",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "key": "level",
+      "label": "Level",
+      "values": [
+        {
+          "value": "Beginners",
+          "count": 79
+        },
+        {
+          "value": "Intermediate",
+          "count": 45
+        },
+        {
+          "value": "Advanced",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "key": "format",
+      "label": "Format",
+      "values": [
+        {
+          "value": "Content",
+          "count": 91
+        },
+        {
+          "value": "Content + Feedback (Guided)",
+          "count": 12
+        },
+        {
+          "value": "Group sessions",
+          "count": 11
+        }
+      ]
+    },
+    {
+      "key": "engagement",
+      "label": "Engagement",
+      "values": [
+        {
+          "value": "Self-Paced",
+          "count": 89
+        },
+        {
+          "value": "w/Feedback",
+          "count": 13
+        },
+        {
+          "value": "12 weeks",
+          "count": 8
+        },
+        {
+          "value": "8 weeks",
+          "count": 3
+        },
+        {
+          "value": "9 weeks",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2d-and-3d-animation-with-after-effects-and-cinema-4d",
+      "name": "2D and 3D Animation with After Effects and Cinema 4D",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion",
+          "3D",
+          "3D Motion",
+          "Cinema 4D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1211-2d-and-3d-animation-with-after-effects-and-cinema-4d/course",
+      "meta": "Andrea Gendusa · US$2-30"
+    },
+    {
+      "id": "2d-animation-with-photoshop-draw-camera-action",
+      "name": "2D Animation with Photoshop: Draw, Camera, Action!",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/235-2d-animation-with-photoshop-draw-camera-action",
+      "meta": "Numecaniq · US$2-30"
+    },
+    {
+      "id": "2d-to-3d-with-cinema4d",
+      "name": "2D to 3D with Cinema4D",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D",
+          "3D Motion",
+          "Cinema 4D"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/2d-to-3d/",
+      "meta": "Iaroslav Kononov & Max Kravchenko · US$499"
+    },
+    {
+      "id": "3d-animation-with-cinema-4d-and-redshift-for-beginners",
+      "name": "3D Animation with Cinema 4D and Redshift for Beginners",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cinema 4D",
+          "3D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1419-3d-animation-with-cinema-4d-and-redshift-for-beginners",
+      "meta": "Farid Ghanbari (RenderBurger) · US$2-30"
+    },
+    {
+      "id": "3d-character-creation-in-blender",
+      "name": "3D Character Creation in Blender",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2607-3d-character-creation-in-blender",
+      "meta": "Mohamed Chahin · US$2-30"
+    },
+    {
+      "id": "3d-generalist",
+      "name": "3D Generalist",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/3d-generalist/",
+      "meta": "Pasha Ho · US$499"
+    },
+    {
+      "id": "3d-modeling-and-animation-techniques-with-cinema-4d",
+      "name": "3D Modeling and Animation Techniques with Cinema 4D",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cinema 4D",
+          "3D",
+          "3D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3571-3d-modeling-and-animation-techniques-with-cinema-4d",
+      "meta": "Federico Piccirillo · US$2-30"
+    },
+    {
+      "id": "adobe-after-effects-for-beginners",
+      "name": "Adobe After Effects for Beginners",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1333-adobe-after-effects-for-beginners",
+      "meta": "Manuel Neto · US$2-30"
+    },
+    {
+      "id": "adobe-after-effects-for-character-animation",
+      "name": "Adobe After Effects for Character Animation",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1571-adobe-after-effects-for-character-animation",
+      "meta": "Facundo López · US$2-30"
+    },
+    {
+      "id": "advanced-after-effects",
+      "name": "Advanced After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "VFX"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2218-advanced-after-effects",
+      "meta": "Carlos Zenzuke Albarrán · US$2-30"
+    },
+    {
+      "id": "advanced-after-effects-coding-for-motion-design",
+      "name": "Advanced After Effects: Coding for Motion Design",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3818-advanced-after-effects-coding-for-motion-design",
+      "meta": "Desmond Du · US$2-30"
+    },
+    {
+      "id": "advanced-animation-for-typographic-compositions",
+      "name": "Advanced Animation for Typographic Compositions",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1385-advanced-animation-for-typographic-compositions/",
+      "meta": "Holke 79 · US$2-30"
+    },
+    {
+      "id": "advanced-motion-methods",
+      "name": "Advanced Motion Methods",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "9 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/advanced-motion-methods",
+      "meta": "Sander Van Dijk · US$895"
+    },
+    {
+      "id": "ae-academy-series",
+      "name": "AE Academy Series",
+      "facets": {
+        "school": [
+          "Motion Science"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$50–$200"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.motionscience.tv/ae-academy-series",
+      "meta": "Cameron · US$147"
+    },
+    {
+      "id": "after-effects-expressions-for-motion-graphics",
+      "name": "After Effects, Expressions for Motion Graphics",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/39-after-effects-expressions-for-motion-graphics/",
+      "meta": "Gabriel Suchowolski · microbians · US$2-30"
+    },
+    {
+      "id": "animate-your-illustrations-with-after-effects",
+      "name": "Animate Your Illustrations with After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "Cel Animation",
+          "Illustration"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/animate-your-illustrations-with-after-effects/77806895",
+      "meta": "Manon Louart · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "animated-collage-with-adobe-after-effects",
+      "name": "Animated Collage with Adobe After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "VFX"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/333-animated-collage-with-adobe-after-effects",
+      "meta": "Joseba Elorza · US$2-30"
+    },
+    {
+      "id": "animated-frame-by-frame-illustrations",
+      "name": "Animated Frame by Frame Illustrations",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation",
+          "Illustration"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/781-animated-frame-by-frame-illustrations",
+      "meta": "Catalina Vásquez · US$2-30"
+    },
+    {
+      "id": "animated-illustrations-with-after-effects-for-social-media",
+      "name": "Animated Illustrations with After Effects for Social Media",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3397-animated-illustrations-with-after-effects-for-social-media/",
+      "meta": "Carlos Alegría · US$2-30"
+    },
+    {
+      "id": "animated-lettering-for-gifs-boost-your-online-presence",
+      "name": "Animated Lettering for GIFs: Boost your Online Presence",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3472-animated-lettering-for-gifs-boost-your-online-presence",
+      "meta": "RYLSEE · US$2-30"
+    },
+    {
+      "id": "animated-loops-with-james-curran",
+      "name": "Animated Loops with James Curran",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/animated-loops-with-james-curran/",
+      "meta": "James Curran · US$349"
+    },
+    {
+      "id": "animated-micro-stories-with-after-effects",
+      "name": "Animated Micro-Stories with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/165-animated-micro-stories-with-after-effects/",
+      "meta": "Sociedad Fantasma · US$2-30"
+    },
+    {
+      "id": "animated-transitions-with-2d-illustration-and-after-effects",
+      "name": "Animated Transitions with 2D Illustration & After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/4025-animated-transitions-with-2d-illustration-after-effects",
+      "meta": "Yukai Du · US$2-30"
+    },
+    {
+      "id": "animated-typefaces",
+      "name": "Animated Typefaces",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/animated-typefaces-with-animography/",
+      "meta": "Animography: Jeroen Krielaars · US$349"
+    },
+    {
+      "id": "animating-with-ease-in-adobe-after-effects",
+      "name": "Animating With Ease in Adobe After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/animating-with-ease-in-adobe-after-effects/1372682458",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "animation-and-design-of-characters-in-after-effects",
+      "name": "Animation and Design of Characters in After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/229-animation-and-design-of-characters-in-after-effects",
+      "meta": "Moncho Massé · US$2-30"
+    },
+    {
+      "id": "animation-bootcamp",
+      "name": "Animation Bootcamp",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/animation-bootcamp",
+      "meta": "Joey Korenman · US$1095"
+    },
+    {
+      "id": "animation-for-typographic-compositions",
+      "name": "Animation for Typographic Compositions",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/806-animation-for-typographic-compositions",
+      "meta": "Holke 79 · US$2-30"
+    },
+    {
+      "id": "animation-for-typographic-logo-designs",
+      "name": "Animation for Typographic Logo Designs",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2944-animation-for-typographic-logo-designs",
+      "meta": "Holke 79 · US$2-30"
+    },
+    {
+      "id": "animation-from-scratch-with-adobe-animate",
+      "name": "Animation from Scratch with Adobe Animate",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/211-animation-from-scratch-with-adobe-animate",
+      "meta": "Josep Bernaus · US$2-30"
+    },
+    {
+      "id": "basics-of-character-animation-with-after-effects",
+      "name": "Basics of Character Animation with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "Character"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/370-basics-of-character-animation-with-after-effects",
+      "meta": "Yimbo Escárrega · US$2-30"
+    },
+    {
+      "id": "blender-and-after-effects",
+      "name": "Blender & After Effects",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "3D Motion",
+          "After Effects",
+          "Blender"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/blender-ae/",
+      "meta": "Iaroslav Kononov & Max Kravchenko · US$299"
+    },
+    {
+      "id": "blender-for-beginners",
+      "name": "Blender for Beginners",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1624-blender-for-beginners/course",
+      "meta": "Carlos Sifuentes Haro · US$2-30"
+    },
+    {
+      "id": "blender-fundamentals",
+      "name": "Blender Fundamentals",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D",
+          "3D Motion",
+          "Blender"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/blender-fundamentals/",
+      "meta": "Iaroslav Kononov & Carlos Vialet · US$299"
+    },
+    {
+      "id": "blender-workout",
+      "name": "Blender Workout",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D",
+          "3D Motion",
+          "Blender"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/blender-workout/",
+      "meta": "Ihor Kharlamov · US$499"
+    },
+    {
+      "id": "bring-a-logo-to-life-principles-of-animation-for-motion-designers",
+      "name": "Bring a Logo to Life: Principles of Animation for Motion Designers",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "Brand"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/bring-a-logo-to-life-principles-of-animation-for-motion-designers/518358291",
+      "meta": "Megan Friesth · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "build-a-motion-graphics-template-advanced-adobe-after-effects",
+      "name": "Build a Motion Graphics Template: Advanced Adobe After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/build-a-motion-graphics-template-advanced-adobe-after-effects/856424921",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "character-animation-bootcamp",
+      "name": "Character Animation Bootcamp",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "2D Motion",
+          "Character"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/character-animation-bootcamp",
+      "meta": "Morgan Williams · US$897"
+    },
+    {
+      "id": "cinema-4d-basecamp",
+      "name": "Cinema 4D Basecamp",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "3D",
+          "3D Motion"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/cinema-4d-basecamp",
+      "meta": "EJ Hassenfratz · US$1095"
+    },
+    {
+      "id": "cinema-4d-bring-playful-3d-illustrations-to-life",
+      "name": "Cinema 4D: Bring Playful 3D Illustrations to Life",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cinema 4D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2797-cinema-4d-bring-playful-3d-illustrations-to-life",
+      "meta": "Mattey · US$2-30"
+    },
+    {
+      "id": "creating-animated-stories-with-after-effects",
+      "name": "Creating Animated Stories with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Illustration"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3086-creating-animated-stories-with-after-effects/",
+      "meta": "Novenero Studio · US$2-30"
+    },
+    {
+      "id": "creating-loop-animation-stories",
+      "name": "Creating Loop Animation Stories",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "Cel Animation",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1210-creating-loop-animation-stories/",
+      "meta": "Pablo Cuello · US$2-30"
+    },
+    {
+      "id": "design-and-illustration-star",
+      "name": "Design and Illustration star",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "Graphic Design",
+          "Illustration"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/design-and-illustration-star/",
+      "meta": "Renaud Lavency · US$499"
+    },
+    {
+      "id": "design-bootcamp",
+      "name": "Design Bootcamp",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "Graphic Design"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/design-bootcamp",
+      "meta": "Mike Frederick · US$1095"
+    },
+    {
+      "id": "design-kickstart",
+      "name": "Design Kickstart",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "Graphic Design"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "8 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/design-kickstart",
+      "meta": "Mike Frederick · US$897"
+    },
+    {
+      "id": "design-of-animated-stickers-for-social-networks",
+      "name": "Design of Animated Stickers for Social Networks",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation",
+          "Illustration"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/457-design-of-animated-stickers-for-social-networks",
+      "meta": "Sociedad Fantasma · US$2-30"
+    },
+    {
+      "id": "disney-character-producer",
+      "name": "Disney Character Producer",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D Motion",
+          "3D",
+          "Character"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/disney-character-producer/",
+      "meta": "Nazar Noschenko · US$499"
+    },
+    {
+      "id": "explainer-camp",
+      "name": "Explainer Camp",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/explainer-camp",
+      "meta": "Jake Bartlett · US$897"
+    },
+    {
+      "id": "express-animation-for-social-media-with-after-effects",
+      "name": "Express Animation for Social Media with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/181-express-animation-for-social-media-with-after-effects",
+      "meta": "Yimbo Escárrega · US$2-30"
+    },
+    {
+      "id": "expression-session",
+      "name": "Expression Session",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "2D Motion",
+          "Expressions"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/expression-session",
+      "meta": "Nol Honig & Zack Lovatt · US$897"
+    },
+    {
+      "id": "expressions-trip",
+      "name": "Expressions Trip",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Expressions"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/expressions-trip/",
+      "meta": "Iaroslav Kononov & Denys Bondartsov · US$349"
+    },
+    {
+      "id": "expressive-typography-in-motion-with-after-effects",
+      "name": "Expressive Typography in Motion with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2593-expressive-typography-in-motion-with-after-effects",
+      "meta": "Mat Voyce · US$2-30"
+    },
+    {
+      "id": "frame-by-frame-visionary",
+      "name": "Frame-by-Frame Visionary",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "$50–$200"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/frame-by-frame-visionary/",
+      "meta": "André Dias · US$199"
+    },
+    {
+      "id": "fundamentals-on-after-effects",
+      "name": "Fundamentals on After Effects",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$50–$200"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/fundamentals-on-after-effects/",
+      "meta": "US$99"
+    },
+    {
+      "id": "futuristic-user-interfaces-for-movies-and-games",
+      "name": "Futuristic User Interfaces for Movies and Games",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1059-futuristic-user-interfaces-for-movies-and-games",
+      "meta": "Ernex · US$2-30"
+    },
+    {
+      "id": "get-into-3d-with-lucas-zanotto",
+      "name": "Get into 3D with Lucas Zanotto",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "3D",
+          "3D Motion",
+          "Cinema 4D"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/get-into-3d-with-lucas-zanotto/",
+      "meta": "Lucas Zanotto · US$349"
+    },
+    {
+      "id": "hand-drawn-digital-animation-bring-illustrations-to-life",
+      "name": "Hand-Drawn Digital Animation: Bring Illustrations to Life",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2682-hand-drawn-digital-animation-bring-illustrations-to-life",
+      "meta": "Yukai Du · US$2-30"
+    },
+    {
+      "id": "illustration-for-animation",
+      "name": "Illustration for Animation",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "Illustration"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/illustration-for-animation/",
+      "meta": "Radik Z · US$349"
+    },
+    {
+      "id": "illustration-for-motion",
+      "name": "Illustration for Motion",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "Illustration"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/illustration-for-motion",
+      "meta": "Sarah Beth Morgan · US$1095"
+    },
+    {
+      "id": "intro-to-adobe-after-effects-motion-design-for-beginners",
+      "name": "Intro to Adobe After Effects: Motion Design for Beginners",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/intro-to-adobe-after-effects-motion-design-for-beginners/474209703",
+      "meta": "Chris Zachary · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "introduction-to-after-effects",
+      "name": "Introduction to After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/304-introduction-to-after-effects",
+      "meta": "Carlos Zenzuke Albarrán · US$2-30"
+    },
+    {
+      "id": "introduction-to-cavalry-for-motion-graphics",
+      "name": "Introduction to Cavalry for Motion Graphics",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "Cavalry"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3747-introduction-to-cavalry-for-motion-graphics",
+      "meta": "Kyle Daily · US$2-30"
+    },
+    {
+      "id": "introduction-to-cinema-4d",
+      "name": "Introduction to Cinema 4D",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D",
+          "Cinema 4D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/588-introduction-to-cinema-4d/course",
+      "meta": "Francisco Cabezas · US$2-30"
+    },
+    {
+      "id": "introduction-to-motion-design-and-animation-curves-in-after-effects",
+      "name": "Introduction to Motion Design and Animation Curves in After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/503-introduction-to-motion-design-and-animation-curves-in-after-effects",
+      "meta": "Holke 79 · US$2-30"
+    },
+    {
+      "id": "isometric-animation-with-illustrator-and-after-effects",
+      "name": "Isometric Animation with Illustrator and After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Illustration",
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3552-isometric-animation-with-illustrator-and-after-effects",
+      "meta": "Ana Pérez López · US$2-30"
+    },
+    {
+      "id": "kawaii-character-creation-in-3d-with-blender",
+      "name": "Kawaii Character Creation in 3D with Blender",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3159-kawaii-character-creation-in-3d-with-blender",
+      "meta": "Yasmin Islas Domínguez · US$2-30"
+    },
+    {
+      "id": "launch-into-after-effects",
+      "name": "Launch into After Effects",
+      "facets": {
+        "school": [
+          "Professor"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content",
+          "Content + Feedback (Guided)"
+        ],
+        "engagement": [
+          "Self-Paced",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.jakeinmotion.com/launch-into-after-effects",
+      "meta": "Jake Bartlett · US$300-497"
+    },
+    {
+      "id": "master-motion-design",
+      "name": "Master Motion Design",
+      "facets": {
+        "school": [
+          "Professor"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "8 weeks"
+        ]
+      },
+      "href": "https://www.benmarriott.com/mastermotiondesign",
+      "meta": "Ben Marriott · US$497"
+    },
+    {
+      "id": "mastering-film-ui",
+      "name": "Mastering Film UI",
+      "facets": {
+        "school": [
+          "LearnSquared"
+        ],
+        "skill": [
+          "Graphic Design"
+        ],
+        "price": [
+          "$50–$200"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.learnsquared.com/courses/mastering-film-ui",
+      "meta": "Kris Brady · US$99"
+    },
+    {
+      "id": "microanimations-in-2d-with-after-effects",
+      "name": "Microanimations in 2D with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/98-microanimations-in-2d-with-after-effects",
+      "meta": "MODIK · US$2-30"
+    },
+    {
+      "id": "mixed-media-animation-in-procreate",
+      "name": "Mixed Media Animation in Procreate",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation",
+          "Illustration"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1513-mixed-media-animation-in-procreate",
+      "meta": "Caroline Kjellberg · US$2-30"
+    },
+    {
+      "id": "motion-beast",
+      "name": "Motion Beast",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/motion-beast/",
+      "meta": "Iaroslav Kononov · US$349"
+    },
+    {
+      "id": "motion-design",
+      "name": "Motion Design",
+      "facets": {
+        "school": [
+          "LearnSquared"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$50–$200"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.learnsquared.com/courses/motion-design",
+      "meta": "Jorge Canedo E. · US$149"
+    },
+    {
+      "id": "motion-design-with-unreal-engine-5",
+      "name": "Motion Design with Unreal Engine 5",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3513-motion-design-with-unreal-engine-5/course",
+      "meta": "Giorgio Macellari · US$2-30"
+    },
+    {
+      "id": "motion-foundation",
+      "name": "Motion Foundation",
+      "facets": {
+        "school": [
+          "Professor"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "9 weeks"
+        ]
+      },
+      "href": "https://www.benmarriott.com/motion-foundation",
+      "meta": "Ben Marriott · US$497"
+    },
+    {
+      "id": "motion-graphics-for-instagram",
+      "name": "Motion Graphics for Instagram",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1468-motion-graphics-for-instagram/course",
+      "meta": "Darwin Pacheco · US$2-30"
+    },
+    {
+      "id": "motion-graphics-for-social-media-create-a-sticker-pack",
+      "name": "Motion Graphics for Social Media: Create a Sticker Pack",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2013-motion-graphics-for-social-media-create-a-sticker-pack",
+      "meta": "Alex Foxley · US$2-30"
+    },
+    {
+      "id": "motion-graphics-create-an-animated-poster",
+      "name": "Motion Graphics: Create an Animated Poster",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3097-motion-graphics-create-an-animated-poster",
+      "meta": "Plus Mûrs · US$2-30"
+    },
+    {
+      "id": "motion-practice-with-ben-marriott",
+      "name": "Motion Practice with Ben Marriott",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/motion-practice-with-ben-marriott/",
+      "meta": "Ben Marriott · US$349"
+    },
+    {
+      "id": "motion-pro",
+      "name": "Motion Pro",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/motion-pro/",
+      "meta": "Iaroslav Kononov & Denys Bondartsov · US$499"
+    },
+    {
+      "id": "motion-secrets-with-emanuele-colombo",
+      "name": "Motion Secrets with Emanuele Colombo",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/motion-secrets-with-emanuele-colombo/",
+      "meta": "Emanuele Colombo · US$499"
+    },
+    {
+      "id": "photoshop-illustrator-unleashed",
+      "name": "Photoshop + Illustrator Unleashed",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "Graphic Design",
+          "Illustration"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "8 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/photoshop-and-illustrator-unleashed",
+      "meta": "Jake Bartlett · US$897"
+    },
+    {
+      "id": "playful-3d-design-and-animation-of-fun-objects",
+      "name": "Playful 3D Design and Animation of Fun Objects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cinema 4D",
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3329-playful-3d-design-and-animation-of-fun-objects",
+      "meta": "Vincent Schwenk · US$2-30"
+    },
+    {
+      "id": "playful-animated-character-design-with-cinema-4d",
+      "name": "Playful Animated Character Design with Cinema 4D",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cinema 4D",
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/3467-playful-animated-character-design-with-cinema-4d",
+      "meta": "Alex Kiesling · US$2-30"
+    },
+    {
+      "id": "portfolio-animation-with-after-effects",
+      "name": "Portfolio Animation with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2138-portfolio-animation-with-after-effects",
+      "meta": "Holke 79 · US$2-30"
+    },
+    {
+      "id": "professional-animation-for-brands-on-social-media",
+      "name": "Professional Animation for Brands on Social Media",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Graphic Design",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/2941-professional-animation-for-brands-on-social-media",
+      "meta": "Yimbo Escárrega · US$2-30"
+    },
+    {
+      "id": "rendering-photorealistic-3d-scenes-in-blender",
+      "name": "Rendering Photorealistic 3D Scenes in Blender",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "3D"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/4182-rendering-photorealistic-3d-scenes-in-blender",
+      "meta": "James Tralie · US$2-30"
+    },
+    {
+      "id": "rive-interactive-motion",
+      "name": "Rive - Interactive Motion",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "Rive",
+          "2D Motion",
+          "UI"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/rive-interactive-motion-era/",
+      "meta": "Max Marakhovsky · US$399"
+    },
+    {
+      "id": "science-of-character-animation-by-markus-magnusson",
+      "name": "Science of Character Animation by Markus Magnusson",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Character"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/science-of-character-animation-by-markus-magnusson/",
+      "meta": "Markus Magnusson · US$599"
+    },
+    {
+      "id": "the-beginner-s-guide-to-after-effects",
+      "name": "The Beginner's Guide to After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/classes/The-Beginners-Guide-to-Adobe-After-Effects/1758053045",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "the-magic-of-walk-cycles",
+      "name": "The Magic of Walk Cycles",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Character"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/the-magic-of-walk-cycles/",
+      "meta": "Markus Magnusson · US$299"
+    },
+    {
+      "id": "the-ultimate-guide-to-kinetic-type-in-adobe-after-effects",
+      "name": "The Ultimate Guide to Kinetic Type in Adobe After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Typography"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/the-ultimate-guide-to-kinetic-type-in-adobe-after-effects/282677337",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "the-ultimate-guide-to-shape-layers-in-adobe-after-effects",
+      "name": "The Ultimate Guide to Shape Layers in Adobe After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/the-ultimate-guide-to-shape-layers-in-adobe-after-effects/1814132356",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "the-ultimate-guide-to-text-animators-in-adobe-after-effects",
+      "name": "The Ultimate Guide to Text Animators in Adobe After Effects",
+      "facets": {
+        "school": [
+          "Skillshare"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Typography"
+        ],
+        "price": [
+          "Subscription"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/en/classes/the-ultimate-guide-to-text-animators-in-adobe-after-effects/1141129555",
+      "meta": "Jake Bartlett · US$14-32 (Monthly subscription)"
+    },
+    {
+      "id": "title-sequence-animation-in-after-effects",
+      "name": "Title Sequence Animation in After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/4109-title-sequence-animation-in-after-effects",
+      "meta": "Paul McDonnell · US$2-30"
+    },
+    {
+      "id": "traditional-animation-composition-rhythm-and-camera",
+      "name": "Traditional Animation: Composition, Rhythm and Camera",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate",
+          "Advanced"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/422-traditional-animation-composition-rhythm-and-camera",
+      "meta": "Ezequiel Torres · US$2-30"
+    },
+    {
+      "id": "typography-animation-with-after-effects",
+      "name": "Typography Animation with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "Typography"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/1806-typography-animation-with-after-effects",
+      "meta": "Érico Santana · US$2-30"
+    },
+    {
+      "id": "ui-animation-essentials",
+      "name": "UI Animation Essentials",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "2D Motion",
+          "After Effects",
+          "UI"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/ui-animation-essentials/",
+      "meta": "Iaroslav Kononov & Denys Bondartsov · US$349"
+    },
+    {
+      "id": "vectorial-animation-frame-by-frame-style-with-after-effects",
+      "name": "Vectorial Animation Frame by Frame Style with After Effects",
+      "facets": {
+        "school": [
+          "Domestika"
+        ],
+        "skill": [
+          "Cel Animation",
+          "2D Motion"
+        ],
+        "price": [
+          "Under $50"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://www.domestika.org/en/courses/684-vectorial-animation-frame-by-frame-style-with-after-effects",
+      "meta": "Pablo Cuello · US$2-30"
+    },
+    {
+      "id": "vfx-for-motion",
+      "name": "VFX for Motion",
+      "facets": {
+        "school": [
+          "School of Motion"
+        ],
+        "skill": [
+          "VFX",
+          "2D Motion"
+        ],
+        "price": [
+          "$600+"
+        ],
+        "level": [
+          "Intermediate"
+        ],
+        "format": [
+          "Content + Feedback (Guided)",
+          "Group sessions"
+        ],
+        "engagement": [
+          "12 weeks",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/courses/vfx-for-motion",
+      "meta": "Mark Christiansen · US$897"
+    },
+    {
+      "id": "visual-design-lab",
+      "name": "Visual Design Lab",
+      "facets": {
+        "school": [
+          "Division05"
+        ],
+        "skill": [
+          "Graphic Design"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners",
+          "Intermediate"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced",
+          "w/Feedback"
+        ]
+      },
+      "href": "https://www.division05.com/visualdesignlab/",
+      "meta": "Carey Smith · US$249"
+    },
+    {
+      "id": "womp-and-after-effects",
+      "name": "Womp & After Effects",
+      "facets": {
+        "school": [
+          "Motion Design School"
+        ],
+        "skill": [
+          "After Effects",
+          "2D Motion",
+          "3D Motion"
+        ],
+        "price": [
+          "$200–$600"
+        ],
+        "level": [
+          "Beginners"
+        ],
+        "format": [
+          "Content"
+        ],
+        "engagement": [
+          "Self-Paced"
+        ]
+      },
+      "href": "https://motiondesign.school/courses/womp-after-effects/",
+      "meta": "Max Kravchenko & Denys Bondartsov · US$399"
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "id": "community",
+  "shelf": "work",
+  "name": "Communities & Podcasts",
+  "letter": "J",
+  "blurb": "Forums, podcasts and newsletters — including the ones about rates and contracts rather than keyframes.",
+  "action": "Open",
+  "source": "seed",
+  "count": 15,
+  "facets": [
+    {
+      "key": "kind",
+      "label": "Kind",
+      "values": [
+        {
+          "value": "Forum",
+          "count": 6
+        },
+        {
+          "value": "Podcast",
+          "count": 5
+        },
+        {
+          "value": "Newsletter",
+          "count": 3
+        },
+        {
+          "value": "Business",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "99-invisible",
+      "name": "99% Invisible",
+      "facets": {
+        "kind": [
+          "Podcast"
+        ]
+      },
+      "href": "https://99percentinvisible.org/",
+      "note": "Design thinking outside the screen. The best input is not motion."
+    },
+    {
+      "id": "blender-artists",
+      "name": "Blender Artists",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://blenderartists.org/",
+      "note": "The long-form Blender forum, where the deep threads live."
+    },
+    {
+      "id": "creative-cow",
+      "name": "Creative COW",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://creativecow.net/",
+      "note": "Old-school, still useful for post and broadcast problems."
+    },
+    {
+      "id": "creative-pep-talk",
+      "name": "Creative Pep Talk",
+      "facets": {
+        "kind": [
+          "Podcast"
+        ]
+      },
+      "href": "https://www.creativepeptalk.com/",
+      "note": "Freelance illustration and design careers, honestly told."
+    },
+    {
+      "id": "dense-discovery",
+      "name": "Dense Discovery",
+      "facets": {
+        "kind": [
+          "Newsletter"
+        ]
+      },
+      "href": "https://www.densediscovery.com/",
+      "note": "Weekly, wide-angle, consistently the best-made newsletter in design."
+    },
+    {
+      "id": "human-and-motion",
+      "name": "Human & Motion",
+      "facets": {
+        "kind": [
+          "Newsletter"
+        ]
+      },
+      "href": "https://humanandmotion.substack.com/",
+      "note": "The club's own newsletter. Practice over tutorials."
+    },
+    {
+      "id": "motion-hatch",
+      "name": "Motion Hatch",
+      "facets": {
+        "kind": [
+          "Business"
+        ]
+      },
+      "href": "https://motionhatch.com/",
+      "note": "The business side of motion design — rates, clients, contracts."
+    },
+    {
+      "id": "motion-hatch-podcast",
+      "name": "Motion Hatch Podcast",
+      "facets": {
+        "kind": [
+          "Podcast"
+        ]
+      },
+      "href": "https://motionhatch.com/podcast/",
+      "note": "Freelance economics, in interviews."
+    },
+    {
+      "id": "polycount",
+      "name": "Polycount",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://polycount.com/",
+      "note": "3D art and games, strong on topology and pipeline."
+    },
+    {
+      "id": "r-aftereffects",
+      "name": "r/AfterEffects",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://www.reddit.com/r/AfterEffects/",
+      "note": "Technical help, fast. Search before posting."
+    },
+    {
+      "id": "r-blender",
+      "name": "r/blender",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://www.reddit.com/r/blender/",
+      "note": "Enormous, active, and generous with beginners."
+    },
+    {
+      "id": "r-motiondesign",
+      "name": "r/MotionDesign",
+      "facets": {
+        "kind": [
+          "Forum"
+        ]
+      },
+      "href": "https://www.reddit.com/r/MotionDesign/",
+      "note": "Portfolio critique, career questions, and the occasional real argument."
+    },
+    {
+      "id": "school-of-motion-podcast",
+      "name": "School of Motion Podcast",
+      "facets": {
+        "kind": [
+          "Podcast"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/podcast",
+      "note": "Long conversations with people who run the studios."
+    },
+    {
+      "id": "sidebar",
+      "name": "Sidebar",
+      "facets": {
+        "kind": [
+          "Newsletter"
+        ]
+      },
+      "href": "https://sidebar.io/",
+      "note": "Five design links a day. Low effort, high yield."
+    },
+    {
+      "id": "the-futur",
+      "name": "The Futur",
+      "facets": {
+        "kind": [
+          "Podcast"
+        ]
+      },
+      "href": "https://thefutur.com/",
+      "note": "Design business education. Opinionated, useful."
+    }
+  ]
+}

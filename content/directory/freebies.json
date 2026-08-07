@@ -1,0 +1,330 @@
+{
+  "id": "freebies",
+  "shelf": "make",
+  "name": "Free Files",
+  "letter": "I",
+  "blurb": "Rigs, scripts, project files and presets that working motion designers give away.",
+  "action": "Download",
+  "source": "notion",
+  "count": 21,
+  "facets": [
+    {
+      "key": "what",
+      "label": "What",
+      "values": [
+        {
+          "value": "Projects",
+          "count": 15
+        },
+        {
+          "value": "Scripts",
+          "count": 9
+        },
+        {
+          "value": "Assets",
+          "count": 2
+        },
+        {
+          "value": "Rigs",
+          "count": 2
+        },
+        {
+          "value": "Guide",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "software",
+      "label": "Software",
+      "values": [
+        {
+          "value": "After Effects",
+          "count": 18
+        },
+        {
+          "value": "Cavalry",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "ae-shortcuts-and-scripts",
+      "name": "AE shortcuts & scripts",
+      "facets": {
+        "what": [
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://docs.google.com/spreadsheets/d/1a3ArTUHAJwVi-ObZofvz6IfrKbSGSENlaTIRTs8pAJU/edit"
+    },
+    {
+      "id": "animoplex",
+      "name": "Animoplex",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.animoplex.com/free/"
+    },
+    {
+      "id": "battleaxe",
+      "name": "BattleAxe",
+      "facets": {
+        "what": [
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://battleaxe.co/#freebies"
+    },
+    {
+      "id": "ben-marriott",
+      "name": "Ben Marriott",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://benmarriott.gumroad.com/"
+    },
+    {
+      "id": "call-me-champ",
+      "name": "Call me Champ",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://pleasecallmechamp.com/play"
+    },
+    {
+      "id": "callum-cannarella",
+      "name": "Callum Cannarella",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://callumcannarella.gumroad.com/"
+    },
+    {
+      "id": "chris-zackary",
+      "name": "Chris Zackary",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://aereference.com/"
+    },
+    {
+      "id": "creative-dojo",
+      "name": "Creative Dojo",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://creativedojo.net/tutorials/"
+    },
+    {
+      "id": "dopemotions",
+      "name": "DopeMotions",
+      "facets": {
+        "what": [
+          "Assets"
+        ]
+      },
+      "href": "https://www.dopemotions.com/store"
+    },
+    {
+      "id": "jake-bartlett",
+      "name": "Jake Bartlett",
+      "facets": {
+        "what": [
+          "Rigs",
+          "Scripts",
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.jakeinmotion.com/downloads"
+    },
+    {
+      "id": "manueldoesmotion",
+      "name": "ManuelDoesMotion",
+      "facets": {
+        "what": [
+          "Projects",
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://manueldoesmotion.gumroad.com/"
+    },
+    {
+      "id": "marcos-silva",
+      "name": "Marcos Silva",
+      "facets": {
+        "what": [
+          "Scripts",
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://buymeacoffee.com/marcos.lab/extras"
+    },
+    {
+      "id": "michael-ponch",
+      "name": "Michael Ponch",
+      "facets": {
+        "what": [
+          "Projects",
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://michaelponch.gumroad.com/"
+    },
+    {
+      "id": "motion-science",
+      "name": "Motion Science",
+      "facets": {
+        "what": [
+          "Guide"
+        ]
+      },
+      "href": "https://www.motionscience.tv/guide"
+    },
+    {
+      "id": "nick-greenwalt",
+      "name": "Nick Greenwalt",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.motionbynick.com/freebies"
+    },
+    {
+      "id": "ordinary-folk",
+      "name": "Ordinary Folk",
+      "facets": {
+        "what": [
+          "Rigs",
+          "Scripts",
+          "Projects"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.ordinaryfolk.co/play"
+    },
+    {
+      "id": "phillip-von-borries",
+      "name": "Phillip Von Borries",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "After Effects",
+          "Cavalry"
+        ]
+      },
+      "href": "https://philipvonborries.com/resources"
+    },
+    {
+      "id": "plugineverything",
+      "name": "PluginEverything",
+      "facets": {
+        "what": [
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.plugineverything.com/free"
+    },
+    {
+      "id": "scenery-io",
+      "name": "Scenery.io",
+      "facets": {
+        "what": [
+          "Projects"
+        ],
+        "software": [
+          "Cavalry"
+        ]
+      },
+      "href": "https://scenery.io/"
+    },
+    {
+      "id": "tiptut",
+      "name": "TipTut",
+      "facets": {
+        "what": [
+          "Projects",
+          "Assets"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://tiptut.gumroad.com/"
+    },
+    {
+      "id": "ukramedia-tools",
+      "name": "UkraMedia Tools",
+      "facets": {
+        "what": [
+          "Scripts"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://ukramedia.com/tools/"
+    }
+  ]
+}

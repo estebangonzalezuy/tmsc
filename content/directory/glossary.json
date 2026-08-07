@@ -1,0 +1,496 @@
+{
+  "id": "glossary",
+  "shelf": "know",
+  "name": "Glossary",
+  "letter": "K",
+  "blurb": "The vocabulary, in plain sentences. Principles, craft, process and the technical terms that show up in delivery specs.",
+  "action": "",
+  "source": "seed",
+  "count": 46,
+  "facets": [
+    {
+      "key": "subject",
+      "label": "Subject",
+      "values": [
+        {
+          "value": "Craft",
+          "count": 18
+        },
+        {
+          "value": "Principle",
+          "count": 13
+        },
+        {
+          "value": "Technical",
+          "count": 10
+        },
+        {
+          "value": "Process",
+          "count": 5
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "alpha-channel",
+      "name": "Alpha channel",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "The transparency information carried alongside colour."
+    },
+    {
+      "id": "animatic",
+      "name": "Animatic",
+      "facets": {
+        "subject": [
+          "Process"
+        ]
+      },
+      "note": "The storyboard cut to timing, usually with scratch audio. The first honest look at pace."
+    },
+    {
+      "id": "anticipation",
+      "name": "Anticipation",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "A small move opposite to the main action, so the eye is ready for it."
+    },
+    {
+      "id": "appeal",
+      "name": "Appeal",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Whether the thing is pleasant to look at. Vague, unfashionable, and real."
+    },
+    {
+      "id": "arcs",
+      "name": "Arcs",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Natural movement travels on curves, not straight lines."
+    },
+    {
+      "id": "aspect-ratio",
+      "name": "Aspect ratio",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "The frame's proportions. 16:9, 1:1, 9:16 — plan for all three from the start."
+    },
+    {
+      "id": "bit-depth",
+      "name": "Bit depth",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "How many values each colour channel can hold. 8-bit banding is the usual symptom."
+    },
+    {
+      "id": "boardomatic",
+      "name": "Boardomatic",
+      "facets": {
+        "subject": [
+          "Process"
+        ]
+      },
+      "note": "An animatic built straight from boards, before any animation exists."
+    },
+    {
+      "id": "cel-animation",
+      "name": "Cel animation",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Frame-by-frame drawing, named for the transparent celluloid sheets it used to need."
+    },
+    {
+      "id": "codec",
+      "name": "Codec",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "How the video is compressed. ProRes to edit, H.264 to deliver, rarely both."
+    },
+    {
+      "id": "colour-space",
+      "name": "Colour space",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "The defined range of colour a file describes — sRGB, Rec.709, and the source of most mismatches."
+    },
+    {
+      "id": "compositing",
+      "name": "Compositing",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Combining separate rendered elements into one convincing image."
+    },
+    {
+      "id": "dithering",
+      "name": "Dithering",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "Trading colour depth for texture with a pattern of pixels. The club's house look."
+    },
+    {
+      "id": "easing",
+      "name": "Easing",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "The curve that describes acceleration in and out of a move. Linear reads as mechanical."
+    },
+    {
+      "id": "exaggeration",
+      "name": "Exaggeration",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Pushing past the literal to make the read clearer, not merely louder."
+    },
+    {
+      "id": "expression",
+      "name": "Expression",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "A small script driving a property, so motion is computed rather than keyframed."
+    },
+    {
+      "id": "follow-through",
+      "name": "Follow-through",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Parts of an object that keep moving after the main mass stops."
+    },
+    {
+      "id": "frame-rate",
+      "name": "Frame rate",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "Frames per second. 24 for film feel, 25 or 30 for broadcast, 60 for interfaces."
+    },
+    {
+      "id": "graph-editor",
+      "name": "Graph editor",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Where you edit the speed and value curves directly, rather than guessing at handles."
+    },
+    {
+      "id": "hold",
+      "name": "Hold",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "A keyframe with no interpolation — the value jumps. The basis of frame-by-frame in a keyframed tool."
+    },
+    {
+      "id": "interpolation",
+      "name": "Interpolation",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "How the software fills the frames between keyframes — linear, bezier, hold."
+    },
+    {
+      "id": "keyframe",
+      "name": "Keyframe",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "A recorded value at a point in time. Everything between them is interpolated."
+    },
+    {
+      "id": "loop",
+      "name": "Loop",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "An animation whose last frame flows into its first. Seamlessness is a timing problem."
+    },
+    {
+      "id": "lottie",
+      "name": "Lottie",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "A JSON format that carries vector animation into apps and the web at any size."
+    },
+    {
+      "id": "matte",
+      "name": "Matte",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "A layer used to define what is visible in another layer."
+    },
+    {
+      "id": "motion-tracking",
+      "name": "Motion tracking",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Extracting movement from footage so new elements can be attached to it."
+    },
+    {
+      "id": "null-object",
+      "name": "Null object",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "An invisible layer that exists only to be parented to and animated."
+    },
+    {
+      "id": "onion-skinning",
+      "name": "Onion skinning",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Seeing neighbouring frames faintly, so you can draw or place against them."
+    },
+    {
+      "id": "overlap",
+      "name": "Overlap",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Different parts arriving at different times, instead of everything landing on one frame."
+    },
+    {
+      "id": "parenting",
+      "name": "Parenting",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Attaching one layer's transform to another so it inherits the movement."
+    },
+    {
+      "id": "pitch-deck",
+      "name": "Pitch deck",
+      "facets": {
+        "subject": [
+          "Process"
+        ]
+      },
+      "note": "The document that sells the direction. Often the actual deliverable of week one."
+    },
+    {
+      "id": "precomp",
+      "name": "Precomp",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "A composition nested inside another. The main tool for keeping a project sane."
+    },
+    {
+      "id": "procedural",
+      "name": "Procedural",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "Motion generated by rules and parameters rather than by hand-set keyframes."
+    },
+    {
+      "id": "render",
+      "name": "Render",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "Turning the project into frames. Also the thing that always takes longer than the estimate."
+    },
+    {
+      "id": "resolution",
+      "name": "Resolution",
+      "facets": {
+        "subject": [
+          "Technical"
+        ]
+      },
+      "note": "Pixel dimensions of the frame. Not the same thing as quality."
+    },
+    {
+      "id": "rigging",
+      "name": "Rigging",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Building controls onto artwork so it can be posed and animated without redrawing."
+    },
+    {
+      "id": "rotoscoping",
+      "name": "Rotoscoping",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Tracing or masking footage frame by frame to isolate part of it."
+    },
+    {
+      "id": "secondary-action",
+      "name": "Secondary action",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "A supporting move that enriches the main one without competing with it."
+    },
+    {
+      "id": "spacing",
+      "name": "Spacing",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "How far a thing moves between frames. Timing says how long, spacing says how fast it feels."
+    },
+    {
+      "id": "squash-and-stretch",
+      "name": "Squash and stretch",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Deforming a shape to sell weight and impact while preserving volume."
+    },
+    {
+      "id": "staging",
+      "name": "Staging",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "Composing the frame so the audience looks at the one thing that matters."
+    },
+    {
+      "id": "storyboard",
+      "name": "Storyboard",
+      "facets": {
+        "subject": [
+          "Process"
+        ]
+      },
+      "note": "The shot-by-shot plan. Cheaper to fix here than anywhere downstream."
+    },
+    {
+      "id": "styleframe",
+      "name": "Styleframe",
+      "facets": {
+        "subject": [
+          "Process"
+        ]
+      },
+      "note": "A single still that establishes the look of a sequence before anything moves."
+    },
+    {
+      "id": "timing",
+      "name": "Timing",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "How long an action takes. The single biggest lever on how something feels."
+    },
+    {
+      "id": "track-matte",
+      "name": "Track matte",
+      "facets": {
+        "subject": [
+          "Craft"
+        ]
+      },
+      "note": "Using one layer's alpha or luminance to cut out another."
+    },
+    {
+      "id": "weight",
+      "name": "Weight",
+      "facets": {
+        "subject": [
+          "Principle"
+        ]
+      },
+      "note": "The impression of mass, communicated almost entirely through timing and easing."
+    }
+  ]
+}

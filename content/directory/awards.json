@@ -1,0 +1,197 @@
+{
+  "id": "awards",
+  "shelf": "look",
+  "name": "Awards & Festivals",
+  "letter": "G",
+  "blurb": "Where to submit and where to go, split by what it costs to enter.",
+  "action": "Open",
+  "source": "seed",
+  "count": 15,
+  "facets": [
+    {
+      "key": "kind",
+      "label": "Kind",
+      "values": [
+        {
+          "value": "Festival",
+          "count": 7
+        },
+        {
+          "value": "Paid",
+          "count": 7
+        },
+        {
+          "value": "Free",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "annecy",
+      "name": "Annecy",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://www.annecyfestival.com/",
+      "note": "The animation festival. Film-leaning, but the bar is the bar."
+    },
+    {
+      "id": "awwwards",
+      "name": "Awwwards",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://www.awwwards.com/submit/",
+      "note": "Site of the Day upward. Paid, fast turnaround."
+    },
+    {
+      "id": "cannes-lions",
+      "name": "Cannes Lions",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://www.canneslions.com/",
+      "note": "The advertising festival. Agency budgets territory."
+    },
+    {
+      "id": "clio-awards",
+      "name": "Clio Awards",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://clios.com/",
+      "note": "Advertising-leaning, with a real motion and craft presence."
+    },
+    {
+      "id": "d-and-ad",
+      "name": "D&AD",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://www.dandad.org/",
+      "note": "Pencils. Expensive, slow, and the one that still means something."
+    },
+    {
+      "id": "forward-festival",
+      "name": "Forward Festival",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://www.forward-festival.com/",
+      "note": "Roaming European design festival."
+    },
+    {
+      "id": "fwa",
+      "name": "FWA",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://thefwa.com/submit",
+      "note": "Daily, Site of the Month, Site of the Year. Paid entry."
+    },
+    {
+      "id": "offf",
+      "name": "OFFF",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://offf.barcelona/",
+      "note": "Barcelona. Talks more than awards, but the reason many people go."
+    },
+    {
+      "id": "pictoplasma",
+      "name": "Pictoplasma",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://www.pictoplasma.com/",
+      "note": "Character design and animation, Berlin."
+    },
+    {
+      "id": "semi-permanent",
+      "name": "Semi Permanent",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://semipermanent.com/",
+      "note": "Sydney and beyond. Design and motion talks worth travelling for."
+    },
+    {
+      "id": "siggraph",
+      "name": "SIGGRAPH",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://www.siggraph.org/",
+      "note": "Computer graphics research and the Electronic Theater."
+    },
+    {
+      "id": "the-one-show",
+      "name": "The One Show",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://www.oneshow.org/",
+      "note": "ADC and One Show, run by The One Club."
+    },
+    {
+      "id": "us-by-night",
+      "name": "Us By Night",
+      "facets": {
+        "kind": [
+          "Festival"
+        ]
+      },
+      "href": "https://usbynight.be/",
+      "note": "Antwerp. Loud, late, and good."
+    },
+    {
+      "id": "vimeo-staff-picks",
+      "name": "Vimeo Staff Picks",
+      "facets": {
+        "kind": [
+          "Free"
+        ]
+      },
+      "href": "https://vimeo.com/channels/staffpicks",
+      "note": "Free to be considered. Upload well, tag properly, and hope."
+    },
+    {
+      "id": "webby-awards",
+      "name": "Webby Awards",
+      "facets": {
+        "kind": [
+          "Paid"
+        ]
+      },
+      "href": "https://www.webbyawards.com/",
+      "note": "Internet-wide, including video and motion categories."
+    }
+  ]
+}

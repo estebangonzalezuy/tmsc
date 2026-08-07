@@ -1,0 +1,6743 @@
+{
+  "id": "studios",
+  "shelf": "look",
+  "name": "Studios",
+  "letter": "E",
+  "blurb": "Nearly four hundred studios with their sites and cities — for reference, for job hunting, and for seeing who works near you.",
+  "action": "Visit",
+  "source": "notion",
+  "count": 393,
+  "facets": [
+    {
+      "key": "city",
+      "label": "City",
+      "values": [
+        {
+          "value": "New York",
+          "count": 70
+        },
+        {
+          "value": "Los Angeles",
+          "count": 66
+        },
+        {
+          "value": "London",
+          "count": 59
+        },
+        {
+          "value": "Toronto",
+          "count": 43
+        },
+        {
+          "value": "Sydney",
+          "count": 20
+        },
+        {
+          "value": "Montreal",
+          "count": 19
+        },
+        {
+          "value": "San Francisco",
+          "count": 18
+        },
+        {
+          "value": "Melbourne",
+          "count": 17
+        },
+        {
+          "value": "Amsterdam",
+          "count": 11
+        },
+        {
+          "value": "Barcelona",
+          "count": 11
+        },
+        {
+          "value": "Milan",
+          "count": 10
+        },
+        {
+          "value": "Portland",
+          "count": 10
+        },
+        {
+          "value": "Atlanta",
+          "count": 9
+        },
+        {
+          "value": "Buenos Aires",
+          "count": 9
+        },
+        {
+          "value": "Paris",
+          "count": 9
+        },
+        {
+          "value": "Seattle",
+          "count": 9
+        },
+        {
+          "value": "Vancouver",
+          "count": 9
+        },
+        {
+          "value": "Chicago",
+          "count": 8
+        },
+        {
+          "value": "Brighton",
+          "count": 7
+        },
+        {
+          "value": "Madrid",
+          "count": 6
+        },
+        {
+          "value": "Sao Paolo",
+          "count": 6
+        },
+        {
+          "value": "Berlin",
+          "count": 5
+        },
+        {
+          "value": "Boston",
+          "count": 5
+        },
+        {
+          "value": "Bristol",
+          "count": 5
+        },
+        {
+          "value": "Denver",
+          "count": 5
+        },
+        {
+          "value": "Miami",
+          "count": 5
+        },
+        {
+          "value": "Minneapolis",
+          "count": 5
+        },
+        {
+          "value": "Shanghai",
+          "count": 5
+        },
+        {
+          "value": "Tokyo",
+          "count": 5
+        },
+        {
+          "value": "Cape Town",
+          "count": 4
+        },
+        {
+          "value": "Copenhagen",
+          "count": 4
+        },
+        {
+          "value": "Detroit",
+          "count": 4
+        },
+        {
+          "value": "Nashville",
+          "count": 4
+        },
+        {
+          "value": "Washington",
+          "count": 4
+        },
+        {
+          "value": "Belfast",
+          "count": 3
+        },
+        {
+          "value": "Charleston",
+          "count": 3
+        },
+        {
+          "value": "Glasgow",
+          "count": 3
+        },
+        {
+          "value": "Hong Kong",
+          "count": 3
+        },
+        {
+          "value": "Kansas City",
+          "count": 3
+        },
+        {
+          "value": "Leeds",
+          "count": 3
+        },
+        {
+          "value": "Manchester",
+          "count": 3
+        },
+        {
+          "value": "Moscow",
+          "count": 3
+        },
+        {
+          "value": "Mumbai",
+          "count": 3
+        },
+        {
+          "value": "Stockholm",
+          "count": 3
+        },
+        {
+          "value": "Surry Hills",
+          "count": 3
+        },
+        {
+          "value": "Ann Arbor",
+          "count": 2
+        },
+        {
+          "value": "Auckland",
+          "count": 2
+        },
+        {
+          "value": "Austin",
+          "count": 2
+        },
+        {
+          "value": "Beijing",
+          "count": 2
+        },
+        {
+          "value": "Burbank",
+          "count": 2
+        },
+        {
+          "value": "Dubai",
+          "count": 2
+        },
+        {
+          "value": "Ferndale",
+          "count": 2
+        },
+        {
+          "value": "Hamburg",
+          "count": 2
+        },
+        {
+          "value": "Johannesburg",
+          "count": 2
+        },
+        {
+          "value": "Lisbon",
+          "count": 2
+        },
+        {
+          "value": "Lyon",
+          "count": 2
+        },
+        {
+          "value": "Mexico City",
+          "count": 2
+        },
+        {
+          "value": "Munich",
+          "count": 2
+        },
+        {
+          "value": "Nantes",
+          "count": 2
+        },
+        {
+          "value": "Norwich",
+          "count": 2
+        },
+        {
+          "value": "Oslo",
+          "count": 2
+        },
+        {
+          "value": "Ottawa",
+          "count": 2
+        },
+        {
+          "value": "Philadelphia",
+          "count": 2
+        },
+        {
+          "value": "Phoenix",
+          "count": 2
+        },
+        {
+          "value": "Porto",
+          "count": 2
+        },
+        {
+          "value": "Richmond",
+          "count": 2
+        },
+        {
+          "value": "Richmond Hill",
+          "count": 2
+        },
+        {
+          "value": "Rome",
+          "count": 2
+        },
+        {
+          "value": "Singapore",
+          "count": 2
+        },
+        {
+          "value": "Turin",
+          "count": 2
+        },
+        {
+          "value": "Victoria",
+          "count": 2
+        },
+        {
+          "value": "Wellington",
+          "count": 2
+        },
+        {
+          "value": "Aarhus",
+          "count": 1
+        },
+        {
+          "value": "Abu Dhabi",
+          "count": 1
+        },
+        {
+          "value": "Adelaide",
+          "count": 1
+        },
+        {
+          "value": "Allen",
+          "count": 1
+        },
+        {
+          "value": "Athens",
+          "count": 1
+        },
+        {
+          "value": "Berkeley",
+          "count": 1
+        },
+        {
+          "value": "Bogota",
+          "count": 1
+        },
+        {
+          "value": "Bonn",
+          "count": 1
+        },
+        {
+          "value": "Boulder",
+          "count": 1
+        },
+        {
+          "value": "Brisbane",
+          "count": 1
+        },
+        {
+          "value": "Burlington",
+          "count": 1
+        },
+        {
+          "value": "Burnaby",
+          "count": 1
+        },
+        {
+          "value": "Cairo",
+          "count": 1
+        },
+        {
+          "value": "Calgary",
+          "count": 1
+        },
+        {
+          "value": "Chester",
+          "count": 1
+        },
+        {
+          "value": "Cleveland",
+          "count": 1
+        },
+        {
+          "value": "Columbus",
+          "count": 1
+        },
+        {
+          "value": "Cupertino",
+          "count": 1
+        },
+        {
+          "value": "Dallas",
+          "count": 1
+        },
+        {
+          "value": "Devon",
+          "count": 1
+        },
+        {
+          "value": "Dublin",
+          "count": 1
+        },
+        {
+          "value": "Dundee",
+          "count": 1
+        },
+        {
+          "value": "Eton",
+          "count": 1
+        },
+        {
+          "value": "Fortitude Valley",
+          "count": 1
+        },
+        {
+          "value": "Franklin",
+          "count": 1
+        },
+        {
+          "value": "Geneva",
+          "count": 1
+        },
+        {
+          "value": "Gothenburg",
+          "count": 1
+        },
+        {
+          "value": "Guadalajara",
+          "count": 1
+        },
+        {
+          "value": "Gurgaon",
+          "count": 1
+        },
+        {
+          "value": "Halifax",
+          "count": 1
+        },
+        {
+          "value": "Hallandale Beach",
+          "count": 1
+        },
+        {
+          "value": "Hamilton",
+          "count": 1
+        },
+        {
+          "value": "Houston",
+          "count": 1
+        },
+        {
+          "value": "Irvine",
+          "count": 1
+        },
+        {
+          "value": "Istanbul",
+          "count": 1
+        },
+        {
+          "value": "Jersey City",
+          "count": 1
+        },
+        {
+          "value": "Kharkiv",
+          "count": 1
+        },
+        {
+          "value": "Kirkland",
+          "count": 1
+        },
+        {
+          "value": "Leigh-on-Sea",
+          "count": 1
+        },
+        {
+          "value": "Lexington",
+          "count": 1
+        },
+        {
+          "value": "Lima",
+          "count": 1
+        },
+        {
+          "value": "Londonderry",
+          "count": 1
+        },
+        {
+          "value": "Long Island City",
+          "count": 1
+        },
+        {
+          "value": "Mahwah",
+          "count": 1
+        },
+        {
+          "value": "Newport Beach",
+          "count": 1
+        },
+        {
+          "value": "Oakland",
+          "count": 1
+        },
+        {
+          "value": "Palo Alto",
+          "count": 1
+        },
+        {
+          "value": "Panama City",
+          "count": 1
+        },
+        {
+          "value": "Pasadena",
+          "count": 1
+        },
+        {
+          "value": "Perth",
+          "count": 1
+        },
+        {
+          "value": "Princeton",
+          "count": 1
+        },
+        {
+          "value": "Raleigh",
+          "count": 1
+        },
+        {
+          "value": "Research Triangle",
+          "count": 1
+        },
+        {
+          "value": "Riga",
+          "count": 1
+        },
+        {
+          "value": "Rotkreuz",
+          "count": 1
+        },
+        {
+          "value": "Rotterdam",
+          "count": 1
+        },
+        {
+          "value": "Salt Lake City",
+          "count": 1
+        },
+        {
+          "value": "San Jose",
+          "count": 1
+        },
+        {
+          "value": "Santa Monica",
+          "count": 1
+        },
+        {
+          "value": "Santiago",
+          "count": 1
+        },
+        {
+          "value": "Saughall",
+          "count": 1
+        },
+        {
+          "value": "Secaucus",
+          "count": 1
+        },
+        {
+          "value": "Seoul",
+          "count": 1
+        },
+        {
+          "value": "Sheffield",
+          "count": 1
+        },
+        {
+          "value": "Sherbrooke",
+          "count": 1
+        },
+        {
+          "value": "Sofia",
+          "count": 1
+        },
+        {
+          "value": "Somerset",
+          "count": 1
+        },
+        {
+          "value": "Southampton",
+          "count": 1
+        },
+        {
+          "value": "Strasbourg",
+          "count": 1
+        },
+        {
+          "value": "Taipei",
+          "count": 1
+        },
+        {
+          "value": "Taipei City",
+          "count": 1
+        },
+        {
+          "value": "Tel Aviv",
+          "count": 1
+        },
+        {
+          "value": "Tilburg",
+          "count": 1
+        },
+        {
+          "value": "Toledo",
+          "count": 1
+        },
+        {
+          "value": "Troy",
+          "count": 1
+        },
+        {
+          "value": "Verona",
+          "count": 1
+        },
+        {
+          "value": "Vienna",
+          "count": 1
+        },
+        {
+          "value": "Virginia Beach",
+          "count": 1
+        },
+        {
+          "value": "Warszawa",
+          "count": 1
+        },
+        {
+          "value": "Yerevan",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "style",
+      "label": "Style",
+      "values": [
+        {
+          "value": "Mostly 3D",
+          "count": 36
+        },
+        {
+          "value": "TV/Movie-related",
+          "count": 22
+        },
+        {
+          "value": "Animation",
+          "count": 18
+        },
+        {
+          "value": "Explainer videos",
+          "count": 12
+        },
+        {
+          "value": "Character-focused",
+          "count": 11
+        },
+        {
+          "value": "Video game-related",
+          "count": 10
+        },
+        {
+          "value": "Video production",
+          "count": 10
+        },
+        {
+          "value": "Installations",
+          "count": 8
+        },
+        {
+          "value": "Augmented Reality",
+          "count": 6
+        },
+        {
+          "value": "High-end/luxury product renders",
+          "count": 5
+        },
+        {
+          "value": "UI/UX",
+          "count": 5
+        },
+        {
+          "value": "Product design",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "key": "country",
+      "label": "Country",
+      "values": [
+        {
+          "value": "United States",
+          "count": 187
+        },
+        {
+          "value": "United Kingdom",
+          "count": 85
+        },
+        {
+          "value": "Canada",
+          "count": 71
+        },
+        {
+          "value": "Australia",
+          "count": 37
+        },
+        {
+          "value": "Spain",
+          "count": 17
+        },
+        {
+          "value": "France",
+          "count": 13
+        },
+        {
+          "value": "Italy",
+          "count": 13
+        },
+        {
+          "value": "Netherlands",
+          "count": 13
+        },
+        {
+          "value": "Argentina",
+          "count": 10
+        },
+        {
+          "value": "Germany",
+          "count": 9
+        },
+        {
+          "value": "Brazil",
+          "count": 6
+        },
+        {
+          "value": "China",
+          "count": 5
+        },
+        {
+          "value": "Japan",
+          "count": 5
+        },
+        {
+          "value": "South Africa",
+          "count": 5
+        },
+        {
+          "value": "Denmark",
+          "count": 4
+        },
+        {
+          "value": "India",
+          "count": 4
+        },
+        {
+          "value": "New Zealand",
+          "count": 4
+        },
+        {
+          "value": "Hong Kong",
+          "count": 3
+        },
+        {
+          "value": "Mexico",
+          "count": 3
+        },
+        {
+          "value": "Northern Ireland",
+          "count": 3
+        },
+        {
+          "value": "Portugal",
+          "count": 3
+        },
+        {
+          "value": "Russia",
+          "count": 3
+        },
+        {
+          "value": "Sweden",
+          "count": 3
+        },
+        {
+          "value": "United Arab Emirates",
+          "count": 3
+        },
+        {
+          "value": "Norway",
+          "count": 2
+        },
+        {
+          "value": "Singapore",
+          "count": 2
+        },
+        {
+          "value": "Switzerland",
+          "count": 2
+        },
+        {
+          "value": "Taiwan",
+          "count": 2
+        },
+        {
+          "value": "Armenia",
+          "count": 1
+        },
+        {
+          "value": "Austria",
+          "count": 1
+        },
+        {
+          "value": "Bulgaria",
+          "count": 1
+        },
+        {
+          "value": "Chile",
+          "count": 1
+        },
+        {
+          "value": "Colombia",
+          "count": 1
+        },
+        {
+          "value": "Egypt",
+          "count": 1
+        },
+        {
+          "value": "Greece",
+          "count": 1
+        },
+        {
+          "value": "Ireland",
+          "count": 1
+        },
+        {
+          "value": "Israel",
+          "count": 1
+        },
+        {
+          "value": "Latvia",
+          "count": 1
+        },
+        {
+          "value": "Panama",
+          "count": 1
+        },
+        {
+          "value": "Peru",
+          "count": 1
+        },
+        {
+          "value": "Poland",
+          "count": 1
+        },
+        {
+          "value": "South Korea",
+          "count": 1
+        },
+        {
+          "value": "Turkey",
+          "count": 1
+        },
+        {
+          "value": "Ukraine",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "and-walsh",
+      "name": "&Walsh",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://andwalsh.com/"
+    },
+    {
+      "id": "11-percent-studios",
+      "name": "11 Percent Studios",
+      "facets": {
+        "city": [
+          "Phoenix"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.the11percent.com/"
+    },
+    {
+      "id": "180la",
+      "name": "180LA",
+      "facets": {
+        "city": [
+          "Amsterdam",
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "Netherlands",
+          "United States"
+        ]
+      },
+      "href": "https://www.180la.com/"
+    },
+    {
+      "id": "1983-creative",
+      "name": "1983 Creative",
+      "facets": {
+        "city": [
+          "London",
+          "Los Angeles"
+        ],
+        "style": [
+          "Augmented Reality"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://1983creative.com"
+    },
+    {
+      "id": "1stavemachine",
+      "name": "1stAveMachine",
+      "facets": {
+        "city": [
+          "Buenos Aires",
+          "New York",
+          "Santa Monica",
+          "London"
+        ],
+        "country": [
+          "Argentina",
+          "United States",
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.1stavemachine.com/"
+    },
+    {
+      "id": "344-design",
+      "name": "344 Design",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.344design.com/"
+    },
+    {
+      "id": "72andsunny",
+      "name": "72andSunny",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "New York",
+          "Amsterdam",
+          "Sydney"
+        ],
+        "country": [
+          "United States",
+          "Netherlands",
+          "Australia"
+        ]
+      },
+      "href": "https://www.72andsunny.com/"
+    },
+    {
+      "id": "77-productions",
+      "name": "77 Productions",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://77productions.com.au/"
+    },
+    {
+      "id": "808-inc",
+      "name": "808 Inc.",
+      "facets": {
+        "city": [
+          "Houston"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.808inc.com/"
+    },
+    {
+      "id": "9ifx",
+      "name": "9iFX",
+      "facets": {
+        "city": [
+          "Portland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.9ifx.net/"
+    },
+    {
+      "id": "a-plus-creative",
+      "name": "A Plus Creative",
+      "facets": {
+        "city": [
+          "Toronto",
+          "New York"
+        ],
+        "country": [
+          "Canada",
+          "United States"
+        ]
+      },
+      "href": "https://www.apluscreative.ca/"
+    },
+    {
+      "id": "acne",
+      "name": "ACNE",
+      "facets": {
+        "city": [
+          "Stockholm",
+          "London",
+          "Berlin",
+          "Hamburg",
+          "Dublin",
+          "Lisbon",
+          "Milan",
+          "Amsterdam",
+          "Rome"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "Sweden",
+          "United Kingdom",
+          "Germany",
+          "Ireland",
+          "Portugal",
+          "Italy",
+          "Netherlands"
+        ]
+      },
+      "href": "http://www.acnelondon.com/"
+    },
+    {
+      "id": "addikt",
+      "name": "addikt",
+      "facets": {
+        "city": [
+          "Amsterdam",
+          "Mumbai"
+        ],
+        "country": [
+          "Netherlands",
+          "India"
+        ]
+      },
+      "href": "https://addikt.tv/"
+    },
+    {
+      "id": "adolescent",
+      "name": "Adolescent",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://adolescent.nyc/"
+    },
+    {
+      "id": "aftermodern-lab",
+      "name": "aftermodern.lab",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://aftermodernlab.com"
+    },
+    {
+      "id": "aim-creative-studios",
+      "name": "AIM Creative Studios",
+      "facets": {
+        "city": [
+          "Lisbon",
+          "Porto"
+        ],
+        "style": [
+          "Animation",
+          "Character-focused"
+        ],
+        "country": [
+          "Portugal"
+        ]
+      },
+      "href": "https://aimcreativestudios.com/"
+    },
+    {
+      "id": "aixsponza",
+      "name": "Aixsponza",
+      "facets": {
+        "city": [
+          "Munich"
+        ],
+        "country": [
+          "Germany"
+        ]
+      },
+      "href": "https://aixsponza.com/"
+    },
+    {
+      "id": "akqa",
+      "name": "AKQA",
+      "facets": {
+        "city": [
+          "London",
+          "San Francisco",
+          "Sao Paolo",
+          "Victoria",
+          "Aarhus",
+          "Miami",
+          "Amsterdam",
+          "Atlanta",
+          "Auckland",
+          "Berlin",
+          "Cairo",
+          "Cape Town",
+          "Copenhagen",
+          "Dubai",
+          "Gothenburg",
+          "Gurgaon",
+          "Istanbul",
+          "Johannesburg",
+          "Milan",
+          "New York",
+          "Portland",
+          "Paris",
+          "Shanghai",
+          "Stockholm",
+          "Sydney",
+          "Tokyo",
+          "Washington"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States",
+          "Brazil",
+          "Australia",
+          "Denmark",
+          "Netherlands",
+          "New Zealand",
+          "Germany",
+          "Egypt",
+          "South Africa",
+          "United Arab Emirates",
+          "Sweden",
+          "India",
+          "Turkey",
+          "Italy",
+          "France",
+          "China",
+          "Japan"
+        ]
+      },
+      "href": "https://www.akqa.com/"
+    },
+    {
+      "id": "akufen",
+      "name": "Akufen",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.akufen.ca/en"
+    },
+    {
+      "id": "alchemy",
+      "name": "Alchemy",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.alchemycreative.tv/"
+    },
+    {
+      "id": "alkanoids",
+      "name": "Alkanoids",
+      "facets": {
+        "city": [
+          "Milan"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://alkanoids.it/"
+    },
+    {
+      "id": "all-in-pixel",
+      "name": "All In Pixel",
+      "facets": {
+        "city": [
+          "Barcelona"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://www.allinpixel.com/"
+    },
+    {
+      "id": "all-things-media",
+      "name": "All Things Media",
+      "facets": {
+        "city": [
+          "Mahwah"
+        ],
+        "style": [
+          "Augmented Reality"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://allthingsmedia.com/"
+    },
+    {
+      "id": "alma-mater",
+      "name": "ALMA MATER",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.am.tv/"
+    },
+    {
+      "id": "alreadybeenchewed",
+      "name": "AlreadyBeenChewed",
+      "facets": {
+        "city": [
+          "Allen"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.alreadybeenchewed.tv/"
+    },
+    {
+      "id": "amigo-total",
+      "name": "Amigo Total",
+      "facets": {
+        "city": [
+          "Barcelona"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://amigototal.com/"
+    },
+    {
+      "id": "analog",
+      "name": "Analog",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://analogstudio.co.uk/"
+    },
+    {
+      "id": "anchor-point",
+      "name": "Anchor Point",
+      "facets": {
+        "city": [
+          "Seattle"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.anchorpoint.work/"
+    },
+    {
+      "id": "animade",
+      "name": "Animade",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://animade.tv/"
+    },
+    {
+      "id": "animagic",
+      "name": "Animagic",
+      "facets": {
+        "city": [
+          "Burnaby"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://animagic.io/"
+    },
+    {
+      "id": "antimatter",
+      "name": "Antimatter",
+      "facets": {
+        "city": [
+          "Milan"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://antimatter.tv/"
+    },
+    {
+      "id": "anyways",
+      "name": "Anyways",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.anyways.co/"
+    },
+    {
+      "id": "art-and-graft",
+      "name": "Art & Graft",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://artandgraft.com/"
+    },
+    {
+      "id": "artifact",
+      "name": "Artifact",
+      "facets": {
+        "city": [
+          "Atlanta"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.artifactdesign.com/"
+    },
+    {
+      "id": "athletics",
+      "name": "Athletics",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://athleticsnyc.com/"
+    },
+    {
+      "id": "av-squad",
+      "name": "AV Squad",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.avsquad.com/"
+    },
+    {
+      "id": "awesome-inc",
+      "name": "Awesome Inc.",
+      "facets": {
+        "city": [
+          "Atlanta"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.awesomeinc.com/"
+    },
+    {
+      "id": "b-reel",
+      "name": "B-Reel",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "New York",
+          "Barcelona",
+          "Stockholm"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States",
+          "Spain",
+          "Sweden"
+        ]
+      },
+      "href": "https://www.b-reel.com/"
+    },
+    {
+      "id": "baillat-studio",
+      "name": "Baillat Studio",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://baillatstudio.com/en"
+    },
+    {
+      "id": "bakken-and-b-ck",
+      "name": "Bakken & Bæck",
+      "facets": {
+        "city": [
+          "London",
+          "Oslo",
+          "Bonn",
+          "Amsterdam"
+        ],
+        "country": [
+          "United Kingdom",
+          "Norway",
+          "Germany",
+          "Netherlands"
+        ]
+      },
+      "href": "https://bakkenbaeck.com/"
+    },
+    {
+      "id": "bald",
+      "name": "Bald",
+      "facets": {
+        "city": [
+          "Atlanta"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://bald.agency/"
+    },
+    {
+      "id": "bamboo",
+      "name": "Bamboo",
+      "facets": {
+        "city": [
+          "San Francisco",
+          "Seattle",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.growwithbamboo.com/"
+    },
+    {
+      "id": "bark-and-bite",
+      "name": "Bark&Bite",
+      "facets": {
+        "city": [
+          "London",
+          "Leeds"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://barkandbite.com/"
+    },
+    {
+      "id": "batch",
+      "name": "Batch",
+      "facets": {
+        "city": [
+          "Cape Town"
+        ],
+        "country": [
+          "South Africa"
+        ]
+      },
+      "href": "https://www.wearebatch.tv/"
+    },
+    {
+      "id": "beauvoir",
+      "name": "Beauvoir",
+      "facets": {
+        "city": [
+          "Sherbrooke",
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://beauvoir.ca/en/"
+    },
+    {
+      "id": "bellzon",
+      "name": "Bellzon",
+      "facets": {
+        "city": [
+          "Hamilton"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.bellzonstudio.com/"
+    },
+    {
+      "id": "bensimon-byrne",
+      "name": "Bensimon Byrne",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.bensimonbyrne.com/"
+    },
+    {
+      "id": "big-film-design",
+      "name": "Big Film Design",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://bigfilmdesign.com/"
+    },
+    {
+      "id": "bigstudios",
+      "name": "Bigstudios",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.bigstudios.com/"
+    },
+    {
+      "id": "bito-studio",
+      "name": "Bito Studio",
+      "facets": {
+        "city": [
+          "New York",
+          "Taipei"
+        ],
+        "country": [
+          "United States",
+          "Taiwan"
+        ]
+      },
+      "href": "http://bito.tv/"
+    },
+    {
+      "id": "black-math",
+      "name": "Black Math",
+      "facets": {
+        "city": [
+          "Boston",
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://blackmath.com/info"
+    },
+    {
+      "id": "blackmeal",
+      "name": "Blackmeal",
+      "facets": {
+        "city": [
+          "Paris",
+          "Montreal",
+          "Nantes"
+        ],
+        "country": [
+          "France",
+          "Canada"
+        ]
+      },
+      "href": "https://blackmeal.com"
+    },
+    {
+      "id": "blame-your-brother",
+      "name": "Blame Your Brother",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://blameyourbrother.com/index.html"
+    },
+    {
+      "id": "bleed",
+      "name": "Bleed",
+      "facets": {
+        "city": [
+          "Oslo",
+          "Vienna"
+        ],
+        "country": [
+          "Norway",
+          "Austria"
+        ]
+      },
+      "href": "https://bleed.com/"
+    },
+    {
+      "id": "bliink",
+      "name": "Bliink",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://bliink.tv/"
+    },
+    {
+      "id": "blind",
+      "name": "BLIND",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "TV/Movie-related",
+          "UI/UX"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.blindltd.com/"
+    },
+    {
+      "id": "blinkink",
+      "name": "Blinkink",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://blinkink.co.uk/"
+    },
+    {
+      "id": "block",
+      "name": "Block",
+      "facets": {
+        "city": [
+          "Amsterdam",
+          "Ann Arbor",
+          "Atlanta",
+          "Barcelona",
+          "Berlin",
+          "Boston"
+        ],
+        "country": [
+          "Netherlands",
+          "United States",
+          "Spain",
+          "Germany"
+        ]
+      },
+      "href": "https://block.xyz/"
+    },
+    {
+      "id": "block-and-tackle",
+      "name": "Block & Tackle",
+      "facets": {
+        "city": [
+          "Long Island City"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.blockandtackle.tv/"
+    },
+    {
+      "id": "blublu-studios",
+      "name": "BluBlu Studios",
+      "facets": {
+        "city": [
+          "Warszawa"
+        ],
+        "country": [
+          "Poland"
+        ]
+      },
+      "href": "https://www.blublustudios.com/"
+    },
+    {
+      "id": "boncom",
+      "name": "Boncom",
+      "facets": {
+        "city": [
+          "Salt Lake City",
+          "Virginia Beach",
+          "Washington",
+          "Guadalajara"
+        ],
+        "country": [
+          "United States",
+          "Mexico"
+        ]
+      },
+      "href": "https://www.boncom.com/"
+    },
+    {
+      "id": "born-and-bred",
+      "name": "Born & Bred",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://bornandbredbrand.com/"
+    },
+    {
+      "id": "boxfort",
+      "name": "Boxfort",
+      "facets": {
+        "city": [
+          "Detroit"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://bfdgroup.co/"
+    },
+    {
+      "id": "brand-new-school",
+      "name": "Brand New School",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://brandnewschool.com/work"
+    },
+    {
+      "id": "brandspank",
+      "name": "Brandspank",
+      "facets": {
+        "city": [
+          "Auckland"
+        ],
+        "country": [
+          "New Zealand"
+        ]
+      },
+      "href": "https://www.brandspank.com/"
+    },
+    {
+      "id": "breeder",
+      "name": "Breeder",
+      "facets": {
+        "city": [
+          "Fortitude Valley"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://breeder.studio/"
+    },
+    {
+      "id": "brooklyn-digital-foundry",
+      "name": "Brooklyn Digital Foundry",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://brooklynfoundry.com/"
+    },
+    {
+      "id": "brought-to-you-by",
+      "name": "Brought To You By",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://broughttoyouby.tv/"
+    },
+    {
+      "id": "buck",
+      "name": "BUCK",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles",
+          "Amsterdam",
+          "Surry Hills"
+        ],
+        "country": [
+          "United States",
+          "Netherlands",
+          "Australia"
+        ]
+      },
+      "href": "https://buck.co/"
+    },
+    {
+      "id": "buda-tv",
+      "name": "BUDA.tv",
+      "facets": {
+        "city": [
+          "Buenos Aires"
+        ],
+        "country": [
+          "Argentina"
+        ]
+      },
+      "href": "http://buda.tv/"
+    },
+    {
+      "id": "buddha-jones",
+      "name": "Buddha Jones",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Video game-related",
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.buddha-jones.com/"
+    },
+    {
+      "id": "buff",
+      "name": "Buff",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.buffmotion.com/"
+    },
+    {
+      "id": "builders-club",
+      "name": "Builders Club",
+      "facets": {
+        "city": [
+          "London",
+          "New York"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://builders-club.com/"
+    },
+    {
+      "id": "bullpen",
+      "name": "Bullpen",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.bullpen.tv/"
+    },
+    {
+      "id": "by-the-booth",
+      "name": "By The Booth",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://bythebooth.com/"
+    },
+    {
+      "id": "byte",
+      "name": "Byte",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://bytemissioncontrol.com/"
+    },
+    {
+      "id": "camden",
+      "name": "Camden",
+      "facets": {
+        "city": [
+          "Toronto",
+          "Montreal",
+          "Lyon",
+          "Hong Kong"
+        ],
+        "country": [
+          "Canada",
+          "France",
+          "Hong Kong"
+        ]
+      },
+      "href": "https://camdenpublicite.com/en"
+    },
+    {
+      "id": "capacity",
+      "name": "Capacity",
+      "facets": {
+        "city": [
+          "Burbank"
+        ],
+        "style": [
+          "Video game-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://capacity.tv/"
+    },
+    {
+      "id": "capacity-studios",
+      "name": "Capacity Studios",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Research Triangle"
+        ],
+        "style": [
+          "Video game-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://capacity.gg/"
+    },
+    {
+      "id": "ccccccc",
+      "name": "ccccccc",
+      "facets": {
+        "city": [
+          "Copenhagen"
+        ],
+        "country": [
+          "Denmark"
+        ]
+      },
+      "href": "https://ccccccc.tv/"
+    },
+    {
+      "id": "chalk-company",
+      "name": "Chalk Company",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.chalkco.com/"
+    },
+    {
+      "id": "champagne-club-sandwich",
+      "name": "Champagne Club Sandwich",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://champagneclubsandwich.com/"
+    },
+    {
+      "id": "clay",
+      "name": "Clay",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "style": [
+          "UI/UX"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://clay.global/"
+    },
+    {
+      "id": "clim-studio",
+      "name": "Clim Studio",
+      "facets": {
+        "city": [
+          "Barcelona"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://www.studioclim.com/"
+    },
+    {
+      "id": "clubcamping",
+      "name": "Clubcamping",
+      "facets": {
+        "country": [
+          "Argentina"
+        ]
+      },
+      "href": "https://www.clubcamping.tv/"
+    },
+    {
+      "id": "clubhouse",
+      "name": "Clubhouse",
+      "facets": {
+        "city": [
+          "Glasgow"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.clubhouseanimations.com/"
+    },
+    {
+      "id": "clubhouse-paradiso",
+      "name": "Clubhouse Paradiso",
+      "facets": {
+        "city": [
+          "Glasgow"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://clubhouseparadiso.com/"
+    },
+    {
+      "id": "code3",
+      "name": "Code3",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://code3.com/"
+    },
+    {
+      "id": "collins",
+      "name": "Collins",
+      "facets": {
+        "city": [
+          "New York",
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.wearecollins.com/"
+    },
+    {
+      "id": "column-five",
+      "name": "Column Five",
+      "facets": {
+        "city": [
+          "New York",
+          "Newport Beach"
+        ],
+        "style": [
+          "Character-focused",
+          "Animation"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.columnfivemedia.com/"
+    },
+    {
+      "id": "company-wide-shut",
+      "name": "Company Wide Shut",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.companywideshut.com/"
+    },
+    {
+      "id": "complement-studio",
+      "name": "Complement Studio",
+      "facets": {
+        "city": [
+          "Strasbourg"
+        ],
+        "country": [
+          "France"
+        ]
+      },
+      "href": "https://complement.studio"
+    },
+    {
+      "id": "connor-campbell-studio",
+      "name": "Connor Campbell Studio",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "http://connorcampbell.studio/"
+    },
+    {
+      "id": "contend",
+      "name": "Contend",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "San Francisco",
+          "Seattle",
+          "Toronto"
+        ],
+        "style": [
+          "Video production",
+          "Augmented Reality"
+        ],
+        "country": [
+          "United States",
+          "Canada"
+        ]
+      },
+      "href": "https://contendco.com/"
+    },
+    {
+      "id": "context-creative",
+      "name": "Context Creative",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://contextcreative.com/"
+    },
+    {
+      "id": "cookie-studio",
+      "name": "Cookie Studio",
+      "facets": {
+        "city": [
+          "London",
+          "Sao Paolo"
+        ],
+        "country": [
+          "United Kingdom",
+          "Brazil"
+        ]
+      },
+      "href": "http://cookie.studio/"
+    },
+    {
+      "id": "cossette",
+      "name": "Cossette",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.cossette.com/en/home"
+    },
+    {
+      "id": "craftsman",
+      "name": "Craftsman+",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.craftsmanplus.com/"
+    },
+    {
+      "id": "cream",
+      "name": "Cream",
+      "facets": {
+        "city": [
+          "Richmond"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://wearecream.com/"
+    },
+    {
+      "id": "creativ-medium",
+      "name": "Creativ Medium",
+      "facets": {
+        "city": [
+          "Rotkreuz"
+        ],
+        "style": [
+          "Installations",
+          "Mostly 3D"
+        ],
+        "country": [
+          "Switzerland"
+        ]
+      },
+      "href": "https://www.creativ-medium.com/"
+    },
+    {
+      "id": "crinimo",
+      "name": "Crinimo",
+      "facets": {
+        "city": [
+          "Santiago"
+        ],
+        "country": [
+          "Chile"
+        ]
+      },
+      "href": "https://www.crinimo.tv/"
+    },
+    {
+      "id": "critical-mass",
+      "name": "Critical Mass",
+      "facets": {
+        "city": [
+          "Calgary",
+          "Chicago",
+          "Cupertino",
+          "London",
+          "Los Angeles",
+          "Nashville",
+          "New York",
+          "San Jose",
+          "Sao Paolo",
+          "Tokyo",
+          "Toronto"
+        ],
+        "country": [
+          "Canada",
+          "United States",
+          "United Kingdom",
+          "Brazil",
+          "Japan"
+        ]
+      },
+      "href": "https://www.criticalmass.com/"
+    },
+    {
+      "id": "cub-studio",
+      "name": "Cub Studio",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.cubstudio.com/"
+    },
+    {
+      "id": "cut-the-mustard",
+      "name": "Cut The Mustard",
+      "facets": {
+        "city": [
+          "Norwich"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.cutthemustardanimation.com/"
+    },
+    {
+      "id": "dash-studio",
+      "name": "Dash Studio",
+      "facets": {
+        "city": [
+          "Raleigh"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.dashstudio.net/"
+    },
+    {
+      "id": "datalands",
+      "name": "Datalands",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://datalands.co/"
+    },
+    {
+      "id": "deep-sky",
+      "name": "Deep Sky",
+      "facets": {
+        "city": [
+          "Portland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.deepsky.tv/"
+    },
+    {
+      "id": "deft",
+      "name": "Deft",
+      "facets": {
+        "city": [
+          "Bristol"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.studiodeft.co.uk/"
+    },
+    {
+      "id": "designory",
+      "name": "Designory",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Chicago",
+          "Jersey City",
+          "New York",
+          "Franklin",
+          "Tokyo",
+          "London",
+          "Hong Kong",
+          "Paris",
+          "Portland",
+          "Philadelphia",
+          "Phoenix",
+          "Singapore",
+          "Sydney",
+          "Melbourne",
+          "Beijing",
+          "Abu Dhabi",
+          "Shanghai"
+        ],
+        "country": [
+          "United States",
+          "Japan",
+          "United Kingdom",
+          "Hong Kong",
+          "France",
+          "Singapore",
+          "Australia",
+          "China",
+          "United Arab Emirates"
+        ]
+      },
+      "href": "https://www.designory.com/"
+    },
+    {
+      "id": "device",
+      "name": "device",
+      "facets": {
+        "city": [
+          "Barcelona"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://www.devicers.com/"
+    },
+    {
+      "id": "dia-studio",
+      "name": "DIA Studio",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://dia.tv/"
+    },
+    {
+      "id": "digital-kitchen",
+      "name": "Digital Kitchen",
+      "facets": {
+        "city": [
+          "Chicago"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.thisisdk.com/"
+    },
+    {
+      "id": "digital-media-management",
+      "name": "Digital Media Management",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://digitalmediamanagement.com/"
+    },
+    {
+      "id": "dirty-puppet",
+      "name": "Dirty Puppet",
+      "facets": {
+        "city": [
+          "Victoria"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://dirtypuppet.com/"
+    },
+    {
+      "id": "ditroit",
+      "name": "Ditroit",
+      "facets": {
+        "city": [
+          "Milan"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://ditroit.it/"
+    },
+    {
+      "id": "dress-code",
+      "name": "Dress Code",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://dresscodeny.com/work-category/animation/"
+    },
+    {
+      "id": "duke-and-duck",
+      "name": "Duke & Duck",
+      "facets": {
+        "city": [
+          "Washington"
+        ],
+        "style": [
+          "Character-focused"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.dukeduck.com/"
+    },
+    {
+      "id": "duo-team",
+      "name": "Duo Team",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://duo.team/"
+    },
+    {
+      "id": "dusk",
+      "name": "Dusk",
+      "facets": {
+        "city": [
+          "Wellington"
+        ],
+        "country": [
+          "New Zealand"
+        ]
+      },
+      "href": "https://dusk.nz/"
+    },
+    {
+      "id": "eido",
+      "name": "Eido",
+      "facets": {
+        "city": [
+          "Irvine"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.eido.net/"
+    },
+    {
+      "id": "electric-theatre",
+      "name": "Electric Theatre",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://electrictheatre.tv/"
+    },
+    {
+      "id": "elmo",
+      "name": "Elmo",
+      "facets": {
+        "city": [
+          "Paris"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "France"
+        ]
+      },
+      "href": "http://elm0.tv"
+    },
+    {
+      "id": "eltoro-studio",
+      "name": "Eltoro Studio",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://eltorostudio.com/"
+    },
+    {
+      "id": "everhouse",
+      "name": "Everhouse",
+      "facets": {
+        "city": [
+          "Chicago"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://ever.house/"
+    },
+    {
+      "id": "explainly",
+      "name": "Explainly",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.explainly.com/"
+    },
+    {
+      "id": "fakery",
+      "name": "Fakery",
+      "facets": {
+        "city": [
+          "Somerset",
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.fakery.co.uk/"
+    },
+    {
+      "id": "favo-studio",
+      "name": "Favo Studio",
+      "facets": {
+        "city": [
+          "Porto"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "Portugal"
+        ]
+      },
+      "href": "https://favostudio.com/"
+    },
+    {
+      "id": "fevr",
+      "name": "FEVR",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://wearefevr.com/"
+    },
+    {
+      "id": "fiasco-design",
+      "name": "Fiasco Design",
+      "facets": {
+        "city": [
+          "Bristol"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "http://fiasco.design/"
+    },
+    {
+      "id": "final-frontier",
+      "name": "Final Frontier",
+      "facets": {
+        "city": [
+          "Shanghai"
+        ],
+        "country": [
+          "China"
+        ]
+      },
+      "href": "https://finalfrontier.tv/"
+    },
+    {
+      "id": "finger-industries",
+      "name": "Finger Industries",
+      "facets": {
+        "city": [
+          "Sheffield"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://fingerindustries.co.uk/"
+    },
+    {
+      "id": "first-things",
+      "name": "First Things",
+      "facets": {
+        "style": [
+          "Mostly 3D"
+        ]
+      },
+      "href": "http://first-things.studio/"
+    },
+    {
+      "id": "fivestone",
+      "name": "Fivestone",
+      "facets": {
+        "city": [
+          "Nashville"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://fivestonestudios.com/"
+    },
+    {
+      "id": "flatwhite",
+      "name": "Flatwhite",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://vimeo.com/flatwhitemotion"
+    },
+    {
+      "id": "flow",
+      "name": "Flow",
+      "facets": {
+        "city": [
+          "Manchester"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://weareflow.uk/"
+    },
+    {
+      "id": "flump-studio",
+      "name": "Flump Studio",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.flumpstudio.com/"
+    },
+    {
+      "id": "focus-lab",
+      "name": "Focus Lab",
+      "facets": {
+        "city": [
+          "Richmond Hill"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://focuslab.agency/"
+    },
+    {
+      "id": "form-play",
+      "name": "Form Play",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://formplay.co/"
+    },
+    {
+      "id": "found",
+      "name": "Found",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D",
+          "High-end/luxury product renders"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.found-studio.com/"
+    },
+    {
+      "id": "fox-and-co",
+      "name": "Fox&Co.",
+      "facets": {
+        "city": [
+          "Wellington"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "New Zealand"
+        ]
+      },
+      "href": "https://foxandco.design/"
+    },
+    {
+      "id": "frame",
+      "name": "Frame",
+      "facets": {
+        "city": [
+          "Copenhagen"
+        ],
+        "style": [
+          "High-end/luxury product renders"
+        ],
+        "country": [
+          "Denmark"
+        ]
+      },
+      "href": "https://frame.dk/"
+    },
+    {
+      "id": "framestore",
+      "name": "Framestore",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Vancouver",
+          "Chicago",
+          "New York",
+          "Montreal",
+          "London",
+          "Mumbai",
+          "Melbourne"
+        ],
+        "style": [
+          "Augmented Reality",
+          "Installations",
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States",
+          "Canada",
+          "United Kingdom",
+          "India",
+          "Australia"
+        ]
+      },
+      "href": "https://www.framestore.com/?language=en"
+    },
+    {
+      "id": "freshstudio",
+      "name": "FreshStudio",
+      "facets": {
+        "city": [
+          "Bristol"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.freshstudio.tv/"
+    },
+    {
+      "id": "fromm-studio",
+      "name": "Fromm Studio",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://fromm.studio/"
+    },
+    {
+      "id": "frost-motion",
+      "name": "Frost Motion",
+      "facets": {
+        "city": [
+          "Denver"
+        ],
+        "style": [
+          "Mostly 3D",
+          "Installations"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://frostmotion.com/"
+    },
+    {
+      "id": "futurebrand",
+      "name": "FutureBrand",
+      "facets": {
+        "city": [
+          "London",
+          "New York",
+          "Beijing",
+          "Bogota",
+          "Buenos Aires",
+          "Dubai",
+          "Lima",
+          "Geneva",
+          "Madrid",
+          "Melbourne",
+          "Mexico City",
+          "Milan",
+          "Mumbai",
+          "Paris",
+          "San Francisco",
+          "Sao Paolo",
+          "Sydney",
+          "Shanghai"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States",
+          "China",
+          "Colombia",
+          "Argentina",
+          "United Arab Emirates",
+          "Peru",
+          "Switzerland",
+          "Spain",
+          "Australia",
+          "Mexico",
+          "Italy",
+          "India",
+          "France",
+          "Brazil"
+        ]
+      },
+      "href": "https://www.futurebrand.com/us"
+    },
+    {
+      "id": "futuredeluxe",
+      "name": "FutureDeluxe",
+      "facets": {
+        "city": [
+          "London",
+          "Los Angeles"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://futuredeluxe.com/"
+    },
+    {
+      "id": "fuzzco",
+      "name": "Fuzzco",
+      "facets": {
+        "city": [
+          "Charleston",
+          "Seattle"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://fuzzco.com/"
+    },
+    {
+      "id": "gaardhouse",
+      "name": "Gaardhouse",
+      "facets": {
+        "city": [
+          "Minneapolis"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.gaardhouse.com/"
+    },
+    {
+      "id": "gale",
+      "name": "GALE",
+      "facets": {
+        "city": [
+          "New York",
+          "Singapore",
+          "London",
+          "Toronto",
+          "Detroit",
+          "Los Angeles",
+          "Austin"
+        ],
+        "country": [
+          "United States",
+          "Singapore",
+          "United Kingdom",
+          "Canada"
+        ]
+      },
+      "href": "https://www.gale.agency/"
+    },
+    {
+      "id": "get-wright-on-it",
+      "name": "Get Wright On It",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://getwrightonit.com/"
+    },
+    {
+      "id": "ghost-note-agency",
+      "name": "Ghost Note Agency",
+      "facets": {
+        "city": [
+          "Washington",
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.ghostnoteagency.com/"
+    },
+    {
+      "id": "giant-ant",
+      "name": "Giant Ant",
+      "facets": {
+        "city": [
+          "Vancouver"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.giantant.ca/"
+    },
+    {
+      "id": "gimmick-studio",
+      "name": "Gimmick Studio",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://gimmickstudio.ca/"
+    },
+    {
+      "id": "godfrey-dadich-partners",
+      "name": "Godfrey Dadich Partners",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://godfreydadich.com/"
+    },
+    {
+      "id": "golden-wolf",
+      "name": "Golden Wolf",
+      "facets": {
+        "city": [
+          "New York",
+          "London"
+        ],
+        "country": [
+          "United States",
+          "United Kingdom"
+        ]
+      },
+      "href": "https://goldenwolf.tv/"
+    },
+    {
+      "id": "good-all",
+      "name": "Good All",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://goodallintegrated.com/"
+    },
+    {
+      "id": "good-form-studio",
+      "name": "Good Form Studio",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://goodform.studio/"
+    },
+    {
+      "id": "good-secrets",
+      "name": "Good Secrets",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.goodsecrets.co/"
+    },
+    {
+      "id": "goods-and-services-branding",
+      "name": "Goods & Services Branding",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://gsbranding.com/"
+    },
+    {
+      "id": "gozer",
+      "name": "Gozer",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://gozer.com.au/"
+    },
+    {
+      "id": "grand-jete",
+      "name": "Grand Jete",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://grand-jete.com/"
+    },
+    {
+      "id": "gretel",
+      "name": "Gretel",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://gretelny.com/"
+    },
+    {
+      "id": "gunner",
+      "name": "Gunner",
+      "facets": {
+        "city": [
+          "Detroit"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.gunner.work/"
+    },
+    {
+      "id": "h-creative",
+      "name": "H+ Creative",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.hpluscreative.com/"
+    },
+    {
+      "id": "handshake-studios",
+      "name": "Handshake Studios",
+      "facets": {
+        "city": [
+          "Boston"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://handshakestudios.com/"
+    },
+    {
+      "id": "haus",
+      "name": "Haus",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Augmented Reality"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://madeinhaus.com/"
+    },
+    {
+      "id": "haymaker",
+      "name": "Haymaker",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.hymkr.co/"
+    },
+    {
+      "id": "hecho-studios",
+      "name": "Hecho Studios",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://hechostudios.com/"
+    },
+    {
+      "id": "heckler",
+      "name": "Heckler",
+      "facets": {
+        "city": [
+          "Surry Hills"
+        ],
+        "style": [
+          "Video production",
+          "Animation"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.heckler.tv/"
+    },
+    {
+      "id": "helios-design-labs",
+      "name": "Helios Design Labs",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://heliosdesignlabs.com/"
+    },
+    {
+      "id": "hero-collective",
+      "name": "Hero Collective",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://herocollective.co/"
+    },
+    {
+      "id": "hippie-house",
+      "name": "Hippie House",
+      "facets": {
+        "city": [
+          "Buenos Aires",
+          "Miami"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "Argentina",
+          "United States"
+        ]
+      },
+      "href": "https://www.hippiehouse.tv/index.html"
+    },
+    {
+      "id": "hogarth",
+      "name": "Hogarth",
+      "facets": {
+        "city": [
+          "Mexico City",
+          "Miami",
+          "New York",
+          "Toronto",
+          "Sao Paolo",
+          "Buenos Aires",
+          "London",
+          "Hamburg",
+          "Milan",
+          "Madrid",
+          "Sydney",
+          "Melbourne"
+        ],
+        "country": [
+          "Mexico",
+          "United States",
+          "Canada",
+          "Brazil",
+          "Argentina",
+          "United Kingdom",
+          "Germany",
+          "Italy",
+          "Spain",
+          "Australia"
+        ]
+      },
+      "href": "https://www.hogarth.com/"
+    },
+    {
+      "id": "hook",
+      "name": "Hook",
+      "facets": {
+        "city": [
+          "Ann Arbor",
+          "Detroit",
+          "Los Angeles",
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://byhook.com/"
+    },
+    {
+      "id": "hornet",
+      "name": "Hornet",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://hellohornet.com/home.html"
+    },
+    {
+      "id": "hound-studio",
+      "name": "Hound Studio",
+      "facets": {
+        "city": [
+          "Kharkiv"
+        ],
+        "style": [
+          "Explainer videos",
+          "Animation"
+        ],
+        "country": [
+          "Ukraine"
+        ]
+      },
+      "href": "https://hound-studio.com/"
+    },
+    {
+      "id": "hue-and-cry",
+      "name": "Hue&Cry",
+      "facets": {
+        "city": [
+          "Richmond"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.hueandcry.tv/"
+    },
+    {
+      "id": "huge",
+      "name": "Huge",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://hugeinc.com/"
+    },
+    {
+      "id": "iamstatic",
+      "name": "Iamstatic",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://iamstatic.com/"
+    },
+    {
+      "id": "igor-valentine",
+      "name": "Igor + Valentine",
+      "facets": {
+        "city": [
+          "Charleston"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.iggyvee.com/"
+    },
+    {
+      "id": "illo",
+      "name": "illo",
+      "facets": {
+        "city": [
+          "Turin"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://illo.tv/"
+    },
+    {
+      "id": "indigo-slate",
+      "name": "Indigo Slate",
+      "facets": {
+        "city": [
+          "Seattle",
+          "Princeton",
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States",
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.indigoslate.com/"
+    },
+    {
+      "id": "ingenuity-studios",
+      "name": "Ingenuity Studios",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Vancouver",
+          "New York",
+          "Atlanta",
+          "London"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "United States",
+          "Canada",
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.ingenuitystudios.com/"
+    },
+    {
+      "id": "instrument",
+      "name": "Instrument",
+      "facets": {
+        "city": [
+          "Portland",
+          "New York"
+        ],
+        "style": [
+          "Product design"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.instrument.com/"
+    },
+    {
+      "id": "invisible-north",
+      "name": "Invisible North",
+      "facets": {
+        "city": [
+          "New York",
+          "Austin"
+        ],
+        "style": [
+          "Installations"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.invisiblenorth.com/"
+    },
+    {
+      "id": "iso",
+      "name": "ISO",
+      "facets": {
+        "city": [
+          "Glasgow"
+        ],
+        "style": [
+          "Installations",
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://isodesign.co.uk/"
+    },
+    {
+      "id": "iv-studio",
+      "name": "IV Studio",
+      "facets": {
+        "city": [
+          "Nashville"
+        ],
+        "style": [
+          "Video game-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://iv.studio/"
+    },
+    {
+      "id": "jam3",
+      "name": "Jam3",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.jam3.com/"
+    },
+    {
+      "id": "jelly",
+      "name": "Jelly",
+      "facets": {
+        "city": [
+          "London",
+          "New York"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://www.jellylondon.com/"
+    },
+    {
+      "id": "john-mcneil-studio",
+      "name": "John McNeil Studio",
+      "facets": {
+        "city": [
+          "Berkeley"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.johnmcneilstudio.com/"
+    },
+    {
+      "id": "jumbla",
+      "name": "Jumbla",
+      "facets": {
+        "city": [
+          "London",
+          "Melbourne"
+        ],
+        "country": [
+          "United Kingdom",
+          "Australia"
+        ]
+      },
+      "href": "https://www.jumbla.com/"
+    },
+    {
+      "id": "kastor-and-pollux",
+      "name": "Kastor & Pollux",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://kastorandpollux.com/"
+    },
+    {
+      "id": "kin-things",
+      "name": "Kin Things",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://kinthings.tv/"
+    },
+    {
+      "id": "king-country",
+      "name": "King+Country",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://kingandcountry.tv/"
+    },
+    {
+      "id": "kingdom-of-something",
+      "name": "Kingdom of Something",
+      "facets": {
+        "city": [
+          "Amsterdam"
+        ],
+        "country": [
+          "Netherlands"
+        ]
+      },
+      "href": "http://kingdomofsomething.com/"
+    },
+    {
+      "id": "kitset",
+      "name": "Kitset",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.kitset.net/"
+    },
+    {
+      "id": "kojo",
+      "name": "KOJO",
+      "facets": {
+        "city": [
+          "Melbourne",
+          "Sydney",
+          "Adelaide",
+          "Perth",
+          "Brisbane"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://kojo.com.au/"
+    },
+    {
+      "id": "koto",
+      "name": "Koto",
+      "facets": {
+        "city": [
+          "London",
+          "Los Angeles"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://koto.studio/"
+    },
+    {
+      "id": "lasso-studio",
+      "name": "Lasso Studio",
+      "facets": {
+        "city": [
+          "Nashville"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.lassostud.io/"
+    },
+    {
+      "id": "laundry",
+      "name": "Laundry",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.laundrymat.tv/"
+    },
+    {
+      "id": "le-cube",
+      "name": "Le Cube",
+      "facets": {
+        "city": [
+          "Buenos Aires",
+          "Sao Paolo",
+          "Madrid"
+        ],
+        "style": [
+          "Animation",
+          "Character-focused"
+        ],
+        "country": [
+          "Argentina",
+          "Brazil",
+          "Spain"
+        ]
+      },
+      "href": "http://www.lecube.tv/"
+    },
+    {
+      "id": "leftchannel",
+      "name": "leftchannel",
+      "facets": {
+        "city": [
+          "Columbus"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://leftchannel.com/"
+    },
+    {
+      "id": "lightrise",
+      "name": "LightRise",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://lightrise.studio/"
+    },
+    {
+      "id": "linetest",
+      "name": "Linetest",
+      "facets": {
+        "city": [
+          "Vancouver"
+        ],
+        "style": [
+          "Animation",
+          "Character-focused"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://linetest.tv/"
+    },
+    {
+      "id": "little-motel",
+      "name": "Little Motel",
+      "facets": {
+        "city": [
+          "Leeds"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.littlemotel.tv/"
+    },
+    {
+      "id": "lobster",
+      "name": "Lobster",
+      "facets": {
+        "city": [
+          "Sofia"
+        ],
+        "style": [
+          "Animation",
+          "Character-focused"
+        ],
+        "country": [
+          "Bulgaria"
+        ]
+      },
+      "href": "http://lobsterstudio.tv/"
+    },
+    {
+      "id": "locomotive",
+      "name": "Locomotive",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://locomotive.ca/en"
+    },
+    {
+      "id": "lolly",
+      "name": "Lolly",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://lollystudio.co.uk/"
+    },
+    {
+      "id": "loom",
+      "name": "Loom",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://loomofideas.com/"
+    },
+    {
+      "id": "loulou-and-tummie",
+      "name": "Loulou & Tummie",
+      "facets": {
+        "city": [
+          "Tilburg"
+        ],
+        "style": [
+          "Character-focused",
+          "Animation"
+        ],
+        "country": [
+          "Netherlands"
+        ]
+      },
+      "href": "https://loulouandtummie.com/"
+    },
+    {
+      "id": "lucion",
+      "name": "Lucion",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "style": [
+          "Installations"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://lucion.ca/en/"
+    },
+    {
+      "id": "lumbre",
+      "name": "LUMBRE",
+      "facets": {
+        "city": [
+          "Buenos Aires"
+        ],
+        "country": [
+          "Argentina"
+        ]
+      },
+      "href": "http://www.lumbre.tv/"
+    },
+    {
+      "id": "lunar-north",
+      "name": "Lunar North",
+      "facets": {
+        "city": [
+          "Ferndale"
+        ],
+        "style": [
+          "UI/UX"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.lunarnorth.tv/"
+    },
+    {
+      "id": "luxx",
+      "name": "Luxx",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "http://luxx.tv/"
+    },
+    {
+      "id": "madhouse",
+      "name": "Madhouse",
+      "facets": {
+        "city": [
+          "Toledo"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://madmadmad.com/"
+    },
+    {
+      "id": "mainframe",
+      "name": "Mainframe",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "http://mainframe.co.uk/"
+    },
+    {
+      "id": "makematic",
+      "name": "Makematic",
+      "facets": {
+        "city": [
+          "Belfast",
+          "Londonderry"
+        ],
+        "country": [
+          "Northern Ireland"
+        ]
+      },
+      "href": "https://makematic.com/"
+    },
+    {
+      "id": "man-vs-machine",
+      "name": "Man vs. Machine",
+      "facets": {
+        "city": [
+          "London",
+          "Los Angeles"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://mvsm.com/"
+    },
+    {
+      "id": "mashmob",
+      "name": "Mashmob",
+      "facets": {
+        "city": [
+          "Belfast"
+        ],
+        "country": [
+          "Northern Ireland"
+        ]
+      },
+      "href": "https://www.mashmob.co.uk/"
+    },
+    {
+      "id": "mass-fx",
+      "name": "Mass FX",
+      "facets": {
+        "city": [
+          "Denver"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.massfxmedia.com/"
+    },
+    {
+      "id": "media-monks",
+      "name": "Media.Monks",
+      "facets": {
+        "city": [
+          "Denver",
+          "Los Angeles",
+          "New York",
+          "San Francisco",
+          "Toronto"
+        ],
+        "country": [
+          "United States",
+          "Canada"
+        ]
+      },
+      "href": "https://media.monks.com/"
+    },
+    {
+      "id": "media-work",
+      "name": "Media.Work",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://media.work/"
+    },
+    {
+      "id": "mellow-studio",
+      "name": "Mellow Studio",
+      "facets": {
+        "city": [
+          "Athens"
+        ],
+        "country": [
+          "Greece"
+        ]
+      },
+      "href": "https://www.mellowstudio.tv/"
+    },
+    {
+      "id": "method-studios",
+      "name": "Method Studios",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "New York",
+          "Atlanta",
+          "Vancouver",
+          "Montreal",
+          "Melbourne"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States",
+          "Canada",
+          "Australia"
+        ]
+      },
+      "href": "https://www.methodstudios.com/en/"
+    },
+    {
+      "id": "mighty-nice",
+      "name": "Mighty Nice",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://mightynice.com.au/"
+    },
+    {
+      "id": "milk-and-peppers",
+      "name": "Milk and Peppers",
+      "facets": {
+        "city": [
+          "Norwich"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://milkandpeppers.co.uk/"
+    },
+    {
+      "id": "minimal-massive",
+      "name": "Minimal Massive",
+      "facets": {
+        "city": [
+          "Portland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.minimalmassive.tv/"
+    },
+    {
+      "id": "mister",
+      "name": "Mister",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.mister.net.au/"
+    },
+    {
+      "id": "mixcode",
+      "name": "Mixcode",
+      "facets": {
+        "city": [
+          "Taipei City"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "Taiwan"
+        ]
+      },
+      "href": "https://mixcode.tv/portfolio"
+    },
+    {
+      "id": "mk12",
+      "name": "MK12",
+      "facets": {
+        "city": [
+          "Kansas City"
+        ],
+        "style": [
+          "Video game-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.mk12.com/"
+    },
+    {
+      "id": "mocean",
+      "name": "MOCEAN",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.moceanla.com/"
+    },
+    {
+      "id": "mod",
+      "name": "MOD",
+      "facets": {
+        "city": [
+          "Philadelphia"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://themoderati.com/"
+    },
+    {
+      "id": "mod-op",
+      "name": "Mod Op",
+      "facets": {
+        "city": [
+          "New York",
+          "Miami",
+          "Kansas City",
+          "Dallas",
+          "Portland",
+          "Los Angeles",
+          "Minneapolis",
+          "Cleveland",
+          "Panama City"
+        ],
+        "country": [
+          "United States",
+          "Panama"
+        ]
+      },
+      "href": "https://www.modop.com/"
+    },
+    {
+      "id": "mongo",
+      "name": "Mongo",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "style": [
+          "Character-focused",
+          "Explainer videos"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://mongostudio.com/"
+    },
+    {
+      "id": "monolith",
+      "name": "Monolith",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://monolith.agency/en/"
+    },
+    {
+      "id": "monopo",
+      "name": "monopo",
+      "facets": {
+        "city": [
+          "London",
+          "New York",
+          "Tokyo"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States",
+          "Japan"
+        ]
+      },
+      "href": "https://monopo.london/"
+    },
+    {
+      "id": "morning-giants",
+      "name": "Morning Giants",
+      "facets": {
+        "city": [
+          "Hong Kong"
+        ],
+        "country": [
+          "Hong Kong"
+        ]
+      },
+      "href": "https://morninggiantsstudio.com/landing"
+    },
+    {
+      "id": "moth",
+      "name": "Moth",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.moth.studio/"
+    },
+    {
+      "id": "motion-504",
+      "name": "Motion 504",
+      "facets": {
+        "city": [
+          "Minneapolis"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://motion504.squarespace.com/"
+    },
+    {
+      "id": "motioncue",
+      "name": "Motioncue",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://motioncue.com/"
+    },
+    {
+      "id": "motionlab-studio",
+      "name": "Motionlab Studio",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.motionlab.com.au/"
+    },
+    {
+      "id": "mousetrappe",
+      "name": "Mousetrappe",
+      "facets": {
+        "city": [
+          "Burbank"
+        ],
+        "style": [
+          "Installations"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.mousetrappe.com/"
+    },
+    {
+      "id": "move-animation-studio",
+      "name": "Move Animation Studio",
+      "facets": {
+        "city": [
+          "Brighton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.moveanimation.com/"
+    },
+    {
+      "id": "mowe-studio",
+      "name": "MOWE Studio",
+      "facets": {
+        "city": [
+          "Hallandale Beach",
+          "Barcelona"
+        ],
+        "country": [
+          "United States",
+          "Spain"
+        ]
+      },
+      "href": "https://mowe.studio/"
+    },
+    {
+      "id": "mute",
+      "name": "Mute",
+      "facets": {
+        "city": [
+          "Leeds"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://muteanimation.studio/"
+    },
+    {
+      "id": "nerdo",
+      "name": "Nerdo",
+      "facets": {
+        "city": [
+          "Turin"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "http://www.nerdo.tv/"
+    },
+    {
+      "id": "never-sit-still",
+      "name": "Never Sit Still",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://neversitstill.com/"
+    },
+    {
+      "id": "new-holland",
+      "name": "New Holland",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "http://www.newhollandcreative.com/"
+    },
+    {
+      "id": "newfangled-studios",
+      "name": "Newfangled Studios",
+      "facets": {
+        "city": [
+          "Boston"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.newfangledstudios.com/"
+    },
+    {
+      "id": "nice-shoes",
+      "name": "Nice Shoes",
+      "facets": {
+        "city": [
+          "Toronto",
+          "New York"
+        ],
+        "country": [
+          "Canada",
+          "United States"
+        ]
+      },
+      "href": "https://www.niceshoes.com/"
+    },
+    {
+      "id": "niceshit",
+      "name": "Niceshit",
+      "facets": {
+        "city": [
+          "Barcelona"
+        ],
+        "style": [
+          "Character-focused",
+          "Animation"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://niceshit.tv/"
+    },
+    {
+      "id": "nifty-studio",
+      "name": "Nifty Studio",
+      "facets": {
+        "city": [
+          "Denver"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.niftystudio.com/"
+    },
+    {
+      "id": "night-shift-studio",
+      "name": "Night Shift Studio",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://nightshiftstudio.co/"
+    },
+    {
+      "id": "nobl",
+      "name": "Nobl",
+      "facets": {
+        "city": [
+          "Lyon"
+        ],
+        "country": [
+          "France"
+        ]
+      },
+      "href": "https://www.nobl.tv/"
+    },
+    {
+      "id": "nogood",
+      "name": "NoGood",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles",
+          "Miami"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://nogood.io/"
+    },
+    {
+      "id": "nomad-studio",
+      "name": "Nomad Studio",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.nomadstudio.com/"
+    },
+    {
+      "id": "noodle",
+      "name": "Noodle",
+      "facets": {
+        "city": [
+          "Chicago"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.noodleanimation.com/"
+    },
+    {
+      "id": "not-real",
+      "name": "Not Real",
+      "facets": {
+        "city": [
+          "Buenos Aires",
+          "Madrid"
+        ],
+        "country": [
+          "Argentina",
+          "Spain"
+        ]
+      },
+      "href": "https://notreal.tv/"
+    },
+    {
+      "id": "nubrand",
+      "name": "Nubrand",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://nubrand.com/"
+    },
+    {
+      "id": "nymbl",
+      "name": "nymbl",
+      "facets": {
+        "city": [
+          "Bristol"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.nymbl.com/"
+    },
+    {
+      "id": "octagon",
+      "name": "Octagon",
+      "facets": {
+        "city": [
+          "Sydney",
+          "Ottawa",
+          "Paris",
+          "Shanghai",
+          "Tokyo",
+          "Johannesburg",
+          "Madrid",
+          "London",
+          "Manchester",
+          "Los Angeles",
+          "Atlanta",
+          "Minneapolis"
+        ],
+        "country": [
+          "Australia",
+          "Canada",
+          "France",
+          "China",
+          "Japan",
+          "South Africa",
+          "Spain",
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://www.octagon.com/"
+    },
+    {
+      "id": "oddbee",
+      "name": "Oddbee",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://oddbee.com/"
+    },
+    {
+      "id": "oddfellows",
+      "name": "Oddfellows",
+      "facets": {
+        "city": [
+          "Portland",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://oddfellows.tv/"
+    },
+    {
+      "id": "odi",
+      "name": "Odi",
+      "facets": {
+        "city": [
+          "Richmond Hill"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://odibrand.agency/"
+    },
+    {
+      "id": "ok-motion-club",
+      "name": "OK Motion Club",
+      "facets": {
+        "city": [
+          "Atlanta"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.okmotion.club/"
+    },
+    {
+      "id": "okalpha",
+      "name": "Okalpha",
+      "facets": {
+        "city": [
+          "Cape Town"
+        ],
+        "country": [
+          "South Africa"
+        ]
+      },
+      "href": "https://www.okalpha.co/"
+    },
+    {
+      "id": "onemethod",
+      "name": "Onemethod",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://onemethod.com/"
+    },
+    {
+      "id": "ordinary-folk",
+      "name": "Ordinary Folk",
+      "facets": {
+        "city": [
+          "Vancouver"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.ordinaryfolk.co/"
+    },
+    {
+      "id": "ottoblix",
+      "name": "Ottoblix",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.ottoblix.com/"
+    },
+    {
+      "id": "pancho",
+      "name": "Pancho",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://pancho.com.au/"
+    },
+    {
+      "id": "panic-studio",
+      "name": "Panic Studio",
+      "facets": {
+        "city": [
+          "Riga"
+        ],
+        "country": [
+          "Latvia"
+        ]
+      },
+      "href": "https://www.panicstudio.tv/en/"
+    },
+    {
+      "id": "panoply",
+      "name": "Panoply",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D",
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://panoply.co.uk/"
+    },
+    {
+      "id": "parallel-studio",
+      "name": "Parallel Studio",
+      "facets": {
+        "city": [
+          "Paris"
+        ],
+        "country": [
+          "France"
+        ]
+      },
+      "href": "https://parallelstudio.tv/"
+    },
+    {
+      "id": "passion",
+      "name": "Passion",
+      "facets": {
+        "city": [
+          "London",
+          "Paris",
+          "Barcelona"
+        ],
+        "style": [
+          "TV/Movie-related",
+          "Video game-related",
+          "Mostly 3D",
+          "Character-focused",
+          "Animation"
+        ],
+        "country": [
+          "United Kingdom",
+          "France",
+          "Spain"
+        ]
+      },
+      "href": "https://www.passion-pictures.com/"
+    },
+    {
+      "id": "pentagram",
+      "name": "Pentagram",
+      "facets": {
+        "city": [
+          "London",
+          "New York"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://www.pentagram.com/"
+    },
+    {
+      "id": "peprally",
+      "name": "PepRally",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://peprally.co/"
+    },
+    {
+      "id": "perception",
+      "name": "Perception",
+      "facets": {
+        "city": [
+          "Secaucus"
+        ],
+        "style": [
+          "UI/UX"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.experienceperception.com/index.html"
+    },
+    {
+      "id": "petrick",
+      "name": "Petrick",
+      "facets": {
+        "city": [
+          "Moscow"
+        ],
+        "country": [
+          "Russia"
+        ]
+      },
+      "href": "https://petrick.co/"
+    },
+    {
+      "id": "pixelfarm",
+      "name": "Pixelfarm",
+      "facets": {
+        "city": [
+          "Minneapolis"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.pixelfarm.com/"
+    },
+    {
+      "id": "plasticbionic",
+      "name": "Plasticbionic",
+      "facets": {
+        "city": [
+          "Berlin",
+          "Nantes"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Germany",
+          "France"
+        ]
+      },
+      "href": "https://plasticbionic.com/"
+    },
+    {
+      "id": "play-studio",
+      "name": "Play Studio",
+      "facets": {
+        "city": [
+          "San Francisco"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.play.studio/"
+    },
+    {
+      "id": "playground-inc",
+      "name": "Playground Inc.",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://playgroundinc.com/"
+    },
+    {
+      "id": "playlab-inc",
+      "name": "PlayLab Inc.",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.playlab.org/"
+    },
+    {
+      "id": "plenty",
+      "name": "Plenty",
+      "facets": {
+        "city": [
+          "Buenos Aires",
+          "Barcelona"
+        ],
+        "country": [
+          "Argentina",
+          "Spain"
+        ]
+      },
+      "href": "http://plenty.tv/"
+    },
+    {
+      "id": "plusone",
+      "name": "PlusOne",
+      "facets": {
+        "city": [
+          "Amsterdam"
+        ],
+        "country": [
+          "Netherlands"
+        ]
+      },
+      "href": "https://plusoneamsterdam.com/About"
+    },
+    {
+      "id": "polyester-studio",
+      "name": "Polyester Studio",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://polyesterstudio.com/"
+    },
+    {
+      "id": "prand",
+      "name": "Prand",
+      "facets": {
+        "city": [
+          "Moscow"
+        ],
+        "country": [
+          "Russia"
+        ]
+      },
+      "href": "http://prand.tv/"
+    },
+    {
+      "id": "production-club",
+      "name": "Production Club",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Installations"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.production.club/"
+    },
+    {
+      "id": "profanity",
+      "name": "Profanity",
+      "facets": {
+        "city": [
+          "Burlington"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.profanity.tv/"
+    },
+    {
+      "id": "psyop",
+      "name": "PSYOP",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles",
+          "Berlin"
+        ],
+        "country": [
+          "United States",
+          "Germany"
+        ]
+      },
+      "href": "https://www.psyop.com/"
+    },
+    {
+      "id": "puncture",
+      "name": "Puncture",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.puncture.co/"
+    },
+    {
+      "id": "push-collaborative",
+      "name": "Push Collaborative",
+      "facets": {
+        "city": [
+          "New York",
+          "San Francisco"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.pushcollaborative.com/"
+    },
+    {
+      "id": "radar-studios",
+      "name": "Radar Studios",
+      "facets": {
+        "city": [
+          "Chicago"
+        ],
+        "style": [
+          "Video production",
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.radarstudios.com/"
+    },
+    {
+      "id": "radio",
+      "name": "Radio",
+      "facets": {
+        "city": [
+          "London",
+          "Cape Town"
+        ],
+        "country": [
+          "United Kingdom",
+          "South Africa"
+        ]
+      },
+      "href": "https://www.madebyradio.com/"
+    },
+    {
+      "id": "ranger-and-fox",
+      "name": "Ranger & Fox",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.rangerandfox.tv/"
+    },
+    {
+      "id": "reactiv",
+      "name": "reactiv",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "http://www.getreactiv.com/"
+    },
+    {
+      "id": "red-antler",
+      "name": "Red Antler",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://redantler.com"
+    },
+    {
+      "id": "reflektor-digital",
+      "name": "Reflektor Digital",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://reflektor.digital/"
+    },
+    {
+      "id": "relay-studio",
+      "name": "Relay Studio",
+      "facets": {
+        "city": [
+          "Copenhagen"
+        ],
+        "country": [
+          "Denmark"
+        ]
+      },
+      "href": "https://relaystudio.co/"
+    },
+    {
+      "id": "resolute",
+      "name": "Resolute",
+      "facets": {
+        "city": [
+          "Milan"
+        ],
+        "style": [
+          "Mostly 3D",
+          "High-end/luxury product renders"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://www.resolutestudio.com/"
+    },
+    {
+      "id": "rise-branding",
+      "name": "Rise Branding",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://risebranding.com/"
+    },
+    {
+      "id": "robin",
+      "name": "Robin",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.androbin.co/"
+    },
+    {
+      "id": "rocket-motion",
+      "name": "Rocket Motion",
+      "facets": {
+        "city": [
+          "Moscow"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "Russia"
+        ]
+      },
+      "href": "https://rocketmotion.co/"
+    },
+    {
+      "id": "rocketpanda",
+      "name": "Rocketpanda",
+      "facets": {
+        "city": [
+          "Verona"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "https://www.therocketpanda.com/"
+    },
+    {
+      "id": "roger",
+      "name": "Roger",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://roger.tv/"
+    },
+    {
+      "id": "roof-studio",
+      "name": "ROOF Studio",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://roofstudio.tv/"
+    },
+    {
+      "id": "run-studios",
+      "name": "RUN Studios",
+      "facets": {
+        "city": [
+          "Seattle",
+          "Los Angeles",
+          "New York",
+          "Kansas City"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.runstudios.com/"
+    },
+    {
+      "id": "sail-ho-studio",
+      "name": "Sail Ho Studio",
+      "facets": {
+        "city": [
+          "Amsterdam",
+          "Milan",
+          "Rome"
+        ],
+        "style": [
+          "Character-focused"
+        ],
+        "country": [
+          "Netherlands",
+          "Italy"
+        ]
+      },
+      "href": "https://sailhostudio.com/"
+    },
+    {
+      "id": "salamandra",
+      "name": "Salamandra",
+      "facets": {
+        "city": [
+          "Eton",
+          "Dundee",
+          "San Francisco"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://www.salamandra.uk/"
+    },
+    {
+      "id": "sandbox",
+      "name": "sandbox",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.sandboxinc.ca/"
+    },
+    {
+      "id": "sarofsky",
+      "name": "Sarofsky",
+      "facets": {
+        "city": [
+          "Chicago"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.sarofsky.com/"
+    },
+    {
+      "id": "scholar",
+      "name": "Scholar",
+      "facets": {
+        "city": [
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.helloscholar.com/"
+    },
+    {
+      "id": "sdco",
+      "name": "SDCO",
+      "facets": {
+        "city": [
+          "Charleston"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://sdcopartners.com/"
+    },
+    {
+      "id": "seed",
+      "name": "Seed",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.seedanimation.com/"
+    },
+    {
+      "id": "serial-cut",
+      "name": "Serial Cut",
+      "facets": {
+        "city": [
+          "Madrid"
+        ],
+        "country": [
+          "Spain"
+        ]
+      },
+      "href": "https://serialcut.com/"
+    },
+    {
+      "id": "shine",
+      "name": "Shine",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://shinestudio.com/"
+    },
+    {
+      "id": "shotopop",
+      "name": "Shotopop",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://shotopop.com/"
+    },
+    {
+      "id": "sibling-rivalry",
+      "name": "Sibling Rivalry",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://siblingrivalry.com/"
+    },
+    {
+      "id": "sid-lee",
+      "name": "Sid Lee",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "New York",
+          "Paris",
+          "Montreal",
+          "Toronto",
+          "London",
+          "Seattle"
+        ],
+        "country": [
+          "United States",
+          "France",
+          "Canada",
+          "United Kingdom"
+        ]
+      },
+      "href": "https://sidlee.com/en"
+    },
+    {
+      "id": "simple-story",
+      "name": "Simple Story",
+      "facets": {
+        "city": [
+          "Ottawa"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://simplestoryvideos.com/"
+    },
+    {
+      "id": "sircle-media",
+      "name": "Sircle Media",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.sircle.me/"
+    },
+    {
+      "id": "six-cinquieme",
+      "name": "Six Cinquième",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.sixcinquieme.com/"
+    },
+    {
+      "id": "smoosh-creative",
+      "name": "Smoosh Creative",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.smooshcreative.com/"
+    },
+    {
+      "id": "soma",
+      "name": "Soma",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.somastudios.co/"
+    },
+    {
+      "id": "spillt",
+      "name": "Spillt",
+      "facets": {
+        "city": [
+          "Denver"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.spillt.com/"
+    },
+    {
+      "id": "stage3",
+      "name": "Stage3",
+      "facets": {
+        "city": [
+          "Pasadena"
+        ],
+        "style": [
+          "Mostly 3D",
+          "High-end/luxury product renders"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://stage3agency.com"
+    },
+    {
+      "id": "state",
+      "name": "State",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://statedesign.tv/"
+    },
+    {
+      "id": "statler-and-waldort",
+      "name": "Statler & Waldort",
+      "facets": {
+        "city": [
+          "Southampton"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.statlerandwaldorf.co.uk/"
+    },
+    {
+      "id": "steps",
+      "name": "Steps",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.studiosteps.co/"
+    },
+    {
+      "id": "stormy-studio",
+      "name": "Stormy Studio",
+      "facets": {
+        "city": [
+          "Devon"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://stormystudio.com/"
+    },
+    {
+      "id": "strange-beast",
+      "name": "Strange Beast",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.strangebeast.tv/"
+    },
+    {
+      "id": "studio-feather",
+      "name": "Studio Feather",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://studiofeather.com/"
+    },
+    {
+      "id": "studio-helga",
+      "name": "Studio Helga",
+      "facets": {
+        "city": [
+          "Saughall"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.studiohelga.co.uk/"
+    },
+    {
+      "id": "studio-ianus",
+      "name": "Studio Ianus",
+      "facets": {
+        "city": [
+          "Milan"
+        ],
+        "country": [
+          "Italy"
+        ]
+      },
+      "href": "http://www.studioianus.it/"
+    },
+    {
+      "id": "studio-mals",
+      "name": "Studio Mals",
+      "facets": {
+        "city": [
+          "Rotterdam"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "Netherlands"
+        ]
+      },
+      "href": "https://www.studiomals.com/"
+    },
+    {
+      "id": "studio-mega",
+      "name": "Studio Mega",
+      "facets": {
+        "city": [
+          "Portland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://studiomega.com/"
+    },
+    {
+      "id": "studio-rodrigo",
+      "name": "Studio Rodrigo",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "style": [
+          "Product design"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://studiorodrigo.com/"
+    },
+    {
+      "id": "stylo-creative",
+      "name": "Stylo Creative",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://stylocreative.com/"
+    },
+    {
+      "id": "substance",
+      "name": "Substance",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://sbstnc.co/"
+    },
+    {
+      "id": "summer-friday",
+      "name": "Summer Friday",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://heysummerfriday.com/"
+    },
+    {
+      "id": "supernova-design",
+      "name": "Supernova Design",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://supernovadesign.net/"
+    },
+    {
+      "id": "superside",
+      "name": "Superside",
+      "facets": {
+        "city": [
+          "Palo Alto"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.superside.com/"
+    },
+    {
+      "id": "supervixen",
+      "name": "Supervixen",
+      "facets": {
+        "city": [
+          "Surry Hills"
+        ],
+        "style": [
+          "TV/Movie-related"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "http://www.supervixen.net/"
+    },
+    {
+      "id": "swim",
+      "name": "Swim",
+      "facets": {
+        "city": [
+          "Seoul"
+        ],
+        "country": [
+          "South Korea"
+        ]
+      },
+      "href": "https://swimseoul.kr"
+    },
+    {
+      "id": "taunt",
+      "name": "Taunt",
+      "facets": {
+        "city": [
+          "Belfast"
+        ],
+        "country": [
+          "Northern Ireland"
+        ]
+      },
+      "href": "https://www.tauntstudios.com/"
+    },
+    {
+      "id": "tendril-design-and-animation",
+      "name": "Tendril Design & Animation",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://tendril.ca/"
+    },
+    {
+      "id": "territory-studio",
+      "name": "Territory Studio",
+      "facets": {
+        "city": [
+          "London",
+          "San Francisco",
+          "Barcelona",
+          "Munich"
+        ],
+        "style": [
+          "UI/UX",
+          "TV/Movie-related",
+          "Video game-related"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States",
+          "Spain",
+          "Germany"
+        ]
+      },
+      "href": "https://territorystudio.com/"
+    },
+    {
+      "id": "the-canyon-road",
+      "name": "The Canyon Road",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "style": [
+          "Video production"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://thecanyonroad.com/"
+    },
+    {
+      "id": "the-furrow",
+      "name": "The Furrow",
+      "facets": {
+        "city": [
+          "Lexington"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://thefurrow.tv/"
+    },
+    {
+      "id": "the-mill",
+      "name": "The Mill",
+      "facets": {
+        "city": [
+          "London",
+          "New York",
+          "Los Angeles"
+        ],
+        "country": [
+          "United Kingdom",
+          "United States"
+        ]
+      },
+      "href": "https://www.themill.com/"
+    },
+    {
+      "id": "the-sequence-group",
+      "name": "The Sequence Group",
+      "facets": {
+        "city": [
+          "Vancouver",
+          "Melbourne"
+        ],
+        "style": [
+          "TV/Movie-related",
+          "Video game-related"
+        ],
+        "country": [
+          "Canada",
+          "Australia"
+        ]
+      },
+      "href": "https://thesequencegroup.com/"
+    },
+    {
+      "id": "thinkmojo",
+      "name": "thinkmojo",
+      "facets": {
+        "city": [
+          "San Francisco",
+          "Montreal"
+        ],
+        "country": [
+          "United States",
+          "Canada"
+        ]
+      },
+      "href": "https://www.thinkmojo.com/"
+    },
+    {
+      "id": "this-thing-of-ours",
+      "name": "This Thing Of Ours",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Animation"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "http://thisthing.studio/"
+    },
+    {
+      "id": "tilt",
+      "name": "Tilt",
+      "facets": {
+        "city": [
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://tiltcreative.com.au/"
+    },
+    {
+      "id": "toast-studio",
+      "name": "Toast Studio",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://toast.tv/"
+    },
+    {
+      "id": "toastie-animation",
+      "name": "Toastie Animation",
+      "facets": {
+        "city": [
+          "Manchester"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.toastieanimation.co.uk/"
+    },
+    {
+      "id": "tricks",
+      "name": "Tricks",
+      "facets": {
+        "city": [
+          "London",
+          "Chester"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.tricks.studio/"
+    },
+    {
+      "id": "trifilm",
+      "name": "Trifilm",
+      "facets": {
+        "city": [
+          "Kirkland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.trifilm.com/"
+    },
+    {
+      "id": "troika",
+      "name": "Troika",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.troika.tv/"
+    },
+    {
+      "id": "tux",
+      "name": "TUX",
+      "facets": {
+        "city": [
+          "Montreal"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://tux.co/en/"
+    },
+    {
+      "id": "ultra",
+      "name": "Ultra",
+      "facets": {
+        "city": [
+          "Leigh-on-Sea"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://ultra.studio/"
+    },
+    {
+      "id": "underknown",
+      "name": "Underknown",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://underknown.com/"
+    },
+    {
+      "id": "underline",
+      "name": "Underline",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://underlinestudio.com/"
+    },
+    {
+      "id": "unsaid-studio",
+      "name": "Unsaid Studio",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://weareunsaid.com/"
+    },
+    {
+      "id": "upstatement",
+      "name": "Upstatement",
+      "facets": {
+        "city": [
+          "Boston",
+          "New York"
+        ],
+        "style": [
+          "Product design"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://upstatement.com/"
+    },
+    {
+      "id": "vanta-collective",
+      "name": "Vanta Collective",
+      "facets": {
+        "city": [
+          "Sydney"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://www.vantacollective.design/"
+    },
+    {
+      "id": "vectorform",
+      "name": "Vectorform",
+      "facets": {
+        "city": [
+          "Troy"
+        ],
+        "style": [
+          "Augmented Reality"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.vectorform.com/"
+    },
+    {
+      "id": "venturethree",
+      "name": "venturethree",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://venturethree.com/"
+    },
+    {
+      "id": "versus",
+      "name": "Versus",
+      "facets": {
+        "city": [
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.vsnyc.tv/"
+    },
+    {
+      "id": "very-true-story",
+      "name": "Very True Story",
+      "facets": {
+        "city": [
+          "Oakland"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.verytruestory.com/"
+    },
+    {
+      "id": "visual-creatures",
+      "name": "Visual Creatures",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://visualcreatures.com/"
+    },
+    {
+      "id": "vucko",
+      "name": "Vucko",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://vucko.co/"
+    },
+    {
+      "id": "warm-and-fuzzy",
+      "name": "Warm & Fuzzy",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Boulder"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://warmnfuzzy.tv/"
+    },
+    {
+      "id": "watson",
+      "name": "Watson",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://watson.la/"
+    },
+    {
+      "id": "watts",
+      "name": "Watts",
+      "facets": {
+        "city": [
+          "Seattle"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.wearewatts.com/"
+    },
+    {
+      "id": "we-are-royale",
+      "name": "We Are Royale",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "Seattle"
+        ],
+        "style": [
+          "Video game-related"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://weareroyale.com/"
+    },
+    {
+      "id": "we-know-video",
+      "name": "We Know Video",
+      "facets": {
+        "city": [
+          "Sydney",
+          "Melbourne"
+        ],
+        "country": [
+          "Australia"
+        ]
+      },
+      "href": "https://weknowvideo.com.au/"
+    },
+    {
+      "id": "weareseventeen",
+      "name": "weareseventeen",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "Mostly 3D"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://weareseventeen.com/"
+    },
+    {
+      "id": "wednesday-studio",
+      "name": "Wednesday Studio",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.wearewednesday.com/"
+    },
+    {
+      "id": "wonderlust",
+      "name": "Wonderlust",
+      "facets": {
+        "city": [
+          "Halifax"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.wonderlustmedia.ca/"
+    },
+    {
+      "id": "work-and-co",
+      "name": "Work & Co.",
+      "facets": {
+        "city": [
+          "Portland",
+          "New York"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://work.co/"
+    },
+    {
+      "id": "workhouse",
+      "name": "Workhouse",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://theworkhouse.ca/"
+    },
+    {
+      "id": "worship",
+      "name": "Worship",
+      "facets": {
+        "city": [
+          "Toronto"
+        ],
+        "style": [
+          "TV/Movie-related",
+          "Video game-related"
+        ],
+        "country": [
+          "Canada"
+        ]
+      },
+      "href": "https://www.worship.studio/"
+    },
+    {
+      "id": "xk",
+      "name": "XK",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "style": [
+          "High-end/luxury product renders"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://xk.studio/"
+    },
+    {
+      "id": "xx-artists",
+      "name": "XX Artists",
+      "facets": {
+        "city": [
+          "Los Angeles"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "https://www.xxartists.com/"
+    },
+    {
+      "id": "yambo",
+      "name": "Yambo",
+      "facets": {
+        "city": [
+          "Tel Aviv"
+        ],
+        "country": [
+          "Israel"
+        ]
+      },
+      "href": "https://yambo-studio.com/"
+    },
+    {
+      "id": "yans",
+      "name": "Yans",
+      "facets": {
+        "city": [
+          "Yerevan"
+        ],
+        "style": [
+          "Explainer videos"
+        ],
+        "country": [
+          "Armenia"
+        ]
+      },
+      "href": "https://www.yansmedia.com/"
+    },
+    {
+      "id": "yatta",
+      "name": "Yatta",
+      "facets": {
+        "city": [
+          "London",
+          "Bristol"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://yatta.studio/"
+    },
+    {
+      "id": "yeah-haus",
+      "name": "Yeah Haus",
+      "facets": {
+        "city": [
+          "Ferndale"
+        ],
+        "country": [
+          "United States"
+        ]
+      },
+      "href": "http://yeahhaus.com/"
+    },
+    {
+      "id": "york-and-chapel",
+      "name": "York & Chapel",
+      "facets": {
+        "city": [
+          "Vancouver",
+          "Toronto",
+          "New York"
+        ],
+        "country": [
+          "Canada",
+          "United States"
+        ]
+      },
+      "href": "https://yorkandchapel.com/"
+    },
+    {
+      "id": "yum-yum",
+      "name": "Yum Yum",
+      "facets": {
+        "city": [
+          "London"
+        ],
+        "country": [
+          "United Kingdom"
+        ]
+      },
+      "href": "https://www.yumyumlondon.com/"
+    },
+    {
+      "id": "zoic",
+      "name": "Zoic",
+      "facets": {
+        "city": [
+          "Los Angeles",
+          "New York",
+          "Vancouver"
+        ],
+        "country": [
+          "United States",
+          "Canada"
+        ]
+      },
+      "href": "https://zoicstudios.com/"
+    }
+  ]
+}

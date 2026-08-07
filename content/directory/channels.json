@@ -1,0 +1,726 @@
+{
+  "id": "channels",
+  "shelf": "learn",
+  "name": "YouTube Channels",
+  "letter": "A",
+  "blurb": "The channels worth subscribing to, tagged by software and by what you actually get — tutorials, rigs, breakdowns, scripts.",
+  "action": "Watch",
+  "source": "notion",
+  "count": 41,
+  "facets": [
+    {
+      "key": "software",
+      "label": "Software",
+      "values": [
+        {
+          "value": "After Effects",
+          "count": 41
+        },
+        {
+          "value": "Cinema 4D",
+          "count": 5
+        },
+        {
+          "value": "Illustrator",
+          "count": 4
+        },
+        {
+          "value": "Photoshop",
+          "count": 2
+        },
+        {
+          "value": "Premiere Pro",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "content",
+      "label": "Content",
+      "values": [
+        {
+          "value": "Tutorials",
+          "count": 41
+        },
+        {
+          "value": "Projects",
+          "count": 36
+        },
+        {
+          "value": "Scripts",
+          "count": 5
+        },
+        {
+          "value": "Presets",
+          "count": 3
+        },
+        {
+          "value": "Rigs",
+          "count": 3
+        },
+        {
+          "value": "Expressions",
+          "count": 2
+        },
+        {
+          "value": "Plugins",
+          "count": 2
+        },
+        {
+          "value": "Breakdowns",
+          "count": 1
+        },
+        {
+          "value": "Brushes",
+          "count": 1
+        },
+        {
+          "value": "Templates",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "aescripts-aeplugins",
+      "name": "aescripts + aeplugins",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Plugins",
+          "Scripts"
+        ]
+      },
+      "href": "https://www.youtube.com/c/aescripts",
+      "note": "Plugins, Scripts, Workflow"
+    },
+    {
+      "id": "after-effects-school",
+      "name": "After Effects School",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/AfterEffectsSchool",
+      "note": "General Motion Graphics, Structured Learning"
+    },
+    {
+      "id": "after-effects-tutorials-w-moraru",
+      "name": "After Effects Tutorials w/ Moraru",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/AfterEffectsTutorialswMoraru",
+      "note": "Specific Effects, Modern Design"
+    },
+    {
+      "id": "animoplex",
+      "name": "Animoplex",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Rigs",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Animoplex",
+      "note": "Character Animation, Character Rigging"
+    },
+    {
+      "id": "avnish-parker",
+      "name": "Avnish Parker",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/AvnishParker",
+      "note": "Text Animation, Modern Design"
+    },
+    {
+      "id": "battleaxe",
+      "name": "BattleAxe",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Illustrator"
+        ],
+        "content": [
+          "Tutorials",
+          "Scripts",
+          "Rigs"
+        ]
+      },
+      "href": "https://www.youtube.com/c/BattleAxe",
+      "note": "Character Rigging, Shape Layers, Workflow"
+    },
+    {
+      "id": "ben-marriott",
+      "name": "Ben Marriott",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/BenMarriott",
+      "note": "Modern Design, Animation Principles, 2D Effects"
+    },
+    {
+      "id": "creatrix-tutorials",
+      "name": "Creatrix Tutorials",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/CreatrixTutorials",
+      "note": "Text Animation, Logo Animation"
+    },
+    {
+      "id": "cub-studio",
+      "name": "Cub Studio",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Breakdowns"
+        ]
+      },
+      "href": "https://www.youtube.com/c/CubStudio",
+      "note": "Professional Workflow, Studio Insights"
+    },
+    {
+      "id": "dope-motions",
+      "name": "Dope Motions",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Presets"
+        ]
+      },
+      "href": "https://www.youtube.com/c/DopeMotions",
+      "note": "Logo Animation, Templates, Modern Design"
+    },
+    {
+      "id": "easy-after-effects",
+      "name": "Easy After Effects",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/EasyAfterEffects",
+      "note": "Beginner Friendly, Specific Techniques"
+    },
+    {
+      "id": "ecabrams",
+      "name": "ECAbrams",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Cinema 4D"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/ECAbrams",
+      "note": "Advanced Techniques, Professional Workflow"
+    },
+    {
+      "id": "eran-stern",
+      "name": "Eran Stern",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/EranStern",
+      "note": "Advanced Techniques, New Features, Workflow"
+    },
+    {
+      "id": "evan-abrams",
+      "name": "Evan Abrams",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Presets"
+        ]
+      },
+      "href": "https://www.youtube.com/c/EvanAbrams",
+      "note": "Expressions, Generative Art, Advanced Techniques"
+    },
+    {
+      "id": "flimlion",
+      "name": "FLIMLION",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/FLIMLION",
+      "note": "Liquid Motion, Glitch Effects, Typography"
+    },
+    {
+      "id": "fredpelle",
+      "name": "Fredpelle",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Cinema 4D"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Fredpelle",
+      "note": "Cinematic Design, Advanced Techniques"
+    },
+    {
+      "id": "gigantic",
+      "name": "Gigantic",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Rigs",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Gigantic",
+      "note": "Character Animation, Character Rigging"
+    },
+    {
+      "id": "jake-in-motion",
+      "name": "Jake In Motion",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Scripts"
+        ]
+      },
+      "href": "https://www.youtube.com/c/JakeInMotion",
+      "note": "General Motion Graphics, Expressions, Animation Principles"
+    },
+    {
+      "id": "keyframe-academy",
+      "name": "Keyframe Academy",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/KeyframeAcademy",
+      "note": "General Motion Graphics, Infographics"
+    },
+    {
+      "id": "manuel-does-motion",
+      "name": "Manuel Does Motion",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/ManuelDoesMotion",
+      "note": "Design Principles, Animation Principles"
+    },
+    {
+      "id": "max-novak",
+      "name": "Max Novak",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MaxNovak",
+      "note": "Modern Design, Typography, Transitions"
+    },
+    {
+      "id": "mdmz",
+      "name": "MDMZ",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Expressions"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MDMZ",
+      "note": "Data Visualization, Infographics"
+    },
+    {
+      "id": "mobox-graphics",
+      "name": "Mobox Graphics",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MoboxGraphics",
+      "note": "Social Media Graphics, Templates"
+    },
+    {
+      "id": "motion-ape",
+      "name": "Motion Ape",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MotionApe",
+      "note": "General Motion Graphics, Text Effects"
+    },
+    {
+      "id": "motion-by-nick",
+      "name": "Motion by Nick",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MotionbyNick",
+      "note": "Beginner Friendly, Text"
+    },
+    {
+      "id": "motion-design-school",
+      "name": "Motion Design School",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MotionDesignSchool",
+      "note": "Character Animation, 2D Effects, General Motion Graphics"
+    },
+    {
+      "id": "motion-science",
+      "name": "Motion Science",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MotionScience",
+      "note": "Professional Workflow, Animation Principles"
+    },
+    {
+      "id": "mount-mograph",
+      "name": "Mount Mograph",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/MtMograph",
+      "note": "Workflow, Plugins, General Motion Graphics"
+    },
+    {
+      "id": "moveshapes",
+      "name": "moveshapes",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/moveshapes",
+      "note": "Characters, Shape Layers"
+    },
+    {
+      "id": "nastya-saleeva",
+      "name": "nastya saleeva",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Photoshop"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Brushes"
+        ]
+      },
+      "href": "https://www.youtube.com/c/nastyasaleeva",
+      "note": "Cel Animation, Illustrative Style"
+    },
+    {
+      "id": "ney-b-medina",
+      "name": "Ney B. Medina",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/NeyBMedina",
+      "note": "3D Titles, Liquid Motion, Modern Design"
+    },
+    {
+      "id": "noble-kreative",
+      "name": "Noble Kreative",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Cinema 4D"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/NobleKreative",
+      "note": "3D Integration, Sophisticated Design, Procedural Animation"
+    },
+    {
+      "id": "olufemii",
+      "name": "Olufemii",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Illustrator",
+          "Photoshop"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Olufemii",
+      "note": "Design Process, Styleframes, Animation Principles"
+    },
+    {
+      "id": "plugin-everything",
+      "name": "Plugin Everything",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Plugins",
+          "Scripts"
+        ]
+      },
+      "href": "https://www.youtube.com/c/PluginEverything",
+      "note": "Plugins, Workflow, Effects"
+    },
+    {
+      "id": "school-of-motion",
+      "name": "School of Motion",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Cinema 4D",
+          "Illustrator"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Schoolofmotion",
+      "note": "Design Principles, Professional Workflow, General Motion Graphics"
+    },
+    {
+      "id": "sonduck-film",
+      "name": "Sonduck Film",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Premiere Pro"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects",
+          "Templates"
+        ]
+      },
+      "href": "https://www.youtube.com/c/SonduckFilm",
+      "note": "General Motion Graphics, Efficiency"
+    },
+    {
+      "id": "tiptut",
+      "name": "TipTut",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Illustrator"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/TipTut",
+      "note": "General Motion Graphics, Beginner Friendly"
+    },
+    {
+      "id": "ukramedia",
+      "name": "Ukramedia",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Scripts",
+          "Presets",
+          "Expressions"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Ukramedia",
+      "note": "Expressions, Automation, Workflow"
+    },
+    {
+      "id": "vitor-henrique",
+      "name": "Vitor Henrique",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/VitorHenrique",
+      "note": "Character Animation, Liquid Motion"
+    },
+    {
+      "id": "voxyde",
+      "name": "Voxyde",
+      "facets": {
+        "software": [
+          "After Effects",
+          "Cinema 4D"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Voxyde",
+      "note": "3D Integration, Advanced Rendering"
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "facets": {
+        "software": [
+          "After Effects"
+        ],
+        "content": [
+          "Tutorials",
+          "Projects"
+        ]
+      },
+      "href": "https://www.youtube.com/c/Workbenchtv",
+      "note": "Advanced Techniques, Experimental, Expressions"
+    }
+  ]
+}

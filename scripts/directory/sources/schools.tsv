@@ -1,0 +1,17 @@
+# Schools and teachers, from the club's own Motion Schools repository plus the course list.
+# SEEDED, NOT VERIFIED — run `node scripts/directory/check-links.mjs schools` before trusting the links.
+#source: seed
+#cols: name	href	note	budget	kind
+School of Motion	https://www.schoolofmotion.com/	Cohort bootcamps with real feedback. Expensive, structured, and it works.	High	Bootcamp
+Motion Design School	https://motiondesign.school/	Self-paced courses from working artists. Mid-price, wide catalogue.	Mid	Self-paced
+Domestika	https://www.domestika.org/	Cheap, huge, uneven — but the Spanish-language catalogue is unmatched.	Low	Self-paced
+Skillshare	https://www.skillshare.com/	Subscription. Best used to binge one teacher's full series.	Low	Self-paced
+LearnSquared	https://www.learnsquared.com/	Artist-led courses, strong on design and film UI.	Mid	Self-paced
+Division05	https://www.division05.com/	Carey Smith's design-first teaching. Small, focused, feedback-driven.	Mid	Self-paced
+Motion Science	https://www.motionscience.tv/	Workflow and animation principles, with a generous free tier.	Low	Self-paced
+Ben Marriott	https://www.benmarriott.com/	Motion Foundation and Master Motion Design, taught by the channel you already watch.	Mid	Teacher
+Jake In Motion	https://www.jakeinmotion.com/	Jake Bartlett's own courses and downloads, outside the platforms.	Mid	Teacher
+Greyscalegorilla	https://greyscalegorilla.com/	Cinema 4D training and assets, bundled as a plus membership.	Mid	Self-paced
+Motion Hatch	https://motionhatch.com/	Not craft — the business. Pricing, pitching and running a freelance practice.	Mid	Business
+Blender Studio	https://studio.blender.org/	Open production files and training from the people who make Blender.	Low	Self-paced
+Rive Learn	https://rive.app/learn	Free official learning path for interactive motion.	Free	Self-paced

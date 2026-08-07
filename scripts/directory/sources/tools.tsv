@@ -1,0 +1,49 @@
+# Tools, plugins, assets and utilities.
+# SEEDED, NOT VERIFIED — links are the club's best knowledge, not a checked export.
+# Run `node scripts/directory/check-links.mjs tools` from a machine with open egress before trusting them.
+#source: seed
+#cols: name	href	note	kind	software
+After Effects	https://www.adobe.com/products/aftereffects.html	The default 2D motion tool. Everything else in this list assumes you know it.	Software	After Effects
+Cinema 4D	https://www.maxon.net/en/cinema-4d	The motion designer's 3D package — MoGraph is why.	Software	Cinema 4D
+Blender	https://www.blender.org/	Free, open source, and now genuinely competitive for motion work.	Software	Blender
+Houdini	https://www.sidefx.com/	Procedural and simulation work. Steep, deep, unmatched.	Software	Houdini
+Cavalry	https://cavalry.scenegroup.co/	Procedural 2D animation — the tool for data-driven and generative motion.	Software	Cavalry
+Rive	https://rive.app/	Interactive animation that ships straight into apps and the web.	Software	Rive
+Spline	https://spline.design/	3D in the browser, built for designers rather than for renders.	Software	Spline
+Figma	https://www.figma.com/	Where the frames get designed before anything moves.	Software	Figma
+Unreal Engine	https://www.unrealengine.com/	Real-time rendering, increasingly used for broadcast and film motion.	Software	Unreal Engine
+TouchDesigner	https://derivative.ca/	Node-based real-time visuals — installations, live, generative.	Software	TouchDesigner
+Nuke	https://www.foundry.com/products/nuke-family	Node-based compositing when After Effects runs out of room.	Software	Nuke
+DaVinci Resolve	https://www.blackmagicdesign.com/products/davinciresolve	Edit, grade and finish. Fusion is inside it for free.	Software	DaVinci Resolve
+Adobe Animate	https://www.adobe.com/products/animate.html	Frame-by-frame and rig-based 2D, still the cel animation workhorse.	Software	Adobe Animate
+Procreate	https://procreate.com/	Hand-drawn frames on an iPad, then straight into comp.	Software	Procreate
+Womp	https://womp.com/	Browser-based 3D that is genuinely fun to learn on.	Software	Womp
+LottieFiles	https://lottiefiles.com/	Lottie export, preview and hosting for UI animation.	Software	Lottie
+aescripts + aeplugins	https://aescripts.com/	The marketplace. If a plugin matters, it is here.	Plugin	After Effects
+Plugin Everything	https://www.plugineverything.com/	Deep Glow, Splitter and a generous free shelf.	Plugin	After Effects
+BattleAxe	https://battleaxe.co/	RubberHose and Overlord — rigging and Illustrator-to-AE, solved.	Plugin	After Effects;Illustrator
+Mt. Mograph	https://www.mtmograph.com/	Motion — the keyframe and easing toolkit most people install first.	Plugin	After Effects
+AEJuice	https://aejuice.com/	Packs, presets and transitions for fast turnarounds.	Plugin	After Effects
+Greyscalegorilla	https://greyscalegorilla.com/	Materials, HDRIs and training for Cinema 4D.	Plugin	Cinema 4D
+Rainbox — Duik	https://rainboxlab.org/	Duik Ángela, the free character rigging standard.	Plugin	After Effects
+Epidemic Sound	https://www.epidemicsound.com/	Subscription music and SFX cleared for client work.	Audio
+Artlist	https://artlist.io/	Music, SFX and footage on one licence.	Audio
+Musicbed	https://www.musicbed.com/	Curated, higher-end licensing for film-leaning work.	Audio
+Soundstripe	https://www.soundstripe.com/	Music and sound effects, unlimited on subscription.	Audio
+Freesound	https://freesound.org/	Community-uploaded sounds under Creative Commons. Check each licence.	Audio
+Zapsplat	https://www.zapsplat.com/	Large free SFX library with attribution.	Audio
+Splice	https://splice.com/	Samples and loops, useful for building beds from scratch.	Audio
+Envato Elements	https://elements.envato.com/	Templates, stock, fonts and audio in one subscription.	Assets
+Motion Array	https://motionarray.com/	Templates and presets aimed squarely at motion and edit work.	Assets
+Pexels	https://www.pexels.com/videos/	Free stock footage, no attribution required.	Assets
+Mixkit	https://mixkit.co/	Free video clips, music and After Effects templates.	Assets
+Poly Haven	https://polyhaven.com/	Free HDRIs, textures and models, CC0.	Assets
+Quixel	https://quixel.com/megascans	Scanned surfaces and props at production quality.	Assets
+Sketchfab	https://sketchfab.com/	3D models to buy, download, or just study.	Assets
+Google Fonts	https://fonts.google.com/	Free type that is safe to embed in client work.	Assets
+easings.net	https://easings.net/	Every standard easing curve, side by side, with the maths.	Utility
+cubic-bezier.com	https://cubic-bezier.com/	Build and compare custom bezier curves before you touch a keyframe.	Utility
+Coolors	https://coolors.co/	Fast palette generation when the brief has no colour direction.	Utility
+Adobe Color	https://color.adobe.com/	Palettes, contrast checking and colour-blind simulation.	Utility
+HandBrake	https://handbrake.fr/	Free transcoding when the delivery spec fights you.	Utility
+ezgif	https://ezgif.com/	Quick GIF and video conversions in the browser.	Utility

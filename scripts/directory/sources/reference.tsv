@@ -1,0 +1,18 @@
+# Galleries, archives and places to look — indexed, not judged.
+# SEEDED, NOT VERIFIED — run `node scripts/directory/check-links.mjs reference` before trusting the links.
+#source: seed
+#cols: name	href	note	kind
+Motionographer	https://motionographer.com/	The long-running record of what the field is making and arguing about.	Archive
+Art of the Title	https://www.artofthetitle.com/	Title sequences, taken apart shot by shot, with the people who made them.	Archive
+STASH	https://www.stashmedia.tv/	Curated monthly reel of animation, VFX and motion.	Archive
+Vimeo Staff Picks	https://vimeo.com/channels/staffpicks	Still the most useful single feed of work worth watching.	Gallery
+Behance	https://www.behance.net/	Everything, searchable by tool and style. Sort by curated.	Gallery
+Dribbble	https://dribbble.com/	Short loops and UI motion. Good for micro-interaction reference.	Gallery
+Awwwards	https://www.awwwards.com/	Web motion and interaction, judged in public.	Gallery
+FWA	https://thefwa.com/	Daily awards for digital and interactive work.	Gallery
+siteInspire	https://www.siteinspire.com/	Web design reference, filterable by style and type.	Gallery
+Savee	https://savee.it/	Visual bookmarking that the design world actually uses.	Gallery
+Cosmos	https://www.cosmos.so/	Newer visual collection tool, strong motion and 3D corners.	Gallery
+It's Nice That	https://www.itsnicethat.com/	Daily design writing, wider than motion but consistently good.	Reading
+Creative Review	https://www.creativereview.co.uk/	Industry reporting with actual editorial judgement.	Reading
+AIGA Eye on Design	https://eyeondesign.aiga.org/	Design criticism that takes the discipline seriously.	Reading

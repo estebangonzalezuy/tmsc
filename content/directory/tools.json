@@ -1,0 +1,668 @@
+{
+  "id": "tools",
+  "shelf": "make",
+  "name": "Tools & Plugins",
+  "letter": "H",
+  "blurb": "Software, plugins, sound, assets and the small utilities — grouped by the job they do rather than by vendor.",
+  "action": "Open",
+  "source": "seed",
+  "count": 44,
+  "facets": [
+    {
+      "key": "kind",
+      "label": "Kind",
+      "values": [
+        {
+          "value": "Software",
+          "count": 16
+        },
+        {
+          "value": "Assets",
+          "count": 8
+        },
+        {
+          "value": "Audio",
+          "count": 7
+        },
+        {
+          "value": "Plugin",
+          "count": 7
+        },
+        {
+          "value": "Utility",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "key": "software",
+      "label": "Software",
+      "values": [
+        {
+          "value": "After Effects",
+          "count": 7
+        },
+        {
+          "value": "Cinema 4D",
+          "count": 2
+        },
+        {
+          "value": "Adobe Animate",
+          "count": 1
+        },
+        {
+          "value": "Blender",
+          "count": 1
+        },
+        {
+          "value": "Cavalry",
+          "count": 1
+        },
+        {
+          "value": "DaVinci Resolve",
+          "count": 1
+        },
+        {
+          "value": "Figma",
+          "count": 1
+        },
+        {
+          "value": "Houdini",
+          "count": 1
+        },
+        {
+          "value": "Illustrator",
+          "count": 1
+        },
+        {
+          "value": "Lottie",
+          "count": 1
+        },
+        {
+          "value": "Nuke",
+          "count": 1
+        },
+        {
+          "value": "Procreate",
+          "count": 1
+        },
+        {
+          "value": "Rive",
+          "count": 1
+        },
+        {
+          "value": "Spline",
+          "count": 1
+        },
+        {
+          "value": "TouchDesigner",
+          "count": 1
+        },
+        {
+          "value": "Unreal Engine",
+          "count": 1
+        },
+        {
+          "value": "Womp",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "adobe-animate",
+      "name": "Adobe Animate",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Adobe Animate"
+        ]
+      },
+      "href": "https://www.adobe.com/products/animate.html",
+      "note": "Frame-by-frame and rig-based 2D, still the cel animation workhorse."
+    },
+    {
+      "id": "adobe-color",
+      "name": "Adobe Color",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://color.adobe.com/",
+      "note": "Palettes, contrast checking and colour-blind simulation."
+    },
+    {
+      "id": "aejuice",
+      "name": "AEJuice",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://aejuice.com/",
+      "note": "Packs, presets and transitions for fast turnarounds."
+    },
+    {
+      "id": "aescripts-aeplugins",
+      "name": "aescripts + aeplugins",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://aescripts.com/",
+      "note": "The marketplace. If a plugin matters, it is here."
+    },
+    {
+      "id": "after-effects",
+      "name": "After Effects",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.adobe.com/products/aftereffects.html",
+      "note": "The default 2D motion tool. Everything else in this list assumes you know it."
+    },
+    {
+      "id": "artlist",
+      "name": "Artlist",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://artlist.io/",
+      "note": "Music, SFX and footage on one licence."
+    },
+    {
+      "id": "battleaxe",
+      "name": "BattleAxe",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects",
+          "Illustrator"
+        ]
+      },
+      "href": "https://battleaxe.co/",
+      "note": "RubberHose and Overlord — rigging and Illustrator-to-AE, solved."
+    },
+    {
+      "id": "blender",
+      "name": "Blender",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Blender"
+        ]
+      },
+      "href": "https://www.blender.org/",
+      "note": "Free, open source, and now genuinely competitive for motion work."
+    },
+    {
+      "id": "cavalry",
+      "name": "Cavalry",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Cavalry"
+        ]
+      },
+      "href": "https://cavalry.scenegroup.co/",
+      "note": "Procedural 2D animation — the tool for data-driven and generative motion."
+    },
+    {
+      "id": "cinema-4d",
+      "name": "Cinema 4D",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Cinema 4D"
+        ]
+      },
+      "href": "https://www.maxon.net/en/cinema-4d",
+      "note": "The motion designer's 3D package — MoGraph is why."
+    },
+    {
+      "id": "coolors",
+      "name": "Coolors",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://coolors.co/",
+      "note": "Fast palette generation when the brief has no colour direction."
+    },
+    {
+      "id": "cubic-bezier-com",
+      "name": "cubic-bezier.com",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://cubic-bezier.com/",
+      "note": "Build and compare custom bezier curves before you touch a keyframe."
+    },
+    {
+      "id": "davinci-resolve",
+      "name": "DaVinci Resolve",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "DaVinci Resolve"
+        ]
+      },
+      "href": "https://www.blackmagicdesign.com/products/davinciresolve",
+      "note": "Edit, grade and finish. Fusion is inside it for free."
+    },
+    {
+      "id": "easings-net",
+      "name": "easings.net",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://easings.net/",
+      "note": "Every standard easing curve, side by side, with the maths."
+    },
+    {
+      "id": "envato-elements",
+      "name": "Envato Elements",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://elements.envato.com/",
+      "note": "Templates, stock, fonts and audio in one subscription."
+    },
+    {
+      "id": "epidemic-sound",
+      "name": "Epidemic Sound",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://www.epidemicsound.com/",
+      "note": "Subscription music and SFX cleared for client work."
+    },
+    {
+      "id": "ezgif",
+      "name": "ezgif",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://ezgif.com/",
+      "note": "Quick GIF and video conversions in the browser."
+    },
+    {
+      "id": "figma",
+      "name": "Figma",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Figma"
+        ]
+      },
+      "href": "https://www.figma.com/",
+      "note": "Where the frames get designed before anything moves."
+    },
+    {
+      "id": "freesound",
+      "name": "Freesound",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://freesound.org/",
+      "note": "Community-uploaded sounds under Creative Commons. Check each licence."
+    },
+    {
+      "id": "google-fonts",
+      "name": "Google Fonts",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://fonts.google.com/",
+      "note": "Free type that is safe to embed in client work."
+    },
+    {
+      "id": "greyscalegorilla",
+      "name": "Greyscalegorilla",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "Cinema 4D"
+        ]
+      },
+      "href": "https://greyscalegorilla.com/",
+      "note": "Materials, HDRIs and training for Cinema 4D."
+    },
+    {
+      "id": "handbrake",
+      "name": "HandBrake",
+      "facets": {
+        "kind": [
+          "Utility"
+        ]
+      },
+      "href": "https://handbrake.fr/",
+      "note": "Free transcoding when the delivery spec fights you."
+    },
+    {
+      "id": "houdini",
+      "name": "Houdini",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Houdini"
+        ]
+      },
+      "href": "https://www.sidefx.com/",
+      "note": "Procedural and simulation work. Steep, deep, unmatched."
+    },
+    {
+      "id": "lottiefiles",
+      "name": "LottieFiles",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Lottie"
+        ]
+      },
+      "href": "https://lottiefiles.com/",
+      "note": "Lottie export, preview and hosting for UI animation."
+    },
+    {
+      "id": "mixkit",
+      "name": "Mixkit",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://mixkit.co/",
+      "note": "Free video clips, music and After Effects templates."
+    },
+    {
+      "id": "motion-array",
+      "name": "Motion Array",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://motionarray.com/",
+      "note": "Templates and presets aimed squarely at motion and edit work."
+    },
+    {
+      "id": "mt-mograph",
+      "name": "Mt. Mograph",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.mtmograph.com/",
+      "note": "Motion — the keyframe and easing toolkit most people install first."
+    },
+    {
+      "id": "musicbed",
+      "name": "Musicbed",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://www.musicbed.com/",
+      "note": "Curated, higher-end licensing for film-leaning work."
+    },
+    {
+      "id": "nuke",
+      "name": "Nuke",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Nuke"
+        ]
+      },
+      "href": "https://www.foundry.com/products/nuke-family",
+      "note": "Node-based compositing when After Effects runs out of room."
+    },
+    {
+      "id": "pexels",
+      "name": "Pexels",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://www.pexels.com/videos/",
+      "note": "Free stock footage, no attribution required."
+    },
+    {
+      "id": "plugin-everything",
+      "name": "Plugin Everything",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://www.plugineverything.com/",
+      "note": "Deep Glow, Splitter and a generous free shelf."
+    },
+    {
+      "id": "poly-haven",
+      "name": "Poly Haven",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://polyhaven.com/",
+      "note": "Free HDRIs, textures and models, CC0."
+    },
+    {
+      "id": "procreate",
+      "name": "Procreate",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Procreate"
+        ]
+      },
+      "href": "https://procreate.com/",
+      "note": "Hand-drawn frames on an iPad, then straight into comp."
+    },
+    {
+      "id": "quixel",
+      "name": "Quixel",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://quixel.com/megascans",
+      "note": "Scanned surfaces and props at production quality."
+    },
+    {
+      "id": "rainbox-duik",
+      "name": "Rainbox — Duik",
+      "facets": {
+        "kind": [
+          "Plugin"
+        ],
+        "software": [
+          "After Effects"
+        ]
+      },
+      "href": "https://rainboxlab.org/",
+      "note": "Duik Ángela, the free character rigging standard."
+    },
+    {
+      "id": "rive",
+      "name": "Rive",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Rive"
+        ]
+      },
+      "href": "https://rive.app/",
+      "note": "Interactive animation that ships straight into apps and the web."
+    },
+    {
+      "id": "sketchfab",
+      "name": "Sketchfab",
+      "facets": {
+        "kind": [
+          "Assets"
+        ]
+      },
+      "href": "https://sketchfab.com/",
+      "note": "3D models to buy, download, or just study."
+    },
+    {
+      "id": "soundstripe",
+      "name": "Soundstripe",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://www.soundstripe.com/",
+      "note": "Music and sound effects, unlimited on subscription."
+    },
+    {
+      "id": "splice",
+      "name": "Splice",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://splice.com/",
+      "note": "Samples and loops, useful for building beds from scratch."
+    },
+    {
+      "id": "spline",
+      "name": "Spline",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Spline"
+        ]
+      },
+      "href": "https://spline.design/",
+      "note": "3D in the browser, built for designers rather than for renders."
+    },
+    {
+      "id": "touchdesigner",
+      "name": "TouchDesigner",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "TouchDesigner"
+        ]
+      },
+      "href": "https://derivative.ca/",
+      "note": "Node-based real-time visuals — installations, live, generative."
+    },
+    {
+      "id": "unreal-engine",
+      "name": "Unreal Engine",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Unreal Engine"
+        ]
+      },
+      "href": "https://www.unrealengine.com/",
+      "note": "Real-time rendering, increasingly used for broadcast and film motion."
+    },
+    {
+      "id": "womp",
+      "name": "Womp",
+      "facets": {
+        "kind": [
+          "Software"
+        ],
+        "software": [
+          "Womp"
+        ]
+      },
+      "href": "https://womp.com/",
+      "note": "Browser-based 3D that is genuinely fun to learn on."
+    },
+    {
+      "id": "zapsplat",
+      "name": "Zapsplat",
+      "facets": {
+        "kind": [
+          "Audio"
+        ]
+      },
+      "href": "https://www.zapsplat.com/",
+      "note": "Large free SFX library with attribution."
+    }
+  ]
+}

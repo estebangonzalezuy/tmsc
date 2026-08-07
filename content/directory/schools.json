@@ -1,0 +1,240 @@
+{
+  "id": "schools",
+  "shelf": "learn",
+  "name": "Schools & Teachers",
+  "letter": "C",
+  "blurb": "Where the courses come from, sorted by what they cost and how they teach.",
+  "action": "Visit",
+  "source": "seed",
+  "count": 13,
+  "facets": [
+    {
+      "key": "budget",
+      "label": "Budget",
+      "values": [
+        {
+          "value": "Mid",
+          "count": 7
+        },
+        {
+          "value": "Low",
+          "count": 4
+        },
+        {
+          "value": "Free",
+          "count": 1
+        },
+        {
+          "value": "High",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "kind",
+      "label": "Kind",
+      "values": [
+        {
+          "value": "Self-paced",
+          "count": 9
+        },
+        {
+          "value": "Teacher",
+          "count": 2
+        },
+        {
+          "value": "Bootcamp",
+          "count": 1
+        },
+        {
+          "value": "Business",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "ben-marriott",
+      "name": "Ben Marriott",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Teacher"
+        ]
+      },
+      "href": "https://www.benmarriott.com/",
+      "note": "Motion Foundation and Master Motion Design, taught by the channel you already watch."
+    },
+    {
+      "id": "blender-studio",
+      "name": "Blender Studio",
+      "facets": {
+        "budget": [
+          "Low"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://studio.blender.org/",
+      "note": "Open production files and training from the people who make Blender."
+    },
+    {
+      "id": "division05",
+      "name": "Division05",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://www.division05.com/",
+      "note": "Carey Smith's design-first teaching. Small, focused, feedback-driven."
+    },
+    {
+      "id": "domestika",
+      "name": "Domestika",
+      "facets": {
+        "budget": [
+          "Low"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://www.domestika.org/",
+      "note": "Cheap, huge, uneven — but the Spanish-language catalogue is unmatched."
+    },
+    {
+      "id": "greyscalegorilla",
+      "name": "Greyscalegorilla",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://greyscalegorilla.com/",
+      "note": "Cinema 4D training and assets, bundled as a plus membership."
+    },
+    {
+      "id": "jake-in-motion",
+      "name": "Jake In Motion",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Teacher"
+        ]
+      },
+      "href": "https://www.jakeinmotion.com/",
+      "note": "Jake Bartlett's own courses and downloads, outside the platforms."
+    },
+    {
+      "id": "learnsquared",
+      "name": "LearnSquared",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://www.learnsquared.com/",
+      "note": "Artist-led courses, strong on design and film UI."
+    },
+    {
+      "id": "motion-design-school",
+      "name": "Motion Design School",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://motiondesign.school/",
+      "note": "Self-paced courses from working artists. Mid-price, wide catalogue."
+    },
+    {
+      "id": "motion-hatch",
+      "name": "Motion Hatch",
+      "facets": {
+        "budget": [
+          "Mid"
+        ],
+        "kind": [
+          "Business"
+        ]
+      },
+      "href": "https://motionhatch.com/",
+      "note": "Not craft — the business. Pricing, pitching and running a freelance practice."
+    },
+    {
+      "id": "motion-science",
+      "name": "Motion Science",
+      "facets": {
+        "budget": [
+          "Low"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://www.motionscience.tv/",
+      "note": "Workflow and animation principles, with a generous free tier."
+    },
+    {
+      "id": "rive-learn",
+      "name": "Rive Learn",
+      "facets": {
+        "budget": [
+          "Free"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://rive.app/learn",
+      "note": "Free official learning path for interactive motion."
+    },
+    {
+      "id": "school-of-motion",
+      "name": "School of Motion",
+      "facets": {
+        "budget": [
+          "High"
+        ],
+        "kind": [
+          "Bootcamp"
+        ]
+      },
+      "href": "https://www.schoolofmotion.com/",
+      "note": "Cohort bootcamps with real feedback. Expensive, structured, and it works."
+    },
+    {
+      "id": "skillshare",
+      "name": "Skillshare",
+      "facets": {
+        "budget": [
+          "Low"
+        ],
+        "kind": [
+          "Self-paced"
+        ]
+      },
+      "href": "https://www.skillshare.com/",
+      "note": "Subscription. Best used to binge one teacher's full series."
+    }
+  ]
+}
