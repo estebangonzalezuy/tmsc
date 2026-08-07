@@ -3,7 +3,7 @@
 import { studioSection, useContent } from "@/components/content";
 import { Boxed } from "@/components/Motifs";
 
-export default function Cta() {
+export default function Cta({ title }: { title?: React.ReactNode }) {
   const { site } = useContent();
   return (
     <section
@@ -12,7 +12,11 @@ export default function Cta() {
     >
       <p className="text-sm underline underline-offset-4">{site.name}</p>
       <h2 className="mt-6 font-serif text-4xl md:text-6xl leading-tight max-w-3xl mx-auto">
-        A place to <em>question ourselves</em>
+        {title ?? (
+          <>
+            A place to <em>question ourselves</em>
+          </>
+        )}
       </h2>
       <p className="mt-6 max-w-md mx-auto text-sm text-muted leading-relaxed">
         One honest letter at a time. Exercises, resources, and real

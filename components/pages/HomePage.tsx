@@ -122,7 +122,7 @@ export default function HomePage() {
         className="border-t border-line px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
-          &ldquo;{quotes[0]}&rdquo;
+          {quotes[0]}
         </p>
       </section>
       )}

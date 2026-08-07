@@ -69,17 +69,25 @@ export default function ResourcesPage() {
           }
         />
         <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
-          Shared over the years with newsletter subscribers — each one a small
+          Shared over the years with newsletter subscribers. Each one a small
           tool to think with, not another thing to watch.
         </p>
         <ul className="mt-12 grid gap-px bg-line border border-line sm:grid-cols-2">
           {worksheets.map((w) => (
-            <li
-              key={w}
-              className="bg-background p-6 flex items-baseline gap-4"
-            >
-              <span className="text-xs text-muted">→</span>
-              <span className="text-sm">{w}</span>
+            <li key={w.name} className="bg-background">
+              <a
+                href={w.href || site.substack}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-baseline gap-4 p-6 hover:bg-foreground hover:text-background transition-colors"
+              >
+                <span className="text-xs text-muted group-hover:text-background/70">
+                  →
+                </span>
+                <span className="text-sm group-hover:underline underline-offset-4">
+                  {w.name}
+                </span>
+              </a>
             </li>
           ))}
         </ul>
@@ -104,7 +112,7 @@ export default function ResourcesPage() {
         className="border-t border-line px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
-          &ldquo;{quotes[2] ?? quotes[0]}&rdquo;
+          {quotes[2] ?? quotes[0]}
         </p>
       </section>
       )}

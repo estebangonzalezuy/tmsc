@@ -53,7 +53,7 @@
     },
     {
       "name": "Fundamentals over tools",
-      "text": "Easing, timing, contrast, hierarchy. Tools are exhausting — foundations are permanent."
+      "text": "Easing, timing, contrast, hierarchy. Tools are exhausting, foundations are permanent."
     },
     {
       "name": "Small and consistent",
@@ -65,7 +65,7 @@
     },
     {
       "name": "Transparency",
-      "text": "Uncertainty, mistakes, and real life are part of the voice — not something to edit out."
+      "text": "Uncertainty, mistakes, and real life are part of the voice, not something to edit out."
     }
   ],
   "practiceFiles": [
@@ -609,14 +609,38 @@
     "note": "The Directory is generated from plain text files, not typed into a page. Entries exported from the club's own databases are marked as such; entries seeded from experience are marked too, so you know which ones have been checked and which are still on trust."
   },
   "worksheets": [
-    "Idea Mining Worksheet",
-    "Motion Skill Audit / Self-Assessment",
-    "Critical Thinking Worksheet",
-    "Motion Course List",
-    "Projects Bank Template",
-    "Designer → Motion transition worksheet",
-    "Fix this for better motion projects",
-    "Weekly motion practice planner"
+    {
+      "name": "Idea Mining Worksheet",
+      "href": ""
+    },
+    {
+      "name": "Motion Skill Audit / Self-Assessment",
+      "href": ""
+    },
+    {
+      "name": "Critical Thinking Worksheet",
+      "href": ""
+    },
+    {
+      "name": "Motion Course List",
+      "href": ""
+    },
+    {
+      "name": "Projects Bank Template",
+      "href": ""
+    },
+    {
+      "name": "Designer → Motion transition worksheet",
+      "href": ""
+    },
+    {
+      "name": "Fix this for better motion projects",
+      "href": ""
+    },
+    {
+      "name": "Weekly motion practice planner",
+      "href": ""
+    }
   ],
   "offerings": [
     {
