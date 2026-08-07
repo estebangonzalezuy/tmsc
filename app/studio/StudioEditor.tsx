@@ -13,6 +13,9 @@ type Content = {
   pillars: Item[];
   threads: Item[];
   practiceFiles: Item[];
+  practiceStages: Item[];
+  practiceExercises: Item[];
+  practiceRules: string[];
   learningPaths: Item[];
   resources: Item[];
   worksheets: string[];
@@ -29,9 +32,11 @@ type ListKey =
   | "practiceFiles"
   | "learningPaths"
   | "resources"
-  | "offerings";
+  | "offerings"
+  | "practiceStages"
+  | "practiceExercises";
 
-type StringsKey = "worksheets" | "quotes";
+type StringsKey = "worksheets" | "quotes" | "practiceRules";
 
 /* ---------- section schema ---------- */
 
@@ -132,6 +137,65 @@ const sections: Section[] = [
       { key: "name", label: "Name" },
       { key: "note", label: "Note" },
     ],
+  },
+  {
+    id: "practiceStages",
+    title: "Practice stages",
+    note: "The four stages of the Practice page",
+    kind: "list",
+    itemName: "stage",
+    fields: [
+      { key: "number", label: "Number" },
+      { key: "name", label: "Name" },
+      { key: "goal", label: "Goal", kind: "textarea" },
+    ],
+  },
+  {
+    id: "practiceExercises",
+    title: "Practice exercises",
+    note: "Everything the Practice picker can hand out",
+    kind: "list",
+    itemName: "exercise",
+    fields: [
+      { key: "title", label: "Title" },
+      {
+        key: "stage",
+        label: "Stage",
+        kind: "select",
+        options: ["01", "02", "03", "04"],
+      },
+      {
+        key: "track",
+        label: "Kind of work",
+        kind: "select",
+        options: ["Foundations", "Branding", "UI", "Marketing"],
+      },
+      {
+        key: "minutes",
+        label: "Minutes",
+        kind: "select",
+        options: ["15", "30", "45", "60", "90", "120"],
+      },
+      {
+        key: "tool",
+        label: "Tool",
+        kind: "select",
+        options: ["After Effects", "Rive", "Paper", "Any tool"],
+      },
+      { key: "goal", label: "Goal", kind: "textarea" },
+      { key: "brief", label: "The brief (one step per line)", kind: "textarea" },
+      { key: "constraint", label: "One rule", kind: "textarea" },
+      { key: "done", label: "Finished when", kind: "textarea" },
+      { key: "watch", label: "If you get stuck (title)" },
+      { key: "watchHref", label: "If you get stuck (link)" },
+    ],
+  },
+  {
+    id: "practiceRules",
+    title: "How to practice",
+    note: "The rules band at the bottom of the Practice page",
+    kind: "strings",
+    itemName: "rule",
   },
   {
     id: "learningPaths",
@@ -496,6 +560,7 @@ const navItems = [
   { id: "newsletter", label: "Newsletter", section: "archive" },
   { id: "resources", label: "Resources", section: "resources" },
   { id: "learn", label: "Learn", section: "learningPaths" },
+  { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
 ];
 
@@ -637,6 +702,7 @@ const pageTabs = [
   { id: "newsletter", label: "Newsletter" },
   { id: "resources", label: "Resources" },
   { id: "learn", label: "Learn" },
+  { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },
 ];
 

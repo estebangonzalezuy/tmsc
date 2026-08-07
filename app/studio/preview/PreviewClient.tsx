@@ -10,6 +10,7 @@ import AboutPage from "@/components/pages/AboutPage";
 import NewsletterPage from "@/components/pages/NewsletterPage";
 import ResourcesPage from "@/components/pages/ResourcesPage";
 import LearnPage from "@/components/pages/LearnPage";
+import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
 
 const pages: Record<string, React.ComponentType> = {
@@ -18,6 +19,7 @@ const pages: Record<string, React.ComponentType> = {
   newsletter: NewsletterPage,
   resources: ResourcesPage,
   learn: LearnPage,
+  practice: PracticePage,
   offerings: OfferingsPage,
 };
 

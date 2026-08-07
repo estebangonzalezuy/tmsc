@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
 import { SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
@@ -23,6 +24,11 @@ export default function LearnPage() {
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
           You don&apos;t need more tutorials. You need a path, a constraint,
           and a reason to finish. These are the club&apos;s routes in.
+        </p>
+        <p className="mt-8 text-sm">
+          <Link href="/practice" className="underline underline-offset-4">
+            Only have half an hour? Let the club pick the exercise →
+          </Link>
         </p>
       </section>
 
