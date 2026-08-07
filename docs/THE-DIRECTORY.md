@@ -35,8 +35,8 @@ are the rows.
 
 | Collection | Entries | Source | Facets |
 | --- | ---: | --- | --- |
-| YouTube Channels | 41 | Notion export | software, content |
-| Courses | 102 | Notion export | school, skill, price, level, format, engagement |
+| YouTube Channels | 32 | Notion export, link-checked | software, content |
+| Courses | 50 | Notion export | school, skill, price, level, format, engagement |
 | Schools & Teachers | 13 | seeded | budget, kind |
 | Books | 18 | seeded | subject |
 | Studios | 393 | Notion export | city, style, country |
@@ -47,7 +47,7 @@ are the rows.
 | Communities & Podcasts | 15 | seeded | kind |
 | Glossary | 46 | seeded | subject |
 | Timeline | 22 | seeded | era |
-| **Total** | **744** | | |
+| **Total** | **683** | | |
 
 **`source` is a promise, and the site shows it.** `notion` means the rows
 came out of the club's own databases — real curation, already used. `seed`
@@ -106,21 +106,30 @@ node scripts/directory/build.mjs      # sources → content/directory/*.json
 node scripts/directory/check-links.mjs [collection]   # fetch every href
 ```
 
+`build.mjs` ends with an audit of every link it can judge without a network:
+unparseable URLs, hostnames with no dot, whitespace, search-engine wrappers
+saved instead of the real address, and the same href filed twice inside one
+collection. Those fail the build. Plain `http://` is reported but does not
+fail — it still resolves, and upgrading blind would break the few sites with
+no TLS. 41 studio links from the Notion export are still on http.
+
 `build.mjs` also does the work that would be tedious by hand: splitting
 studio locations into city and country, bucketing free-text course prices
 into bands, merging rows that share a name, counting facet values, and
 writing `manifest.json` (the small counts-only file the hub imports so the
 client bundle doesn't carry 400 studios).
 
-**`check-links.mjs` has never been run against the seeded collections** —
-this container's egress is restricted. Run it from anywhere with open
-outbound HTTPS before treating a seeded link as true. It exits non-zero on
-failures, so it can gate a commit.
+**`check-links.mjs` has still never been run** — the agent sandbox's egress
+is restricted to package registries, so no host in this directory can be
+fetched from it. The channels were verified by search instead, one by one,
+which proves the channel exists but not that every other link resolves. Run
+this from anywhere with open outbound HTTPS before treating a seeded link as
+true. It exits non-zero on failures, so it can gate a commit.
 
 ### Why not `content/site.json`
 
 Because the Studio rewrites that file wholesale on every publish, and a
-744-row database does not belong in a visual copy editor. The split:
+683-row database does not belong in a visual copy editor. The split:
 
 - **`content/directory/*.json`** — the entries. Data. Never touched by the Studio.
 - **`content/site.json` → `directory`** — the framing copy (label, intro,
@@ -135,18 +144,38 @@ Directory rebuild can never clobber the owner's copy.
 
 ### To 200 channels
 
-The 41 in here are Esteban's own curated list, exported from Notion with
-their real URLs. Getting to 200 is a data job, not a code job: add lines to
+The 32 in here started as Esteban's Notion list of 41. Each one was checked
+by name in August 2026 and its URL replaced with the channel's canonical
+address — a `/channel/UC…` id wherever one was found, because those survive a
+creator renaming their handle. Nine rows were dropped because no working
+channel could be found for them:
+
+| Dropped | Why |
+| --- | --- |
+| Evan Abrams | Duplicate — same person and channel as ECAbrams |
+| After Effects School | No channel by that name |
+| After Effects Tutorials w/ Moraru | No channel by that name |
+| Creatrix Tutorials | No channel by that name |
+| Ney B. Medina | No channel by that name |
+| nastya saleeva | No channel by that name |
+| Vitor Henrique | Several channels share the name; none is the motion designer |
+| Noble Kreative | Creator is real (noblekreative.com) but no channel URL found |
+| Gigantic | Channel is referenced (gigantic.store) but no channel URL found |
+
+The last two are the ones worth revisiting: both creators exist and publish.
+If you know their channel URLs, add the rows back.
+
+Getting to 200 is a data job, not a code job: add lines to
 `scripts/directory/sources/channels.tsv`, run `build.mjs`, run
 `check-links.mjs`. No component changes.
 
-Three channel links in the Notion source were saved as broken
-`google.com/search?q=…` wrappers (Motion Ape, Fredpelle, Voxyde) and were
-unwrapped on export. Worth fixing in Notion too, so the next sync is clean.
+The Courses collection dropped from 102 to **50**: every Domestika course was
+removed on purpose — the club does not promote Domestika. What is left is
+Motion Design School, School of Motion, Skillshare, LearnSquared, Motion
+Science, Division05 and the independent teachers.
 
-The Courses export is **102 of 118 rows** — the Notion API query quota ran
-out mid-export. The missing 16 are alphabetically scattered; re-run the
-export to complete them.
+The Notion courses export was also **102 of 118 rows** — the API query quota
+ran out mid-export. Re-run the export to complete it, minus Domestika.
 
 ### Collections designed but not yet built
 

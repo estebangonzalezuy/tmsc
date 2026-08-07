@@ -1,44 +1,46 @@
 # tMSC: YouTube Channels: exported from Notion (collection 25a1c0b2-f62f-803d-adb0-000b0b11ab7e)
+#
+# Every row below was checked one by one (Aug 2026) and its URL replaced with
+# the channel's canonical address: a /channel/UC... id where one was found,
+# because those never break when a creator changes their handle.
+#
+# Nine rows from the Notion export were dropped because no working channel
+# could be found for them: After Effects School, After Effects Tutorials
+# w/ Moraru, Creatrix Tutorials, Ney B. Medina, nastya saleeva, Noble Kreative,
+# Gigantic, Vitor Henrique, and Evan Abrams (a duplicate of ECAbrams: same
+# person, same channel). If you know the real URL for any of them, add the row
+# back with it.
 #source: notion
 #cols: name	href	note	software	content
-School of Motion	https://www.youtube.com/c/Schoolofmotion	Design Principles, Professional Workflow, General Motion Graphics	After Effects;Cinema 4D;Illustrator	Tutorials;Projects
-Jake In Motion	https://www.youtube.com/c/JakeInMotion	General Motion Graphics, Expressions, Animation Principles	After Effects	Tutorials;Projects;Scripts
-Motion Design School	https://www.youtube.com/c/MotionDesignSchool	Character Animation, 2D Effects, General Motion Graphics	After Effects	Tutorials;Projects
-ECAbrams	https://www.youtube.com/c/ECAbrams	Advanced Techniques, Professional Workflow	After Effects;Cinema 4D	Tutorials;Projects
-Sonduck Film	https://www.youtube.com/c/SonduckFilm	General Motion Graphics, Efficiency	After Effects;Premiere Pro	Tutorials;Projects;Templates
-Motion by Nick	https://www.youtube.com/c/MotionbyNick	Beginner Friendly, Text	After Effects	Tutorials;Projects
-Keyframe Academy	https://www.youtube.com/c/KeyframeAcademy	General Motion Graphics, Infographics	After Effects	Tutorials;Projects
+School of Motion	https://www.youtube.com/channel/UCAhdxqdrDN3gWJkaUFl9G-Q	Design Principles, Professional Workflow, General Motion Graphics	After Effects;Cinema 4D;Illustrator	Tutorials;Projects
+Jake In Motion	https://www.youtube.com/channel/UCSggky_jA5RfK4gR5RBwGyw	General Motion Graphics, Expressions, Animation Principles	After Effects	Tutorials;Projects;Scripts
+Motion Design School	https://www.youtube.com/channel/UC-L0yvYPpGQZD3PHDLKiUpg	Character Animation, 2D Effects, General Motion Graphics	After Effects	Tutorials;Projects
+ECAbrams	https://www.youtube.com/user/ECAbrams	Advanced Techniques, Professional Workflow, Expressions	After Effects;Cinema 4D	Tutorials;Projects;Presets
+Sonduck Film	https://www.youtube.com/channel/UC5DmsBrVi62DWBASLK5gMEw	General Motion Graphics, Efficiency	After Effects;Premiere Pro	Tutorials;Projects;Templates
+Motion by Nick	https://www.youtube.com/channel/UCO1g2_GTTKdUL48sTtWj_kA	Beginner Friendly, Text	After Effects	Tutorials;Projects
+Keyframe Academy	https://www.youtube.com/channel/UCK9srf98FCFO-oxFu4ogwvA	General Motion Graphics, Infographics	After Effects	Tutorials;Projects
 TipTut	https://www.youtube.com/c/TipTut	General Motion Graphics, Beginner Friendly	After Effects;Illustrator	Tutorials;Projects
-Easy After Effects	https://www.youtube.com/c/EasyAfterEffects	Beginner Friendly, Specific Techniques	After Effects	Tutorials;Projects
-After Effects School	https://www.youtube.com/c/AfterEffectsSchool	General Motion Graphics, Structured Learning	After Effects	Tutorials;Projects
-Ben Marriott	https://www.youtube.com/c/BenMarriott	Modern Design, Animation Principles, 2D Effects	After Effects	Tutorials;Projects
-Max Novak	https://www.youtube.com/c/MaxNovak	Modern Design, Typography, Transitions	After Effects	Tutorials;Projects
-Dope Motions	https://www.youtube.com/c/DopeMotions	Logo Animation, Templates, Modern Design	After Effects	Tutorials;Projects;Presets
-Avnish Parker	https://www.youtube.com/c/AvnishParker	Text Animation, Modern Design	After Effects	Tutorials;Projects
-FLIMLION	https://www.youtube.com/c/FLIMLION	Liquid Motion, Glitch Effects, Typography	After Effects	Tutorials;Projects
-After Effects Tutorials w/ Moraru	https://www.youtube.com/c/AfterEffectsTutorialswMoraru	Specific Effects, Modern Design	After Effects	Tutorials;Projects
-Mobox Graphics	https://www.youtube.com/c/MoboxGraphics	Social Media Graphics, Templates	After Effects	Tutorials;Projects
-Motion Ape	https://www.youtube.com/c/MotionApe	General Motion Graphics, Text Effects	After Effects	Tutorials;Projects
-Creatrix Tutorials	https://www.youtube.com/c/CreatrixTutorials	Text Animation, Logo Animation	After Effects	Tutorials;Projects
-Ney B. Medina	https://www.youtube.com/c/NeyBMedina	3D Titles, Liquid Motion, Modern Design	After Effects	Tutorials;Projects
-Ukramedia	https://www.youtube.com/c/Ukramedia	Expressions, Automation, Workflow	After Effects	Tutorials;Scripts;Presets;Expressions
+Easy After Effects	https://www.youtube.com/@EasyAfterEffects	Beginner Friendly, Specific Techniques	After Effects	Tutorials;Projects
+Ben Marriott	https://www.youtube.com/@BenMarriott	Modern Design, Animation Principles, 2D Effects	After Effects	Tutorials;Projects
+Max Novak	https://www.youtube.com/channel/UCB8buiz24_VVzwFeZiuBJxw	Modern Design, Typography, Transitions	After Effects	Tutorials;Projects
+Dope Motions	https://www.youtube.com/channel/UCgvrz9ioKv89HMyg42z4pyQ	Logo Animation, Templates, Modern Design	After Effects	Tutorials;Projects;Presets
+Avnish Parker	https://www.youtube.com/channel/UC7akIvmrGMa5sEVR0IeH3YA	Text Animation, Modern Design	After Effects	Tutorials;Projects
+FLIMLION VisualFX	https://www.youtube.com/channel/UCMTHH5cBUMY9x6lNsc5te3w	Liquid Motion, Glitch Effects, Typography	After Effects	Tutorials;Projects
+Mobox Graphics	https://www.youtube.com/channel/UCQyp3CBrBSfIynoDosN3c7g	Social Media Graphics, Templates	After Effects;Cinema 4D	Tutorials;Projects
+Motion Ape	https://www.youtube.com/@motion-ape	General Motion Graphics, Text Effects	After Effects	Tutorials;Projects
+Ukramedia	https://www.youtube.com/channel/UCy6HtPOm8Hc5zLqE1UAYa8A	Expressions, Automation, Workflow	After Effects	Tutorials;Scripts;Presets;Expressions
 Workbench	https://www.youtube.com/c/Workbenchtv	Advanced Techniques, Experimental, Expressions	After Effects	Tutorials;Projects
 Plugin Everything	https://www.youtube.com/c/PluginEverything	Plugins, Workflow, Effects	After Effects	Tutorials;Plugins;Scripts
-aescripts + aeplugins	https://www.youtube.com/c/aescripts	Plugins, Scripts, Workflow	After Effects	Tutorials;Plugins;Scripts
-Evan Abrams	https://www.youtube.com/c/EvanAbrams	Expressions, Generative Art, Advanced Techniques	After Effects	Tutorials;Projects;Presets
-BattleAxe	https://www.youtube.com/c/BattleAxe	Character Rigging, Shape Layers, Workflow	After Effects;Illustrator	Tutorials;Scripts;Rigs
-Mount Mograph	https://www.youtube.com/c/MtMograph	Workflow, Plugins, General Motion Graphics	After Effects	Tutorials;Projects
-Motion Science	https://www.youtube.com/c/MotionScience	Professional Workflow, Animation Principles	After Effects	Tutorials;Projects
-Eran Stern	https://www.youtube.com/c/EranStern	Advanced Techniques, New Features, Workflow	After Effects	Tutorials;Projects
-MDMZ	https://www.youtube.com/c/MDMZ	Data Visualization, Infographics	After Effects	Tutorials;Projects;Expressions
-Gigantic	https://www.youtube.com/c/Gigantic	Character Animation, Character Rigging	After Effects	Tutorials;Rigs;Projects
-Animoplex	https://www.youtube.com/c/Animoplex	Character Animation, Character Rigging	After Effects	Tutorials;Rigs;Projects
-nastya saleeva	https://www.youtube.com/c/nastyasaleeva	Cel Animation, Illustrative Style	After Effects;Photoshop	Tutorials;Projects;Brushes
-Vitor Henrique	https://www.youtube.com/c/VitorHenrique	Character Animation, Liquid Motion	After Effects	Tutorials;Projects
-Fredpelle	https://www.youtube.com/c/Fredpelle	Cinematic Design, Advanced Techniques	After Effects;Cinema 4D	Tutorials;Projects
-Olufemii	https://www.youtube.com/c/Olufemii	Design Process, Styleframes, Animation Principles	After Effects;Illustrator;Photoshop	Tutorials;Projects
-Manuel Does Motion	https://www.youtube.com/c/ManuelDoesMotion	Design Principles, Animation Principles	After Effects	Tutorials;Projects
-moveshapes	https://www.youtube.com/c/moveshapes	Characters, Shape Layers	After Effects	Tutorials;Projects
-Noble Kreative	https://www.youtube.com/c/NobleKreative	3D Integration, Sophisticated Design, Procedural Animation	After Effects;Cinema 4D	Tutorials;Projects
-Voxyde	https://www.youtube.com/c/Voxyde	3D Integration, Advanced Rendering	After Effects;Cinema 4D	Tutorials;Projects
+aescripts + aeplugins	https://www.youtube.com/channel/UCWLLe3ZJQdrz_-K0LVh5aWQ	Plugins, Scripts, Workflow	After Effects	Tutorials;Plugins;Scripts
+BattleAxe	https://www.youtube.com/channel/UCu1Buv7nvtRTc_kViPCqjQw	Character Rigging, Shape Layers, Workflow	After Effects;Illustrator	Tutorials;Scripts;Rigs
+Mount Mograph	https://www.youtube.com/channel/UCSUSgx9qc_NydrOL59xbJIA	Workflow, Plugins, General Motion Graphics	After Effects	Tutorials;Projects
+Motion Science	https://www.youtube.com/channel/UCLO0axHCWvbT2LV6wmUEu-g	Professional Workflow, Animation Principles	After Effects	Tutorials;Projects
+Eran Stern	https://www.youtube.com/channel/UCsxvJhNf2hlPR1lNzb2Lqmg	Advanced Techniques, New Features, Workflow	After Effects	Tutorials;Projects
+MDMZ	https://www.youtube.com/@MDMZ	Data Visualization, Infographics, VFX	After Effects	Tutorials;Projects;Expressions
+Animoplex	https://www.youtube.com/channel/UCbfz_keteqaKbpiRiS95Dqg	Character Animation, Character Rigging, Expressions	After Effects	Tutorials;Rigs;Projects
+Olufemii	https://www.youtube.com/c/OlufemiiTuts	Design Process, Styleframes, Animation Principles	After Effects;Illustrator;Photoshop	Tutorials;Projects
+Manuel Does Motion	https://www.youtube.com/channel/UCvYTJ9rqU3W6hnKk_oCMjuw	Design Principles, Animation Principles	After Effects	Tutorials;Projects
+moveshapes	https://www.youtube.com/c/MoveShapes	Characters, Shape Layers	After Effects	Tutorials;Projects
+Fredpelle	https://www.youtube.com/@fredpelle	Cinematic Design, Advanced Techniques	After Effects;Cinema 4D	Tutorials;Projects
+Voxyde	https://www.youtube.com/channel/UCJGk7JS-VQYUlYc6DiZTf9A	3D Integration, Advanced Rendering, VFX	After Effects;Cinema 4D	Tutorials;Projects
 Cub Studio	https://www.youtube.com/c/CubStudio	Professional Workflow, Studio Insights	After Effects	Tutorials;Breakdowns

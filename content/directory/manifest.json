@@ -34,7 +34,7 @@
       "letter": "A",
       "blurb": "The channels worth subscribing to, tagged by software and by what you actually get: tutorials, rigs, breakdowns, scripts.",
       "source": "notion",
-      "count": 41,
+      "count": 32,
       "facets": [
         "Software",
         "Content"
@@ -45,9 +45,9 @@
       "shelf": "learn",
       "name": "Courses",
       "letter": "B",
-      "blurb": "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a €20 class from a €1,000 bootcamp before you click.",
+      "blurb": "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a $99 class from a $1,000 bootcamp before you click.",
       "source": "notion",
-      "count": 102,
+      "count": 50,
       "facets": [
         "School",
         "Skill",
@@ -180,5 +180,5 @@
       ]
     }
   ],
-  "total": 744
+  "total": 683
 }

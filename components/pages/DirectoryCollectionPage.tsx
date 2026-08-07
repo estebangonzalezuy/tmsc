@@ -251,36 +251,44 @@ function FacetRow({
 }
 
 function Row({ entry, action }: { entry: DirectoryEntry; action: string }) {
-  // Deduped because some facets legitimately overlap — a studio in Hong Kong
+  // Deduped because some facets legitimately overlap: a studio in Hong Kong
   // or Singapore carries the same value as both its city and its country.
   const tags = [...new Set(Object.values(entry.facets).flat())];
+
+  // Books, the glossary and the timeline carry no link. Those rows are things
+  // to read, not things to click, so they take none of the hover treatment,
+  // which also keeps the muted text from inverting to white on white.
+  const linked = Boolean(entry.href);
+  const dimmed = linked ? "text-muted group-hover:text-background/70" : "text-muted";
+
   const body = (
     <>
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-serif text-xl md:text-2xl group-hover:underline underline-offset-4">
+        <h2
+          className={`font-serif text-xl md:text-2xl ${
+            linked ? "group-hover:underline underline-offset-4" : ""
+          }`}
+        >
           {entry.name}
         </h2>
         {entry.meta && (
-          <span className="shrink-0 text-xs text-muted group-hover:text-background/70 text-right">
+          <span className={`shrink-0 text-xs text-right ${dimmed}`}>
             {entry.meta}
           </span>
         )}
       </div>
       {entry.note && (
-        <p className="mt-2 max-w-2xl text-sm text-muted group-hover:text-background/70 leading-relaxed">
+        <p className={`mt-2 max-w-2xl text-sm leading-relaxed ${dimmed}`}>
           {entry.note}
         </p>
       )}
       <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         {tags.map((tag) => (
-          <span
-            key={tag}
-            className="text-xs text-muted group-hover:text-background/70"
-          >
+          <span key={tag} className={`text-xs ${dimmed}`}>
             {tag}
           </span>
         ))}
-        {entry.href && action && (
+        {linked && action && (
           <span className="text-xs underline underline-offset-4 ml-auto">
             {action} →
           </span>
@@ -289,10 +297,9 @@ function Row({ entry, action }: { entry: DirectoryEntry; action: string }) {
     </>
   );
 
-  // Books, the glossary and the timeline deliberately carry no link.
   return (
     <li>
-      {entry.href ? (
+      {linked ? (
         <a
           href={entry.href}
           target="_blank"
@@ -302,7 +309,7 @@ function Row({ entry, action }: { entry: DirectoryEntry; action: string }) {
           {body}
         </a>
       ) : (
-        <div className="group block px-5 md:px-6 py-6">{body}</div>
+        <div className="block px-5 md:px-6 py-6">{body}</div>
       )}
     </li>
   );

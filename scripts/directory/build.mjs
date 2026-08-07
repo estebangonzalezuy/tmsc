@@ -47,7 +47,7 @@ const COLLECTIONS = [
     shelf: "learn",
     name: "Courses",
     letter: "B",
-    blurb: "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a €20 class from a €1,000 bootcamp before you click.",
+    blurb: "Paid and subscription courses, filterable by level, skill, school and price: so you can tell a $99 class from a $1,000 bootcamp before you click.",
     action: "Open",
   },
   {
@@ -327,13 +327,62 @@ function buildCollection(def) {
   return { ...def, source, count: entries.length, facets, entries };
 }
 
+// Everything that can be judged about a link without fetching it: malformed
+// URLs, search-engine wrappers saved instead of the real address, the same
+// href filed under two names. check-links.mjs does the half that needs a
+// network; this half runs on every build so the cheap mistakes never land.
+function auditLinks(collections) {
+  const errors = [];
+  const notes = [];
+
+  for (const collection of collections) {
+    // The same resource legitimately sits on two shelves (Motion Hatch is a
+    // school and a podcast), so duplicates only matter inside one collection.
+    const byHref = new Map();
+
+    for (const entry of collection.entries) {
+      const where = `${collection.id}/${entry.id}`;
+      if (!entry.href) continue;
+
+      let url;
+      try {
+        url = new URL(entry.href);
+      } catch {
+        errors.push(`${where}: unparseable URL: ${entry.href}`);
+        continue;
+      }
+      if (!url.hostname.includes(".")) {
+        errors.push(`${where}: hostname has no dot: ${entry.href}`);
+      }
+      if (/google\.[a-z.]+\/search|bing\.com\/search|duckduckgo\.com\/\?q=/.test(entry.href)) {
+        errors.push(`${where}: a search-engine link, not the real address: ${entry.href}`);
+      }
+      if (/\s/.test(entry.href)) {
+        errors.push(`${where}: whitespace in URL: ${entry.href}`);
+      }
+
+      const key = entry.href.replace(/\/+$/, "");
+      if (byHref.has(key)) errors.push(`${where}: same URL as ${byHref.get(key)}: ${entry.href}`);
+      else byHref.set(key, where);
+
+      // http still resolves, so this is worth knowing rather than worth
+      // failing on, and upgrading blind would break the few sites with no
+      // TLS. check-links.mjs is what settles it.
+      if (url.protocol === "http:") notes.push(`${where}: http, not https: ${entry.href}`);
+    }
+  }
+  return { errors, notes };
+}
+
 mkdirSync(OUT, { recursive: true });
 
 const manifest = { shelves: SHELVES, collections: [] };
+const built = [];
 let total = 0;
 
 for (const def of COLLECTIONS) {
   const collection = buildCollection(def);
+  built.push(collection);
   writeFileSync(join(OUT, `${def.id}.json`), JSON.stringify(collection, null, 2) + "\n");
   total += collection.count;
   manifest.collections.push({
@@ -353,3 +402,16 @@ for (const def of COLLECTIONS) {
 manifest.total = total;
 writeFileSync(join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 console.log(`${"total".padEnd(12)} ${String(total).padStart(4)} entries across ${COLLECTIONS.length} collections`);
+
+const { errors, notes } = auditLinks(built);
+if (notes.length) {
+  console.log(`\n${notes.length} link(s) still on plain http:`);
+  for (const n of notes) console.log(`  ${n}`);
+}
+if (errors.length) {
+  console.log(`\n${errors.length} broken link(s):`);
+  for (const e of errors) console.log(`  ${e}`);
+  process.exitCode = 1;
+} else {
+  console.log(`\nlinks       every href parses and is unique within its collection`);
+}

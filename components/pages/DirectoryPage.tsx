@@ -115,23 +115,15 @@ export default function DirectoryPage() {
               "The Directory is generated from plain text files, not typed into a page. Entries exported from the club's own databases are marked as such; entries seeded from experience are marked too, so you know which ones have been checked and which are still on trust."}
           </p>
           <p className="mt-8 text-sm">
-            The club&apos;s full working library lives in{" "}
-            <a
-              href={site.substack}
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-4"
-            >
-              the newsletter
-            </a>
-            . Found a dead link, or something missing?{" "}
+            Found a dead link, or something that should be here and
+            isn&apos;t?{" "}
             <a
               href={`mailto:${site.email}?subject=the%20Directory`}
               className="underline underline-offset-4"
             >
               Tell us
             </a>
-            .
+            . This only stays true by being corrected.
           </p>
         </section>
       )}
