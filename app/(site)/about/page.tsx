@@ -3,7 +3,7 @@ import { site } from "@/lib/data";
 import AboutPage from "@/components/pages/AboutPage";
 
 export const metadata: Metadata = {
-  title: `About — ${site.name}`,
+  title: `About | ${site.name}`,
 };
 
 export default function About() {

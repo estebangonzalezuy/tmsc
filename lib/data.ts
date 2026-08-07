@@ -29,6 +29,11 @@ export type LearningPath = {
   tag: string;
 };
 export type Resource = { name: string; blurb: string; href: string };
+export type Worksheet = {
+  name: string;
+  /** Where the worksheet lives. Falls back to the newsletter when absent. */
+  href?: string;
+};
 export type Offering = {
   name: string;
   status: string;
@@ -37,7 +42,13 @@ export type Offering = {
   href: string;
   cta: string;
 };
-export type Post = { date: string; title: string; type: string };
+export type Post = {
+  date: string;
+  title: string;
+  type: string;
+  /** Direct Substack permalink. Falls back to the publication home when absent. */
+  href?: string;
+};
 export type ArchiveYear = { year: string; posts: Post[] };
 
 export const site = content.site;
@@ -50,7 +61,7 @@ export const practiceExercises: PracticeExercise[] = content.practiceExercises;
 export const practiceRules: string[] = content.practiceRules;
 export const learningPaths: LearningPath[] = content.learningPaths;
 export const resources: Resource[] = content.resources;
-export const worksheets: string[] = content.worksheets;
+export const worksheets: Worksheet[] = content.worksheets;
 export const offerings: Offering[] = content.offerings;
 export const archive: ArchiveYear[] = content.archive;
 export const quotes: string[] = content.quotes;

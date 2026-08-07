@@ -18,7 +18,7 @@ type Content = {
   practiceRules: string[];
   learningPaths: Item[];
   resources: Item[];
-  worksheets: string[];
+  worksheets: Item[];
   offerings: Item[];
   archive: { year: string; posts: Item[] }[];
   quotes: string[];
@@ -27,16 +27,16 @@ type Content = {
 
 type ListKey =
   | "stats"
-  | "pillars"
   | "threads"
   | "practiceFiles"
   | "learningPaths"
   | "resources"
+  | "worksheets"
   | "offerings"
   | "practiceStages"
   | "practiceExercises";
 
-type StringsKey = "worksheets" | "quotes" | "practiceRules";
+type StringsKey = "quotes" | "practiceRules";
 
 /* ---------- section schema ---------- */
 
@@ -101,18 +101,6 @@ const sections: Section[] = [
     fields: [
       { key: "value", label: "Value" },
       { key: "label", label: "Label" },
-    ],
-  },
-  {
-    id: "pillars",
-    title: "Pillars",
-    note: "Structure / Criticism / Honesty",
-    kind: "list",
-    itemName: "pillar",
-    fields: [
-      { key: "number", label: "Number" },
-      { key: "name", label: "Name" },
-      { key: "text", label: "Text", kind: "textarea" },
     ],
   },
   {
@@ -226,8 +214,12 @@ const sections: Section[] = [
     id: "worksheets",
     title: "Worksheets",
     note: "Resources page list",
-    kind: "strings",
+    kind: "list",
     itemName: "worksheet",
+    fields: [
+      { key: "name", label: "Name" },
+      { key: "href", label: "Link (leave empty for the newsletter)" },
+    ],
   },
   {
     id: "offerings",
@@ -498,6 +490,7 @@ const postFields: Field[] = [
   { key: "date", label: "Date (e.g. Jun 30)" },
   { key: "title", label: "Title" },
   { key: "type", label: "Type" },
+  { key: "href", label: "Link (leave empty for the Substack home)" },
 ];
 
 function ArchiveEditor({

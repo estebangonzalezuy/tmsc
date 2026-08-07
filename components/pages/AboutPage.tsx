@@ -1,12 +1,12 @@
 "use client";
 
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { Boxed, SectionHeading } from "@/components/Motifs";
+import { SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function AboutPage() {
   const content = useContent();
-  const { site, pillars, threads, quotes } = content;
+  const { site, threads, quotes } = content;
   const hidden = hiddenSet(content);
 
   return (
@@ -17,66 +17,26 @@ export default function AboutPage() {
       >
         <p className="text-sm underline underline-offset-4">About the club</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          A club for the <em>psychological and creative</em> sides of motion
-          design.
+          A place to <em>question ourselves</em>
         </h1>
         <div className="mt-12 grid gap-10 md:grid-cols-2 text-sm leading-relaxed">
           <p>
             {site.positioning} Founded by Esteban González, a self-taught
             motion designer from Montevideo, the club started as an excuse to
-            share as many resources as possible — posts, newsletter issues,
-            worksheets, exercises — and grew into a place for the conversations
+            share as many resources as possible (posts, newsletter issues,
+            worksheets, exercises) and grew into a place for the conversations
             that are harder to find: feedback, doubt, and growth beyond the
             technical.
           </p>
           <p className="text-muted">
-            The club emphasizes that motion design is not just for &ldquo;rock
-            stars&rdquo; or top artists, but a profession with diverse paths to
-            success. Its aim is simple: create a space where motion designers
-            can challenge themselves and grow, professionally and personally —
-            posing questions rather than selling answers.
+            The club emphasizes that motion design is not just for rock stars
+            or top artists, but a profession with diverse paths to success. Its
+            aim is simple: create a space where motion designers can challenge
+            themselves and grow, professionally and personally, posing
+            questions rather than selling answers.
           </p>
         </div>
       </section>
-
-      <section className="border-t border-line px-5 md:px-6 py-20 text-center">
-        <Boxed className="font-serif text-2xl md:text-4xl leading-snug max-w-2xl">
-          A place to question ourselves
-        </Boxed>
-      </section>
-
-      {!hidden.has("pillars") && (
-      <section
-        {...studioSection("pillars", "Pillars")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
-      >
-        <SectionHeading
-          label="The editorial spine"
-          title={
-            <>
-              Everything the club publishes connects to <em>one of three
-              layers</em>.
-            </>
-          }
-        />
-        <div className="mt-12 grid gap-px bg-line border border-line md:grid-cols-3">
-          {pillars.map((p) => (
-            <article key={p.number} className="bg-background p-8">
-              <p className="text-xs text-muted">{p.number}</p>
-              <h2 className="mt-4 font-serif text-2xl">{p.name}</h2>
-              <p className="mt-4 text-sm text-muted leading-relaxed">
-                {p.text}
-              </p>
-            </article>
-          ))}
-        </div>
-        <p className="mt-8 text-sm text-muted max-w-md leading-relaxed">
-          Before publishing anything, one question: <em>am I publishing because
-          there&apos;s something real to say, or because it&apos;s time to
-          post?</em>
-        </p>
-      </section>
-      )}
 
       {!hidden.has("threads") && (
       <section
@@ -116,12 +76,19 @@ export default function AboutPage() {
         className="border-t border-line px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
-          &ldquo;{quotes[1] ?? quotes[0]}&rdquo;
+          {quotes[1] ?? quotes[0]}
         </p>
       </section>
       )}
 
-      <Cta />
+      {/* The page already opens with "A place to question ourselves". */}
+      <Cta
+        title={
+          <>
+            One honest letter, <em>twice a month</em>.
+          </>
+        }
+      />
     </>
   );
 }

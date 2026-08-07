@@ -18,7 +18,7 @@ export default function LearnPage() {
       >
         <p className="text-sm underline underline-offset-4">Learn</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          Start in motion <em>from the base</em> — fundamentals first, tools
+          Start in motion <em>from the base</em>. Fundamentals first, tools
           second.
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
