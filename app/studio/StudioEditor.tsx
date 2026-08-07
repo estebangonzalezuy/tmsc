@@ -19,6 +19,7 @@ type Content = {
   learningPaths: Item[];
   resources: Item[];
   directory: Item;
+  stills: Item;
   worksheets: Item[];
   offerings: Item[];
   archive: { year: string; posts: Item[] }[];
@@ -39,7 +40,7 @@ type ListKey =
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory";
+type ObjectKey = "site" | "directory" | "stills";
 
 /* ---------- section schema ---------- */
 
@@ -217,6 +218,17 @@ const sections: Section[] = [
     id: "directory",
     title: "the Directory",
     note: "Intro copy for the Directory — the entries themselves are data, not copy",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "stills",
+    title: "the Stills",
+    note: "Intro copy for the wall — the frames themselves are curated at /curate, not here",
     kind: "object",
     fields: [
       { key: "label", label: "Label" },
@@ -567,6 +579,7 @@ const navItems = [
   { id: "newsletter", label: "Newsletter", section: "archive" },
   { id: "resources", label: "Resources", section: "resources" },
   { id: "directory", label: "the Directory", section: "directory" },
+  { id: "stills", label: "the Stills", section: "stills" },
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
@@ -710,6 +723,7 @@ const pageTabs = [
   { id: "newsletter", label: "Newsletter" },
   { id: "resources", label: "Resources" },
   { id: "directory", label: "the Directory" },
+  { id: "stills", label: "the Stills" },
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },

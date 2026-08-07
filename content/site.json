@@ -608,6 +608,11 @@
     "intro": "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place: organised, filterable, and honest about where each entry came from.",
     "note": "The Directory is generated from plain text files, not typed into a page. Entries exported from the club's own databases are marked as such; entries seeded from experience are marked too, so you know which ones have been checked and which are still on trust."
   },
+  "stills": {
+    "label": "the Stills",
+    "intro": "Frames pulled out of motion work and kept: the compositions, the palettes, the type, the light. Not a mood board somebody else filled, and not a feed. A wall curated one project at a time.",
+    "note": "Every frame links back to the second it came from, so a still can always be checked against the thing that moved. Nothing here was made by the club; it is indexed, credited and linked, the way a reference library should be."
+  },
   "worksheets": [
     {
       "name": "Idea Mining Worksheet",

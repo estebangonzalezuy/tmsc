@@ -124,6 +124,33 @@ plus an import in `lib/directory.ts` — no route or component changes.
 `lib/directory.ts` pulls in every collection, so import it from server
 components only; the hub uses `content/directory/manifest.json` instead.
 
+## the Stills (`/stills`)
+
+The club's curated wall of style frames — single frames lifted out of real
+motion work, credited and linked back to the second they came from. Documented
+in `docs/THE-STILLS.md`; read that before touching it.
+
+Same split as the Directory: **the frames are data, the framing is copy.** The
+frames live in `content/stills/projects.json` and `public/stills/`; the wall's
+intro copy lives in `content/site.json` under `stills`, edited in the Studio.
+
+The one constraint that shapes it: a browser cannot take a frame out of a
+YouTube or Vimeo embed (cross-origin, tainted canvas). So the cutting happens
+in GitHub Actions — `scripts/stills/extract.mjs` with yt-dlp and ffmpeg, run
+from `.github/workflows/stills.yml` — and the site's job is choosing. The
+extractor also writes a per-second sprite sheet so the Curator (`/curate`) can
+scrub a video it is never allowed to play, and send marked timestamps back for
+a second cutting pass. Keep those two passes in one workflow.
+
+Don't add a generated `wall.json`: the lean index the wall filters over is
+derived by `buildWall` at build time precisely so there is one implementation
+rather than one in Node and one in the browser. And don't move the Curator's
+GitHub calls server-side — it keeps the Studio and Desk's zero-config contract,
+token in the browser, no secret on Vercel.
+
+Everything the site renders goes through `frameSrc`/`scrubSrc` and the
+`assetBase` field, so moving the images off the repo later is that one string.
+
 ## The content system
 
 The club's posting loop — a Notion Pipeline, a Content library, monthly

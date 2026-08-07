@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PreviewClient from "./PreviewClient";
+import { wall } from "@/lib/stills";
 
 export const metadata: Metadata = {
   title: "Preview — the Studio",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function PreviewPage() {
-  return <PreviewClient />;
+  return <PreviewClient stillsWall={wall} />;
 }

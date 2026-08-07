@@ -13,6 +13,8 @@ import DirectoryPage from "@/components/pages/DirectoryPage";
 import LearnPage from "@/components/pages/LearnPage";
 import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
+import StillsPage from "@/components/pages/StillsPage";
+import type { WallData } from "@/lib/stills-shared";
 
 const pages: Record<string, React.ComponentType> = {
   home: HomePage,
@@ -49,7 +51,14 @@ type ParentMessage =
   | { studio: "page"; page: string }
   | { studio: "active"; section: string; scroll?: boolean };
 
-export default function PreviewClient() {
+// the Stills is the one page whose body is data rather than copy, so the
+// server route reads it and passes it down. Without it the preview would show
+// an empty wall while the owner edits the copy that sits above it.
+export default function PreviewClient({
+  stillsWall,
+}: {
+  stillsWall?: WallData;
+}) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [page, setPage] = useState("home");
   const [active, setActive] = useState("");
@@ -118,7 +127,7 @@ export default function PreviewClient() {
       <style>{previewCss}</style>
       <SiteHeader />
       <main className="flex-1">
-        <Page />
+        {page === "stills" ? <StillsPage wall={stillsWall} /> : <Page />}
       </main>
       <SiteFooter />
     </ContentContext.Provider>
