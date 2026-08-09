@@ -33,12 +33,17 @@ export async function fetchVocabulary(origin) {
     if (s.type === "none") continue;
     const params = {};
     for (const [key, desc] of Object.entries(s.params ?? {})) {
-      const choice = /^one of (.+?) \(default (.+)\)$/.exec(desc);
+      /* "one of a | b | c (default a)" — with an optional ", keep 50%"
+         saying how often a random roll should leave the default alone. */
+      const choice = /^one of (.+?) \(default ([^,)]+)(?:, keep (\d+)%)?\)$/.exec(
+        desc,
+      );
       if (choice) {
         params[key] = {
           kind: "choice",
           values: choice[1].split("|").map((v) => v.trim()),
           def: choice[2].trim(),
+          keep: choice[3] ? Number(choice[3]) / 100 : 0,
         };
         continue;
       }
@@ -158,6 +163,9 @@ export function briefSchema(vocab) {
   };
 }
 
+/* Ways of mixing two forms that can never subtract the frame to nothing. */
+const SAFE_MIXES = ["add", "max", "diff"];
+
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const pick = (value, allowed, def) =>
   allowed.includes(value) ? value : def ?? allowed[0];
@@ -179,13 +187,30 @@ export function randomLayer(vocab, rand = Math.random, only) {
   const layer = { type };
   for (const [key, p] of Object.entries(params)) {
     if (p.kind === "choice") {
-      layer[key] = p.values[Math.floor(rand() * p.values.length)];
+      layer[key] =
+        p.keep && rand() < p.keep
+          ? p.def
+          : p.values[Math.floor(rand() * p.values.length)];
     } else {
       const lo = p.min + (p.max - p.min) * 0.2;
       const hi = p.min + (p.max - p.min) * 0.8;
       const v = lo + rand() * (hi - lo);
       layer[key] = Math.round(v * 100) / 100;
     }
+  }
+  /* A second form that is never mixed in is just a slower render, and a mix
+     mode with nothing to mix does nothing — roll them together or not at
+     all. Same rule the tool's own randomise button follows. */
+  if (layer.pattern2 === "none") layer.mix = "solo";
+  else if (layer.mix === "solo") layer.pattern2 = "none";
+  /* `sub` and `mul` can cancel two forms down to an almost empty frame.
+     That's a fine thing for a person to choose in the Post Lab, where they
+     can see it; it is not something to ship unattended, so a run only ever
+     rolls the modes that always leave something on screen. */
+  if (SAFE_MIXES.length && layer.mix && layer.mix !== "solo") {
+    const safe = SAFE_MIXES.filter((v) => (params.mix?.values ?? []).includes(v));
+    if (safe.length && !safe.includes(layer.mix))
+      layer.mix = safe[Math.floor(rand() * safe.length)];
   }
   return layer;
 }

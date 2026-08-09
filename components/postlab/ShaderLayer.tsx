@@ -17,7 +17,7 @@ import {
 } from "@/lib/postlab";
 import GenerativeLayer from "./GenerativeLayer";
 
-const num = (v: number | string | boolean | undefined, def: number) =>
+const num = (v: unknown, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
 
 const SHAPES = ["simplex", "warp", "dots", "wave", "ripple", "swirl", "sphere"];
@@ -38,7 +38,15 @@ export default function ShaderLayer({
   width: number;
   height: number;
   duration: number;
-  color?: { ink?: string; seed: number; palette?: string[] };
+  color?: {
+    ink?: string;
+    seed: number;
+    palette?: string[];
+    inks?: string[];
+    mixMode?: string;
+    mixScale?: number;
+    mixSpeed?: number;
+  };
 }) {
   if (shaderDef(shader.type).kind === "generative") {
     return (
@@ -52,6 +60,10 @@ export default function ShaderLayer({
         ink={color?.ink}
         colorSeed={color?.seed}
         colorPalette={color?.palette?.join(",") ?? ""}
+        inks={color?.inks?.join(",") ?? ""}
+        mixMode={color?.mixMode ?? ""}
+        mixScale={color?.mixScale ?? 0}
+        mixSpeed={color?.mixSpeed ?? -1}
       />
     );
   }
@@ -79,10 +91,15 @@ export default function ShaderLayer({
       /* The WebGL dithering only has two tones, so colour here means one
          palette pick for the whole layer rather than per-pixel. */
       /* Two tones only, so "mix" can't be honoured here — it resolves to a
-         single palette colour that stands clear of the background. */
+         single colour that stands clear of the background, drawn from the
+         layer's own set when it has one. */
       colorFront={
         color?.ink === "mix"
-          ? paletteInk(color.seed, theme, color.palette)
+          ? paletteInk(
+              color.seed,
+              theme,
+              color.inks?.length ? color.inks : color.palette,
+            )
           : color?.ink || ink
       }
       shape={shape as DitheringShape}

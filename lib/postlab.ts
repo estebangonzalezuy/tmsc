@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 4;
+export const SPEC_VERSION = 5;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -27,11 +27,12 @@ export type Theme = "light" | "dark";
    renderer ("forms", for shapes the shader doesn't have). "none" = plain. */
 export type ShaderType = "none" | "dithering" | "forms";
 
-/* Boolean is in the index signature only for the layer's `color` switch;
-   every shader parameter is still a number or a choice string. */
+/* Boolean is in the index signature only for the layer's `color` switch, and
+   string[] only for a mix layer's `inks`; every shader parameter is still a
+   number or a choice string. */
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
-  number | string | boolean | undefined
+  number | string | boolean | string[] | undefined
 >;
 
 /* How stacked layers mix — CSS mix-blend-mode names, which map 1:1 onto
@@ -48,11 +49,36 @@ export const BLENDS = [
 ] as const;
 export type BlendMode = (typeof BLENDS)[number];
 
+/* How a "mix" layer decides which colour lands on which pixel. All five are
+   deterministic, so preview and export always agree. */
+export const MIX_MODES = [
+  "blocks",
+  "bands",
+  "radial",
+  "source",
+  "noise",
+] as const;
+export type MixMode = (typeof MIX_MODES)[number];
+
 /** One background layer: a shader/generative spec plus mixing + transform. */
 export type LayerSpec = ShaderSpec & {
   /** What colour this layer's pixels are: a hex for one colour, "mix" for
       the palette scattered across them, absent for the theme's ink. */
   ink?: string;
+  /** Only for `ink: "mix"` — the subset of the palette this layer draws
+      from. Absent means the whole palette, which is the normal case; set it
+      to give one layer three colours and another the rest. */
+  inks?: string[];
+  /** Only for `ink: "mix"` — how colours are handed out across the pixels.
+      Absent = "blocks", the original mosaic. */
+  mixMode?: MixMode;
+  /** Only for `ink: "mix"` — the size, in dither cells, of one patch of
+      colour. 1 is per-pixel confetti, 12 is broad fields. Absent = 3. */
+  mixScale?: number;
+  /** Only for `ink: "mix"` — how fast colour travels through the palette,
+      as a multiple of the layer's motion speed. 0 freezes the colours in
+      place; absent = 1, the original rate. */
+  mixSpeed?: number;
   /** Superseded by `ink`. Kept so links written when colour was a switch
       still open; normalizeSpec turns it into an `ink` and it is never
       written again. */
@@ -148,6 +174,10 @@ export type ShaderChoice = {
   label: string;
   values: string[];
   def: string;
+  /** Odds that a random roll keeps the default instead of picking freely.
+      The combining choices default to "off", and a randomise button that
+      turned everything on at once would only ever produce mush. */
+  keepDefault?: number;
 };
 
 export type ShaderDef = {
@@ -204,10 +234,44 @@ const paperDithering: ShaderDef = {
   ],
 };
 
+/* Every grayscale form the forms renderer can draw. The first four are the
+   original set; the rest were added later and cost old links nothing, since
+   a link only ever names the one it uses. */
+export const FORM_PATTERNS = [
+  "rings",
+  "ramp",
+  "bars",
+  "letter",
+  "spiral",
+  "grid",
+  "blobs",
+  "tunnel",
+  "noise",
+  "moire",
+] as const;
+
+/* How a layer's two forms are combined before the dither threshold. Mixing
+   grayscale sources and then dithering the result keeps everything in the
+   one pixel language — nothing here is a second render pass. */
+export const FORM_MIXES = [
+  "solo",
+  "add",
+  "sub",
+  "mul",
+  "diff",
+  "max",
+  "min",
+] as const;
+
+/** Fold applied to the coordinates before sampling, so any form can be made
+    symmetrical without a second layer. */
+export const FORM_SYMMETRIES = ["none", "x", "y", "quad", "radial"] as const;
+
 /* Shapes the shader doesn't have, rendered grayscale on canvas 2D and pushed
-   through a Bayer ordered dither — same pixel language, new vocabulary.
-   All loop seamlessly over the post duration; `warp` bends the source
-   through a flow field before dithering. */
+   through an ordered dither — same pixel language, new vocabulary. All loop
+   seamlessly over the post duration; `warp` bends the source through a flow
+   field before dithering, `pattern2` + `mix` fold a second form into the
+   first, and `fold` mirrors the result. */
 const ditheredForms: ShaderDef = {
   type: "forms",
   label: "dithered forms",
@@ -223,8 +287,35 @@ const ditheredForms: ShaderDef = {
     {
       key: "pattern",
       label: "pattern",
-      values: ["rings", "ramp", "bars", "letter"],
+      values: [...FORM_PATTERNS],
       def: "rings",
+    },
+    {
+      key: "pattern2",
+      label: "and",
+      values: ["none", ...FORM_PATTERNS],
+      def: "none",
+      keepDefault: 0.5,
+    },
+    {
+      key: "mix",
+      label: "mixed",
+      values: [...FORM_MIXES],
+      def: "solo",
+      keepDefault: 0.2,
+    },
+    {
+      key: "fold",
+      label: "fold",
+      values: [...FORM_SYMMETRIES],
+      def: "none",
+      keepDefault: 0.55,
+    },
+    {
+      key: "dtype",
+      label: "dither",
+      values: ["4x4", "8x8", "2x2", "lines", "noise"],
+      def: "4x4",
     },
     {
       key: "word",
@@ -257,8 +348,17 @@ export function randomShader(type?: ShaderType): ShaderSpec {
     const stepped = Math.round((lo + Math.random() * (hi - lo)) / c.step) * c.step;
     spec[c.key] = Math.round(stepped * 100) / 100;
   }
-  for (const c of def.choices ?? [])
-    spec[c.key] = c.values[Math.floor(Math.random() * c.values.length)];
+  for (const c of def.choices ?? []) {
+    spec[c.key] =
+      c.keepDefault && Math.random() < c.keepDefault
+        ? c.def
+        : c.values[Math.floor(Math.random() * c.values.length)];
+  }
+  /* A second form that is never mixed in is just a slower render, and a mix
+     mode with nothing to mix does nothing — roll them together or not at
+     all. */
+  if (spec.pattern2 === "none") spec.mix = "solo";
+  else if (spec.mix === "solo") spec.pattern2 = "none";
   return spec;
 }
 
@@ -487,6 +587,25 @@ export function normalizeSpec(raw: unknown): PostSpec {
           delete merged.ink;
         }
         delete merged.color;
+
+        /* The mix controls only mean anything on a mix layer, and each one
+           is absent by default — absent is the look every link written
+           before they existed was shared with. */
+        if (merged.ink === "mix") {
+          const inks = cleanPalette(merged.inks);
+          if (inks) merged.inks = inks;
+          else delete merged.inks;
+          if (!MIX_MODES.includes(merged.mixMode as MixMode)) delete merged.mixMode;
+          if (merged.mixScale === undefined) delete merged.mixScale;
+          else merged.mixScale = Math.min(12, Math.max(1, Number(merged.mixScale) || 1));
+          if (merged.mixSpeed === undefined) delete merged.mixSpeed;
+          else merged.mixSpeed = Math.min(3, Math.max(0, Number(merged.mixSpeed) || 0));
+        } else {
+          delete merged.inks;
+          delete merged.mixMode;
+          delete merged.mixScale;
+          delete merged.mixSpeed;
+        }
         return merged;
       });
 
@@ -708,6 +827,76 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
               size: 2,
               blend: "multiply",
               opacity: 0.5,
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* Two forms interfering inside one layer — the cheapest way to a
+       pattern neither of them makes alone. */
+    name: "Interference",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "Two simple rules,\none complicated result.",
+          italic: true,
+          plate: true,
+          veil: 0,
+          theme: "dark",
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "moire",
+              pattern2: "rings",
+              mix: "diff",
+              density: 10,
+              warp: 0.1,
+              pixel: 5,
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* Colour as a field rather than confetti: broad patches drifting slowly
+       through three of the palette's colours. */
+    name: "Colour field",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "",
+          footer: "",
+          letter: "",
+          text: false,
+          veil: 0,
+          background: "#fffdf0",
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              /* Clouds rather than metaballs: "source" colouring reads as a
+                 contour map, which needs a form with shading all over the
+                 frame to colour. */
+              pattern: "noise",
+              density: 10,
+              pixel: 7,
+              warp: 0.15,
+              speed: 0.35,
+              ink: "mix",
+              inks: ["#3d3deb", "#ee4b2b", "#adb4f5"],
+              mixMode: "source",
+              mixScale: 6,
+              mixSpeed: 0.5,
             },
           ],
         }),

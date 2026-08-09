@@ -5,9 +5,11 @@
 
 import {
   FORMATS,
+  PALETTE,
   slideTones,
   type BlendMode,
   type PostSpec,
+  type SlideSpec,
 } from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
 import { GifEncoder } from "./gif";
@@ -46,6 +48,23 @@ function drawLayers(
   });
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = "source-over";
+}
+
+/* Every colour a slide can actually put on screen: the palette it follows,
+   its background, and whatever each layer was inked with. The GIF table is
+   built from this, so a layer using three hand-picked colours — or a
+   background outside the palette — still encodes as itself instead of being
+   quantised to the nearest gray. */
+function slideColours(slide: SlideSpec | undefined): string[] {
+  if (!slide) return [];
+  const seen = new Set<string>(slide.palette?.length ? slide.palette : PALETTE);
+  if (slide.background) seen.add(slide.background);
+  for (const layer of slide.layers) {
+    if (layer.ink && layer.ink !== "mix") seen.add(layer.ink);
+    for (const hex of layer.inks ?? []) seen.add(hex);
+  }
+  /* The table has room for 128 grays and three entries per colour. */
+  return [...seen].slice(0, 40);
 }
 
 function download(blob: Blob, filename: string) {
@@ -234,7 +253,7 @@ export function recordGif(
   small.height = gh;
   const smallCtx = small.getContext("2d", { willReadFrequently: true })!;
 
-  const gif = new GifEncoder(gw, gh, delay, spec.slides[index]?.palette ?? []);
+  const gif = new GifEncoder(gw, gh, delay, slideColours(spec.slides[index]));
 
   return new Promise((resolve) => {
     let raf = 0;

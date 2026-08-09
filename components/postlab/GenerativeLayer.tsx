@@ -18,6 +18,10 @@ export default function GenerativeLayer({
   ink = "",
   colorSeed = 1,
   colorPalette = "",
+  inks = "",
+  mixMode = "",
+  mixScale = 0,
+  mixSpeed = -1,
 }: {
   shader: ShaderSpec;
   theme: Theme;
@@ -32,6 +36,12 @@ export default function GenerativeLayer({
   /** Comma-joined hexes rather than an array, so the animation effect can
       depend on it without restarting whenever the parent re-renders. */
   colorPalette?: string;
+  /** Same again for the layer's own subset of the palette. */
+  inks?: string;
+  mixMode?: string;
+  /** 0 and -1 stand in for "not set", so the renderer keeps its defaults. */
+  mixScale?: number;
+  mixSpeed?: number;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const timeRef = useRef(0); // survives pauses and param tweaks
@@ -39,12 +49,19 @@ export default function GenerativeLayer({
   useEffect(() => {
     const ctx = ref.current?.getContext("2d");
     if (!ctx) return;
+    const color = {
+      ink: ink || undefined,
+      seed: colorSeed,
+      palette: colorPalette ? colorPalette.split(",") : undefined,
+      inks: inks ? inks.split(",") : undefined,
+      mixMode: mixMode || undefined,
+      mixScale: mixScale || undefined,
+      mixSpeed: mixSpeed < 0 ? undefined : mixSpeed,
+    };
     if (!playing) {
-      drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
-        ink: ink || undefined,
-        seed: colorSeed,
-        palette: colorPalette ? colorPalette.split(",") : undefined,
-      });
+      drawGenerative(
+        ctx, shader, theme, timeRef.current, duration, width, height, color,
+      );
       return;
     }
     let raf = 0;
@@ -52,16 +69,28 @@ export default function GenerativeLayer({
     const loop = (now: number) => {
       timeRef.current += (now - last) / 1000;
       last = now;
-      drawGenerative(ctx, shader, theme, timeRef.current, duration, width, height, {
-        ink: ink || undefined,
-        seed: colorSeed,
-        palette: colorPalette ? colorPalette.split(",") : undefined,
-      });
+      drawGenerative(
+        ctx, shader, theme, timeRef.current, duration, width, height, color,
+      );
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [shader, theme, playing, width, height, duration, ink, colorSeed, colorPalette]);
+  }, [
+    shader,
+    theme,
+    playing,
+    width,
+    height,
+    duration,
+    ink,
+    colorSeed,
+    colorPalette,
+    inks,
+    mixMode,
+    mixScale,
+    mixSpeed,
+  ]);
 
   return (
     <canvas

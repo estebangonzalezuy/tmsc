@@ -89,13 +89,27 @@ families; extend the dithering vocabulary instead.
 
 Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
 `normalizeSpec` if it must change) — links and the schema endpoint are the
-integration surface. Colour is a switch, not a value, by default: a slide
-has `color` (on/off) and `colorSeed`, and the palette lives in `PALETTE` in
-`lib/postlab.ts` — so editing that one array restyles every post that never
-overrode it. A slide may carry its own `palette` (array of hexes) when the
-owner picks colours by hand; that slide then stops following the club
-palette, which is the deliberate cost of the picker. Generated posts never
-set it.
+integration surface. **Every field added since v1 defaults to absent, and
+absent means the look the older links were shared with**; that rule is why
+new effects can keep landing without breaking a Notion row from months ago.
+
+Two things extend the dithering vocabulary rather than sitting beside it:
+
+- **Forms combine before the threshold.** A `forms` layer can mix a second
+  `pattern2` into its `pattern` (`mix`), and `fold` the coordinates for
+  symmetry. Both sources are grayscale and the *result* is dithered once,
+  so the output is always the same hard-edged pixels. Anything new belongs
+  in that pipeline — a second render pass would not be this tool.
+- **Colour is per layer.** `ink` is a hex, `"mix"` (the palette scattered
+  across the pixels), or absent for the theme's black and white — the
+  default, and where the site itself stays. A `"mix"` layer can narrow the
+  palette to its own `inks`, and choose `mixMode` / `mixScale` / `mixSpeed`
+  for how colour is spread and how fast it travels. The palette lives in
+  `PALETTE` in `lib/postlab.ts`, so editing that one array restyles every
+  post that never overrode it. A slide may carry its own `palette` when the
+  owner picks colours by hand; that slide then stops following the club
+  palette, which is the deliberate cost of the picker. Generated posts
+  never set it, and never set `ink` unless colour was asked for.
 
 ## the Directory (`/directory`)
 

@@ -17,6 +17,7 @@ import {
   BLENDS,
   FORMATS,
   MAX_LAYERS,
+  MIX_MODES,
   PALETTE,
   PRESETS,
   SHADERS,
@@ -184,6 +185,16 @@ function Swatches({
   );
 }
 
+/* The select needs to say what each one looks like, not what it is called
+   in the renderer. */
+const MIX_MODE_HINTS: Record<string, string> = {
+  blocks: "blocks — a mosaic of patches",
+  bands: "bands — stripes sweeping down",
+  radial: "radial — rings out of the centre",
+  source: "source — colour follows the shape",
+  noise: "noise — pixel by pixel, no grid",
+};
+
 /* ------------------------------------------------------------------ tool */
 
 export default function PostLab() {
@@ -322,6 +333,22 @@ export default function PostLab() {
       ),
     });
 
+  /* The colours a mix layer is currently allowed to use. No `inks` on the
+     layer means all of them, which is the normal case. */
+  const mixInks = layer.inks?.length ? layer.inks : [...(slide.palette ?? PALETTE)];
+
+  /* Dropping the last one would leave the layer with nothing to draw with,
+     so the last colour standing can't be turned off. Turning them all back
+     on clears the field instead of storing a copy of the palette, so the
+     layer goes back to following it. */
+  const toggleMixInk = (hex: string) => {
+    const on = mixInks.includes(hex);
+    if (on && mixInks.length <= 1) return;
+    const next = on ? mixInks.filter((c) => c !== hex) : [...mixInks, hex];
+    const whole = (slide.palette ?? PALETTE).every((c) => next.includes(c));
+    patchLayer({ inks: whole ? undefined : next } as Partial<LayerSpec>);
+  };
+
   // Changing the type keeps the layer's mixing and placement.
   const setShaderType = (type: ShaderType) =>
     patchSlide({
@@ -339,24 +366,36 @@ export default function PostLab() {
       ),
     });
 
-  /* Reroll the background: a new family, new shape and new parameters, but
-     the same place in the stack and the same mixing, so a randomised layer
-     drops into a composition you've already built. */
+  /* Reroll a layer's form: a new family, new shape and new parameters, but
+     the same place in the stack, the same mixing and the same colour, so a
+     randomised layer drops into a composition you've already built. Colour
+     is a decision, not a roll — the dice never touch it. */
+  const reroll = (l: LayerSpec): LayerSpec =>
+    ({
+      ...defaultLayer("dithering"),
+      opacity: l.opacity,
+      blend: l.blend,
+      offsetX: l.offsetX,
+      offsetY: l.offsetY,
+      rotation: l.rotation,
+      ...randomShader(),
+      ...(l.ink ? { ink: l.ink } : {}),
+      ...(l.inks ? { inks: l.inks } : {}),
+      ...(l.mixMode ? { mixMode: l.mixMode } : {}),
+      ...(l.mixScale !== undefined ? { mixScale: l.mixScale } : {}),
+      ...(l.mixSpeed !== undefined ? { mixSpeed: l.mixSpeed } : {}),
+    }) as LayerSpec;
+
   const randomizeLayer = () =>
     patchSlide({
-      layers: slide.layers.map((l, i) =>
-        i === layerIndex
-          ? ({
-              ...defaultLayer("dithering"),
-              opacity: l.opacity,
-              blend: l.blend,
-              offsetX: l.offsetX,
-              offsetY: l.offsetY,
-              rotation: l.rotation,
-              ...randomShader(),
-            } as LayerSpec)
-          : l,
-      ),
+      layers: slide.layers.map((l, i) => (i === layerIndex ? reroll(l) : l)),
+      colorSeed: Math.floor(Math.random() * 9999) + 1,
+    });
+
+  /* The whole stack at once, for when nothing in front of you is working. */
+  const randomizeSlide = () =>
+    patchSlide({
+      layers: slide.layers.map(reroll),
       colorSeed: Math.floor(Math.random() * 9999) + 1,
     });
 
@@ -698,6 +737,10 @@ export default function PostLab() {
                         ink: l.ink,
                         seed: slide.colorSeed,
                         palette: slide.palette,
+                        inks: l.inks,
+                        mixMode: l.mixMode,
+                        mixScale: l.mixScale,
+                        mixSpeed: l.mixSpeed,
                       }}
                     />
                   </div>
@@ -1029,10 +1072,13 @@ export default function PostLab() {
                 Delete
               </Button>
             </div>
-            <div className="flex">
+            <div className="flex gap-2">
               <Button onClick={randomizeLayer} primary>
                 Randomise this layer
               </Button>
+              {slide.layers.length > 1 && (
+                <Button onClick={randomizeSlide}>All {slide.layers.length}</Button>
+              )}
             </div>
             <Row label="blend">
               <select
@@ -1065,17 +1111,105 @@ export default function PostLab() {
                 }
               />
               {layer.ink === "mix" && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() =>
-                      patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
-                    }
-                  >
-                    Rearrange
-                  </Button>
-                  <span className="text-xs text-muted">
-                    which colour lands on which block
-                  </span>
+                <div className="space-y-3 border-l border-line pl-3">
+                  <p className="text-xs text-muted">
+                    which of them — {mixInks.length} of{" "}
+                    {(slide.palette ?? PALETTE).length}
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {(slide.palette ?? PALETTE).map((hex) => {
+                      const on = mixInks.includes(hex);
+                      return (
+                        <button
+                          key={hex}
+                          onClick={() => toggleMixInk(hex)}
+                          title={`${hex} — ${on ? "click to drop" : "click to use"}`}
+                          style={{ background: hex }}
+                          className={`size-7 border transition-all ${
+                            on
+                              ? "border-foreground scale-110"
+                              : "border-line opacity-25 hover:opacity-60"
+                          }`}
+                        />
+                      );
+                    })}
+                    {layer.inks && (
+                      <Button
+                        onClick={() =>
+                          patchLayer({ inks: undefined } as Partial<LayerSpec>)
+                        }
+                      >
+                        All
+                      </Button>
+                    )}
+                  </div>
+                  <Row label="spread">
+                    <select
+                      value={layer.mixMode ?? "blocks"}
+                      onChange={(e) =>
+                        patchLayer({
+                          mixMode: e.target.value as LayerSpec["mixMode"],
+                        } as Partial<LayerSpec>)
+                      }
+                      className="flex-1 border border-line bg-transparent px-2 py-1.5 text-xs focus:outline-none"
+                    >
+                      {MIX_MODES.map((m) => (
+                        <option key={m} value={m}>
+                          {MIX_MODE_HINTS[m]}
+                        </option>
+                      ))}
+                    </select>
+                  </Row>
+                  <Row label="patch">
+                    <input
+                      type="range"
+                      min={1}
+                      max={12}
+                      step={1}
+                      value={layer.mixScale ?? 3}
+                      onChange={(e) =>
+                        patchLayer({
+                          mixScale: Number(e.target.value),
+                        } as Partial<LayerSpec>)
+                      }
+                      className="flex-1 accent-foreground"
+                    />
+                    <span className="w-10 text-right text-xs text-muted">
+                      {layer.mixScale ?? 3}
+                    </span>
+                  </Row>
+                  <Row label="drift">
+                    <input
+                      type="range"
+                      min={0}
+                      max={3}
+                      step={0.1}
+                      value={layer.mixSpeed ?? 1}
+                      onChange={(e) =>
+                        patchLayer({
+                          mixSpeed: Number(e.target.value),
+                        } as Partial<LayerSpec>)
+                      }
+                      className="flex-1 accent-foreground"
+                    />
+                    <span className="w-10 text-right text-xs text-muted">
+                      {(layer.mixSpeed ?? 1) === 0
+                        ? "still"
+                        : (layer.mixSpeed ?? 1).toFixed(1)}
+                    </span>
+                  </Row>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() =>
+                        patchSlide({ colorSeed: Math.floor(Math.random() * 9999) + 1 })
+                      }
+                    >
+                      Rearrange
+                    </Button>
+                    <span className="text-xs text-muted">
+                      which colour starts where
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -1110,7 +1244,17 @@ export default function PostLab() {
                 </button>
               ))}
             </div>
-            {(def.choices ?? []).map((c) => (
+            {(def.choices ?? [])
+              /* Only show a control that can currently do something: the
+                 word picker matters only when a letter is on screen, and the
+                 mix mode only once there are two forms to mix. */
+              .filter((c) => {
+                if (c.key === "word")
+                  return layer.pattern === "letter" || layer.pattern2 === "letter";
+                if (c.key === "mix") return (layer.pattern2 ?? "none") !== "none";
+                return true;
+              })
+              .map((c) => (
               <Row key={c.key} label={c.label}>
                 <select
                   value={String(layer[c.key] ?? c.def)}
@@ -1124,7 +1268,7 @@ export default function PostLab() {
                   ))}
                 </select>
               </Row>
-            ))}
+              ))}
             {def.controls.map((c) => (
               <Row key={c.key} label={c.label}>
                 <input

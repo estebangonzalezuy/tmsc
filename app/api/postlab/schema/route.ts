@@ -31,8 +31,11 @@ export function GET() {
     ],
     writing_guidance: [
       "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
-      "Design is black & white by default. A slide can opt into the club palette with `color: true` — the dithered pixels are then painted from a fixed seven-colour set (periwinkle, green, black, white, orange red, indigo, cream) chosen by `colorSeed`. The spec never carries a hex; the palette lives in the code.",
-      "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds patterns the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word), with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
+      "Design is black & white by default. Colour is set per layer, with `ink`: a hex for one flat colour, \"mix\" to scatter the club palette across the pixels, or leave it out for the theme's ink (the black-and-white default, and the right answer unless colour was asked for). The club palette is periwinkle, green, black, white, orange red, indigo, cream; a slide can override it wholesale with `palette`, and can set its own `background` hex.",
+      "A \"mix\" layer has four optional dials, all of which can be left out: `inks` (array of hexes — the subset of the palette this layer may use, so one layer can hold three colours and another the rest), `mixMode` (blocks|bands|radial|source|noise — how colour is handed out across the pixels; 'source' makes colour follow the shape's own shading), `mixScale` (1-12, how big one patch of colour is), and `mixSpeed` (0-3, how fast colour travels through the list; 0 freezes it). `colorSeed` on the slide decides which colour starts where.",
+      "The older `color: true` switch still works and is read as \"put the palette on every layer\"; new specs should set `ink` per layer instead.",
+      "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds shapes the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word)|spiral|grid|blobs|tunnel|noise|moire, with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
+      "Forms combine. A 'forms' layer can name a second shape in `pattern2` and fold it into the first with `mix` (add|sub|mul|diff|max|min; 'solo' ignores it), and mirror the result with `fold` (x|y|quad|radial). Both sources are mixed as grayscale and dithered once, so the output is still hard-edged pixels — that is the rule the tool keeps. `dtype` picks the screen: 4x4|8x8|2x2 ordered matrices, 'lines' for an engraving screen, 'noise' for a grainy one. Combining is where the interesting backgrounds are: moire + rings on diff, grid + blobs on mul, letter + noise on sub.",
       "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story|landscape&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
       "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
       "Reels: format 'story', one slide, duration 6-10s, pick an animated background — generative ones loop perfectly.",
@@ -79,7 +82,17 @@ export function GET() {
             "number 0-32 (default 0) — the same dithering, sized independently, applied to every other glyph: kicker, letter mark, body, footer, and the ring's circled letters.",
           theme: "'light' (white bg, black ink) | 'dark' (inverted)",
           layers:
-            "array of 1-4 background layers, bottom first. Each layer is { type, ...params } (see backgrounds below) plus: opacity (0-1, default 1), blend ('normal'|'multiply'|'screen'|'overlay'|'darken'|'lighten'|'difference'|'exclusion', default 'normal'), offsetX/offsetY (-1..1 position, default 0), rotation (degrees, default 0), scale (0.1-4, default per type). Blending a texture over a gradient (e.g. mesh + dithering multiplied on top) is the tool's signature look.",
+            "array of 1-4 background layers, bottom first. Each layer is { type, ...params } (see backgrounds below) plus: opacity (0-1, default 1), blend ('normal'|'multiply'|'screen'|'overlay'|'darken'|'lighten'|'difference'|'exclusion', default 'normal'), offsetX/offsetY (-1..1 position, default 0), rotation (degrees, default 0), scale (0.1-4, default per type). Layers render on transparent canvases, so they already combine without a blend mode; reach for one when you want them to interact. Stacking a fine dithering over a large form is the tool's signature look.",
+          "layers[].ink":
+            "colour for this layer's pixels: a hex, or \"mix\" for the palette scattered across them. Omit for the theme's ink (black or white) — the default.",
+          "layers[].inks":
+            "only with ink:\"mix\" — array of hexes this layer may use, a subset of the palette. Omit for all of them.",
+          "layers[].mixMode":
+            "only with ink:\"mix\" — 'blocks' (default, a mosaic) | 'bands' | 'radial' | 'source' (colour follows the shape's shading) | 'noise' (pixel by pixel).",
+          "layers[].mixScale":
+            "only with ink:\"mix\" — 1-12 (default 3), the size in dither cells of one patch of colour.",
+          "layers[].mixSpeed":
+            "only with ink:\"mix\" — 0-3 (default 1), how fast colour travels through the list, as a multiple of the layer's speed. 0 holds it still.",
           shader:
             "deprecated v1 field — a single { type, ...params }; still accepted and lifted into layers[0]",
         },
@@ -96,7 +109,11 @@ export function GET() {
           ]),
           ...(s.choices ?? []).map((c) => [
             c.key,
-            `one of ${c.values.join(" | ")} (default ${c.def})`,
+            /* The "keep" clause is the odds a random roll should leave this
+               one alone. The combining choices are off by default, and
+               anything rolling all of them at once only ever makes mush. */
+            `one of ${c.values.join(" | ")} (default ${c.def}` +
+              (c.keepDefault ? `, keep ${Math.round(c.keepDefault * 100)}%)` : ")"),
           ]),
         ]),
       })),

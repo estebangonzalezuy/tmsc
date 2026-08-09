@@ -70,17 +70,36 @@ transform: `offsetX`/`offsetY` (-1..1), `rotation` (degrees), `scale`
 is the signature look. v1 specs with a single `shader` field still load.
 
 The Post Lab is a **dithering instrument** — every background is dithered
-pixels in the slide's two tones. Two layer types (plus `none` for plain):
+pixels. Two layer types (plus `none` for plain):
 
 - `dithering` (Paper Shaders): `shape` simplex|warp|dots|wave|ripple|swirl|
   sphere, `dtype` 4x4|8x8|2x2|random, `size` (pixel 1-14), `speed`, `scale`.
 - `forms` (canvas ordered dither, shapes the shader lacks): `pattern`
-  rings|ramp|bars|letter (giant dithered type), `word` M|tMSC|MOTION|CLUB,
-  `pixel` (2-16), `density`, `warp` (0-1 flow-field deformation), `speed`.
+  rings|ramp|bars|letter|spiral|grid|blobs|tunnel|noise|moire, `word`
+  M|tMSC|MOTION|CLUB (for `letter`), `pixel` (2-16), `density`, `warp`
+  (0-1 flow-field deformation), `speed`, `dtype` 4x4|8x8|2x2|lines|noise.
 
-Colors are never specified — strictly black & white. Old type names from
-earlier spec versions (grid, mesh, orbits, lattice…) are auto-mapped to the
-closest dithering equivalent, so old links keep working.
+**Forms combine.** A `forms` layer can fold a second shape into the first:
+`pattern2` (any pattern, or `none`) mixed with `mix` add|sub|mul|diff|max|
+min, then mirrored with `fold` x|y|quad|radial. Both are mixed as grayscale
+and dithered once, so the output stays hard-edged pixels. This is where the
+good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
+`mul`, `letter` + `noise` on `sub`.
+
+**Colour is per layer and off by default.** Leave `ink` out for the club's
+black and white. Set it to a hex for one flat colour, or `"mix"` to scatter
+the palette across the pixels. A `"mix"` layer takes four optional dials:
+`inks` (hex array — the subset of the palette this layer may use),
+`mixMode` blocks|bands|radial|source|noise (`source` colours by the shape's
+own shading, which reads as a contour map), `mixScale` 1-12 (patch size),
+`mixSpeed` 0-3 (0 holds the colours still). The slide's `colorSeed` decides
+which colour starts where, and `background` sets the slide's own hex.
+Generated posts stay monochrome unless colour was asked for.
+
+Old type names from earlier spec versions (grid, mesh, orbits, lattice…)
+are auto-mapped to the closest dithering equivalent, and the old slide-wide
+`color: true` switch still reads as "palette on every layer", so old links
+keep working.
 
 ## Instant links (no AI needed)
 
