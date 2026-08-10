@@ -14,39 +14,57 @@ Live at `/stills`. Curated at `/curate`.
 
 ## Why it is built the way it is
 
-The whole design follows from one constraint: **a browser cannot take a frame
-out of a YouTube or Vimeo embed.** The player is a cross-origin iframe, a
-canvas drawn from it is tainted, and the IFrame API exposes no pixels. There
-is no clever way around it, so "open the video and screenshot it" cannot be a
-feature of the website.
+One constraint shapes everything: **a browser cannot take a frame out of a
+YouTube or Vimeo embed.** The player is a cross-origin iframe, a canvas drawn
+from it is tainted, and the IFrame API exposes no pixels.
 
-The frames therefore get cut where the video file actually exists: in a GitHub
-Actions runner, by `yt-dlp` and `ffmpeg`. The website's job is to decide which
-ones are worth keeping.
+That is true of an *embed*. It is not true of a file you picked off your own
+disk — an object URL is same-origin, the canvas stays clean, and `getImageData`
+works. So there are two ways in, and which one applies depends on whether you
+have the video or only a link to it.
 
-That splits the work in two, and the second half is the interesting one — the
-extractor's suggestions are only ever scene *cuts*, and a cut is not a
-composition. So the extractor also writes a **scrub strip**: one 160px tile per
-second of the film, packed a hundred to a sheet. The Curator scrubs those
-sheets, and marking a moment sends its timestamp back to the extractor to be
-cut at full size. That is how you get frames out of a video the browser is
-never allowed to touch.
+### Two roads
+
+**Drop in a video (the short one).** The browser decodes the file, differences
+downscaled frames to find the cuts, and writes the stills, the thumbs and the
+scrub sheets itself. Nothing is uploaded, nothing runs on a server, and no
+site gets a vote on whether you may have the frames. Only the frames you keep
+are ever committed. `components/stills/localVideo.ts`.
+
+**Fetch it by link (the long one).** For when you don't have the file. A GitHub
+Actions runner downloads it with `yt-dlp`, cuts the frames with `ffmpeg`, and
+commits them. Vimeo and direct media URLs are reliable here; YouTube usually
+refuses — see below. `scripts/stills/extract.mjs`.
+
+Both produce the same thing, and deliberately so: they call the same
+`chooseTimes` in `lib/stills-select.mjs`, so a film curated one way and a film
+curated the other are curated by the same rules. Only the way candidates are
+*found* differs, because that is what each side can do — ffmpeg scores scene
+changes, the browser differences pixels by hand.
+
+### The half that matters
+
+Scene detection finds cuts, and a cut is not a composition. So both roads have
+a second pass for the frames the machine walked past.
+
+With a local file, the Curator just shows you the video: pause anywhere, mark
+the moment, and it is cut at once, exactly. With a link, the video is not in
+the browser to show — so the extractor writes a **scrub strip**, one 160px tile
+per second packed a hundred to a sheet, and the Curator scrubs that instead,
+sending marked timestamps back for a second cutting pass.
+
+Either way the scrub sheets get committed, so a project can be scrubbed again
+months later when the file is long gone.
 
 ## The loop
 
-1. **Paste a URL** into the Curator. It dispatches `.github/workflows/stills.yml`
-   straight from the browser.
-2. **The extractor runs** (a few minutes): downloads the video, scene-detects
-   candidates, throws away the black and the flat, cuts a full-size still and a
-   400px thumb for each, builds the scrub sheets, and commits the lot as a
-   **draft**.
-3. **Curate.** Drop what isn't a style frame. Tag it, credit it, pick a cover.
-4. **Scrub for what it missed.** Mark moments, hit Cut, and the second pass
-   adds exactly those timestamps.
-5. **Publish.** Only published projects reach the wall.
+1. **Drop in a video**, or paste a link and wait for the runner.
+2. **Curate.** Drop what isn't a style frame. Tag it, credit it, pick a cover.
+3. **Find what it missed.** Mark moments and cut them.
+4. **Publish.** Only published projects reach the wall.
 
-Steps 2 and 4 are the same workflow. Empty `times` means "suggest"; a list of
-seconds means "cut exactly these".
+For the link road, steps 1 and 3 are the same workflow: empty `times` means
+"suggest", a list of seconds means "cut exactly these".
 
 ## The pieces
 
@@ -55,6 +73,8 @@ seconds means "cut exactly these".
 | `content/stills/projects.json` | The only source of truth. Every project, every frame, the scrub sheets. |
 | `public/stills/<project-id>/` | The images. Full size, `.thumb`, and `scrub-NNN.jpg`. |
 | `lib/stills-shared.ts` | Types and pure helpers. No data — safe in a client component. |
+| `lib/stills-select.mjs` | Which moments to keep. Plain JS with no imports, because Node and the browser both need it and can share nothing else. |
+| `components/stills/localVideo.ts` | The browser extractor: decode, difference, cut, tile. |
 | `lib/stills.ts` | Reads projects.json. **Server components only.** |
 | `scripts/stills/extract.mjs` | The extractor. yt-dlp + ffmpeg. |
 | `scripts/stills/prune.mjs` | Deletes images no project claims any more. |
@@ -62,7 +82,9 @@ seconds means "cut exactly these".
 | `components/pages/StillsPage.tsx` | The wall. |
 | `components/pages/StillsProjectPage.tsx` | One project. |
 | `components/stills/Curator.tsx` | The curation tool at `/curate`. |
-| `components/stills/Scrubber.tsx` | The sprite-sheet scrubber. |
+| `components/stills/Scrubber.tsx` | The sprite-sheet scrubber, for projects whose file is gone. |
+| `components/stills/LocalExtractor.tsx` | The drop-in-a-video half of the Curator. |
+| `components/stills/FrameGrid.tsx` | The frame grid, shared by both halves. |
 
 **The entries are data, the framing is copy** — the same split the Directory
 keeps. The wall's intro lives in `content/site.json` under `stills` and is
@@ -104,7 +126,11 @@ The extractor already tries six of YouTube's player clients before giving up
 (`YT_CLIENTS` in `extract.mjs`) — which of them is being served changes month
 to month, so one of them often still works. That is a moving target, not a fix.
 
-**The reliable fix is cookies.** Add one repository secret, used only inside
+**The short answer is to stop asking YouTube.** Download the video however you
+normally would and drop the file into the Curator — the browser cuts the frames
+with nobody's permission, and it is faster than the runner anyway.
+
+**If you want the link road to work,** the fix is cookies. Add one repository secret, used only inside
 Actions:
 
 | Secret | What |
@@ -141,8 +167,12 @@ changing `assetBase` — not touching a component.
 
 ## Housekeeping
 
-Dropping a frame in the Curator removes it from `projects.json` and leaves the
-file behind. That is deliberate: publishing stays a single small JSON write
+This only applies to the link road. A local extraction uploads nothing until
+you publish, so a frame you dropped was never committed and leaves nothing
+behind.
+
+Dropping a frame from a project the *runner* cut removes it from
+`projects.json` and leaves the file behind. That is deliberate: publishing stays a single small JSON write
 through the contents API instead of a multi-file tree commit that can half-fail.
 Sweep up when it bothers you, from a fresh pull:
 

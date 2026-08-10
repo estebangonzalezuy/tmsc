@@ -58,23 +58,47 @@ jobs:
         with:
           node-version: 22
 
+      # Said before the four minutes of apt and downloading, not after, so the
+      # log leads with the thing you can act on. A warning rather than a
+      # failure: the extractor still tries every player client, and one of
+      # them sometimes gets through without cookies.
+      - name: Say if YouTube is likely to refuse
+        env:
+          URL: ${{ inputs.url }}
+          HAS_COOKIES: ${{ secrets.YTDLP_COOKIES != '' }}
+        run: |
+          case "$URL" in
+            *youtube.com*|*youtu.be*)
+              if [ "$HAS_COOKIES" != "true" ]; then
+                echo "::warning::YouTube link and no YTDLP_COOKIES secret. YouTube usually refuses GitHub's runners without one — see docs/THE-STILLS.md. Trying anyway; a Vimeo link never needs this."
+              fi ;;
+          esac
+
       - name: Install yt-dlp and ffmpeg
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg
           python3 -m pip install --quiet --upgrade yt-dlp
 
+      # Inputs reach the shell as environment variables, never as ${{ }} inside
+      # a run block: that interpolation is pasted in before bash sees it, so a
+      # URL with a quote in it would be running as script.
       - name: Extract the frames
         env:
           YTDLP_COOKIES: ${{ secrets.YTDLP_COOKIES }}
+          URL: ${{ inputs.url }}
+          PROJECT_ID: ${{ inputs.id }}
+          TIMES: ${{ inputs.times }}
+          COUNT: ${{ inputs.count }}
         run: |
-          node scripts/stills/extract.mjs \
-            --url "${{ inputs.url }}" \
-            ${{ inputs.id && format('--id "{0}"', inputs.id) || '' }} \
-            ${{ inputs.times && format('--times "{0}"', inputs.times) || '' }} \
-            --count "${{ inputs.count || '18' }}"
+          args=(--url "$URL" --count "${COUNT:-18}")
+          if [ -n "$PROJECT_ID" ]; then args+=(--id "$PROJECT_ID"); fi
+          if [ -n "$TIMES" ]; then args+=(--times "$TIMES"); fi
+          node scripts/stills/extract.mjs "${args[@]}"
 
       - name: Commit what it found
+        env:
+          URL: ${{ inputs.url }}
         run: |
           git config user.name "the Stills"
           git config user.email "stills@themotionsocialclub.invalid"
@@ -83,7 +107,7 @@ jobs:
             echo "Nothing new — every moment asked for was already in the project."
             exit 0
           fi
-          git commit -m "Extract stills from ${{ inputs.url }}"
+          git commit -m "Extract stills from $URL"
           # The Studio publishes to main straight from the browser and may
           # land between the checkout and the push. Rebase and retry rather
           # than fail a run that did real work.

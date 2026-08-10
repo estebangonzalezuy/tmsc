@@ -193,13 +193,26 @@ Same split as the Directory: **the frames are data, the framing is copy.** The
 frames live in `content/stills/projects.json` and `public/stills/`; the wall's
 intro copy lives in `content/site.json` under `stills`, edited in the Studio.
 
-The one constraint that shapes it: a browser cannot take a frame out of a
-YouTube or Vimeo embed (cross-origin, tainted canvas). So the cutting happens
-in GitHub Actions — `scripts/stills/extract.mjs` with yt-dlp and ffmpeg, run
-from `.github/workflows/stills.yml` — and the site's job is choosing. The
-extractor also writes a per-second sprite sheet so the Curator (`/curate`) can
-scrub a video it is never allowed to play, and send marked timestamps back for
-a second cutting pass. Keep those two passes in one workflow.
+The constraint that shapes it: a browser cannot take a frame out of a YouTube
+or Vimeo *embed* (cross-origin, tainted canvas) — but it can from a file the
+owner picked off their own disk, where the canvas stays clean. Hence two roads
+into the Curator (`/curate`), and they must stay interchangeable:
+
+- **Drop in a video** — `components/stills/localVideo.ts` decodes, differences
+  frames for cuts, and writes stills, thumbs and scrub sheets in the browser.
+  Nothing uploads until Publish, which lands everything as one commit through
+  the Git Data API. This is the road that works when YouTube refuses.
+- **Fetch by link** — `scripts/stills/extract.mjs` (yt-dlp + ffmpeg) in
+  `.github/workflows/stills.yml`, for when there is no file. Its two passes,
+  suggest and cut-these-timestamps, stay in one workflow.
+
+Both call `chooseTimes` in `lib/stills-select.mjs` — plain JS with no imports
+precisely because Node and the browser both need it and can share nothing
+else. Keep it that way; two copies of the selection rules would mean the same
+film curated differently depending on how it arrived.
+
+The per-second sprite sheets are committed by both roads, so a project can be
+scrubbed again long after the file is gone.
 
 Don't add a generated `wall.json`: the lean index the wall filters over is
 derived by `buildWall` at build time precisely so there is one implementation

@@ -32,6 +32,13 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import {
+  chooseTimes,
+  frameId,
+  greyStats,
+  isWorthKeeping,
+  slugify,
+} from "../../lib/stills-select.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const PROJECTS = path.join(root, "content/stills/projects.json");
@@ -40,8 +47,6 @@ const ASSETS = path.join(root, "public/stills");
 /* How many suggestions a first pass aims for. Enough to see the film's range,
    few enough to judge in one screenful. */
 const DEFAULT_COUNT = 18;
-/* Two candidates closer together than this are the same idea twice. */
-const MIN_GAP = 2.0;
 /* Long edge of a published still. 1600 is generous on a wall and still small
    enough that a project costs a couple of megabytes. */
 const FULL_WIDTH = 1600;
@@ -89,18 +94,6 @@ function runBinary(cmd, args) {
 }
 
 /* ---------- the source video ---------- */
-
-export function slugify(text) {
-  return (
-    text
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "untitled"
-  );
-}
 
 export function platformOf(extractor, url) {
   const key = `${extractor} ${url}`.toLowerCase();
@@ -154,8 +147,12 @@ function ytArgs(cookies, client) {
  *  Also settles which player client works, so the download can reuse it
  *  instead of rediscovering it. */
 async function probeSource(url, cookies) {
+  // Only YouTube plays this game. A private Vimeo also says "use --cookies",
+  // and hunting through YouTube player clients for it would waste five
+  // attempts and then blame the wrong site in the error.
+  const isYouTube = platformOf("", url) === "youtube";
   // With cookies there is nothing to negotiate; without them, hunt.
-  const candidates = cookies ? [null] : YT_CLIENTS;
+  const candidates = isYouTube && !cookies ? YT_CLIENTS : [null];
   let lastError;
 
   for (const client of candidates) {
@@ -179,7 +176,9 @@ async function probeSource(url, cookies) {
       if (!isBotCheck(err.message)) throw err;
     }
   }
-  throw new Error(BOT_CHECK_HELP + `\n\nyt-dlp said:\n${lastError.message}`);
+  throw new Error(
+    (isYouTube ? BOT_CHECK_HELP + "\n\nyt-dlp said:\n" : "") + lastError.message,
+  );
 }
 
 async function download(url, dir, cookies, client) {
@@ -276,38 +275,6 @@ async function sceneCuts(file, threshold) {
   return parseSceneCuts(`${stdout}\n${stderr}`);
 }
 
-/** A spread, not a top-N. Slice the timeline into `count` buckets and take
- *  the strongest cut in each: you get the film's range instead of ten frames
- *  from its busiest ten seconds. Buckets with no cut fall back to their own
- *  midpoint, so a slow film still yields a full sheet. */
-export function chooseTimes(cuts, duration, count) {
-  const start = Math.min(0.5, duration * 0.02);
-  const end = Math.max(start, duration - 0.3);
-  const span = end - start;
-  if (span <= 0) return [];
-
-  const picked = [];
-  for (let i = 0; i < count; i++) {
-    const from = start + (span * i) / count;
-    const to = start + (span * (i + 1)) / count;
-    const inBucket = cuts.filter((c) => c.t >= from && c.t < to);
-    if (inBucket.length) {
-      inBucket.sort((a, b) => b.score - a.score);
-      // A cut is the first frame of a new shot; a breath later is usually the
-      // composed one, not the one caught mid-transition.
-      picked.push(Math.min(inBucket[0].t + 0.35, end));
-    } else {
-      picked.push((from + to) / 2);
-    }
-  }
-
-  const spaced = [];
-  for (const t of picked.sort((a, b) => a - b)) {
-    if (!spaced.length || t - spaced[spaced.length - 1] >= MIN_GAP) spaced.push(t);
-  }
-  return spaced;
-}
-
 /** Mean and spread of an 8x8 grey thumbnail of one frame. Cheap enough to run
  *  on every candidate, and it catches the three things nobody wants on a
  *  wall: black, blown out, and a flat colour card. */
@@ -330,18 +297,7 @@ async function frameStats(file, t) {
     "gray",
     "-",
   ]);
-  if (!buf.length) return null;
-  const values = [...buf];
-  const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance =
-    values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
-  return { mean, deviation: Math.sqrt(variance) };
-}
-
-export function isWorthKeeping(stats) {
-  if (!stats) return false;
-  if (stats.mean < 10 || stats.mean > 248) return false; // black, or blown out
-  return stats.deviation >= 3; // a flat card is not a style frame
+  return greyStats([...buf]);
 }
 
 /* ---------- writing the images ---------- */
@@ -373,12 +329,6 @@ async function grabFrame(video, t, dir, format) {
     path.join(dir, thumb),
   ]);
   return { id, full, thumb };
-}
-
-/** Mirrors frameId in lib/stills-shared.ts — the site and the extractor have
- *  to agree on what a moment is called. */
-export function frameId(t) {
-  return `t${String(Math.round(t * 1000)).padStart(8, "0")}`;
 }
 
 async function buildScrub(video, dir, duration, width, height) {

@@ -143,6 +143,129 @@ export async function dispatchExtract(
   }
 }
 
+/* ---------- committing a whole project at once ---------- */
+
+/** Base64 of a Blob, in chunks: a 200KB frame is 200k arguments to
+ *  String.fromCharCode otherwise, and that overflows the call stack. */
+async function blobToBase64(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
+async function gh<T>(
+  token: string,
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await fetch(`https://api.github.com/repos/${GH_REPO}${path}`, {
+    ...init,
+    headers: { ...headers(token), ...(init?.headers ?? {}) },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(explain(res.status));
+  return (await res.json()) as T;
+}
+
+export type CommitProgress = (done: number, total: number) => void;
+
+/** One commit carrying the project's JSON and every image it just cut.
+ *
+ *  The contents API writes a single file, which is all the Curator needed
+ *  while the extractor lived in Actions. A local extraction produces forty
+ *  blobs and a JSON that references them, and forty commits would mean forty
+ *  broken intermediate states on main, each one a deploy. So this goes
+ *  through the Git Data API: blobs, one tree, one commit, one ref move.
+ *
+ *  `text` and `binaries` are keyed by repo-relative path. */
+export async function commitFiles(
+  token: string,
+  {
+    message,
+    text = {},
+    binaries = new Map<string, Blob>(),
+    onProgress,
+  }: {
+    message: string;
+    text?: Record<string, string>;
+    binaries?: Map<string, Blob>;
+    onProgress?: CommitProgress;
+  },
+): Promise<string> {
+  const total = Object.keys(text).length + binaries.size + 3;
+  let done = 0;
+  const tick = () => onProgress?.(++done, total);
+
+  const ref = await gh<{ object: { sha: string } }>(
+    token,
+    `/git/ref/heads/${GH_BRANCH}`,
+  );
+  const headSha = ref.object.sha;
+  const head = await gh<{ tree: { sha: string } }>(
+    token,
+    `/git/commits/${headSha}`,
+  );
+  tick();
+
+  const tree: { path: string; mode: "100644"; type: "blob"; sha: string }[] = [];
+
+  for (const [path, content] of Object.entries(text)) {
+    const blob = await gh<{ sha: string }>(token, "/git/blobs", {
+      method: "POST",
+      body: JSON.stringify({ content, encoding: "utf-8" }),
+    });
+    tree.push({ path, mode: "100644", type: "blob", sha: blob.sha });
+    tick();
+  }
+
+  for (const [path, file] of binaries) {
+    const blob = await gh<{ sha: string }>(token, "/git/blobs", {
+      method: "POST",
+      body: JSON.stringify({
+        content: await blobToBase64(file),
+        encoding: "base64",
+      }),
+    });
+    tree.push({ path, mode: "100644", type: "blob", sha: blob.sha });
+    tick();
+  }
+
+  const created = await gh<{ sha: string }>(token, "/git/trees", {
+    method: "POST",
+    body: JSON.stringify({ base_tree: head.tree.sha, tree }),
+  });
+  tick();
+
+  const commit = await gh<{ sha: string }>(token, "/git/commits", {
+    method: "POST",
+    body: JSON.stringify({ message, tree: created.sha, parents: [headSha] }),
+  });
+
+  // Not forced: if the Studio published while this was uploading, the ref has
+  // moved and this must fail loudly rather than drop somebody else's commit.
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_REPO}/git/refs/heads/${GH_BRANCH}`,
+    {
+      method: "PATCH",
+      headers: headers(token),
+      body: JSON.stringify({ sha: commit.sha, force: false }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(
+      res.status === 422
+        ? "Something else pushed to main while this was uploading. Reload and publish again — the frames are still in the browser."
+        : explain(res.status),
+    );
+  }
+  tick();
+  return commit.sha;
+}
+
 export type Run = {
   id: number;
   status: string;

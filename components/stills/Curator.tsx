@@ -1,8 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element -- the Curator shows the files the
-   extractor wrote, at the size it wrote them. */
-
 import Link from "next/link";
 import {
   useCallback,
@@ -21,6 +18,11 @@ import {
   type Run,
 } from "@/components/stills/github";
 import Scrubber from "@/components/stills/Scrubber";
+import LocalExtractor from "@/components/stills/LocalExtractor";
+import FrameGrid, {
+  ProjectFields,
+  inputClass,
+} from "@/components/stills/FrameGrid";
 import { frameSrc, timecode } from "@/lib/stills-shared";
 import type { Frame, Project, StillsData } from "@/lib/stills-shared";
 
@@ -278,19 +280,28 @@ export default function Curator() {
     <Shell>
       <StatusLine status={status} />
 
+      <LocalExtractor
+        token={token}
+        assetBase={data.assetBase}
+        onPublished={() => load(true)}
+      />
+
       <section className="border border-line p-5 space-y-4">
-        <h2 className="font-serif text-2xl">Add a video</h2>
+        <h2 className="font-serif text-2xl">Or fetch one by link</h2>
         <p className="text-sm text-muted leading-relaxed">
-          YouTube, Vimeo, anything yt-dlp can read. The extractor downloads it,
-          suggests frames by scene detection and builds the scrubber. It takes
-          a few minutes and lands as a draft.
+          For when you don&rsquo;t have the file. A runner downloads it with
+          yt-dlp and cuts the frames there — a few minutes, and it lands as a
+          draft below. Vimeo and direct .mp4 links are reliable; YouTube
+          usually refuses GitHub&rsquo;s servers unless the{" "}
+          <code>YTDLP_COOKIES</code> secret is set, so for YouTube the drop-in
+          above is the shorter road.
         </p>
         <div className="flex flex-col md:flex-row gap-3">
           <input
             type="url"
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
-            placeholder="https://vimeo.com/…"
+            placeholder="https://vimeo.com/… or https://…/film.mp4"
             className="flex-1 border border-line bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground"
           />
           <label className="flex items-center gap-2 text-xs text-muted">
@@ -330,8 +341,7 @@ export default function Curator() {
           <p className="text-sm text-muted">Reading…</p>
         ) : data.projects.length === 0 ? (
           <p className="text-sm text-muted">
-            Nothing yet. Paste a video above and the first draft appears here
-            when the run finishes.
+            Nothing yet. Drop in a video above, or fetch one by link.
           </p>
         ) : (
           <div className="space-y-4">
@@ -361,48 +371,7 @@ export default function Curator() {
               </span>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Title">
-                <input
-                  value={selected.title}
-                  onChange={(e) => patch({ title: e.target.value })}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Credit — studio, director">
-                <input
-                  value={selected.credit}
-                  onChange={(e) => patch({ credit: e.target.value })}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Year">
-                <input
-                  value={selected.year}
-                  onChange={(e) => patch({ year: e.target.value })}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Tags — comma separated">
-                <input
-                  value={selected.tags.join(", ")}
-                  onChange={(e) =>
-                    patch({ tags: e.target.value.split(",").map((t) => t.trim()) })
-                  }
-                  placeholder="3d, type, warm, product"
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-
-            <Field label="Note — why this one is worth looking at">
-              <textarea
-                value={selected.note ?? ""}
-                onChange={(e) => patch({ note: e.target.value })}
-                rows={3}
-                className={inputClass}
-              />
-            </Field>
+            <ProjectFields project={selected} onPatch={patch} />
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <label className="flex items-center gap-2 text-sm">
@@ -451,22 +420,35 @@ export default function Curator() {
             </div>
           </section>
 
-          <FrameGrid
-            project={selected}
-            assetBase={data.assetBase}
-            dropped={dropped}
-            activeFrame={activeFrame}
-            onActivate={setActiveFrame}
-            onToggleDrop={(id) =>
-              setDropped((current) =>
-                current.includes(id)
-                  ? current.filter((x) => x !== id)
-                  : [...current, id],
-              )
-            }
-            onCover={(id) => patch({ cover: id })}
-            onFrameChange={patchFrame}
-          />
+          <section className="border border-line p-5 space-y-5">
+            <div>
+              <h2 className="font-serif text-2xl">The frames</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted leading-relaxed">
+                Drop what isn&apos;t a style frame. Click one to tag it or make
+                it the cover. Images appear once Vercel has deployed the
+                extractor&apos;s commit.
+              </p>
+            </div>
+            <FrameGrid
+              frames={selected.frames}
+              cover={selected.cover}
+              dropped={dropped}
+              activeFrame={activeFrame}
+              srcFor={(frame) =>
+                frameSrc(data.assetBase, selected.id, frame, "thumb")
+              }
+              onActivate={setActiveFrame}
+              onToggleDrop={(id) =>
+                setDropped((current) =>
+                  current.includes(id)
+                    ? current.filter((x) => x !== id)
+                    : [...current, id],
+                )
+              }
+              onCover={(id) => patch({ cover: id })}
+              onFrameChange={patchFrame}
+            />
+          </section>
 
           {selected.scrub ? (
             <section className="border border-line p-5 space-y-5">
@@ -529,9 +511,6 @@ export default function Curator() {
 }
 
 /* ---------- pieces ---------- */
-
-const inputClass =
-  "w-full border border-line bg-background px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -695,137 +674,6 @@ function ProjectRow({
         })}
       </div>
     </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block space-y-1">
-      <span className="block text-xs text-muted">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function FrameGrid({
-  project,
-  assetBase,
-  dropped,
-  activeFrame,
-  onActivate,
-  onToggleDrop,
-  onCover,
-  onFrameChange,
-}: {
-  project: Project;
-  assetBase: string;
-  dropped: string[];
-  activeFrame: string;
-  onActivate: (id: string) => void;
-  onToggleDrop: (id: string) => void;
-  onCover: (id: string) => void;
-  onFrameChange: (id: string, changes: Partial<Frame>) => void;
-}) {
-  const active = project.frames.find((f) => f.id === activeFrame);
-
-  return (
-    <section className="border border-line p-5 space-y-5">
-      <div>
-        <h2 className="font-serif text-2xl">The frames</h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted leading-relaxed">
-          Drop what isn&apos;t a style frame. Click one to tag it or make it the
-          cover. Images appear once Vercel has deployed the extractor&apos;s
-          commit — about a minute after the run finishes.
-        </p>
-      </div>
-
-      {project.frames.length === 0 ? (
-        <p className="text-sm text-muted">
-          No frames yet. The run may still be going.
-        </p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-line">
-          {project.frames.map((frame) => {
-            const out = dropped.includes(frame.id);
-            const isCover = frame.id === project.cover;
-            return (
-              <div
-                key={frame.id}
-                className="relative aspect-video bg-background overflow-hidden"
-              >
-                <button
-                  onClick={() => onActivate(frame.id)}
-                  className="absolute inset-0 block"
-                  aria-label={`Inspect frame at ${timecode(frame.t)}`}
-                >
-                  <img
-                    src={frameSrc(assetBase, project.id, frame, "thumb")}
-                    alt=""
-                    loading="lazy"
-                    className={`h-full w-full object-cover transition-opacity ${
-                      out ? "opacity-20" : ""
-                    }`}
-                  />
-                </button>
-                <span className="pointer-events-none absolute bottom-0 left-0 bg-background px-1.5 py-0.5 text-[10px]">
-                  {timecode(frame.t)}
-                  {frame.origin === "hand" && " ✋"}
-                </span>
-                {isCover && (
-                  <span className="pointer-events-none absolute top-0 left-0 bg-foreground text-background px-1.5 py-0.5 text-[10px]">
-                    cover
-                  </span>
-                )}
-                {frame.id === activeFrame && (
-                  <span className="pointer-events-none absolute inset-0 border-2 border-foreground" />
-                )}
-                <button
-                  onClick={() => onToggleDrop(frame.id)}
-                  className="absolute top-0 right-0 bg-background border-l border-b border-line px-2 py-0.5 text-[10px] hover:bg-foreground hover:text-background transition-colors"
-                >
-                  {out ? "keep" : "drop"}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {active && (
-        <div className="border border-line p-4 space-y-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <p className="text-sm">Frame at {timecode(active.t)}</p>
-            <button
-              onClick={() => onCover(active.id)}
-              className="text-xs underline underline-offset-4 hover:text-muted transition-colors"
-            >
-              Make it the cover
-            </button>
-          </div>
-          <Field label="Tags for this frame — comma separated, on top of the project's">
-            <input
-              value={(active.tags ?? []).join(", ")}
-              onChange={(e) =>
-                onFrameChange(active.id, {
-                  tags: e.target.value
-                    .split(",")
-                    .map((t) => t.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="grain, split complementary, kinetic type"
-              className={inputClass}
-            />
-          </Field>
-        </div>
-      )}
-    </section>
   );
 }
 
