@@ -1,24 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The club's circled letter — the lowercase t of tMSC — inverted so it
-       survives 16px: an outlined ring and a hairline letter turn to mush at
-       favicon size, a filled disc doesn't. Drawn as strokes rather than set
-       as text, so it renders identically everywhere instead of following
-       whatever serif the viewer's system happens to have. The stem carries a
-       tail: a bare cross reads as a plus sign at small sizes. -->
-  <circle cx="16" cy="16" r="16" fill="#0d0d0d" />
-  <path
-    d="M14.9 7.5 V19.4 c0 2.1 1.9 3.1 4.2 2.4"
-    fill="none"
-    stroke="#ffffff"
-    stroke-width="2.6"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M10.2 12.4 H20"
-    fill="none"
-    stroke="#ffffff"
-    stroke-width="2.6"
-    stroke-linecap="square"
-  />
+  <!-- A globe: the club's outlined circle, given an equator and a meridian.
+       Black on white, like the rest of the site. Drawn as three strokes and
+       no more, because a full wireframe of parallels turns to gray mush at
+       16px. The white ground is a disc rather than the full square so the
+       mark keeps a clean silhouette in dark browser chrome, where a square
+       reads as a sticker; on a white tab bar the two are identical. Weights
+       are tuned for 16px: the ring is heaviest, the equator and meridian a
+       step lighter, so the silhouette reads first and the detail second. -->
+  <circle cx="16" cy="16" r="16" fill="#ffffff" />
+  <g fill="none" stroke="#0d0d0d" stroke-linecap="round">
+    <circle cx="16" cy="16" r="12" stroke-width="2.6" />
+    <path d="M4.6 16 H27.4" stroke-width="2" />
+    <ellipse cx="16" cy="16" rx="5.6" ry="12" stroke-width="2" />
+  </g>
 </svg>
