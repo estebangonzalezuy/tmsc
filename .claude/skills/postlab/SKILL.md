@@ -86,6 +86,19 @@ and dithered once, so the output stays hard-edged pixels. This is where the
 good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
 `mul`, `letter` + `noise` on `sub`.
 
+**A photograph is a form.** `pattern: "photo"` with a `src` on the layer —
+a path on this site (`/stills/x.jpg`, travels in the link) or `local:<id>`
+(a file in the owner's browser, doesn't). It gets sampled and thresholded
+like everything else, so it mixes, folds, screens and inks the same way.
+`exposure` (0.2-2.5) is gamma before the threshold; `fit` is cover or
+contain. Never invent a `src` — without a real one the layer is blank.
+
+**Headlines.** `titleSize` is `s | m | l | fit`. `fit` grows the headline
+until it fills the frame inside the margin, so short copy comes out
+enormous and long copy comes out smaller, and neither overflows. Optional
+`titleWeight` (100-900; serif caps at 700, gothic at 400) and `margin`
+(24-240, default 96).
+
 **Parameters can travel.** A `forms` layer may carry `motion`, a map of
 parameter name to `{ to, wave, cycles, phase }` — the parameter's own value
 is where the trip starts, `to` is where it goes, `wave` is

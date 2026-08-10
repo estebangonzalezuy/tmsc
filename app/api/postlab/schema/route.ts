@@ -36,6 +36,8 @@ export function GET() {
       "The older `color: true` switch still works and is read as \"put the palette on every layer\"; new specs should set `ink` per layer instead.",
       "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds shapes the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word)|spiral|grid|blobs|tunnel|noise|moire, with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
       "Forms combine. A 'forms' layer can name a second shape in `pattern2` and fold it into the first with `mix` (add|sub|mul|diff|max|min; 'solo' ignores it), and mirror the result with `fold` (x|y|quad|radial). Both sources are mixed as grayscale and dithered once, so the output is still hard-edged pixels — that is the rule the tool keeps. `dtype` picks the screen: 4x4|8x8|2x2 ordered matrices, 'lines' for an engraving screen, 'noise' for a grainy one. Combining is where the interesting backgrounds are: moire + rings on diff, grid + blobs on mul, letter + noise on sub.",
+      "A photograph is a form. Set a forms layer's `pattern` (or `pattern2`) to \"photo\" and give the layer a `src`: a path on this site (\"/stills/x.jpg\") travels in the link; \"local:<id>\" is a file the owner picked, which lives in that one browser. The picture is sampled at the dither cell size and thresholded like every other form, so it can be mixed, folded, screened and inked exactly the same way. `exposure` (0.2-2.5) is gamma on the picture before the threshold — the knob that decides how much of it survives; `fit` is \"cover\" (default) or \"contain\". Never invent a `src`: without a real one the layer draws nothing.",
+      "Headlines: `titleSize` is 's' | 'm' | 'l' | 'fit'. 'fit' grows the headline until it fills the frame inside the margin, so short copy comes out enormous and long copy comes out smaller and neither ever overflows — use it for poster-like slides and keep the copy short. `titleWeight` (100-900, capped at 700 for the serif and 400 for the gothic) and `margin` (24-240, default 96) are both optional.",
       "Parameters can travel instead of holding still. A 'forms' layer may carry `motion`: { \"<param>\": { \"to\": <number>, \"wave\": \"sin\"|\"tri\"|\"saw\"|\"square\", \"cycles\": <whole number 1-8>, \"phase\": 0-1 } }. The parameter's own value is where the trip starts and `to` is where it goes; `cycles` is trips per loop and is forced to a whole number, which is what keeps the post seamless. Animatable: every numeric parameter of the layer plus offsetX, offsetY, scale, rotation. This is the single biggest difference between a background that reads as a pattern and one that reads as motion — a drifting `density` or `warp` is usually enough.",
       "Looping: the club's own 'forms' renderer always returns to its first frame at the end of the post, so an exported reel loops. The WebGL 'dithering' shader does not, except for shape 'swirl' (which ignores time) or speed 0 — a clip containing any other dithering shape has a visible jump. Prefer 'forms' for anything that will be posted as a loop.",
       "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story|landscape&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
@@ -66,7 +68,12 @@ export function GET() {
           titleFont:
             "'serif' (Lora, editorial) | 'sans' (Archivo, poster) | 'gothic' (Pirata One, blackletter)",
           italic: "boolean, serif italic is the club's emphasis voice",
-          titleSize: "'s' | 'm' | 'l'",
+          titleSize:
+            "'s' | 'm' | 'l' | 'fit' — 'fit' grows the headline to fill the frame inside the margin, whatever the length",
+          titleWeight:
+            "optional number 100-900 on the variable fonts (serif caps at 700, gothic at 400). Omit for each family's usual weight.",
+          margin:
+            "optional number 24-240 (default 96) — the frame's breathing room, in design units at 1080 wide",
           boxed: "boolean — outlined box around the headline (poster motif)",
           plate: "boolean — filled background behind the headline, guarantees legibility over busy shaders",
           align: "'left' | 'center'",
@@ -95,6 +102,9 @@ export function GET() {
             "only with ink:\"mix\" — 1-12 (default 3), the size in dither cells of one patch of colour.",
           "layers[].mixSpeed":
             "only with ink:\"mix\" — 0-3 (default 1), how fast colour travels through the list, as a multiple of the layer's speed. 0 holds it still.",
+          "layers[].src":
+            "only with pattern 'photo' — a path on this site, or 'local:<id>' for a file kept in the owner's browser. Don't invent one.",
+          "layers[].fit": "only with pattern 'photo' — 'cover' (default) | 'contain'",
           "layers[].motion":
             "only on 'forms' layers — parameters that travel over the loop instead of holding still, keyed by parameter name: { \"density\": { \"to\": 18, \"wave\": \"sin\", \"cycles\": 2 } }. See the motion note in writing_guidance.",
           shader:

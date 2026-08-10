@@ -21,23 +21,28 @@ import {
   PALETTE,
   PRESETS,
   SHADERS,
+  SPEC_VERSION,
   WAVES,
   animatable,
   applyStyle,
   decodeSpec,
   defaultLayer,
+  defaultSlide,
   defaultSpec,
   loopReport,
   randomShader,
+  randomSlide,
   encodeSpec,
   normalizeSpec,
   shaderDef,
   slideTones,
   specFromQuery,
   styleOf,
+  usesPhoto,
   varyStyle,
   type LayerSpec,
   type Motion,
+  type PostFormat,
   type PostSpec,
   type ShaderControl,
   type ShaderType,
@@ -47,7 +52,14 @@ import {
 } from "@/lib/postlab";
 import ShaderLayer from "./ShaderLayer";
 import { drawOverlay, loadFonts, type Fonts } from "./overlay";
-import { canRenderDirectly, exportPng, recordGif, recordVideo } from "./exporter";
+import {
+  canRenderDirectly,
+  exportPng,
+  paintSlide,
+  recordGif,
+  recordVideo,
+} from "./exporter";
+import { loadSlidePhotos, photoUrl, readFile, savePhoto } from "./photos";
 
 /* ------------------------------------------------------------- panel bits */
 
@@ -192,6 +204,46 @@ function Swatches({
         />
       ))}
     </div>
+  );
+}
+
+/* One generated candidate, drawn for real: the same renderer, the same
+   spec, just small. Rendered at half size and shown smaller still, so the
+   dither cells land where they will in the finished post rather than
+   turning to mush at thumbnail scale. */
+function Candidate({
+  style,
+  format,
+  duration,
+  onPick,
+}: {
+  style: SlideStyle;
+  format: PostFormat;
+  duration: number;
+  onPick: () => void;
+}) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const w = Math.round(FORMATS[format].w / 2);
+  const h = Math.round(FORMATS[format].h / 2);
+
+  useEffect(() => {
+    const ctx = ref.current?.getContext("2d");
+    if (!ctx) return;
+    const slide = { ...defaultSlide(), ...style, text: false } as SlideSpec;
+    const spec: PostSpec = { v: SPEC_VERSION, format, duration, slides: [slide] };
+    /* One frame, a third of the way in — far enough that a travelling
+       parameter has gone somewhere. */
+    paintSlide(ctx, spec, 0, w, h, duration / 3);
+  }, [style, format, duration, w, h]);
+
+  return (
+    <button
+      onClick={onPick}
+      title="Use this one"
+      className="block w-full border border-line hover:border-foreground transition-colors"
+    >
+      <canvas ref={ref} width={w} height={h} className="block w-full h-auto" />
+    </button>
   );
 }
 
@@ -340,6 +392,9 @@ export default function PostLab() {
      clipboard, and it dies with the tab like one. */
   const [styleClip, setStyleClip] = useState<SlideStyle | null>(null);
   const [wiggle, setWiggle] = useState(0.25);
+  /* A sheet of rolled looks to choose from. Also outside the spec: they're
+     candidates, and only the one you pick becomes the post. */
+  const [sheet, setSheet] = useState<SlideStyle[]>([]);
   /* An export setting, not a design one, so it stays out of the spec and
      out of shared links. */
   const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
@@ -470,6 +525,24 @@ export default function PostLab() {
   /* Only the club's own renderer reads a parameter every frame; the WebGL
      shader takes its uniforms once. */
   const canMove = shaderDef(layer.type).kind === "generative";
+  const wantsPhoto = usesPhoto(layer);
+
+  /* What each family is drawn at when nothing has been asked for. */
+  const defaultWeight =
+    slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600;
+
+  /* The file never leaves the browser: the layer keeps a `local:` handle and
+     the picture sits in this device's storage, like the Studio's token. */
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const src = savePhoto(await readFile(file));
+      patchLayer({ src } as Partial<LayerSpec>);
+      say("Photo on this device");
+    } catch {
+      say("Couldn't read that file");
+    }
+  };
 
   /* Give a parameter a wave, or take it away. An empty motion map is
      removed entirely so it never reaches a link. */
@@ -594,6 +667,20 @@ export default function PostLab() {
       ),
     }));
     say(everywhere ? "Pasted on every slide" : "Pasted");
+  };
+
+  /* --------------------------------------------------------- generating */
+
+  /* A sheet of looks rolled from nothing. Picking one puts it on this
+     slide and leaves the words where they are — the whole point is to
+     choose a graphic rather than to build one, so nothing is committed
+     until a thumbnail is clicked. */
+  const roll = (n = 9) => setSheet(Array.from({ length: n }, () => randomSlide()));
+
+  const pickCandidate = (style: SlideStyle) => {
+    patchSlide(structuredClone(style));
+    setActiveLayer(0);
+    say("Applied");
   };
 
   /* New slides carrying this slide's words and a jittered version of its
@@ -766,8 +853,9 @@ export default function PostLab() {
     return Array.from(wrappers ?? []).map((el) => el.querySelector("canvas"));
   };
 
-  const savePng = () => {
+  const savePng = async () => {
     if (!overlayRef.current) return;
+    await loadSlidePhotos(slide.layers);
     exportPng(spec, activeIndex, layerCanvases(), overlayRef.current, fonts, scale);
   };
 
@@ -785,6 +873,8 @@ export default function PostLab() {
         const tag = idx.length > 1 ? `${label} ${i + 1}/${idx.length}` : label;
         setJob({ label: tag, frac: 0 });
         setActive(i);
+        /* Nothing gets exported holding a picture that hasn't decoded. */
+        await loadSlidePhotos(spec.slides[i]?.layers ?? []);
         await new Promise((r) => setTimeout(r, 600));
         await fn(i, (f) => setJob({ label: tag, frac: f }));
       }
@@ -1072,10 +1162,48 @@ export default function PostLab() {
                   { value: "s" as const, label: "S" },
                   { value: "m" as const, label: "M" },
                   { value: "l" as const, label: "L" },
+                  { value: "fit" as const, label: "fit" },
                 ]}
                 onChange={(titleSize) => patchSlide({ titleSize })}
               />
             </Row>
+            <Row label="weight">
+              <input
+                type="range"
+                min={100}
+                max={900}
+                step={100}
+                value={slide.titleWeight ?? defaultWeight}
+                onChange={(e) =>
+                  patchSlide({ titleWeight: Number(e.target.value) })
+                }
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-10 text-right text-xs text-muted">
+                {slide.titleWeight ?? defaultWeight}
+              </span>
+            </Row>
+            <Row label="margin">
+              <input
+                type="range"
+                min={24}
+                max={240}
+                step={4}
+                value={slide.margin ?? 96}
+                onChange={(e) => patchSlide({ margin: Number(e.target.value) })}
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-10 text-right text-xs text-muted">
+                {slide.margin ?? 96}
+              </span>
+            </Row>
+            {slide.titleSize === "fit" && (
+              <p className="text-xs text-muted leading-relaxed">
+                The headline grows until it fills the frame inside the margin.
+                Short copy comes out enormous, long copy comes out smaller, and
+                neither overflows. Line breaks are still yours to place.
+              </p>
+            )}
             <Row label="align">
               <Seg
                 value={slide.align}
@@ -1463,17 +1591,66 @@ export default function PostLab() {
                 </select>
               </Row>
               ))}
-            {def.controls.map((c) => (
-              <ParamRow
-                key={c.key}
-                control={c}
-                value={Number(layer[c.key] ?? c.def)}
-                motion={layer.motion?.[c.key]}
-                canMove={canMove}
-                onChange={(v) => patchLayer({ [c.key]: v })}
-                onMotion={(m) => setMotion(c.key, m)}
-              />
-            ))}
+            {wantsPhoto && (
+              <div className="space-y-2 border-l border-line pl-3">
+                <p className="text-xs text-muted">picture</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <label className="border border-line px-3 py-1.5 text-xs cursor-pointer hover:bg-foreground hover:text-background transition-colors">
+                    {layer.src ? "Replace" : "Choose a file"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => pickPhoto(e.target.files?.[0])}
+                    />
+                  </label>
+                  {layer.src && (
+                    <Button
+                      onClick={() =>
+                        patchLayer({ src: undefined } as Partial<LayerSpec>)
+                      }
+                    >
+                      Remove
+                    </Button>
+                  )}
+                  <Seg
+                    value={layer.fit === "contain" ? "contain" : "cover"}
+                    options={[
+                      { value: "cover" as const, label: "cover" },
+                      { value: "contain" as const, label: "contain" },
+                    ]}
+                    onChange={(fit) =>
+                      patchLayer({
+                        fit: fit === "contain" ? "contain" : undefined,
+                      } as Partial<LayerSpec>)
+                    }
+                  />
+                </div>
+                <p className="text-xs text-muted leading-relaxed">
+                  {!layer.src
+                    ? "The photo becomes a grayscale source like any other form: sampled at the cell size, thresholded, and inked. Mix it, fold it, colour it."
+                    : photoUrl(layer.src)
+                      ? layer.src.startsWith("local:")
+                        ? "This picture lives in this browser only, so a shared link won't carry it. Put the file in public/ and use its path to share one."
+                        : "A path on this site, so this one travels in the link."
+                      : "That picture isn't on this device. Choose the file again, or open the link where it was made."}
+                </p>
+              </div>
+            )}
+            {def.controls
+              /* Exposure is the photo's gamma and means nothing without one. */
+              .filter((c) => c.key !== "exposure" || wantsPhoto)
+              .map((c) => (
+                <ParamRow
+                  key={c.key}
+                  control={c}
+                  value={Number(layer[c.key] ?? c.def)}
+                  motion={layer.motion?.[c.key]}
+                  canMove={canMove}
+                  onChange={(v) => patchLayer({ [c.key]: v })}
+                  onMotion={(m) => setMotion(c.key, m)}
+                />
+              ))}
             <p className="text-[10px] uppercase tracking-wide text-muted pt-1">
               transform
             </p>
@@ -1515,6 +1692,35 @@ export default function PostLab() {
               Drag the canvas to move the selected layer, scroll to scale,
               shift-drag to rotate.
             </p>
+          </Section>
+
+          <Section title="generate">
+            <p className="text-xs text-muted leading-relaxed">
+              Whole looks rolled from nothing: one to three layers, every
+              form, mix, fold, screen and colour in play. Click one to put it
+              on this slide; the words stay where they are.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => roll(9)} primary>
+                {sheet.length ? "Roll again" : "Generate 9"}
+              </Button>
+              {sheet.length > 0 && (
+                <Button onClick={() => setSheet([])}>Clear</Button>
+              )}
+            </div>
+            {sheet.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {sheet.map((s, i) => (
+                  <Candidate
+                    key={i}
+                    style={s}
+                    format={spec.format}
+                    duration={spec.duration}
+                    onPick={() => pickCandidate(s)}
+                  />
+                ))}
+              </div>
+            )}
           </Section>
 
           <Section title="style">

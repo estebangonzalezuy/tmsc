@@ -73,11 +73,17 @@ function circledLetter(
   frameCtx.strokeStyle = ink;
   frameCtx.stroke();
 
+  /* The mask context is shared with the kicker, the body and the footer, so
+     the centring here has to be handed back. Without this, a slide with a
+     letter mark or an orbit ring drew its body copy centred on the left
+     margin — half of it off the canvas. */
+  textCtx.save();
   textCtx.fillStyle = ink;
   textCtx.font = `400 ${Math.round(r * 0.9)}px ${font}`;
   textCtx.textAlign = "center";
   textCtx.textBaseline = "middle";
   textCtx.fillText(ch, x, y + r * 0.05);
+  textCtx.restore();
 }
 
 const RING_TEXT = "THE MOTION SOCIAL CLUB — ";
@@ -153,6 +159,37 @@ function compositeMask(
 }
 
 /**
+ * The largest size at which the headline still fits `maxW` × `maxH` once
+ * wrapped. Binary search rather than arithmetic, because wrapping is a step
+ * function: one more character can cost a whole line.
+ */
+function fitSize(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  font: (px: number) => string,
+  maxW: number,
+  maxH: number,
+): number {
+  const fits = (px: number) => {
+    ctx.font = font(px);
+    const lines = wrap(ctx, text, maxW);
+    if (lines.length * px * 1.12 > maxH) return false;
+    /* A word longer than the frame can't be wrapped out of trouble, so the
+       size has to come down until it fits on its own. */
+    return lines.every((line) => ctx.measureText(line).width <= maxW);
+  };
+  let lo = 12;
+  let hi = 400;
+  if (!text.trim()) return lo;
+  for (let i = 0; i < 18; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) lo = mid;
+    else hi = mid;
+  }
+  return Math.floor(lo);
+}
+
+/**
  * Draw the full text/motif layer for one slide onto a w×h canvas.
  * `time` (seconds) animates the orbit ring; pass 0 for stills.
  */
@@ -173,7 +210,7 @@ export function drawOverlay(
   const h = Math.round(base.h * scale);
   const { ink, bg } = slideTones(slide);
   const u = w / 1080; // design unit: layout was drawn at 1080 wide
-  const pad = 96 * u;
+  const pad = (slide.margin ?? 96) * u;
   const center = slide.align === "center";
 
   ctx.clearRect(0, 0, w, h);
@@ -287,15 +324,20 @@ export function drawOverlay(
   /* Title + body block, vertically centered. Title is its own ink group;
      body is meta. */
   const sizes = { s: 64, m: 92, l: 128 } as const;
-  const titlePx = sizes[slide.titleSize] * u;
-  const titleLH = titlePx * 1.12;
   const bodyPx = 34 * u;
   const bodyLH = bodyPx * 1.45;
   const boxPad = slide.boxed ? 36 * u : 0;
   const maxW = w - 2 * pad - 2 * boxPad;
 
-  const weight =
-    slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600;
+  /* Pirata has one weight drawn and Lora's axis stops at 700; asking a
+     variable font for a weight it doesn't have gets you a synthesised one,
+     which on a headline this size looks like a mistake. */
+  const maxWeight = slide.titleFont === "gothic" ? 400 : slide.titleFont === "serif" ? 700 : 900;
+  const weight = Math.min(
+    maxWeight,
+    slide.titleWeight ??
+      (slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600),
+  );
   const style = slide.italic ? "italic " : "";
   const family =
     slide.titleFont === "serif"
@@ -303,11 +345,28 @@ export function drawOverlay(
       : slide.titleFont === "gothic"
         ? fonts.gothic
         : fonts.sans;
-  tctx.font = `${style}${weight} ${titlePx}px ${family}`;
-  const titleLines = wrap(tctx, slide.title, maxW);
+  const titleFont = (px: number) => `${style}${weight} ${px}px ${family}`;
 
   mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
   const bodyLines = slide.body ? wrap(mctx, slide.body, Math.min(maxW, 720 * u)) : [];
+
+  /* "fit" grows the headline until it fills the frame — as big as the words
+     allow inside the margin, with the kicker, the body and the footer left
+     the room they need. Long copy comes out smaller, short copy comes out
+     enormous, and neither ever overflows. */
+  let titlePx: number;
+  if (slide.titleSize === "fit") {
+    const bodyRoom = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
+    /* Top: kicker and letter mark. Bottom: the rule and the footer line. */
+    const maxH = h - 2 * (pad + 78 * u) - bodyRoom - 2 * boxPad;
+    titlePx = fitSize(tctx, slide.title, titleFont, maxW, Math.max(24 * u, maxH));
+  } else {
+    titlePx = sizes[slide.titleSize] * u;
+  }
+  const titleLH = titlePx * 1.12;
+
+  tctx.font = titleFont(titlePx);
+  const titleLines = wrap(tctx, slide.title, maxW);
 
   const titleH = titleLines.length * titleLH;
   const bodyH = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
@@ -318,7 +377,7 @@ export function drawOverlay(
   tctx.textBaseline = "alphabetic";
   const tx = center ? w / 2 : pad + boxPad;
 
-  tctx.font = `${style}${weight} ${titlePx}px ${family}`;
+  tctx.font = titleFont(titlePx);
   let maxLineW = 0;
   for (const line of titleLines)
     maxLineW = Math.max(maxLineW, tctx.measureText(line).width);
@@ -360,6 +419,10 @@ export function drawOverlay(
   if (bodyLines.length) {
     const by = y + titleH + boxPad + 40 * u;
     mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
+    /* Said out loud rather than inherited: this canvas is shared, and a
+       slide without a kicker never sets it. */
+    mctx.textAlign = center ? "center" : "left";
+    mctx.textBaseline = "alphabetic";
     bodyLines.forEach((line, i) => {
       const lw = mctx.measureText(line).width;
       const lx = center ? w / 2 - lw / 2 : pad;

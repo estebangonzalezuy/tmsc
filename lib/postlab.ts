@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 6;
+export const SPEC_VERSION = 7;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -122,6 +122,13 @@ export type LayerSpec = ShaderSpec & {
       WebGL shader's parameters are uniforms set once per render, and
       pushing new ones every frame is not what it is for. */
   motion?: MotionMap;
+  /** The picture behind a `photo` pattern. Either a path on this site
+      (`/stills/…`, which travels in a link) or `local:<id>` for a file the
+      owner picked, which lives in that browser and nowhere else — the same
+      zero-config bargain the Studio and the Desk make. */
+  src?: string;
+  /** How the picture fills the frame. */
+  fit?: "cover" | "contain";
   /** Superseded by `ink`. Kept so links written when colour was a switch
       still open; normalizeSpec turns it into an `ink` and it is never
       written again. */
@@ -161,7 +168,15 @@ export type SlideSpec = {
   text: boolean;
   titleFont: "serif" | "sans" | "gothic";
   italic: boolean;
-  titleSize: "s" | "m" | "l";
+  /** Three fixed sizes, or "fit": the headline is grown until it fills the
+      frame inside the margin, however long the words are. */
+  titleSize: "s" | "m" | "l" | "fit";
+  /** 100-900 on the variable fonts. Absent keeps the weight each family was
+      always drawn at, which is what every older link expects. */
+  titleWeight?: number;
+  /** The frame's breathing room, in design units at 1080 wide. Absent means
+      96, which is what the layout was drawn to. */
+  margin?: number;
   boxed: boolean;
   /** Filled background behind the headline so it reads over busy shaders. */
   plate: boolean;
@@ -291,7 +306,16 @@ export const FORM_PATTERNS = [
   "tunnel",
   "noise",
   "moire",
+  /* A photograph is a grayscale source like any other: it gets sampled at
+     the cell size and thresholded, so it comes out in the same hard pixels
+     and can be mixed, folded and inked exactly like a drawn form. Which
+     picture is on the layer, not on the pattern — see `src`. */
+  "photo",
 ] as const;
+
+/** Patterns that need a picture on the layer to draw anything. */
+export const usesPhoto = (layer: LayerSpec) =>
+  layer.pattern === "photo" || layer.pattern2 === "photo";
 
 /* How a layer's two forms are combined before the dither threshold. Mixing
    grayscale sources and then dithering the result keeps everything in the
@@ -325,6 +349,10 @@ const ditheredForms: ShaderDef = {
     { key: "pixel", label: "pixel", min: 2, max: 16, step: 1, def: 6 },
     { key: "density", label: "density", min: 1, max: 24, step: 1, def: 8 },
     { key: "warp", label: "warp", min: 0, max: 1, step: 0.05, def: 0.2 },
+    /* Gamma on the photo before it meets the threshold — the one knob that
+       decides how much of a picture survives being dithered. Only shown
+       when a photo is in play. */
+    { key: "exposure", label: "exposure", min: 0.2, max: 2.5, step: 0.05, def: 1 },
   ],
   choices: [
     {
@@ -488,6 +516,104 @@ export function applyStyle(slide: SlideSpec, style: SlideStyle): SlideSpec {
  * how it mixes, what it is inked with — is left alone, because that is what
  * makes the results read as one family rather than as a shuffle.
  */
+/* Blends worth stacking with. Layers are already transparent, so `normal`
+   is the honest default and the rest are there for the times two layers
+   should argue with each other. */
+const STACK_BLENDS: BlendMode[] = [
+  "normal",
+  "normal",
+  "normal",
+  "multiply",
+  "difference",
+  "exclusion",
+  "screen",
+];
+
+/**
+ * A whole look rolled from nothing: one to three dithered-forms layers with
+ * every option in play — forms, mixes, folds, screens, colour, travelling
+ * parameters, a background.
+ *
+ * Two rules keep the results usable rather than merely random. Stacked
+ * layers get finer as they go up, so a coarse field reads through a fine
+ * one instead of two identical grids fighting; and colour is all or
+ * nothing on a slide, because one coloured layer under a black-and-white
+ * one just looks like a mistake.
+ *
+ * Only the club's own renderer is rolled. That is what makes a sheet of
+ * these cheap to draw, and it is also the half of the tool that loops.
+ */
+export function randomSlide(rand: () => number = Math.random): SlideStyle {
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
+  const count = 1 + Math.floor(rand() * 3);
+  const coloured = rand() < 0.45;
+  const palette = PALETTE;
+
+  const layers: LayerSpec[] = Array.from({ length: count }, (_, i) => {
+    const layer = {
+      ...defaultLayer("forms"),
+      ...randomShader("forms"),
+    } as LayerSpec;
+
+    /* Coarse underneath, fine on top. */
+    const coarse = 9 + Math.floor(rand() * 7);
+    const fine = 2 + Math.floor(rand() * 4);
+    layer.pixel = count === 1 ? 3 + Math.floor(rand() * 9) : i === 0 ? coarse : fine;
+
+    if (i > 0) {
+      layer.blend = pick(STACK_BLENDS);
+      layer.opacity = Math.round((0.45 + rand() * 0.55) * 20) / 20;
+    }
+
+    if (coloured && rand() < 0.75) {
+      if (rand() < 0.6) {
+        layer.ink = "mix";
+        /* A narrower set reads as a decision; the whole palette reads as
+           confetti. */
+        const inks = [...palette].sort(() => rand() - 0.5).slice(2 + Math.floor(rand() * 3));
+        if (inks.length >= 2) layer.inks = inks;
+        layer.mixMode = pick(MIX_MODES);
+        layer.mixScale = 1 + Math.floor(rand() * 8);
+        layer.mixSpeed = Math.round(rand() * 20) / 10;
+      } else {
+        layer.ink = paletteInk(Math.floor(rand() * 9999), "light", palette);
+      }
+    }
+
+    /* Half of them get a number that travels. Never `speed`, which also
+       sets how fast the colours move. */
+    if (rand() < 0.5) {
+      const movable = shaderDef("forms").controls.filter(
+        (c) => c.key !== "speed" && (c.key !== "exposure" || usesPhoto(layer)),
+      );
+      const c = pick(movable);
+      const from = Number(layer[c.key] ?? c.def);
+      const far = from < (c.min + c.max) / 2 ? c.max : c.min;
+      layer.motion = {
+        [c.key]: {
+          to: Math.round((from + (far - from) * (0.5 + rand() * 0.45)) * 100) / 100,
+          wave: pick(WAVES),
+          cycles: 1 + Math.floor(rand() * 3),
+          phase: 0,
+        },
+      };
+    }
+
+    return layer;
+  });
+
+  /* Deliberately no `veil` and no type settings: a roll decides what the
+     graphic is, not whether the words on top of it can be read. Those stay
+     where the owner left them. */
+  const style: SlideStyle = {
+    layers,
+    theme: rand() < 0.3 ? "dark" : "light",
+    colorSeed: Math.floor(rand() * 9999) + 1,
+  };
+  if (coloured) style.background = paletteAt(Math.floor(rand() * 9999), 3, palette);
+  return style;
+}
+
 export function varyStyle(
   style: SlideStyle,
   amount = 0.25,
@@ -529,10 +655,14 @@ export function randomShader(type?: ShaderType): ShaderSpec {
     spec[c.key] = Math.round(stepped * 100) / 100;
   }
   for (const c of def.choices ?? []) {
+    /* Never roll "photo": the dice have no picture to hand it, and a photo
+       pattern without a `src` draws nothing at all. Choosing an image is a
+       decision, like choosing a colour. */
+    const values = c.values.filter((v) => v !== "photo");
     spec[c.key] =
       c.keepDefault && Math.random() < c.keepDefault
         ? c.def
-        : c.values[Math.floor(Math.random() * c.values.length)];
+        : values[Math.floor(Math.random() * values.length)];
   }
   /* A second form that is never mixed in is just a slower render, and a mix
      mode with nothing to mix does nothing — roll them together or not at
@@ -723,6 +853,11 @@ export function normalizeSpec(raw: unknown): PostSpec {
       const s = raw as Partial<SlideSpec> & { shader?: ShaderSpec };
       const slide = defaultSlide(s);
       slide.veil = Math.min(0.9, Math.max(0, Number(slide.veil) || 0));
+      if (!["s", "m", "l", "fit"].includes(slide.titleSize)) slide.titleSize = "m";
+      if (s.titleWeight === undefined) delete slide.titleWeight;
+      else slide.titleWeight = Math.min(900, Math.max(100, Number(s.titleWeight) || 400));
+      if (s.margin === undefined) delete slide.margin;
+      else slide.margin = Math.min(240, Math.max(24, Number(s.margin) || 96));
       slide.color = slide.color === true;
       slide.colorSeed = Number(slide.colorSeed) || 1;
       const custom = cleanPalette(s.palette);
@@ -785,6 +920,18 @@ export function normalizeSpec(raw: unknown): PostSpec {
           delete merged.mixMode;
           delete merged.mixScale;
           delete merged.mixSpeed;
+        }
+
+        /* A picture only means anything to a photo pattern. */
+        if (usesPhoto(merged)) {
+          if (typeof merged.src !== "string" || !merged.src) delete merged.src;
+          if (merged.fit !== "contain") delete merged.fit;
+        } else {
+          delete merged.src;
+          delete merged.fit;
+          /* Gamma on a picture there isn't one of. Dropping it keeps links
+             free of numbers that do nothing. */
+          delete merged.exposure;
         }
 
         /* Travelling parameters. Only the documented ones survive, and the

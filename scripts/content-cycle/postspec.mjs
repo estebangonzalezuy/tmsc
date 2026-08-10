@@ -190,10 +190,13 @@ export function randomLayer(vocab, rand = Math.random, only) {
   const layer = { type };
   for (const [key, p] of Object.entries(params)) {
     if (p.kind === "choice") {
+      /* "photo" needs a picture on the layer, and a run has none to give —
+         rolling it would ship an empty post. */
+      const values = p.values.filter((v) => v !== "photo");
       layer[key] =
         p.keep && rand() < p.keep
           ? p.def
-          : p.values[Math.floor(rand() * p.values.length)];
+          : values[Math.floor(rand() * values.length)];
     } else {
       const lo = p.min + (p.max - p.min) * 0.2;
       const hi = p.min + (p.max - p.min) * 0.8;

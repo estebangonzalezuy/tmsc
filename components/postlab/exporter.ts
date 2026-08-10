@@ -117,6 +117,20 @@ function slideColours(slide: SlideSpec | undefined): string[] {
   return [...seen].slice(0, 40);
 }
 
+/**
+ * Paint a slide's background stack at one instant, with nothing on screen
+ * to copy from. Used for the sheets of generated candidates: each thumbnail
+ * is a real render of the real spec, not an approximation of one.
+ */
+export const paintSlide = (
+  ctx: CanvasRenderingContext2D,
+  spec: PostSpec,
+  index: number,
+  w: number,
+  h: number,
+  t = 0,
+) => drawLayers(ctx, spec, index, [], w, h, t);
+
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

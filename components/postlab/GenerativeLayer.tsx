@@ -7,6 +7,7 @@
 import { useEffect, useRef } from "react";
 import type { ShaderSpec, Theme } from "@/lib/postlab";
 import { drawGenerative } from "./generative";
+import { loadPhoto } from "./photos";
 
 export default function GenerativeLayer({
   shader,
@@ -58,24 +59,39 @@ export default function GenerativeLayer({
       mixScale: mixScale || undefined,
       mixSpeed: mixSpeed < 0 ? undefined : mixSpeed,
     };
-    if (!playing) {
-      drawGenerative(
-        ctx, shader, theme, timeRef.current, duration, width, height, color,
-      );
-      return;
-    }
     let raf = 0;
-    let last = performance.now();
-    const loop = (now: number) => {
-      timeRef.current += (now - last) / 1000;
-      last = now;
-      drawGenerative(
-        ctx, shader, theme, timeRef.current, duration, width, height, color,
-      );
+    let stopped = false;
+
+    const start = () => {
+      if (stopped) return;
+      if (!playing) {
+        drawGenerative(
+          ctx, shader, theme, timeRef.current, duration, width, height, color,
+        );
+        return;
+      }
+      let last = performance.now();
+      const loop = (now: number) => {
+        timeRef.current += (now - last) / 1000;
+        last = now;
+        drawGenerative(
+          ctx, shader, theme, timeRef.current, duration, width, height, color,
+        );
+        raf = requestAnimationFrame(loop);
+      };
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+
+    /* A photo layer has nothing to draw until its picture is decoded. The
+       animated path would pick it up on a later frame anyway; a paused one
+       would sit empty forever, so both wait for it. Anything else resolves
+       immediately. */
+    void loadPhoto(shader.src as string | undefined).then(start);
+
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+    };
   }, [
     shader,
     theme,

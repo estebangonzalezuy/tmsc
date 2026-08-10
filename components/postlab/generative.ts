@@ -22,6 +22,7 @@ import {
   type ShaderSpec,
   type Theme,
 } from "@/lib/postlab";
+import { photo } from "./photos";
 
 const TAU = Math.PI * 2;
 
@@ -131,8 +132,9 @@ function combine(mode: string, a: number, b: number): number {
   }
 }
 
-/* Reusable scratch canvases (glyph mask + low-res dither target). */
+/* Reusable scratch canvases (glyph mask, photo sample, dither target). */
 let maskCanvas: HTMLCanvasElement | null = null;
+let picCanvas: HTMLCanvasElement | null = null;
 let outCanvas: HTMLCanvasElement | null = null;
 
 let cachedFont: string | null = null;
@@ -187,6 +189,41 @@ export function drawGenerative(
   const cw = Math.ceil(w / px);
   const chh = Math.ceil(h / px);
 
+  /* Luminance of the layer's picture, sampled once at cell resolution. The
+     photo is a grayscale source like every other form here: it meets the
+     same threshold and comes out in the same pixels, so it can be mixed,
+     folded and inked exactly like a drawn one. */
+  let pic: Float32Array | null = null;
+  if (pattern === "photo" || pattern2 === "photo") {
+    const img = photo(typeof s.src === "string" ? s.src : undefined);
+    if (img && img.width && img.height) {
+      if (!picCanvas) picCanvas = document.createElement("canvas");
+      picCanvas.width = cw;
+      picCanvas.height = chh;
+      const pctx = picCanvas.getContext("2d", { willReadFrequently: true })!;
+      pctx.clearRect(0, 0, cw, chh);
+      /* Cover by default: a background with a letterbox in it is not a
+         background. */
+      const contain = s.fit === "contain";
+      const k = contain
+        ? Math.min(cw / img.width, chh / img.height)
+        : Math.max(cw / img.width, chh / img.height);
+      const dw = img.width * k;
+      const dh = img.height * k;
+      pctx.drawImage(img, (cw - dw) / 2, (chh - dh) / 2, dw, dh);
+      const px4 = pctx.getImageData(0, 0, cw, chh).data;
+      const gamma = Math.max(0.2, num(s.exposure, 1));
+      pic = new Float32Array(cw * chh);
+      for (let j = 0; j < pic.length; j++) {
+        const o = j * 4;
+        /* Darkness, not brightness: everywhere else in here 1 means ink. */
+        const lum =
+          (0.299 * px4[o] + 0.587 * px4[o + 1] + 0.114 * px4[o + 2]) / 255;
+        pic[j] = Math.pow(1 - lum, gamma) * (px4[o + 3] / 255);
+      }
+    }
+  }
+
   /* Glyph mask for the "letter" pattern, rendered at cell resolution. */
   let mask: Uint8ClampedArray | null = null;
   if (pattern === "letter") {
@@ -226,6 +263,12 @@ export function drawGenerative(
         const bw = 0.5 + 0.45 * Math.sin(TAU * (p + row * 0.13));
         const edge = x + 0.5 - bw;
         return Math.max(0, Math.min(1, 0.5 - edge * 14));
+      }
+      case "photo": {
+        if (!pic) return 0;
+        const ix = Math.max(0, Math.min(cw - 1, Math.round(x * m + cw / 2)));
+        const iy = Math.max(0, Math.min(chh - 1, Math.round(y * m + chh / 2)));
+        return pic[iy * cw + ix];
       }
       case "letter": {
         if (!mask) return 0;

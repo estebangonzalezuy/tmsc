@@ -133,8 +133,20 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   post are byte-identical. The WebGL dithering can't do this (its shapes
   walk through noise that never repeats), so `loopReport` says so in the
   export panel rather than letting a seam ship.
+- **A photograph is a form, not a layer type.** `pattern: "photo"` reads the
+  layer's `src`, samples it at the cell size and pushes it through the same
+  threshold, so it mixes, folds and inks like anything else. The picture
+  itself never enters the spec: `components/postlab/photos.ts` keeps a
+  picked file in that browser under `local:<id>`, the same bargain the
+  Studio and the Desk make with the token. A `src` starting with `/` is a
+  path on this site and does travel in a link — cross-origin is refused on
+  purpose, because a tainted canvas breaks the dither, the export and the
+  GIF at once and does it silently.
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
-  `varyStyle`. Varying keeps every *decision* (form, mix, fold, ink) and
+  `varyStyle`, plus `randomSlide` for a look rolled from nothing (the
+  generate sheet). A roll decides the graphic only: it never touches
+  `veil` or the type settings, because whether the words can be read is
+  the owner's call and not the dice's. Varying keeps every *decision* (form, mix, fold, ink) and
   moves only the numbers, which is what makes variations read as a family
   instead of a shuffle. The transform is left alone unless it was already
   moved by hand: a shrunk or turned background just drags its edges into
