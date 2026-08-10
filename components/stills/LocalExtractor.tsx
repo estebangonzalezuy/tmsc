@@ -32,6 +32,36 @@ import type { Frame, Project, StillsData } from "@/lib/stills-shared";
 
 const MAX_SENSIBLE_MB = 500;
 
+function StageLine({ stage }: { stage: Stage }) {
+  if (stage.kind === "idle") return null;
+  if (stage.kind === "working") {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm">
+          {stage.label}… {stage.done}/{stage.total}
+        </p>
+        <div className="h-px w-full bg-line">
+          <div
+            className="h-px bg-foreground transition-all"
+            style={{ width: `${(stage.done / Math.max(1, stage.total)) * 100}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+  if (stage.kind === "error") {
+    return (
+      <p
+        role="alert"
+        className="border border-line bg-foreground text-background px-4 py-3 text-sm"
+      >
+        {stage.message}
+      </p>
+    );
+  }
+  return <p className="text-sm">{stage.message}</p>;
+}
+
 type Stage =
   | { kind: "idle" }
   | { kind: "working"; label: string; done: number; total: number }
@@ -308,25 +338,7 @@ export default function LocalExtractor({
         </p>
       )}
 
-      {stage.kind === "working" && (
-        <div className="space-y-2">
-          <p className="text-sm">
-            {stage.label}… {stage.done}/{stage.total}
-          </p>
-          <div className="h-px w-full bg-line">
-            <div
-              className="h-px bg-foreground transition-all"
-              style={{ width: `${(stage.done / Math.max(1, stage.total)) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
-      {stage.kind === "error" && (
-        <p className="border border-line bg-foreground text-background px-4 py-3 text-sm">
-          {stage.message}
-        </p>
-      )}
-      {stage.kind === "done" && <p className="text-sm">{stage.message}</p>}
+      <StageLine stage={stage} />
 
       {draft && video && (
         <div className="space-y-5 border-t border-line pt-5">
@@ -479,32 +491,46 @@ export default function LocalExtractor({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 border-t border-line pt-5">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={draft.status === "published"}
-                onChange={(e) =>
-                  setDraft((c) =>
-                    c
-                      ? { ...c, status: e.target.checked ? "published" : "draft" }
-                      : c,
-                  )
-                }
-                className="accent-foreground"
-              />
-              Put it on the wall
-            </label>
-            <span className="text-xs text-muted">
-              {kept.length} frames will be committed to {assetBase}/{draft.id}/
-            </span>
-            <button
-              onClick={publish}
-              disabled={busy || !token}
-              className="ml-auto border border-line px-6 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
-            >
-              Publish
-            </button>
+          <div className="space-y-3 border-t border-line pt-5">
+            {/* Publishing is the bottom of a long panel, and a message at the
+                top of it is a message off the screen. Whatever the state is,
+                it belongs next to the button that caused it. */}
+            <StageLine stage={stage} />
+            {marks.length > 0 && (
+              <p className="text-xs text-muted">
+                {marks.length} marked{" "}
+                {marks.length === 1 ? "moment has" : "moments have"} not been
+                cut yet — publishing now leaves {marks.length === 1 ? "it" : "them"}{" "}
+                behind. Hit Cut {marks.length} first.
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={draft.status === "published"}
+                  onChange={(e) =>
+                    setDraft((c) =>
+                      c
+                        ? { ...c, status: e.target.checked ? "published" : "draft" }
+                        : c,
+                    )
+                  }
+                  className="accent-foreground"
+                />
+                Put it on the wall
+              </label>
+              <span className="text-xs text-muted">
+                {kept.length} frames will be committed to {assetBase}/{draft.id}/
+              </span>
+              <button
+                onClick={publish}
+                disabled={busy || !token}
+                className="ml-auto border border-line px-6 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
+              >
+                {busy ? "Working…" : "Publish"}
+              </button>
+            </div>
           </div>
         </div>
       )}

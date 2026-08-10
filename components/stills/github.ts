@@ -61,6 +61,28 @@ function b64decode(b64: string): string {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
+/** Throws with GitHub's own words attached. `explain` covers the status codes
+ *  worth translating, but a 403 on the Git Data API usually says exactly which
+ *  permission is missing, and swallowing that turns a fixable problem into
+ *  "publish not working". */
+async function fail(res: Response): Promise<never> {
+  let detail = "";
+  try {
+    const body = (await res.json()) as {
+      message?: string;
+      errors?: { message?: string; code?: string; field?: string }[];
+    };
+    detail = body.message ?? "";
+    const errors = (body.errors ?? [])
+      .map((e) => e.message ?? [e.field, e.code].filter(Boolean).join(" "))
+      .filter(Boolean);
+    if (errors.length) detail += ` (${errors.join("; ")})`;
+  } catch {
+    // A body that isn't JSON tells us nothing the status hasn't already.
+  }
+  throw new Error(explain(res.status) + (detail ? ` GitHub said: ${detail}` : ""));
+}
+
 function explain(status: number): string {
   if (status === 401 || status === 403) {
     return "GitHub rejected the token — check it and try again.";
@@ -81,7 +103,7 @@ export async function readProjects<T>(
     `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`,
     { headers: headers(token), cache: "no-store" },
   );
-  if (!res.ok) throw new Error(explain(res.status));
+  if (!res.ok) await fail(res);
   const body = (await res.json()) as { content: string; sha: string };
   return { data: JSON.parse(b64decode(body.content)) as T, sha: body.sha };
 }
@@ -105,7 +127,7 @@ export async function writeProjects(
       }),
     },
   );
-  if (!res.ok) throw new Error(explain(res.status));
+  if (!res.ok) await fail(res);
   const body = (await res.json()) as { content: { sha: string } };
   return body.content.sha;
 }
@@ -139,7 +161,7 @@ export async function dispatchExtract(
         "GitHub wouldn't start the run — the workflow has to exist on main before it can be dispatched.",
       );
     }
-    throw new Error(explain(res.status));
+    await fail(res);
   }
 }
 
@@ -167,7 +189,7 @@ async function gh<T>(
     headers: { ...headers(token), ...(init?.headers ?? {}) },
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(explain(res.status));
+  if (!res.ok) await fail(res);
   return (await res.json()) as T;
 }
 
@@ -256,11 +278,12 @@ export async function commitFiles(
     },
   );
   if (!res.ok) {
-    throw new Error(
-      res.status === 422
-        ? "Something else pushed to main while this was uploading. Reload and publish again — the frames are still in the browser."
-        : explain(res.status),
-    );
+    if (res.status === 422) {
+      throw new Error(
+        "Something else pushed to main while this was uploading. Reload and publish again — the frames are still in the browser.",
+      );
+    }
+    await fail(res);
   }
   tick();
   return commit.sha;
@@ -280,7 +303,7 @@ export async function listRuns(token: string, limit = 5): Promise<Run[]> {
     `https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/runs?per_page=${limit}`,
     { headers: headers(token), cache: "no-store" },
   );
-  if (!res.ok) throw new Error(explain(res.status));
+  if (!res.ok) await fail(res);
   const body = (await res.json()) as { workflow_runs: Run[] };
   return body.workflow_runs ?? [];
 }

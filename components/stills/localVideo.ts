@@ -114,19 +114,69 @@ export function closeVideo(video: LocalVideo) {
   URL.revokeObjectURL(video.url);
 }
 
-/** Seeking is asynchronous and the frame is only really there on `seeked`. */
+/* A seek that can't hang.
+
+   Two ways the naive version never settles, both of which cost you the whole
+   panel, because everything here is sequential and the UI disables itself
+   while work is in flight:
+
+   1. Assigning currentTime the value it already holds fires no `seeked` event
+      at all. Marking 0.00s on a decoder already parked at 0 was enough to
+      wedge it forever.
+   2. A decoder can simply not answer — a damaged stream, a frame it can't
+      reach.
+
+   So: settle at once when there is nothing to seek, and never wait longer
+   than SEEK_TIMEOUT for anything else. */
+const SEEK_EPSILON = 0.001;
+const SEEK_TIMEOUT = 15000;
+
 function seek(el: HTMLVideoElement, t: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    const onSeeked = () => {
+    const duration = Number.isFinite(el.duration) ? el.duration : t + 1;
+    const target = Math.max(0, Math.min(t, Math.max(0, duration - 0.05)));
+
+    // HAVE_CURRENT_DATA or better means the frame at this position is already
+    // decoded and drawImage will get it.
+    if (Math.abs(el.currentTime - target) < SEEK_EPSILON && el.readyState >= 2) {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+
+    let settled = false;
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      el.removeEventListener("seeked", onSeeked);
       el.removeEventListener("error", onError);
+    };
+    const onSeeked = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
       // One rAF gives the compositor the frame it just decoded, which some
       // builds need before drawImage sees the new one rather than the old.
       requestAnimationFrame(() => resolve());
     };
-    const onError = () => reject(new Error("Seeking failed partway."));
-    el.addEventListener("seeked", onSeeked, { once: true });
-    el.addEventListener("error", onError, { once: true });
-    el.currentTime = Math.min(t, Math.max(0, el.duration - 0.05));
+    const onError = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(`The video stopped decoding around ${target.toFixed(2)}s.`));
+    };
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(
+        new Error(
+          `Seeking to ${target.toFixed(2)}s took too long and was given up on. The rest of the frames are untouched.`,
+        ),
+      );
+    }, SEEK_TIMEOUT);
+
+    el.addEventListener("seeked", onSeeked);
+    el.addEventListener("error", onError);
+    el.currentTime = target;
   });
 }
 
