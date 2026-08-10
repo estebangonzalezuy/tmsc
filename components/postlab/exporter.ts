@@ -6,12 +6,14 @@
 import {
   FORMATS,
   PALETTE,
+  shaderDef,
   slideTones,
   type BlendMode,
   type PostSpec,
   type SlideSpec,
 } from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
+import { drawGenerative } from "./generative";
 import { GifEncoder } from "./gif";
 
 // CSS mix-blend-mode → canvas globalCompositeOperation (same names except
@@ -19,6 +21,36 @@ import { GifEncoder } from "./gif";
 const compositeOp = (blend: BlendMode): GlobalCompositeOperation =>
   blend === "normal" ? "source-over" : blend;
 
+/**
+ * True when every layer is one the exporter can draw itself, at any moment
+ * we name. That means the club's own forms renderer (and "plain", which
+ * draws nothing) — the WebGL shader animates on its own clock inside its
+ * own canvas, and the only way to record it is to watch it go past.
+ *
+ * When this holds, a recording is a function of the frame number rather
+ * than of how busy the machine was: exactly `duration` seconds of frames,
+ * starting at the top of the loop, at full export resolution. That is what
+ * makes an exported reel loop instead of nearly looping.
+ */
+export const canRenderDirectly = (spec: PostSpec, index: number) =>
+  spec.slides[index]?.layers.every(
+    (l) => l.type === "none" || shaderDef(l.type).kind === "generative",
+  ) ?? false;
+
+/* One scratch canvas, reused: layers are composited one after another. */
+let scratch: HTMLCanvasElement | null = null;
+function scratchAt(w: number, h: number) {
+  if (!scratch) scratch = document.createElement("canvas");
+  if (scratch.width !== w) scratch.width = w;
+  if (scratch.height !== h) scratch.height = h;
+  return scratch;
+}
+
+/**
+ * Composite the slide's stack. Pass `t` to draw the generative layers at
+ * that exact second, at the target size, instead of copying whatever the
+ * on-screen canvases happen to be showing.
+ */
 function drawLayers(
   ctx: CanvasRenderingContext2D,
   spec: PostSpec,
@@ -26,6 +58,7 @@ function drawLayers(
   layerCanvases: (HTMLCanvasElement | null)[],
   w: number,
   h: number,
+  t?: number,
 ) {
   const slide = spec.slides[index];
   /* The layer canvases render at the base size; scaling them up must stay
@@ -37,9 +70,26 @@ function drawLayers(
   ctx.fillStyle = slideTones(slide).bg;
   ctx.fillRect(0, 0, w, h);
   slide.layers.forEach((layer, i) => {
-    const canvas = layerCanvases[i];
     ctx.globalAlpha = layer.opacity;
     ctx.globalCompositeOperation = compositeOp(layer.blend);
+    if (t !== undefined && shaderDef(layer.type).kind === "generative") {
+      /* Drawn here at the full export size rather than blown up from the
+         preview: the dither cell scales with the canvas, so the composition
+         is identical and the edges are genuinely sharper. */
+      const off = scratchAt(w, h);
+      drawGenerative(off.getContext("2d")!, layer, slide.theme, t, spec.duration, w, h, {
+        ink: layer.ink,
+        seed: slide.colorSeed,
+        palette: slide.palette,
+        inks: layer.inks,
+        mixMode: layer.mixMode,
+        mixScale: layer.mixScale,
+        mixSpeed: layer.mixSpeed,
+      });
+      ctx.drawImage(off, 0, 0);
+      return;
+    }
+    const canvas = layerCanvases[i];
     if (canvas) {
       ctx.drawImage(canvas, 0, 0, w, h);
     } else {
@@ -169,9 +219,19 @@ export function recordVideo(
   const chunks: Blob[] = [];
   recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
 
+  /* When we can draw the frames ourselves, the clip's content comes from
+     the frame number, not from the clock: frame f is second f/fps of the
+     loop, whatever the machine was doing. The pacing stays real-time
+     because the muxer timestamps by wall clock, but a late frame no longer
+     drags the animation with it — it just arrives late holding the right
+     picture, and the last frame still lands one step short of the first. */
+  const direct = canRenderDirectly(spec, index);
+  const totalFrames = Math.max(1, Math.round(spec.duration * fps));
+
   return new Promise((resolve, reject) => {
     let raf = 0;
     let lastPush = -Infinity;
+    let pushed = 0;
     const start = performance.now();
 
     recorder.onstop = () => {
@@ -194,13 +254,17 @@ export function recordVideo(
       const elapsed = now - start;
       if (now - lastPush >= 1000 / fps - 1) {
         lastPush = now;
-        drawOverlay(overlayCtx, spec, index, fonts, elapsed / 1000, scale);
-        drawLayers(ctx, spec, index, layerCanvases, w, h);
+        /* Frame time when we're drawing, wall-clock when we're only able to
+           photograph a shader that runs itself. */
+        const t = direct ? (pushed / totalFrames) * spec.duration : elapsed / 1000;
+        drawOverlay(overlayCtx, spec, index, fonts, t, scale);
+        drawLayers(ctx, spec, index, layerCanvases, w, h, direct ? t : undefined);
         ctx.drawImage(overlay, 0, 0, w, h);
         track.requestFrame();
-        onProgress(Math.min(1, elapsed / durationMs));
+        pushed++;
+        onProgress(Math.min(1, direct ? pushed / totalFrames : elapsed / durationMs));
       }
-      if (elapsed >= durationMs) {
+      if (direct ? pushed >= totalFrames : elapsed >= durationMs) {
         recorder.stop();
         return;
       }
@@ -254,6 +318,32 @@ export function recordGif(
   const smallCtx = small.getContext("2d", { willReadFrequently: true })!;
 
   const gif = new GifEncoder(gw, gh, delay, slideColours(spec.slides[index]));
+
+  /* A GIF carries its own frame delay, so nothing here has to happen in
+     real time. When the exporter can draw the frames itself it renders them
+     as fast as the machine allows, at exactly the right instants — which
+     both loops properly and finishes a six-second post in well under six
+     seconds. */
+  const direct = canRenderDirectly(spec, index);
+  const totalFrames = Math.max(1, Math.round((spec.duration * 100) / delay));
+
+  if (direct) {
+    return (async () => {
+      for (let i = 0; i < totalFrames; i++) {
+        const t = (i / totalFrames) * spec.duration;
+        drawOverlay(overlayCtx, spec, index, fonts, t, gifScale);
+        drawLayers(fullCtx, spec, index, layerCanvases, w, h, t);
+        fullCtx.drawImage(overlay, 0, 0, w, h);
+        smallCtx.drawImage(full, 0, 0, gw, gh);
+        gif.addFrame(smallCtx.getImageData(0, 0, gw, gh).data);
+        onProgress((i + 1) / totalFrames);
+        // Let the page breathe so the progress line actually moves.
+        if (i % 4 === 3) await new Promise((r) => setTimeout(r, 0));
+      }
+      download(gif.toBlob(), slideName(spec, index, "tmsc-post", "gif"));
+      onProgress(0);
+    })();
+  }
 
   return new Promise((resolve) => {
     let raf = 0;

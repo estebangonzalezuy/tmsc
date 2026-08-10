@@ -218,7 +218,11 @@ export function drawOverlay(
     ctx.strokeStyle = ink;
     ctx.stroke();
     const letters = RING_TEXT.split("");
-    const spin = (time * 2 * Math.PI) / 90; // one lap every 90s
+    /* Exactly one lap per post, so the last frame of a recording is the
+       frame before the first one. The ring reads different letters at each
+       position, so a whole lap is the only rotation that comes back to the
+       same picture — a slower drift would always leave a jump at the loop. */
+    const spin = (time / Math.max(2, spec.duration)) * 2 * Math.PI;
     letters.forEach((ch, i) => {
       if (ch === " ") return;
       const a = (i / letters.length) * Math.PI * 2 - Math.PI / 2 + spin;

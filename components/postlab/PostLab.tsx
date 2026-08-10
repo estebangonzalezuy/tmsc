@@ -21,23 +21,33 @@ import {
   PALETTE,
   PRESETS,
   SHADERS,
+  WAVES,
+  animatable,
+  applyStyle,
   decodeSpec,
   defaultLayer,
   defaultSpec,
+  loopReport,
   randomShader,
   encodeSpec,
   normalizeSpec,
   shaderDef,
   slideTones,
   specFromQuery,
+  styleOf,
+  varyStyle,
   type LayerSpec,
+  type Motion,
   type PostSpec,
+  type ShaderControl,
   type ShaderType,
   type SlideSpec,
+  type SlideStyle,
+  type Wave,
 } from "@/lib/postlab";
 import ShaderLayer from "./ShaderLayer";
 import { drawOverlay, loadFonts, type Fonts } from "./overlay";
-import { exportPng, recordGif, recordVideo } from "./exporter";
+import { canRenderDirectly, exportPng, recordGif, recordVideo } from "./exporter";
 
 /* ------------------------------------------------------------- panel bits */
 
@@ -185,6 +195,126 @@ function Swatches({
   );
 }
 
+/* One parameter: the number, and — on a layer the club renders itself — the
+   option of making that number travel over the loop instead of holding
+   still. The travelling is the whole reason a background stops looking like
+   a pattern and starts looking like a piece of motion. */
+function ParamRow({
+  control,
+  value,
+  motion,
+  canMove,
+  onChange,
+  onMotion,
+}: {
+  control: ShaderControl;
+  value: number;
+  motion?: Motion;
+  canMove: boolean;
+  onChange: (v: number) => void;
+  onMotion: (m: Motion | null) => void;
+}) {
+  const c = control;
+  const fmt = (n: number) => n.toFixed(c.step < 1 ? 2 : 0);
+  const slider = (v: number, set: (n: number) => void) => (
+    <input
+      type="range"
+      min={c.min}
+      max={c.max}
+      step={c.step}
+      value={v}
+      onChange={(e) => set(Number(e.target.value))}
+      className="flex-1 accent-foreground"
+    />
+  );
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <span className="text-muted shrink-0 w-20">{c.label}</span>
+        {slider(value, onChange)}
+        <span className="w-10 text-right text-xs text-muted">{fmt(value)}</span>
+        {canMove && (
+          <button
+            onClick={() =>
+              onMotion(
+                motion
+                  ? null
+                  : {
+                      /* Somewhere worth travelling to: the far end of the
+                         range from wherever the slider is now. */
+                      to:
+                        value < (c.min + c.max) / 2
+                          ? c.min + (c.max - c.min) * 0.8
+                          : c.min + (c.max - c.min) * 0.2,
+                      wave: "sin",
+                      cycles: 1,
+                      phase: 0,
+                    },
+              )
+            }
+            title={motion ? "Hold this one still" : "Make this one travel"}
+            className={`shrink-0 w-4 text-center ${
+              motion ? "text-foreground" : "text-muted hover:text-foreground"
+            }`}
+          >
+            {motion ? "◉" : "○"}
+          </button>
+        )}
+      </div>
+      {motion && (
+        <div className="space-y-1.5 border-l border-line pl-3">
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-muted shrink-0 w-20">to</span>
+            {slider(motion.to, (to) => onMotion({ ...motion, to }))}
+            <span className="w-10 text-right text-xs text-muted">
+              {fmt(motion.to)}
+            </span>
+            <span className="w-4" />
+          </div>
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-muted shrink-0 w-20">wave</span>
+            <select
+              value={motion.wave ?? "sin"}
+              onChange={(e) =>
+                onMotion({ ...motion, wave: e.target.value as Wave })
+              }
+              className="flex-1 border border-line bg-transparent px-2 py-1 text-xs focus:outline-none"
+            >
+              {WAVES.map((wv) => (
+                <option key={wv} value={wv}>
+                  {WAVE_HINTS[wv]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={motion.cycles ?? 1}
+              onChange={(e) =>
+                onMotion({ ...motion, cycles: Number(e.target.value) })
+              }
+              title="Trips per loop — whole numbers only, which is what keeps the post seamless"
+              className="w-14 border border-line bg-transparent px-1 py-1 text-xs focus:outline-none"
+            >
+              {[1, 2, 3, 4, 6, 8].map((n) => (
+                <option key={n} value={n}>
+                  ×{n}
+                </option>
+              ))}
+            </select>
+            <span className="w-4" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const WAVE_HINTS: Record<Wave, string> = {
+  sin: "sin — eases both ways",
+  tri: "tri — straight there and back",
+  saw: "saw — ramps, then snaps",
+  square: "square — switches hard",
+};
+
 /* The select needs to say what each one looks like, not what it is called
    in the renderer. */
 const MIX_MODE_HINTS: Record<string, string> = {
@@ -206,6 +336,10 @@ export default function PostLab() {
   const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
   const [importText, setImportText] = useState("");
+  /* A look held aside to put on other slides. Not part of the spec: it's a
+     clipboard, and it dies with the tab like one. */
+  const [styleClip, setStyleClip] = useState<SlideStyle | null>(null);
+  const [wiggle, setWiggle] = useState(0.25);
   /* An export setting, not a design one, so it stays out of the spec and
      out of shared links. */
   const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
@@ -333,6 +467,21 @@ export default function PostLab() {
       ),
     });
 
+  /* Only the club's own renderer reads a parameter every frame; the WebGL
+     shader takes its uniforms once. */
+  const canMove = shaderDef(layer.type).kind === "generative";
+
+  /* Give a parameter a wave, or take it away. An empty motion map is
+     removed entirely so it never reaches a link. */
+  const setMotion = (key: string, m: Motion | null) => {
+    const motion = { ...(layer.motion ?? {}) };
+    if (m) motion[key] = m;
+    else delete motion[key];
+    patchLayer({
+      motion: Object.keys(motion).length ? motion : undefined,
+    } as Partial<LayerSpec>);
+  };
+
   /* The colours a mix layer is currently allowed to use. No `inks` on the
      layer means all of them, which is the normal case. */
   const mixInks = layer.inks?.length ? layer.inks : [...(slide.palette ?? PALETTE)];
@@ -423,6 +572,46 @@ export default function PostLab() {
     [layers[layerIndex], layers[j]] = [layers[j], layers[layerIndex]];
     patchSlide({ layers });
     setActiveLayer(j);
+  };
+
+  /* ------------------------------------------------------------- styles */
+
+  /* A style is this slide with the words taken out. Copying one and pasting
+     it across a carousel is what makes six slides read as one piece; asking
+     for variations is the same rules with room to move, which is how you
+     get a family of posts instead of the same post twice. */
+  const copyStyle = () => {
+    setStyleClip(styleOf(slide));
+    say("Look copied");
+  };
+
+  const pasteStyle = (everywhere: boolean) => {
+    if (!styleClip) return;
+    setSpec((s) => ({
+      ...s,
+      slides: s.slides.map((sl, i) =>
+        everywhere || i === activeIndex ? applyStyle(sl, styleClip) : sl,
+      ),
+    }));
+    say(everywhere ? "Pasted on every slide" : "Pasted");
+  };
+
+  /* New slides carrying this slide's words and a jittered version of its
+     look, dropped in right after it so you can flip between them in the
+     strip and keep the one that works. */
+  const makeVariations = (n: number) => {
+    const style = styleOf(slide);
+    setSpec((s) => {
+      const born = Array.from({ length: n }, () => ({
+        ...structuredClone(slide),
+        ...varyStyle(style, wiggle),
+      })) as SlideSpec[];
+      const slides = [...s.slides];
+      slides.splice(activeIndex + 1, 0, ...born);
+      return { ...s, slides: slides.slice(0, 20) };
+    });
+    setActive(activeIndex + 1);
+    say(`${n} variations`);
   };
 
   const addSlide = () => {
@@ -561,6 +750,11 @@ export default function PostLab() {
   }, [activeIndex, layerIndex]);
 
   /* ------------------------------------------------------------ exports */
+
+  /* Whether the exported clip comes back to its first frame, and whether we
+     get to draw it ourselves rather than film it going past. */
+  const loop = loopReport(slide);
+  const direct = canRenderDirectly(spec, activeIndex);
 
   /* 1080 is the Instagram baseline; "max" targets 4K on the long-ish edge. */
   const scale = quality === "mid" ? 1 : quality === "high" ? 2 : 3840 / 1080;
@@ -1270,49 +1464,44 @@ export default function PostLab() {
               </Row>
               ))}
             {def.controls.map((c) => (
-              <Row key={c.key} label={c.label}>
-                <input
-                  type="range"
-                  min={c.min}
-                  max={c.max}
-                  step={c.step}
-                  value={Number(layer[c.key] ?? c.def)}
-                  onChange={(e) =>
-                    patchLayer({ [c.key]: Number(e.target.value) })
-                  }
-                  className="flex-1 accent-foreground"
-                />
-                <span className="w-10 text-right text-xs text-muted">
-                  {Number(layer[c.key] ?? c.def).toFixed(c.step < 1 ? 2 : 0)}
-                </span>
-              </Row>
+              <ParamRow
+                key={c.key}
+                control={c}
+                value={Number(layer[c.key] ?? c.def)}
+                motion={layer.motion?.[c.key]}
+                canMove={canMove}
+                onChange={(v) => patchLayer({ [c.key]: v })}
+                onMotion={(m) => setMotion(c.key, m)}
+              />
             ))}
             <p className="text-[10px] uppercase tracking-wide text-muted pt-1">
               transform
             </p>
-            {(
-              [
-                ["x", "offsetX", -1, 1, 0.01],
-                ["y", "offsetY", -1, 1, 0.01],
-                ["scale", "scale", 0.1, 4, 0.05],
-                ["rotation", "rotation", 0, 360, 1],
-              ] as const
-            ).map(([label, key, min, max, step]) => (
-              <Row key={key} label={label}>
-                <input
-                  type="range"
-                  min={min}
-                  max={max}
-                  step={step}
-                  value={layer[key]}
-                  onChange={(e) => patchLayer({ [key]: Number(e.target.value) })}
-                  className="flex-1 accent-foreground"
+            {animatable(layer.type)
+              .filter((c) => !def.controls.some((d) => d.key === c.key))
+              .map((c) => (
+                <ParamRow
+                  key={c.key}
+                  control={c}
+                  value={Number(layer[c.key] ?? c.def)}
+                  motion={layer.motion?.[c.key]}
+                  canMove={canMove}
+                  onChange={(v) => patchLayer({ [c.key]: v })}
+                  onMotion={(m) => setMotion(c.key, m)}
                 />
-                <span className="w-10 text-right text-xs text-muted">
-                  {Number(layer[key]).toFixed(step < 1 ? 2 : 0)}
-                </span>
-              </Row>
-            ))}
+              ))}
+            {canMove ? (
+              <p className="text-xs text-muted leading-relaxed">
+                The ○ next to a slider makes that number travel over the loop
+                instead of holding still. Trips are whole numbers, so a
+                travelling parameter always lands back where it started.
+              </p>
+            ) : (
+              <p className="text-xs text-muted leading-relaxed">
+                Travelling parameters are a dithered-forms thing: the WebGL
+                shader takes its numbers once, not every frame.
+              </p>
+            )}
             <div className="flex items-center justify-between">
               <Button
                 onClick={() =>
@@ -1325,6 +1514,53 @@ export default function PostLab() {
             <p className="text-xs text-muted">
               Drag the canvas to move the selected layer, scroll to scale,
               shift-drag to rotate.
+            </p>
+          </Section>
+
+          <Section title="style">
+            <p className="text-xs text-muted leading-relaxed">
+              A look without the words: theme, colour, type settings and the
+              whole layer stack. Copy it once and every slide can wear it.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={copyStyle} primary>
+                Copy this look
+              </Button>
+              <Button onClick={() => pasteStyle(false)} disabled={!styleClip}>
+                Paste here
+              </Button>
+              {spec.slides.length > 1 && (
+                <Button onClick={() => pasteStyle(true)} disabled={!styleClip}>
+                  Paste on all {spec.slides.length}
+                </Button>
+              )}
+            </div>
+            <Row label="wiggle">
+              <input
+                type="range"
+                min={0.05}
+                max={0.6}
+                step={0.05}
+                value={wiggle}
+                onChange={(e) => setWiggle(Number(e.target.value))}
+                className="flex-1 accent-foreground"
+              />
+              <span className="w-10 text-right text-xs text-muted">
+                {Math.round(wiggle * 100)}%
+              </span>
+            </Row>
+            <div className="flex flex-wrap gap-2">
+              {[3, 5, 9].map((n) => (
+                <Button key={n} onClick={() => makeVariations(n)}>
+                  {n} variations
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              Variations keep every decision: the forms, how they mix, what
+              inks them. Only the numbers move, by up to the wiggle. Same
+              rules, different piece. They land next to this slide, so delete
+              the ones that miss.
             </p>
           </Section>
 
@@ -1390,6 +1626,24 @@ export default function PostLab() {
                 {job.label} — {Math.round(job.frac * 100)}%
               </p>
             )}
+            <div className="border-t border-line pt-3 space-y-1.5">
+              <p className="text-xs">
+                {loop.loops ? "◉ This slide loops." : "○ This slide won't loop."}
+              </p>
+              {loop.loops ? (
+                <p className="text-xs text-muted leading-relaxed">
+                  {direct
+                    ? `Every frame is drawn at ${outW}×${outH} at its exact moment, from the top of the loop to just before it comes round again. The last frame runs into the first with no seam.`
+                    : "The forms come back to where they started, but the WebGL layer is recorded as it plays, so the clip can drift by a frame."}
+                </p>
+              ) : (
+                loop.why.map((line) => (
+                  <p key={line} className="text-xs text-muted leading-relaxed">
+                    {line}
+                  </p>
+                ))
+              )}
+            </div>
             <p className="text-xs text-muted">
               Stills export at {w}×{h}. Video records the animated slide (MP4
               where the browser supports it, WebM otherwise); GIFs record at

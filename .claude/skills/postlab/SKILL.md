@@ -86,6 +86,20 @@ and dithered once, so the output stays hard-edged pixels. This is where the
 good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
 `mul`, `letter` + `noise` on `sub`.
 
+**Parameters can travel.** A `forms` layer may carry `motion`, a map of
+parameter name to `{ to, wave, cycles, phase }` — the parameter's own value
+is where the trip starts, `to` is where it goes, `wave` is
+sin|tri|saw|square, and `cycles` is whole trips per loop (1-8, rounded).
+Everything numeric is animatable, including `offsetX`/`offsetY`/`scale`/
+`rotation`. A drifting `density` or `warp` is usually the difference
+between a background that reads as a pattern and one that reads as motion.
+
+**It loops.** The club's own `forms` renderer always returns to its first
+frame at the end of the post, so exported reels loop — the forms, the
+colour travel and any wave above are all periodic in the duration. The
+WebGL `dithering` shader does not, except for `swirl` (no time in it) or
+speed 0. For anything posted as a loop, use `forms`.
+
 **Colour is per layer and off by default.** Leave `ink` out for the club's
 black and white. Set it to a hex for one flat colour, or `"mix"` to scatter
 the palette across the pixels. A `"mix"` layer takes four optional dials:

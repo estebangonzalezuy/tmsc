@@ -93,7 +93,30 @@ integration surface. **Every field added since v1 defaults to absent, and
 absent means the look the older links were shared with**; that rule is why
 new effects can keep landing without breaking a Notion row from months ago.
 
-Two things extend the dithering vocabulary rather than sitting beside it:
+Four things extend the dithering vocabulary rather than sitting beside it:
+
+- **Parameters travel.** A layer's `motion` map sends any number on a trip
+  over the loop (`to`, `wave`, `cycles`, `phase`). `resolveLayer` in
+  `lib/postlab.ts` is the only place that knows about it, and both the
+  preview and the exporter go through it, so they can't disagree. Cycles
+  are whole numbers on purpose — that is the entire reason a travelling
+  parameter can't open a seam.
+- **The loop is a contract, not a hope.** Everything in
+  `components/postlab/generative.ts` is periodic in the post duration:
+  time only ever reaches a form as sin/cos of TAU·p, colour rotation
+  completes whole rounds, and the orbit ring turns exactly one lap. When a
+  slide is forms-only the exporter draws each frame itself, at its exact
+  moment and at full export size, instead of filming the page — so a
+  recording is a function of the frame number and two exports of the same
+  post are byte-identical. The WebGL dithering can't do this (its shapes
+  walk through noise that never repeats), so `loopReport` says so in the
+  export panel rather than letting a seam ship.
+- **A style is a slide without its words** — `styleOf` / `applyStyle` /
+  `varyStyle`. Varying keeps every *decision* (form, mix, fold, ink) and
+  moves only the numbers, which is what makes variations read as a family
+  instead of a shuffle. The transform is left alone unless it was already
+  moved by hand: a shrunk or turned background just drags its edges into
+  shot.
 
 - **Forms combine before the threshold.** A `forms` layer can mix a second
   `pattern2` into its `pattern` (`mix`), and `fold` the coordinates for

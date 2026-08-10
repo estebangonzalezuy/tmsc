@@ -14,7 +14,14 @@
 // colour rotations resolve to whole cycles per loop), so recorded reels loop
 // seamlessly.
 
-import { PALETTE, tones, type ShaderSpec, type Theme } from "@/lib/postlab";
+import {
+  PALETTE,
+  resolveLayer,
+  tones,
+  type LayerSpec,
+  type ShaderSpec,
+  type Theme,
+} from "@/lib/postlab";
 
 const TAU = Math.PI * 2;
 
@@ -158,19 +165,24 @@ export function drawGenerative(
   const u = w / 1080;
   const D = Math.max(2, duration);
   const tt = (((t % D) + D) % D) / D;
-  const cycles = Math.max(1, Math.round(num(spec.speed, 0.5) * 3));
+  /* Any parameter given a wave is resolved to the number it holds at this
+     point in the loop, once, here — so the preview and the exporter run the
+     same arithmetic and there is only one place that knows about motion.
+     Every wave returns to its start at tt=1, so this can't open a seam. */
+  const s = resolveLayer(spec as LayerSpec, tt);
+  const cycles = Math.max(1, Math.round(num(s.speed, 0.5) * 3));
   const ph = tt * cycles; // grows by an integer over one loop
-  const warp = Math.max(0, Math.min(1, num(spec.warp, 0.2)));
-  const density = num(spec.density, 8);
-  const pattern = String(spec.pattern ?? "rings");
+  const warp = Math.max(0, Math.min(1, num(s.warp, 0.2)));
+  const density = num(s.density, 8);
+  const pattern = String(s.pattern ?? "rings");
   /* All three default to "off", so a layer written before they existed
      renders exactly as it always did. */
-  const pattern2 = String(spec.pattern2 ?? "none");
-  const mix = String(spec.mix ?? "solo");
-  const fold = String(spec.fold ?? "none");
-  const dtype = String(spec.dtype ?? "4x4");
-  const px = Math.max(2, Math.round(num(spec.pixel, 6) * u));
-  const inkAlpha = Math.min(1, Math.max(0.1, num(spec.ink, 1)));
+  const pattern2 = String(s.pattern2 ?? "none");
+  const mix = String(s.mix ?? "solo");
+  const fold = String(s.fold ?? "none");
+  const dtype = String(s.dtype ?? "4x4");
+  const px = Math.max(2, Math.round(num(s.pixel, 6) * u));
+  const inkAlpha = Math.min(1, Math.max(0.1, num(s.ink, 1)));
 
   const cw = Math.ceil(w / px);
   const chh = Math.ceil(h / px);
@@ -183,7 +195,7 @@ export function drawGenerative(
     maskCanvas.height = chh;
     const mctx = maskCanvas.getContext("2d", { willReadFrequently: true })!;
     mctx.clearRect(0, 0, cw, chh);
-    const word = String(spec.word ?? "M");
+    const word = String(s.word ?? "M");
     const pulse = 1 + 0.12 * Math.sin(TAU * ph);
     const size =
       (word.length > 1 ? (cw / word.length) * 1.6 : Math.min(cw, chh) * 0.95) *
@@ -352,6 +364,8 @@ export function drawGenerative(
      where it started at the end. 0 freezes it. */
   const mixSpeed = color?.mixSpeed ?? 1;
   const rots =
+    /* Deliberately the layer's base speed, not the resolved one: this has to
+       be the same whole number on every frame or the colours jump. */
     mixSpeed <= 0 ? 0 : Math.max(1, Math.round(num(spec.speed, 0.5) * 2 * mixSpeed));
   const n = inks.length;
   const cx0 = cw / 2;
@@ -426,9 +440,9 @@ export function drawGenerative(
 
   const c2x = w / 2;
   const c2y = h / 2;
-  ctx.translate(c2x + num(spec.offsetX, 0) * w, c2y + num(spec.offsetY, 0) * h);
-  ctx.rotate((num(spec.rotation, 0) * Math.PI) / 180);
-  const sc = Math.max(0.1, num(spec.scale, 1));
+  ctx.translate(c2x + num(s.offsetX, 0) * w, c2y + num(s.offsetY, 0) * h);
+  ctx.rotate((num(s.rotation, 0) * Math.PI) / 180);
+  const sc = Math.max(0.1, num(s.scale, 1));
   ctx.scale(sc, sc);
   ctx.translate(-c2x, -c2y);
 

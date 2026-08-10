@@ -36,6 +36,8 @@ export function GET() {
       "The older `color: true` switch still works and is read as \"put the palette on every layer\"; new specs should set `ink` per layer instead.",
       "The Post Lab is a dithering instrument — every background is dithered pixels in the slide's two tones. 'dithering' (Paper Shaders) has shapes simplex|warp|dots|wave|ripple|swirl|sphere and dither matrices 4x4|8x8|2x2|random. 'forms' (canvas ordered-dither) adds shapes the shader lacks: rings|ramp|bars|letter (giant dithered type from a club word)|spiral|grid|blobs|tunnel|noise|moire, with `warp` (0-1) bending the source through a flow field. Older type names from previous spec versions are auto-mapped to their closest dithering equivalent.",
       "Forms combine. A 'forms' layer can name a second shape in `pattern2` and fold it into the first with `mix` (add|sub|mul|diff|max|min; 'solo' ignores it), and mirror the result with `fold` (x|y|quad|radial). Both sources are mixed as grayscale and dithered once, so the output is still hard-edged pixels — that is the rule the tool keeps. `dtype` picks the screen: 4x4|8x8|2x2 ordered matrices, 'lines' for an engraving screen, 'noise' for a grainy one. Combining is where the interesting backgrounds are: moire + rings on diff, grid + blobs on mul, letter + noise on sub.",
+      "Parameters can travel instead of holding still. A 'forms' layer may carry `motion`: { \"<param>\": { \"to\": <number>, \"wave\": \"sin\"|\"tri\"|\"saw\"|\"square\", \"cycles\": <whole number 1-8>, \"phase\": 0-1 } }. The parameter's own value is where the trip starts and `to` is where it goes; `cycles` is trips per loop and is forced to a whole number, which is what keeps the post seamless. Animatable: every numeric parameter of the layer plus offsetX, offsetY, scale, rotation. This is the single biggest difference between a background that reads as a pattern and one that reads as motion — a drifting `density` or `warp` is usually enough.",
+      "Looping: the club's own 'forms' renderer always returns to its first frame at the end of the post, so an exported reel loops. The WebGL 'dithering' shader does not, except for shape 'swirl' (which ignores time) or speed 0 — a clip containing any other dithering shape has a visible jump. Prefer 'forms' for anything that will be posted as a loop.",
       "Instant zero-AI links also work: /postlab?title=...&body=...&kicker=...&format=square|portrait|story|landscape&theme=dark&shape=sphere — '//' in title/body becomes a line break. Use the encoded #spec= form when you need carousels or fine control.",
       "Carousels: first slide is the hook (often dark theme), one idea per slide, keep body text to one or two sentences.",
       "Reels: format 'story', one slide, duration 6-10s, pick an animated background — generative ones loop perfectly.",
@@ -93,6 +95,8 @@ export function GET() {
             "only with ink:\"mix\" — 1-12 (default 3), the size in dither cells of one patch of colour.",
           "layers[].mixSpeed":
             "only with ink:\"mix\" — 0-3 (default 1), how fast colour travels through the list, as a multiple of the layer's speed. 0 holds it still.",
+          "layers[].motion":
+            "only on 'forms' layers — parameters that travel over the loop instead of holding still, keyed by parameter name: { \"density\": { \"to\": 18, \"wave\": \"sin\", \"cycles\": 2 } }. See the motion note in writing_guidance.",
           shader:
             "deprecated v1 field — a single { type, ...params }; still accepted and lifted into layers[0]",
         },

@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 5;
+export const SPEC_VERSION = 6;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -27,12 +27,50 @@ export type Theme = "light" | "dark";
    renderer ("forms", for shapes the shader doesn't have). "none" = plain. */
 export type ShaderType = "none" | "dithering" | "forms";
 
-/* Boolean is in the index signature only for the layer's `color` switch, and
-   string[] only for a mix layer's `inks`; every shader parameter is still a
-   number or a choice string. */
+/* ------------------------------------------------------------------ waves */
+
+/* A parameter can be a number, or a number that travels. The wave shapes:
+   `sin` eases both ways, `tri` is linear back and forth, `saw` ramps and
+   snaps, `square` switches hard. */
+export const WAVES = ["sin", "tri", "saw", "square"] as const;
+export type Wave = (typeof WAVES)[number];
+
+/** Where a parameter travels to, and how. The parameter's own value is the
+    starting point, so adding motion never changes where a layer sits. */
+export type Motion = {
+  to: number;
+  wave?: Wave;
+  /** Whole trips per loop. Integers only — that is what keeps the post
+      seamless, so anything else is rounded. */
+  cycles?: number;
+  /** 0-1, where in the trip the loop starts. */
+  phase?: number;
+};
+
+export type MotionMap = Record<string, Motion>;
+
+/* `x` counts trips. Every shape returns to 0 at every whole x, which is why
+   an integer cycle count leaves the loop without a seam. */
+export function waveAt(wave: Wave, x: number): number {
+  const f = x - Math.floor(x);
+  switch (wave) {
+    case "tri":
+      return 1 - 2 * Math.abs(f - 0.5);
+    case "saw":
+      return f;
+    case "square":
+      return f < 0.5 ? 0 : 1;
+    default:
+      return 0.5 - 0.5 * Math.cos(2 * Math.PI * f);
+  }
+}
+
+/* Boolean is in the index signature only for the layer's `color` switch,
+   string[] only for a mix layer's `inks`, and the motion map only for
+   `motion`; every shader parameter is still a number or a choice string. */
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
-  number | string | boolean | string[] | undefined
+  number | string | boolean | string[] | MotionMap | undefined
 >;
 
 /* How stacked layers mix — CSS mix-blend-mode names, which map 1:1 onto
@@ -79,6 +117,11 @@ export type LayerSpec = ShaderSpec & {
       as a multiple of the layer's motion speed. 0 freezes the colours in
       place; absent = 1, the original rate. */
   mixSpeed?: number;
+  /** Parameters that travel over the loop instead of holding still, keyed
+      by parameter name. Only the canvas `forms` renderer reads it — the
+      WebGL shader's parameters are uniforms set once per render, and
+      pushing new ones every frame is not what it is for. */
+  motion?: MotionMap;
   /** Superseded by `ink`. Kept so links written when colour was a switch
       still open; normalizeSpec turns it into an `ink` and it is never
       written again. */
@@ -334,6 +377,143 @@ export const SHADERS: ShaderDef[] = [
 
 export const shaderDef = (type: ShaderType): ShaderDef =>
   SHADERS.find((s) => s.type === type) ?? SHADERS[0];
+
+/** The parameters of a layer that can be given motion: everything the
+    shader exposes as a number, plus where the layer sits. */
+export function animatable(type: ShaderType): ShaderControl[] {
+  return [
+    ...shaderDef(type).controls,
+    { key: "offsetX", label: "x", min: -1, max: 1, step: 0.01, def: 0 },
+    { key: "offsetY", label: "y", min: -1, max: 1, step: 0.01, def: 0 },
+    { key: "scale", label: "scale", min: 0.1, max: 4, step: 0.05, def: 1 },
+    { key: "rotation", label: "rotation", min: 0, max: 360, step: 1, def: 0 },
+  ];
+}
+
+/**
+ * A layer with its travelling parameters resolved to the numbers they hold
+ * at `tt` (0-1 through the loop). Preview and export both go through this,
+ * so what you watch and what you export are the same arithmetic.
+ */
+export function resolveLayer(layer: LayerSpec, tt: number): LayerSpec {
+  const motion = layer.motion;
+  if (!motion) return layer;
+  const out = { ...layer } as LayerSpec;
+  delete out.motion;
+  for (const [key, m] of Object.entries(motion)) {
+    const from = typeof layer[key] === "number" ? (layer[key] as number) : 0;
+    const cycles = Math.max(1, Math.round(m.cycles ?? 1));
+    const k = waveAt(m.wave ?? "sin", cycles * tt + (m.phase ?? 0));
+    out[key] = from + (m.to - from) * k;
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------- the loop */
+
+/* Whether a background returns to where it started at the end of the post.
+   The club's own forms renderer is written to: every form is periodic in
+   the post duration, and so is the colour rotation and any wave above. The
+   WebGL dithering is a different matter — its shapes advance through noise
+   that never repeats, so a recorded window has a seam. `swirl` is the
+   exception: it ignores time entirely. */
+const LOOPING_SHAPES = ["swirl"];
+
+export function layerLoops(layer: LayerSpec): boolean {
+  if (layer.type !== "dithering") return true;
+  if (Number(layer.speed ?? 0) === 0) return true;
+  return LOOPING_SHAPES.includes(String(layer.shape ?? ""));
+}
+
+/** What to tell the owner before they export: whether this slide comes back
+    to its first frame, and which layer is why it doesn't. */
+export function loopReport(slide: SlideSpec): { loops: boolean; why: string[] } {
+  const why: string[] = [];
+  slide.layers.forEach((l, i) => {
+    if (layerLoops(l)) return;
+    why.push(
+      `layer ${String(i + 1).padStart(2, "0")} — the dithering shader's ` +
+        `${l.shape} doesn't repeat. Freeze its speed, switch it to swirl, or ` +
+        `use dithered forms instead.`,
+    );
+  });
+  return { loops: why.length === 0, why };
+}
+
+/* --------------------------------------------------------------- styles */
+
+/* A style is a slide with the words taken out: how it looks, not what it
+   says. Copying one onto another slide is how a carousel reads as one
+   piece, and jittering one is how you get five posts that are obviously
+   siblings without being the same post twice. */
+const STYLE_FIELDS = [
+  "theme",
+  "background",
+  "palette",
+  "veil",
+  "titleFont",
+  "italic",
+  "titleSize",
+  "boxed",
+  "plate",
+  "align",
+  "ring",
+  "titlePixel",
+  "metaPixel",
+  "colorSeed",
+] as const;
+
+/** Where a layer sits, as opposed to what it draws. */
+const TRANSFORM_KEYS = ["offsetX", "offsetY", "scale", "rotation"];
+
+export type SlideStyle = Partial<SlideSpec> & { layers: LayerSpec[] };
+
+export function styleOf(slide: SlideSpec): SlideStyle {
+  const style: SlideStyle = { layers: structuredClone(slide.layers) };
+  for (const key of STYLE_FIELDS) {
+    const v = slide[key];
+    if (v !== undefined) (style as Record<string, unknown>)[key] = v;
+  }
+  return structuredClone(style);
+}
+
+/** The style on top of this slide's own words. */
+export function applyStyle(slide: SlideSpec, style: SlideStyle): SlideSpec {
+  return { ...slide, ...structuredClone(style) };
+}
+
+/**
+ * The same rules with room to move: every number drifts within `amount` of
+ * its range, and the colours are rearranged. Every *decision* — which form,
+ * how it mixes, what it is inked with — is left alone, because that is what
+ * makes the results read as one family rather than as a shuffle.
+ */
+export function varyStyle(
+  style: SlideStyle,
+  amount = 0.25,
+  rand: () => number = Math.random,
+): SlideStyle {
+  const next = structuredClone(style);
+  next.colorSeed = Math.floor(rand() * 9999) + 1;
+  next.layers = next.layers.map((layer) => {
+    const out = { ...layer };
+    for (const c of animatable(layer.type)) {
+      const cur = typeof out[c.key] === "number" ? (out[c.key] as number) : c.def;
+      /* The transform stays where it is unless it had already been moved by
+         hand. A background fills the frame, so shrinking or turning it only
+         drags the edges into shot — and a family of posts where one member
+         is a small square in the middle isn't a family. */
+      if (TRANSFORM_KEYS.includes(c.key) && cur === c.def) continue;
+      const span = (c.max - c.min) * amount;
+      const drift = (rand() * 2 - 1) * span;
+      const v = Math.min(c.max, Math.max(c.min, cur + drift));
+      out[c.key] = Math.round(v / c.step) * c.step;
+      out[c.key] = Math.round((out[c.key] as number) * 100) / 100;
+    }
+    return out;
+  });
+  return next;
+}
 
 /* A usable random background rather than a uniform one: parameters land in
    the middle 60% of each range, because the ends are where posts stop
@@ -605,6 +785,29 @@ export function normalizeSpec(raw: unknown): PostSpec {
           delete merged.mixMode;
           delete merged.mixScale;
           delete merged.mixSpeed;
+        }
+
+        /* Travelling parameters. Only the documented ones survive, and the
+           cycle count is forced to a whole number here rather than trusted
+           — a fractional one is the one way a spec could hand back a post
+           that doesn't loop. */
+        const raw = merged.motion as MotionMap | undefined;
+        if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+          const keys = new Set(animatable(type).map((c) => c.key));
+          const motion: MotionMap = {};
+          for (const [key, m] of Object.entries(raw)) {
+            if (!keys.has(key) || !m || typeof m.to !== "number") continue;
+            motion[key] = {
+              to: m.to,
+              wave: WAVES.includes(m.wave as Wave) ? m.wave : "sin",
+              cycles: Math.min(8, Math.max(1, Math.round(Number(m.cycles) || 1))),
+              phase: Math.min(1, Math.max(0, Number(m.phase) || 0)),
+            };
+          }
+          if (Object.keys(motion).length) merged.motion = motion;
+          else delete merged.motion;
+        } else {
+          delete merged.motion;
         }
         return merged;
       });

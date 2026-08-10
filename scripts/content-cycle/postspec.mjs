@@ -166,6 +166,9 @@ export function briefSchema(vocab) {
 /* Ways of mixing two forms that can never subtract the frame to nothing. */
 const SAFE_MIXES = ["add", "max", "diff"];
 
+/* Parameters worth sending on a trip over the loop. */
+const MOVABLE = ["density", "warp", "pixel"];
+
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const pick = (value, allowed, def) =>
   allowed.includes(value) ? value : def ?? allowed[0];
@@ -211,6 +214,26 @@ export function randomLayer(vocab, rand = Math.random, only) {
     const safe = SAFE_MIXES.filter((v) => (params.mix?.values ?? []).includes(v));
     if (safe.length && !safe.includes(layer.mix))
       layer.mix = safe[Math.floor(rand() * safe.length)];
+  }
+  /* Now and then, let one number travel over the loop instead of holding
+     still — a background that breathes reads as motion design rather than
+     as a pattern sitting there. Whole trips only, which is what keeps the
+     post seamless, and only on the club's own renderer: the WebGL shader
+     takes its numbers once. `speed` is left out on purpose, since it also
+     sets the rate the colours travel at. */
+  const movable = MOVABLE.filter((k) => params[k]?.kind === "number");
+  if (type === "forms" && movable.length && rand() < 0.4) {
+    const key = movable[Math.floor(rand() * movable.length)];
+    const p = params[key];
+    const from = layer[key];
+    const far = from < (p.min + p.max) / 2 ? p.max : p.min;
+    layer.motion = {
+      [key]: {
+        to: Math.round((from + (far - from) * (0.5 + rand() * 0.4)) * 100) / 100,
+        wave: rand() < 0.75 ? "sin" : "tri",
+        cycles: 1 + Math.floor(rand() * 2),
+      },
+    };
   }
   return layer;
 }
