@@ -109,34 +109,84 @@ export function platformOf(extractor, url) {
   return "other";
 }
 
-/** yt-dlp's own metadata, before anything is downloaded. Cheap, and it names
- *  the project: the uploader becomes the credit, the title becomes the title. */
-async function probeSource(url, cookies) {
-  const { stdout } = await run("yt-dlp", [
+/* YouTube asks a datacentre address to "sign in to confirm you're not a bot"
+   far more readily than it asks a home connection, and which of its player
+   clients it asks changes month to month. So try several before giving up:
+   they cost about a second each when they fail, and one of them is usually
+   still being served. null means yt-dlp's own default, which is right often
+   enough to try first.
+
+   This is a moving target, not a fix. The reliable answer is YTDLP_COOKIES —
+   see the error below and docs/THE-STILLS.md. */
+const YT_CLIENTS = [null, "tv_simply", "android_vr", "tv", "web_safari", "mweb"];
+
+function isBotCheck(message) {
+  return /sign in to confirm|not a bot|confirm you|--cookies/i.test(message);
+}
+
+const BOT_CHECK_HELP = `YouTube refused this video from the runner: "sign in to confirm you're not a bot".
+
+That is YouTube turning away a datacentre address, not a fault in the video or
+the extractor. Every player client was tried. Two ways forward:
+
+  1. Use a Vimeo link instead. Vimeo does not do this.
+  2. Add the YTDLP_COOKIES secret, which makes YouTube reliable:
+       - install a cookies.txt browser extension, sign in to YouTube,
+         export cookies.txt
+       - run:  base64 -w0 cookies.txt
+       - paste the output into the repo's
+         Settings > Secrets and variables > Actions > New repository secret,
+         named YTDLP_COOKIES
+     Then run this again. See docs/THE-STILLS.md.`;
+
+function ytArgs(cookies, client) {
+  return [
     "--no-warnings",
     "--no-playlist",
     ...(cookies ? ["--cookies", cookies] : []),
-    "-J",
-    url,
-  ]);
-  const info = JSON.parse(stdout);
-  return {
-    id: info.id ?? "",
-    title: info.title ?? "",
-    author: info.uploader ?? info.channel ?? "",
-    duration: Number(info.duration) || 0,
-    extractor: info.extractor_key ?? info.extractor ?? "",
-    year: String(info.upload_date ?? "").slice(0, 4),
-  };
+    ...(client ? ["--extractor-args", `youtube:player_client=${client}`] : []),
+  ];
 }
 
-async function download(url, dir, cookies) {
+/** yt-dlp's own metadata, before anything is downloaded. Cheap, and it names
+ *  the project: the uploader becomes the credit, the title becomes the title.
+ *
+ *  Also settles which player client works, so the download can reuse it
+ *  instead of rediscovering it. */
+async function probeSource(url, cookies) {
+  // With cookies there is nothing to negotiate; without them, hunt.
+  const candidates = cookies ? [null] : YT_CLIENTS;
+  let lastError;
+
+  for (const client of candidates) {
+    try {
+      const { stdout } = await run("yt-dlp", [...ytArgs(cookies, client), "-J", url]);
+      const info = JSON.parse(stdout);
+      if (client) console.log(`(player client ${client})`);
+      return {
+        client,
+        id: info.id ?? "",
+        title: info.title ?? "",
+        author: info.uploader ?? info.channel ?? "",
+        duration: Number(info.duration) || 0,
+        extractor: info.extractor_key ?? info.extractor ?? "",
+        year: String(info.upload_date ?? "").slice(0, 4),
+      };
+    } catch (err) {
+      lastError = err;
+      // Anything other than the bot check — a private video, a dead link, a
+      // site yt-dlp can't read — will fail the same way on every client.
+      if (!isBotCheck(err.message)) throw err;
+    }
+  }
+  throw new Error(BOT_CHECK_HELP + `\n\nyt-dlp said:\n${lastError.message}`);
+}
+
+async function download(url, dir, cookies, client) {
   // Video only, no audio: nothing here listens. It halves the download and
   // skips yt-dlp's merge step entirely.
   await run("yt-dlp", [
-    "--no-warnings",
-    "--no-playlist",
-    ...(cookies ? ["--cookies", cookies] : []),
+    ...ytArgs(cookies, client),
     "-f",
     "bv*[height<=?1080]/b[height<=?1080]/bv*/b",
     "-o",
@@ -439,7 +489,7 @@ async function main() {
     const isNew = !project;
 
     console.log(`Downloading "${info.title}" (${info.duration}s) as ${id}`);
-    const video = await download(url, work, cookies);
+    const video = await download(url, work, cookies, info.client);
     const probed = await probeVideo(video);
     const duration = probed.duration || info.duration;
 

@@ -88,11 +88,42 @@ shared with the Desk), and every call goes straight to api.github.com. Nothing
 on Vercel holds a secret and the deployed app needs no environment at all.
 Don't move any of it server-side.
 
-The one optional secret is a repository secret, used only inside Actions:
+## YouTube and the bot check
 
-| Secret | Why |
+The most common failure by far, and it is not a bug:
+
+```
+ERROR: [youtube] xxxx: Sign in to confirm you're not a bot.
+```
+
+YouTube treats GitHub's runners as datacentre traffic and challenges them. It
+challenges a home connection far less, which is why a link that downloads fine
+on your laptop fails in Actions.
+
+The extractor already tries six of YouTube's player clients before giving up
+(`YT_CLIENTS` in `extract.mjs`) — which of them is being served changes month
+to month, so one of them often still works. That is a moving target, not a fix.
+
+**The reliable fix is cookies.** Add one repository secret, used only inside
+Actions:
+
+| Secret | What |
 | --- | --- |
-| `YTDLP_COOKIES` | base64 of a `cookies.txt` from a signed-in browser. YouTube turns away datacentre addresses often enough that a busy day needs one. Without it most videos still come down; the ones that don't fail loudly. |
+| `YTDLP_COOKIES` | base64 of a `cookies.txt` exported from a signed-in browser. |
+
+```bash
+# after exporting cookies.txt with a cookies.txt browser extension
+base64 -w0 cookies.txt
+```
+
+Paste the output into **Settings → Secrets and variables → Actions → New
+repository secret**, named `YTDLP_COOKIES`. When it is set the extractor skips
+the client hunt and uses the cookies directly.
+
+Cookies expire. When YouTube starts refusing again, export a fresh
+`cookies.txt` and update the secret.
+
+**Vimeo does not do any of this.** A Vimeo link needs no secret at all.
 
 ## Where the images live
 

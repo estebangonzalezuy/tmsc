@@ -615,22 +615,44 @@ function RunList({
         </button>
       </div>
       <ul className="divide-y divide-line/30 text-sm">
-        {runs.map((run) => (
-          <li key={run.id} className="flex items-baseline justify-between gap-4 py-2">
-            <a
-              href={run.html_url}
-              target="_blank"
-              rel="noreferrer"
-              className="truncate hover:underline underline-offset-4"
+        {runs.map((run) => {
+          const failed = run.conclusion === "failure";
+          return (
+            <li
+              key={run.id}
+              className="flex items-baseline justify-between gap-4 py-2"
             >
-              {run.display_title}
-            </a>
-            <span className="shrink-0 text-xs text-muted">
-              {run.status === "completed" ? run.conclusion : run.status}
-            </span>
-          </li>
-        ))}
+              <a
+                href={run.html_url}
+                target="_blank"
+                rel="noreferrer"
+                className="truncate hover:underline underline-offset-4"
+              >
+                {run.display_title}
+              </a>
+              {/* A bare "failure" tells you nothing you can act on, and the
+                  reason only ever lives in the log. Make the word the way in. */}
+              <a
+                href={run.html_url}
+                target="_blank"
+                rel="noreferrer"
+                className={`shrink-0 text-xs underline underline-offset-4 ${
+                  failed ? "" : "text-muted"
+                }`}
+              >
+                {run.status === "completed" ? run.conclusion : run.status}
+                {failed && " — read the log"}
+              </a>
+            </li>
+          );
+        })}
       </ul>
+      <p className="text-xs text-muted leading-relaxed">
+        A YouTube link that fails with &ldquo;sign in to confirm you&rsquo;re
+        not a bot&rdquo; is YouTube turning away GitHub&rsquo;s servers, not a
+        broken video. Use a Vimeo link, or add the{" "}
+        <code>YTDLP_COOKIES</code> secret — see docs/THE-STILLS.md.
+      </p>
     </section>
   );
 }
