@@ -28,7 +28,7 @@ const VISIBLE_TAGS = 18;
 const fallback = {
   label: "the Stills",
   intro:
-    "Frames pulled out of motion work and kept: the compositions, the palettes, the type, the light. Not a mood board somebody else filled — a wall curated one project at a time.",
+    "Frames pulled out of motion work and kept: the compositions, the palettes, the type, the light. Not a mood board somebody else filled, and not a feed. A wall curated one project at a time.",
   note: "Every frame links back to the second it came from, so you can always check a still against the thing that moved.",
 };
 
@@ -168,7 +168,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         <section className="border-t border-line px-5 md:px-6 py-24">
           <p className="max-w-md text-sm text-muted leading-relaxed">
             The wall is empty. The first project goes up as soon as it&apos;s
-            been through the frames one by one — this is a curation, so
+            been through the frames one by one. This is a curation, so
             nothing lands here automatically.
           </p>
         </section>
@@ -278,7 +278,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                             {project.title}
                           </span>
                           <span className="block text-xs text-background/60">
-                            {project.credit || "—"} · {timecode(frame.t)}
+                            {project.credit || "Uncredited"} · {timecode(frame.t)}
                           </span>
                         </span>
                       </span>
