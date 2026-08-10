@@ -14,12 +14,54 @@ export function CircleLetter({
   className?: string;
 }) {
   return (
+    /* text-foreground rather than inherit: the circle keeps its own white
+       ground, so a letter that followed a hovering card's colour would turn
+       white on white and vanish. */
     <span
-      className={`inline-flex items-center justify-center rounded-full border border-line bg-background text-sm ${size} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full border border-line bg-background text-foreground text-sm ${size} ${className}`}
     >
       {children}
     </span>
   );
+}
+
+/* Which palette colour a thing lights up in. Stable, not shuffled: the same
+   card is always the same colour, so a grid doesn't rearrange itself between
+   visits, while neighbours still differ because the key differs. Pale and
+   saturated fills carry their own type colour (see globals.css), so every
+   pairing stays legible. */
+const ACCENT_HOVERS = [
+  "accent-green-hover",
+  "accent-indigo-hover",
+  "accent-warm-hover",
+  "accent-soft-hover",
+] as const;
+
+/* Type-only links drop the pale fill: legible under white type is not the
+   same as legible as type. */
+const ACCENT_HOVER_TEXTS = [
+  "accent-green-hover",
+  "accent-indigo-hover",
+  "accent-warm-hover",
+] as const;
+
+function hash(key: string | number): number {
+  const s = String(key);
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+  }
+  return h;
+}
+
+export function accentHover(key: string | number): string {
+  return `accent-hover ${ACCENT_HOVERS[hash(key) % ACCENT_HOVERS.length]}`;
+}
+
+export function accentHoverText(key: string | number): string {
+  return `accent-hover-text ${
+    ACCENT_HOVER_TEXTS[hash(key) % ACCENT_HOVER_TEXTS.length]
+  }`;
 }
 
 /* Scrolling band of circled letters.
@@ -157,12 +199,7 @@ export function SectionHeading({
 }) {
   return (
     <div className={className}>
-      {/* The kicker's rule is the one place colour sits still rather than
-          waiting for a pointer: it marks the top of every section, so the
-          accent reads as the club's rather than as a hover effect. */}
-      <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
-        {label}
-      </p>
+      <p className="text-sm underline underline-offset-4">{label}</p>
       <h2 className="mt-4 font-serif text-3xl md:text-5xl leading-tight max-w-3xl">
         {title}
       </h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, SectionHeading } from "@/components/Motifs";
+import { CircleLetter, SectionHeading, accentHover } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function ResourcesPage() {
@@ -15,7 +15,7 @@ export default function ResourcesPage() {
         {...studioSection("resources", "Resources")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">Resources</p>
+        <p className="text-sm underline underline-offset-4">Resources</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           Everything curated, so you can spend the time <em>practicing</em>.
         </h1>
@@ -36,7 +36,7 @@ export default function ResourcesPage() {
             href={r.href}
             target="_blank"
             rel="noreferrer"
-            className={`group px-5 md:px-6 py-16 border-line hover:bg-accent hover:text-background transition-colors ${
+            className={`group px-5 md:px-6 py-16 border-line ${accentHover(r.name)} transition-colors ${
               i > 0 ? "border-t md:border-t-0 md:border-l" : ""
             }`}
           >
@@ -44,7 +44,7 @@ export default function ResourcesPage() {
             <h2 className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">
               {r.name}
             </h2>
-            <p className="mt-4 text-sm text-muted group-hover:text-background/70 leading-relaxed">
+            <p className="mt-4 text-sm text-muted accent-hover-sub leading-relaxed">
               {r.blurb}
             </p>
             <p className="mt-6 text-sm underline underline-offset-4">
@@ -79,11 +79,9 @@ export default function ResourcesPage() {
                 href={w.href || site.substack}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-baseline gap-4 p-6 hover:bg-accent hover:text-background transition-colors"
+                className={`group flex items-baseline gap-4 p-6 ${accentHover(w.name)} transition-colors`}
               >
-                <span className="text-xs text-accent-warm group-hover:text-background/70">
-                  →
-                </span>
+                <span className="text-xs text-muted accent-hover-sub">→</span>
                 <span className="text-sm group-hover:underline underline-offset-4">
                   {w.name}
                 </span>

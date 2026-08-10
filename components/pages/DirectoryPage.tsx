@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, SectionHeading } from "@/components/Motifs";
+import { CircleLetter, SectionHeading, accentHover } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 import manifest from "@/content/directory/manifest.json";
 
@@ -25,7 +25,7 @@ export default function DirectoryPage() {
         {...studioSection("directory", "the Directory")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
+        <p className="text-sm underline underline-offset-4">
           {directory?.label ?? "the Directory"}
         </p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
@@ -66,22 +66,22 @@ export default function DirectoryPage() {
                 <Link
                   key={c.id}
                   href={`/directory/${c.id}`}
-                  className="group bg-background p-8 hover:bg-accent hover:text-background transition-colors"
+                  className={`group bg-background p-8 ${accentHover(c.id)} transition-colors`}
                 >
                   <div className="flex items-baseline justify-between gap-4">
                     <CircleLetter>{c.letter}</CircleLetter>
-                    <span className="text-xs text-muted group-hover:text-background/70">
+                    <span className="text-xs text-muted accent-hover-sub">
                       {c.count} entries
                     </span>
                   </div>
                   <h3 className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">
                     {c.name}
                   </h3>
-                  <p className="mt-4 text-sm text-muted group-hover:text-background/70 leading-relaxed">
+                  <p className="mt-4 text-sm text-muted accent-hover-sub leading-relaxed">
                     {c.blurb}
                   </p>
                   {c.facets.length > 0 && (
-                    <p className="mt-6 text-xs text-muted group-hover:text-background/70">
+                    <p className="mt-6 text-xs text-muted accent-hover-sub">
                       Filter by {c.facets.join(", ").toLowerCase()}
                     </p>
                   )}

@@ -7,6 +7,7 @@ import {
   LetterMarquee,
   OrbitRing,
   SectionHeading,
+  accentHoverText,
 } from "@/components/Motifs";
 import PostList from "@/components/PostList";
 import Cta from "@/components/Cta";
@@ -50,7 +51,7 @@ export default function HomePage() {
           />
         </div>
         <div className="relative">
-          <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">{site.name}</p>
+          <p className="text-sm underline underline-offset-4">{site.name}</p>
           <h1 className="mt-8 font-serif text-4xl md:text-7xl leading-tight max-w-4xl mx-auto">
             But the brain wasn&apos;t built to create <em>in a vacuum</em> for
             years on end.
@@ -64,13 +65,13 @@ export default function HomePage() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <a href={site.subscribe} target="_blank" rel="noreferrer">
-              <Boxed className="hover:bg-accent hover:text-background transition-colors">
+              <Boxed className="accent-hover transition-colors">
                 Join the newsletter
               </Boxed>
             </a>
             <Link
               href="/about"
-              className="text-sm underline underline-offset-4 hover:text-accent transition-colors"
+              className="text-sm underline underline-offset-4 accent-hover-text transition-colors"
             >
               What is the club?
             </Link>
@@ -144,7 +145,7 @@ export default function HomePage() {
           />
           <Link
             href="/newsletter"
-            className="text-sm underline underline-offset-4 hover:text-accent transition-colors"
+            className="text-sm underline underline-offset-4 accent-hover-text transition-colors"
           >
             Browse the full archive →
           </Link>
@@ -216,7 +217,7 @@ export default function HomePage() {
                   href={p.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline underline-offset-4 hover:text-accent transition-colors"
+                  className={`underline underline-offset-4 ${accentHoverText(p.name)} transition-colors`}
                 >
                   {p.name}
                 </a>
@@ -225,7 +226,7 @@ export default function HomePage() {
           </ul>
           <Link
             href="/learn"
-            className="mt-8 inline-block text-sm underline underline-offset-4 hover:text-accent transition-colors"
+            className="mt-8 inline-block text-sm underline underline-offset-4 accent-hover-text transition-colors"
           >
             All learning paths →
           </Link>
@@ -253,7 +254,7 @@ export default function HomePage() {
                   href={r.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline underline-offset-4 hover:text-accent transition-colors"
+                  className={`underline underline-offset-4 ${accentHoverText(r.name)} transition-colors`}
                 >
                   {r.name}
                 </a>
@@ -262,7 +263,7 @@ export default function HomePage() {
           </ul>
           <Link
             href="/resources"
-            className="mt-8 inline-block text-sm underline underline-offset-4 hover:text-accent transition-colors"
+            className="mt-8 inline-block text-sm underline underline-offset-4 accent-hover-text transition-colors"
           >
             All resources →
           </Link>
@@ -300,7 +301,7 @@ export default function HomePage() {
                 href={o.href}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-6 text-sm underline underline-offset-4 hover:text-accent transition-colors"
+                className="mt-6 text-sm underline underline-offset-4 accent-hover-text transition-colors"
               >
                 {o.cta} →
               </a>

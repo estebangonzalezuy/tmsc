@@ -52,21 +52,30 @@ browser). Therefore:
 - **Black and white by default.** `--background` white, `--foreground`
   near-black, grays for hierarchy. Every surface, every block of type and
   every border stays monochrome.
-- **Colour is an accent, never a scheme.** The club's palette lives in two
-  places that must be kept in step by hand: `PALETTE` in `lib/postlab.ts`
-  (which the Post Lab's exporter needs at module scope) and the `--accent*`
-  variables in `app/globals.css`. On the site those variables are allowed
-  in exactly two roles:
-  - `--accent` (indigo) for interactive state — link hover, the hover fill
-    that used to be a black inversion, and the focus ring.
-  - `--accent-warm` (orange red) for small static marks — the rule under a
-    section kicker, a list arrow.
-
-  `--accent-soft`, `--accent-green` and `--accent-cream` are defined but
-  unused; reach for them only if a new role genuinely needs one. Never
-  colour body copy, a heading, a border or a section background, and never
-  introduce a hex outside the palette. The Post Lab is still the one place
-  colour can fill a surface, and there only when a slide asks for it.
+- **Colour only ever answers a pointer.** At rest a page is black, white and
+  gray — nothing on the site is coloured until it is hovered or focused. The
+  palette lives in two places kept in step by hand: `PALETTE` in
+  `lib/postlab.ts` (the Post Lab's exporter needs it at module scope) and the
+  `--accent*` variables in `app/globals.css`.
+- **A hover picks its colour from the whole palette**, so a grid lights up
+  differently as you cross it. Don't write hover colours by hand: use
+  `accentHover(key)` for anything that fills (cards, rows) and
+  `accentHoverText(key)` for a link that only recolours its type, both from
+  `Motifs.tsx`. The key is something stable about the item, not its index, so
+  a card keeps its colour between visits. Green is the default the bare
+  `.accent-hover` class falls back to, and the focus ring.
+- **Fill and type are paired, never mixed.** Each `.accent-*-hover` class in
+  globals.css sets `--hover-fill` *and* `--hover-type` together; periwinkle
+  carries near-black type, the saturated ones carry white, and it never
+  appears as type on white. A child inside a filled block needs
+  `accent-hover-sub` to follow that pairing — plain `text-muted` would
+  survive the fill and go unreadable.
+- Anything with its own ground inside a hovering block must pin its own
+  colour (see `CircleLetter`'s `text-foreground`), or the glyph inherits the
+  block's hover type and disappears.
+- Never colour body copy, a heading, a border or a section background, and
+  never introduce a hex outside the palette. The Post Lab is still the one
+  place colour can fill a surface without being asked.
 - **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
   emphasis) via `next/font`. No other fonts.
 - **Motifs:** outlined circles, circled letters, orbital rings, boxed

@@ -37,8 +37,57 @@
 /* Keyboard focus gets the accent too, so it reads as the same system as
    hover instead of the browser's default outline. */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-green);
   outline-offset: 2px;
+}
+
+/* Hover colour comes from the whole palette rather than one accent, so a
+   grid lights up in different colours as the pointer crosses it. Fill and
+   type are paired per colour and never mixed: the pale one keeps near-black
+   type, the saturated ones take white. Set as variables rather than utility
+   classes because the children of a card have to read the same pair to stay
+   legible — that's what .accent-hover-sub is for. */
+.accent-hover {
+  --hover-fill: var(--accent-green);
+  --hover-type: #ffffff;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.accent-hover:hover {
+  background-color: var(--hover-fill);
+  color: var(--hover-type);
+}
+.accent-hover:hover .accent-hover-sub {
+  color: color-mix(in srgb, var(--hover-type) 70%, transparent);
+}
+
+.accent-green-hover {
+  --hover-fill: var(--accent-green);
+  --hover-type: #ffffff;
+}
+.accent-indigo-hover {
+  --hover-fill: var(--accent);
+  --hover-type: #ffffff;
+}
+.accent-warm-hover {
+  --hover-fill: var(--accent-warm);
+  --hover-type: #ffffff;
+}
+.accent-soft-hover {
+  --hover-fill: var(--accent-soft);
+  --hover-type: var(--foreground);
+}
+
+/* A link that only recolours its type takes the fill as its colour, so it
+   matches the blocks. Periwinkle never appears here: pale enough to sit
+   under white type is too pale to be read as type. */
+.accent-hover-text {
+  --hover-fill: var(--accent-green);
+  transition: color 0.2s;
+}
+.accent-hover-text:hover {
+  color: var(--hover-fill);
 }
 
 body {

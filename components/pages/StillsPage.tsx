@@ -141,7 +141,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         {...studioSection("stills", "the Stills")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">{stills.label}</p>
+        <p className="text-sm underline underline-offset-4">{stills.label}</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           The frame is where the <em>decisions</em> are.
         </h1>
@@ -207,7 +207,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                         className={`border border-line rounded-full px-3 py-1 text-xs transition-colors ${
                           on
                             ? "bg-foreground text-background"
-                            : "hover:bg-accent hover:text-background"
+                            : "accent-hover"
                         }`}
                       >
                         {tag.value}{" "}
@@ -220,7 +220,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                   {wall.tags.length > VISIBLE_TAGS && (
                     <button
                       onClick={() => setExpanded((e) => !e)}
-                      className="px-2 py-1 text-xs underline underline-offset-4 hover:text-accent transition-colors"
+                      className="px-2 py-1 text-xs underline underline-offset-4 accent-hover-text transition-colors"
                     >
                       {expanded ? "Show fewer" : `Show all ${wall.tags.length}`}
                     </button>
@@ -241,7 +241,7 @@ function StillsWall({ wall }: { wall: WallData }) {
             {filtering && (
               <button
                 onClick={() => router.replace("?", { scroll: false })}
-                className="underline underline-offset-4 hover:text-accent transition-colors"
+                className="underline underline-offset-4 accent-hover-text transition-colors"
               >
                 Clear
               </button>
@@ -292,7 +292,7 @@ function StillsWall({ wall }: { wall: WallData }) {
 
           {!hidden.has("stillsIndex") && wall.projects.length > 0 && (
             <section className="border-t border-line px-5 md:px-6 py-16">
-              <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">By project</p>
+              <p className="text-sm underline underline-offset-4">By project</p>
               <ul className="mt-8 divide-y divide-line/30">
                 {wall.projects.map((project) => (
                   <li key={project.id}>

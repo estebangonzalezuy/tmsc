@@ -63,7 +63,7 @@ export default function StillsProjectPage({
             href={project.source.url}
             target="_blank"
             rel="noreferrer"
-            className="underline underline-offset-4 hover:text-accent transition-colors"
+            className="underline underline-offset-4 accent-hover-text transition-colors"
           >
             Watch the source →
           </a>
@@ -78,7 +78,7 @@ export default function StillsProjectPage({
               <Link
                 key={tag}
                 href={`/stills?tag=${encodeURIComponent(tag)}`}
-                className="border border-line rounded-full px-3 py-1 text-xs hover:bg-accent hover:text-background transition-colors"
+                className="border border-line rounded-full px-3 py-1 text-xs accent-hover transition-colors"
               >
                 {tag}
               </Link>
