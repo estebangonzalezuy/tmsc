@@ -18,11 +18,12 @@ type Row = { href: string; name: string; what: string; external?: boolean };
 const groups: { title: string; note: string; rows: Row[] }[] = [
   {
     title: "Make",
-    note: "the three tools",
+    note: "the four tools",
     rows: [
       { href: "/desk", name: "the Desk", what: "start a run, see what's going" },
       { href: "/postlab", name: "the Post Lab", what: "the visual — tweak and export" },
       { href: "/studio", name: "the Studio", what: "the site's own words" },
+      { href: "/curate", name: "the Curator", what: "a video in, style frames out" },
     ],
   },
   {
@@ -61,6 +62,10 @@ const groups: { title: string; note: string; rows: Row[] }[] = [
     note: "what people see",
     rows: [
       { href: "/", name: "the site", what: "themotionsocialclub" },
+      // Off the nav on purpose — reachable by link until the wall has enough
+      // on it to earn a place in the menu. Flip it back on in the Studio's
+      // Navigation panel.
+      { href: "/stills", name: "the Stills", what: "the wall, link-only for now" },
       { href: site.substack, name: "the newsletter", what: "Human & Motion", external: true },
       { href: site.linkedin, name: "LinkedIn", what: "the main channel", external: true },
       { href: site.instagram, name: "Instagram", what: "where the posts go", external: true },
