@@ -50,10 +50,23 @@ browser). Therefore:
 ## Design rules
 
 - **Black and white by default.** `--background` white, `--foreground`
-  near-black, grays for hierarchy. The site itself stays monochrome. The one
-  exception is the Post Lab, where a slide can opt into the club palette
-  (`PALETTE` in `lib/postlab.ts`) for the dithered pixels — off unless asked
-  for, and never anywhere else in the UI.
+  near-black, grays for hierarchy. Every surface, every block of type and
+  every border stays monochrome.
+- **Colour is an accent, never a scheme.** The club's palette lives in two
+  places that must be kept in step by hand: `PALETTE` in `lib/postlab.ts`
+  (which the Post Lab's exporter needs at module scope) and the `--accent*`
+  variables in `app/globals.css`. On the site those variables are allowed
+  in exactly two roles:
+  - `--accent` (indigo) for interactive state — link hover, the hover fill
+    that used to be a black inversion, and the focus ring.
+  - `--accent-warm` (orange red) for small static marks — the rule under a
+    section kicker, a list arrow.
+
+  `--accent-soft`, `--accent-green` and `--accent-cream` are defined but
+  unused; reach for them only if a new role genuinely needs one. Never
+  colour body copy, a heading, a border or a section background, and never
+  introduce a hex outside the palette. The Post Lab is still the one place
+  colour can fill a surface, and there only when a slide asks for it.
 - **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
   emphasis) via `next/font`. No other fonts.
 - **Motifs:** outlined circles, circled letters, orbital rings, boxed

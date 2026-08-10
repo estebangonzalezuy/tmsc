@@ -5,6 +5,18 @@
   --foreground: #0d0d0d;
   --muted: #6b6b6b;
   --line: #0d0d0d;
+
+  /* The club's accents, the same values the Post Lab paints its posts with
+     (PALETTE in lib/postlab.ts). The page stays black and white; these are
+     for hovers and small marks only, so the colour appears where someone
+     is pointing rather than as a scheme. Keep the two in step by hand:
+     the palette is a design decision, not an import, and the Post Lab
+     needs its list at module scope for the exporter. */
+  --accent: #3d3deb; /* indigo, every interactive state */
+  --accent-warm: #ee4b2b; /* orange red, small marks */
+  --accent-soft: #adb4f5; /* periwinkle, washes behind hovers */
+  --accent-green: #2e7d46;
+  --accent-cream: #fffdf0;
 }
 
 @theme inline {
@@ -12,9 +24,21 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-warm: var(--accent-warm);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-green: var(--accent-green);
+  --color-accent-cream: var(--accent-cream);
   --font-sans: var(--font-archivo);
   --font-serif: var(--font-lora);
   --font-gothic: var(--font-pirata);
+}
+
+/* Keyboard focus gets the accent too, so it reads as the same system as
+   hover instead of the browser's default outline. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 body {
@@ -23,12 +47,15 @@ body {
   font-family: var(--font-archivo), sans-serif;
 }
 
+/* Shifts by exactly one run of the band; LetterMarquee sets the share.
+   The duration is per-run, so the speed stays the same however many
+   copies a viewport needs. */
 @keyframes marquee {
   from {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(var(--marquee-shift, -50%));
   }
 }
 

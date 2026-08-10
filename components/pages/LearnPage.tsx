@@ -16,7 +16,7 @@ export default function LearnPage() {
         {...studioSection("learningPaths", "Learning paths")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">Learn</p>
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">Learn</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           Start in motion <em>from the base</em>. Fundamentals first, tools
           second.
@@ -44,7 +44,7 @@ export default function LearnPage() {
               href={p.href}
               target="_blank"
               rel="noreferrer"
-              className="group bg-background p-8 hover:bg-foreground hover:text-background transition-colors"
+              className="group bg-background p-8 hover:bg-accent hover:text-background transition-colors"
             >
               <p className="text-xs text-muted group-hover:text-background/70 border border-line/40 rounded-full inline-block px-2.5 py-0.5">
                 {p.tag}

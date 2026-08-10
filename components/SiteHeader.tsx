@@ -44,7 +44,7 @@ export default function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="hover:text-muted transition-colors"
+              className="hover:text-accent transition-colors"
             >
               {l.label}
             </Link>
@@ -54,7 +54,7 @@ export default function SiteHeader() {
           href={site.subscribe}
           target="_blank"
           rel="noreferrer"
-          className="border border-line rounded-full px-4 py-1.5 hover:bg-foreground hover:text-background transition-colors"
+          className="border border-line rounded-full px-4 py-1.5 hover:bg-accent hover:text-background transition-colors"
         >
           Join the club
         </a>

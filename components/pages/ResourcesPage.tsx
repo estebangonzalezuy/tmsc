@@ -15,7 +15,7 @@ export default function ResourcesPage() {
         {...studioSection("resources", "Resources")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">Resources</p>
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">Resources</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           Everything curated, so you can spend the time <em>practicing</em>.
         </h1>
@@ -36,7 +36,7 @@ export default function ResourcesPage() {
             href={r.href}
             target="_blank"
             rel="noreferrer"
-            className={`group px-5 md:px-6 py-16 border-line hover:bg-foreground hover:text-background transition-colors ${
+            className={`group px-5 md:px-6 py-16 border-line hover:bg-accent hover:text-background transition-colors ${
               i > 0 ? "border-t md:border-t-0 md:border-l" : ""
             }`}
           >
@@ -79,9 +79,9 @@ export default function ResourcesPage() {
                 href={w.href || site.substack}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-baseline gap-4 p-6 hover:bg-foreground hover:text-background transition-colors"
+                className="group flex items-baseline gap-4 p-6 hover:bg-accent hover:text-background transition-colors"
               >
-                <span className="text-xs text-muted group-hover:text-background/70">
+                <span className="text-xs text-accent-warm group-hover:text-background/70">
                   →
                 </span>
                 <span className="text-sm group-hover:underline underline-offset-4">

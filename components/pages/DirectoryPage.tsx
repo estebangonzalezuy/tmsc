@@ -25,7 +25,7 @@ export default function DirectoryPage() {
         {...studioSection("directory", "the Directory")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
           {directory?.label ?? "the Directory"}
         </p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
@@ -66,7 +66,7 @@ export default function DirectoryPage() {
                 <Link
                   key={c.id}
                   href={`/directory/${c.id}`}
-                  className="group bg-background p-8 hover:bg-foreground hover:text-background transition-colors"
+                  className="group bg-background p-8 hover:bg-accent hover:text-background transition-colors"
                 >
                   <div className="flex items-baseline justify-between gap-4">
                     <CircleLetter>{c.letter}</CircleLetter>

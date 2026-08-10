@@ -59,7 +59,7 @@ export default function SiteFooter() {
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="hover:text-muted transition-colors"
+                      className="hover:text-accent transition-colors"
                     >
                       {l.label}
                     </Link>
@@ -77,7 +77,7 @@ export default function SiteFooter() {
                 href={site.substack}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-muted transition-colors"
+                className="hover:text-accent transition-colors"
               >
                 Substack
               </a>
@@ -87,7 +87,7 @@ export default function SiteFooter() {
                 href={site.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-muted transition-colors"
+                className="hover:text-accent transition-colors"
               >
                 Instagram
               </a>
@@ -97,7 +97,7 @@ export default function SiteFooter() {
                 href={site.linkedin}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-muted transition-colors"
+                className="hover:text-accent transition-colors"
               >
                 LinkedIn
               </a>
@@ -105,7 +105,7 @@ export default function SiteFooter() {
             <li>
               <a
                 href={`mailto:${site.email}`}
-                className="hover:text-muted transition-colors"
+                className="hover:text-accent transition-colors"
               >
                 {site.email}
               </a>

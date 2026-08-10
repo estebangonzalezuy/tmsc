@@ -16,7 +16,7 @@ export default function NewsletterPage() {
         {...studioSection("stats", "Stats")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">The newsletter</p>
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">The newsletter</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           Every letter the club has sent, <em>since day one</em>.
         </h1>
@@ -26,7 +26,7 @@ export default function NewsletterPage() {
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <a href={site.subscribe} target="_blank" rel="noreferrer">
-            <Boxed className="hover:bg-foreground hover:text-background transition-colors">
+            <Boxed className="hover:bg-accent hover:text-background transition-colors">
               Subscribe on Substack
             </Boxed>
           </a>
@@ -34,7 +34,7 @@ export default function NewsletterPage() {
             href={site.substack}
             target="_blank"
             rel="noreferrer"
-            className="text-sm underline underline-offset-4 hover:text-muted transition-colors"
+            className="text-sm underline underline-offset-4 hover:text-accent transition-colors"
           >
             humanandmotion.substack.com
           </a>

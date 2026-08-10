@@ -88,7 +88,7 @@ function Chip({
       className={`rounded-full border border-line px-4 py-1.5 text-sm transition-colors ${
         active
           ? "bg-foreground text-background"
-          : "hover:bg-foreground hover:text-background"
+          : "hover:bg-accent hover:text-background"
       }`}
     >
       {children}
@@ -167,7 +167,7 @@ export default function PracticePage() {
         {...studioSection("practiceExercises", "Practice exercises")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">Practice</p>
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">Practice</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           You have the time. <em>We&apos;ll pick the exercise.</em>
         </h1>
@@ -263,7 +263,7 @@ export default function PracticePage() {
 
                 <div className="mt-12 grid gap-12 md:grid-cols-[1fr_18rem]">
                   <div>
-                    <p className="text-sm underline underline-offset-4">
+                    <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
                       The brief
                     </p>
                     <ol className="mt-6 divide-y divide-line/30 border-y border-line/30">
@@ -280,7 +280,7 @@ export default function PracticePage() {
 
                   <aside className="space-y-8">
                     <div>
-                      <p className="text-sm underline underline-offset-4">
+                      <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
                         One rule
                       </p>
                       <p className="mt-4 font-serif text-xl italic leading-snug">
@@ -288,7 +288,7 @@ export default function PracticePage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm underline underline-offset-4">
+                      <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
                         Finished when
                       </p>
                       <p className="mt-4 text-sm text-muted leading-relaxed">
@@ -297,14 +297,14 @@ export default function PracticePage() {
                     </div>
                     {exercise.watchHref && (
                       <div>
-                        <p className="text-sm underline underline-offset-4">
+                        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">
                           If you get stuck
                         </p>
                         <a
                           href={exercise.watchHref}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-4 block text-sm leading-relaxed hover:text-muted transition-colors"
+                          className="mt-4 block text-sm leading-relaxed hover:text-accent transition-colors"
                         >
                           {exercise.watch} →
                         </a>
@@ -321,7 +321,7 @@ export default function PracticePage() {
                 <button
                   type="button"
                   onClick={() => setReroll({ key, count: seen + 1 })}
-                  className="rounded-full border border-line px-4 py-1.5 text-sm hover:bg-foreground hover:text-background transition-colors"
+                  className="rounded-full border border-line px-4 py-1.5 text-sm hover:bg-accent hover:text-background transition-colors"
                 >
                   Give me another →
                 </button>
@@ -359,7 +359,7 @@ export default function PracticePage() {
                       .querySelector("[data-studio-section='practiceExercises']")
                       ?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className="group block w-full p-8 text-left hover:bg-foreground hover:text-background transition-colors"
+                  className="group block w-full p-8 text-left hover:bg-accent hover:text-background transition-colors"
                 >
                   <CircleLetter className="group-hover:bg-transparent group-hover:border-background">
                     {s.number}

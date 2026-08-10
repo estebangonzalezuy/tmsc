@@ -15,7 +15,7 @@ export default function OfferingsPage() {
         {...studioSection("offerings", "Offerings")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">Offerings</p>
+        <p className="text-sm underline underline-offset-4 decoration-2 decoration-accent-warm">Offerings</p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           Ways to practice <em>with the club</em>, honestly labeled.
         </h1>
@@ -57,7 +57,7 @@ export default function OfferingsPage() {
               rel="noreferrer"
               className="self-center"
             >
-              <Boxed className="text-sm hover:bg-foreground hover:text-background transition-colors">
+              <Boxed className="text-sm hover:bg-accent hover:text-background transition-colors">
                 {o.cta}
               </Boxed>
             </a>
@@ -74,7 +74,7 @@ export default function OfferingsPage() {
           href={site.subscribe}
           target="_blank"
           rel="noreferrer"
-          className="mt-8 inline-block text-sm underline underline-offset-4 hover:text-muted transition-colors"
+          className="mt-8 inline-block text-sm underline underline-offset-4 hover:text-accent transition-colors"
         >
           Start there →
         </a>

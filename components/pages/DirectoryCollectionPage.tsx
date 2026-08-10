@@ -162,7 +162,7 @@ export default function DirectoryCollectionPage({
         {(activeCount > 0 || query) && (
           <button
             onClick={() => router.replace("?", { scroll: false })}
-            className="underline underline-offset-4 hover:text-muted transition-colors"
+            className="underline underline-offset-4 hover:text-accent transition-colors"
           >
             Clear {activeCount > 0 ? `${activeCount} filter${activeCount > 1 ? "s" : ""}` : "search"}
           </button>
@@ -225,7 +225,7 @@ function FacetRow({
               className={`border border-line rounded-full px-3 py-1 text-xs transition-colors ${
                 on
                   ? "bg-foreground text-background"
-                  : "hover:bg-foreground hover:text-background"
+                  : "hover:bg-accent hover:text-background"
               }`}
             >
               {v.value}{" "}
@@ -238,7 +238,7 @@ function FacetRow({
         {overflows && (
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="px-2 py-1 text-xs underline underline-offset-4 hover:text-muted transition-colors"
+            className="px-2 py-1 text-xs underline underline-offset-4 hover:text-accent transition-colors"
           >
             {expanded
               ? "Show fewer"
@@ -304,7 +304,7 @@ function Row({ entry, action }: { entry: DirectoryEntry; action: string }) {
           href={entry.href}
           target="_blank"
           rel="noreferrer"
-          className="group block px-5 md:px-6 py-6 hover:bg-foreground hover:text-background transition-colors"
+          className="group block px-5 md:px-6 py-6 hover:bg-accent hover:text-background transition-colors"
         >
           {body}
         </a>
