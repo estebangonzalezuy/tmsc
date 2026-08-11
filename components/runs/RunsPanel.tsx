@@ -11,6 +11,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { hiddenSet, useContent } from "@/components/content";
 
 const GH_REPO = "estebangonzalezuy/tmsc";
 const WORKFLOW = "content-cycle.yml";
@@ -24,6 +25,31 @@ const NOTION = {
   library: "https://app.notion.com/p/d368165d8fd54e548aea7eaecf27d9e7",
   objectives: "https://app.notion.com/p/d33ba4bc712b422f8bfecfb653a3507c",
 };
+
+/* The four tools that live on this site. The Desk is the page you're on. */
+const TOOLS: [href: string, name: string, what: string][] = [
+  ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
+  ["/studio", "the Studio", "the site's own words"],
+  ["/curate", "the Curator", "a video in, style frames out"],
+  ["/hub", "the Hub", "everything tMSC, in one list"],
+];
+
+/* Every page the site has, so the Desk can reach any of them from a phone.
+   `hides` mirrors SiteHeader: the ids that take a page's link out of the
+   menu, either the nav entry itself or the section powering it. A hidden
+   page is still listed here and still works — it just says it's off the
+   nav, which is the only way to find one again from outside the Studio. */
+const PAGES: [href: string, name: string, what: string, hides: string[]][] = [
+  ["/", "the Index", "the front page", []],
+  ["/about", "About", "who the club is", ["nav:about"]],
+  ["/newsletter", "Newsletter", "Human & Motion, and the archive", ["nav:newsletter", "archive"]],
+  ["/resources", "Resources", "the library and the picks", ["nav:resources", "resources"]],
+  ["/directory", "the Directory", "every resource, filterable", ["nav:directory", "directory"]],
+  ["/stills", "the Stills", "the wall of style frames", ["nav:stills", "stills"]],
+  ["/learn", "Learn", "the learning paths", ["nav:learn", "learningPaths"]],
+  ["/practice", "Practice", "the exercises", ["nav:practice", "practiceExercises"]],
+  ["/offerings", "Offerings", "what the club runs", ["nav:offerings", "offerings"]],
+];
 
 type Job = {
   id: string;
@@ -151,6 +177,9 @@ const ago = (iso: string) => {
 };
 
 export default function RunsPanel() {
+  /* Outside the Studio preview this is the built JSON, which is exactly
+     what's deployed — so the nav marks below are the live ones. */
+  const hidden = hiddenSet(useContent());
   const token = useSyncExternalStore(
     tokenStore.subscribe,
     tokenStore.get,
@@ -285,12 +314,15 @@ export default function RunsPanel() {
           </span>
           <span className="font-serif italic text-lg">the Desk</span>
         </div>
-        <div className="flex items-center gap-5 text-xs">
+        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs">
           <Link href="/postlab" className="underline underline-offset-4">
             the Post Lab
           </Link>
           <Link href="/studio" className="underline underline-offset-4">
             the Studio
+          </Link>
+          <Link href="/curate" className="underline underline-offset-4">
+            the Curator
           </Link>
         </div>
       </header>
@@ -446,14 +478,10 @@ export default function RunsPanel() {
 
             <section>
               <h2 className="text-xs uppercase tracking-widest text-muted underline underline-offset-4">
-                On the site
+                The tools
               </h2>
               <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
-                {[
-                  ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
-                  ["/studio", "the Studio", "the site's own words"],
-                  ["/hub", "the Hub", "everything tMSC, in one list"],
-                ].map(([href, name, what]) => (
+                {TOOLS.map(([href, name, what]) => (
                   <li key={name}>
                     <Link
                       href={href}
@@ -467,6 +495,32 @@ export default function RunsPanel() {
               </ul>
             </section>
           </div>
+
+          {/* Nine pages, three across — the count divides, so no cell of the
+              hairline grid is left showing the line through it. */}
+          <section className="mt-10">
+            <h2 className="text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+              The pages
+            </h2>
+            <ul className="mt-4 grid gap-px bg-line border border-line text-sm md:grid-cols-3">
+              {PAGES.map(([href, name, what, hides]) => {
+                const off = hides.some((id) => hidden.has(id));
+                return (
+                  <li key={href} className="bg-background">
+                    <Link
+                      href={href}
+                      className="block px-5 py-3 hover:bg-foreground hover:text-background transition-colors"
+                    >
+                      <span className="block">{name}</span>
+                      <span className="mt-0.5 block text-xs opacity-60">
+                        {off ? `${what} · off the nav` : what}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
           <p className="mt-10 text-xs text-muted leading-relaxed">
             Nothing runs on a schedule — these buttons are the only trigger.
