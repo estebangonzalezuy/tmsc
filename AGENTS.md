@@ -120,6 +120,33 @@ default:
 - **`tag` and `note`.** The oval above the headline, and the top-right corner
   label. There is one corner, so a `note` makes the circled mark stand down.
 
+**Marks and their deformers.** `shapes[]` on a slide is the club's motif
+language as placed objects — circle, oval, square, triangle, line, bar, arc,
+cross, bracket — each with a position, a size, a weight (0 fills it), a turn, an
+ink and `under` to put it behind the words. They are drawn in `overlay.ts`
+alongside the type because that is what they are compositionally, and like the
+ruling they survive `text: false`, so a sheet of marks with no words is a post.
+
+What makes them worth having is the **deformers**: `repeat` copies a mark,
+`along` lays the copies out (row, column, arc, ring), and `spread`, `jitter`,
+`twist` and `taper` bend the row of them. One mark becomes a pattern without
+becoming a second layer, which is the same rule the forms renderer follows —
+combine before you render, never add a pass. `jitter` is seeded (`seed`), so a
+scattered pattern is a design decision and never crawls.
+
+**Loops are named motion.** `LOOPS` in `lib/postlab.ts` — drift, breathe, pulse,
+swing, sweep, march, blink, far-and-back — is a wave plus a whole number of
+trips plus how far to travel across the parameter's own range. `applyLoop`
+writes the `Motion`, `loopOf` reads one back, so the studio can offer motion by
+name instead of by arithmetic and still show "custom" for a hand-written spec.
+Every number on a layer *and* on a shape takes one, which is what makes motion
+plug-and-play here.
+
+Anything with a stack — effects on a layer, marks on a slide — is drawn as
+`Block`s in Toolcraft: a switch, a name, reorder, remove, and its numbers
+inside. An effect switched off (`mute`) stays in the chain rather than being
+deleted, so you can take one out and see what it was doing.
+
 A fourth thing makes the *type* move rather than the background: **`count`**,
 a number travelling through whole values over the loop, with every `#` in the
 slide's words replaced by its current value. Each value gets an equal slice and

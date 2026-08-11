@@ -204,7 +204,9 @@ export function applyFilters(
 ) {
   if (!filters?.length) return;
   let pending: FilterSpec[] = [];
-  for (const f of filters) {
+  /* A muted effect is skipped, not removed: the chain stays as it was written
+     so it can be switched back on and compared. */
+  for (const f of filters.filter((x) => !x.mute)) {
     if (f.type === "pixelate") {
       perPixel(ctx, w, h, pending, theme);
       pending = [];

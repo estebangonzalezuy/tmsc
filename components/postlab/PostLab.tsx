@@ -24,17 +24,25 @@ import {
   BLENDS,
   FORMATS,
   GROUNDS,
+  LOOPS,
   MAX_LAYERS,
+  MAX_SHAPES,
   MIX_MODES,
   PALETTE,
   PRESETS,
   FILTERS,
   SHADERS,
+  SHAPE_CONTROLS,
+  SHAPE_DEFORMERS,
+  SHAPE_KINDS,
   SLIDE_PARTS,
   SPEC_VERSION,
   WAVES,
   animatable,
+  applyLoop,
   applyStyle,
+  defaultShape,
+  loopOf,
   decodeSpec,
   defaultFilter,
   defaultLayer,
@@ -60,6 +68,8 @@ import {
   type PostSpec,
   type ShaderControl,
   type ShaderType,
+  type ShapeKind,
+  type ShapeSpec,
   type SlideSpec,
   type SlideStyle,
   type Wave,
@@ -73,6 +83,7 @@ import { clock } from "./clock";
 import Poster from "./Poster";
 import Tracks from "./Tracks";
 import {
+  Block,
   Btn,
   Dial,
   Drawer,
@@ -157,24 +168,8 @@ function ParamRow({
       >
         {canMove && (
           <button
-            onClick={() =>
-              onMotion(
-                motion
-                  ? null
-                  : {
-                      /* Somewhere worth travelling to: the far end of the range
-                         from wherever the slider is now. */
-                      to:
-                        value < (c.min + c.max) / 2
-                          ? c.min + (c.max - c.min) * 0.8
-                          : c.min + (c.max - c.min) * 0.2,
-                      wave: "sin",
-                      cycles: 1,
-                      phase: 0,
-                    },
-              )
-            }
-            title={motion ? "Hold this one still" : "Make this one travel over the loop"}
+            onClick={() => onMotion(motion ? null : applyLoop("drift", c, value))}
+            title={motion ? "Hold this one still" : "Plug a loop into this number"}
             className={`w-3 shrink-0 text-[9px] ${
               motion ? "text-foreground" : "text-muted hover:text-foreground"
             }`}
@@ -185,6 +180,25 @@ function ParamRow({
       </Dial>
       {motion && (
         <div className={`border-l ${HAIR} pl-2 ml-1 space-y-1`}>
+          {/* The loop, by name. Everything under it is the fine print: the loop
+              sets the wave and the number of trips, and `to` is how far. */}
+          <Row label="loop">
+            <Select
+              value={loopOf(motion)}
+              options={[
+                ...LOOPS.map((l) => ({ value: l.id, label: `${l.name} — ${l.about}` })),
+                ...(loopOf(motion) === "custom"
+                  ? [{ value: "custom", label: "custom" }]
+                  : []),
+              ]}
+              onChange={(id) => {
+                const next = applyLoop(id, c, value);
+                /* Keep how far it travels; the loop only decides the shape and
+                   the number of trips. */
+                if (next) onMotion({ ...next, to: motion.to });
+              }}
+            />
+          </Row>
           <Dial
             label="to"
             value={motion.to}
@@ -193,20 +207,22 @@ function ParamRow({
             step={c.step}
             onChange={(to) => onMotion({ ...motion, to })}
           />
-          <Row label="wave">
-            <Select
-              value={motion.wave ?? "sin"}
-              options={WAVES.map((w) => ({ value: w, label: WAVE_HINTS[w] }))}
-              onChange={(w) => onMotion({ ...motion, wave: w as Wave })}
-            />
-            <Select
-              flex={false}
-              value={String(motion.cycles ?? 1)}
-              title="Trips per loop — whole numbers only, which is what keeps the post seamless"
-              options={[1, 2, 3, 4, 6, 8].map((n) => ({ value: String(n), label: `×${n}` }))}
-              onChange={(n) => onMotion({ ...motion, cycles: Number(n) })}
-            />
-          </Row>
+          {loopOf(motion) === "custom" && (
+            <Row label="wave">
+              <Select
+                value={motion.wave ?? "sin"}
+                options={WAVES.map((w) => ({ value: w, label: WAVE_HINTS[w] }))}
+                onChange={(w) => onMotion({ ...motion, wave: w as Wave })}
+              />
+              <Select
+                flex={false}
+                value={String(motion.cycles ?? 1)}
+                title="Trips per loop — whole numbers only, which is what keeps the post seamless"
+                options={[1, 2, 3, 4, 6, 8].map((n) => ({ value: String(n), label: `×${n}` }))}
+                onChange={(n) => onMotion({ ...motion, cycles: Number(n) })}
+              />
+            </Row>
+          )}
         </div>
       )}
     </>
@@ -390,8 +406,10 @@ export default function PostLab() {
   const removeFilter = (i: number) =>
     setFilters((layer.filters ?? []).filter((_, j) => j !== i));
 
-  const patchFilter = (i: number, patch: Record<string, number | string>) =>
-    setFilters((layer.filters ?? []).map((f, j) => (j === i ? { ...f, ...patch } : f)));
+  const patchFilter = (
+    i: number,
+    patch: Record<string, number | string | boolean | undefined>,
+  ) => setFilters((layer.filters ?? []).map((f, j) => (j === i ? { ...f, ...patch } : f)));
 
   /* Order matters: pixelate before grain is a screened image with grain over it,
      grain before pixelate is grain that got screened. */
@@ -412,6 +430,45 @@ export default function PostLab() {
     patchLayer({
       motion: Object.keys(motion).length ? motion : undefined,
     } as Partial<LayerSpec>);
+  };
+
+  /* ------------------------------------------------------------- marks */
+
+  /* Shapes are a list on the slide, edited the way the filter chain is: add,
+     reorder, remove, and set the numbers of the one you're looking at. Dropped
+     entirely when the last one goes, so a link never carries an empty list. */
+  const setShapes = (list: ShapeSpec[]) =>
+    patchSlide({ shapes: list.length ? list : undefined });
+
+  const addShape = (kind: ShapeKind) => {
+    if ((slide.shapes ?? []).length >= MAX_SHAPES) return;
+    setShapes([
+      ...(slide.shapes ?? []),
+      { ...defaultShape(kind), seed: Math.floor(Math.random() * 9999) + 1 },
+    ]);
+  };
+
+  const patchShape = (i: number, patch: Partial<ShapeSpec>) =>
+    setShapes((slide.shapes ?? []).map((s, j) => (j === i ? { ...s, ...patch } : s)));
+
+  const removeShape = (i: number) =>
+    setShapes((slide.shapes ?? []).filter((_, j) => j !== i));
+
+  const moveShape = (i: number, dir: -1 | 1) => {
+    const list = [...(slide.shapes ?? [])];
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    setShapes(list);
+  };
+
+  const setShapeMotion = (i: number, key: string, m: Motion | null) => {
+    const shape = (slide.shapes ?? [])[i];
+    if (!shape) return;
+    const motion = { ...(shape.motion ?? {}) };
+    if (m) motion[key] = m;
+    else delete motion[key];
+    patchShape(i, { motion: Object.keys(motion).length ? motion : undefined });
   };
 
   /* Switching a part off keeps its words; `off` is dropped entirely when nothing
@@ -1642,6 +1699,125 @@ export default function PostLab() {
             )}
           </Group>
 
+          {/* Marks on the sheet: the club's motifs as objects, each with the
+              deformers that turn one into a pattern of them. */}
+          <Group
+            title="marks"
+            summary={
+              (slide.shapes ?? []).length
+                ? (slide.shapes ?? []).map((s) => s.kind).join(" · ")
+                : "none"
+            }
+            open={(slide.shapes ?? []).length > 0}
+            note="Circles, ovals, rules, arcs, brackets — placed over the words, or under them. Copies, spread, scatter, twist and taper turn one mark into a pattern without adding a layer."
+          >
+            {(slide.shapes ?? []).map((shape, i) => {
+              const repeat = Math.round(shape.repeat ?? 1);
+              return (
+                <Block
+                  key={i}
+                  title={`${shape.kind}${repeat > 1 ? ` ×${repeat}` : ""}${
+                    shape.under ? " · under" : ""
+                  }`}
+                  onUp={i > 0 ? () => moveShape(i, -1) : undefined}
+                  onDown={i < (slide.shapes ?? []).length - 1 ? () => moveShape(i, 1) : undefined}
+                  onRemove={() => removeShape(i)}
+                  open={i === (slide.shapes ?? []).length - 1}
+                >
+                  <Row label="mark">
+                    <Select
+                      value={shape.kind}
+                      options={SHAPE_KINDS.map((k) => ({ value: k, label: k }))}
+                      onChange={(kind) => patchShape(i, { kind: kind as ShapeKind })}
+                    />
+                  </Row>
+                  {SHAPE_CONTROLS.map((c) => (
+                    <ParamRow
+                      key={c.key}
+                      control={c}
+                      value={Number((shape as unknown as Record<string, number>)[c.key] ?? c.def)}
+                      motion={shape.motion?.[c.key]}
+                      canMove
+                      onChange={(v) => patchShape(i, { [c.key]: v } as Partial<ShapeSpec>)}
+                      onMotion={(m) => setShapeMotion(i, c.key, m)}
+                    />
+                  ))}
+                  <Row label="ink">
+                    <Swatches
+                      palette={slide.palette ?? PALETTE}
+                      value={shape.ink ?? ""}
+                      options={[{ value: "", label: "theme" }]}
+                      onChange={(v) => patchShape(i, { ink: v || undefined })}
+                    />
+                  </Row>
+                  <Row label="">
+                    <Switch
+                      label="under the words"
+                      on={!!shape.under}
+                      onChange={() => patchShape(i, { under: shape.under ? undefined : true })}
+                    />
+                  </Row>
+                  <div className={`border-t ${HAIR} pt-1.5 mt-1 space-y-1`}>
+                    <Label>deformers</Label>
+                    <Row label="laid out">
+                      <Select
+                        value={shape.along ?? "x"}
+                        options={[
+                          { value: "x", label: "in a row" },
+                          { value: "y", label: "in a column" },
+                          { value: "arc", label: "along an arc" },
+                          { value: "ring", label: "around a ring" },
+                        ]}
+                        onChange={(along) =>
+                          patchShape(i, {
+                            along: along === "x" ? undefined : (along as ShapeSpec["along"]),
+                          })
+                        }
+                      />
+                    </Row>
+                    {SHAPE_DEFORMERS.map((c) => (
+                      <ParamRow
+                        key={c.key}
+                        control={c}
+                        value={Number(
+                          (shape as unknown as Record<string, number>)[c.key] ?? c.def,
+                        )}
+                        motion={shape.motion?.[c.key]}
+                        canMove
+                        onChange={(v) =>
+                          patchShape(i, {
+                            [c.key]: v === c.def ? undefined : v,
+                          } as Partial<ShapeSpec>)
+                        }
+                        onMotion={(m) => setShapeMotion(i, c.key, m)}
+                      />
+                    ))}
+                    {!!shape.jitter && (
+                      <Btn
+                        onClick={() =>
+                          patchShape(i, { seed: Math.floor(Math.random() * 9999) + 1 })
+                        }
+                        title="The scatter is fixed, so it never crawls — this rolls a different one"
+                      >
+                        Rescatter
+                      </Btn>
+                    )}
+                  </div>
+                </Block>
+              );
+            })}
+            <Row label="add">
+              <Select
+                value=""
+                options={[
+                  { value: "", label: `a mark…  (${(slide.shapes ?? []).length}/${MAX_SHAPES})` },
+                  ...SHAPE_KINDS.map((k) => ({ value: k, label: k })),
+                ]}
+                onChange={(k) => k && addShape(k as ShapeKind)}
+              />
+            </Row>
+          </Group>
+
           <Group
             title="the pixels, on the type"
             summary={slide.titlePixel || slide.metaPixel ? "on" : "off"}
@@ -1928,26 +2104,34 @@ export default function PostLab() {
             )}
           </Group>
 
+          {/* The effect stack, the way every motion tool draws one: each effect
+              a block with its own switch, its own order and its own numbers, so
+              you can take one out of the chain and see what it was doing. */}
           <Group
-            title="filters"
-            summary={(layer.filters ?? []).map((f) => f.type).join(" · ") || "none"}
+            title="effects"
+            summary={
+              (layer.filters ?? []).length
+                ? (layer.filters ?? [])
+                    .map((f) => (f.mute ? `(${f.type})` : String(f.type)))
+                    .join(" → ")
+                : "none"
+            }
             open={(layer.filters ?? []).length > 0}
-            note="What happens to this layer after it's drawn, in order. Pixelate is the club's screen — put it on a clean shader and the image comes out in the club's pixels."
+            note="What happens to this layer after it's drawn, top to bottom. Pixelate is the club's screen — put it on a clean shader and the image comes out in the club's pixels."
           >
             {(layer.filters ?? []).map((f, i) => {
               const fd = filterDef(String(f.type));
               if (!fd) return null;
               return (
-                <div key={i} className={`border-l ${HAIR} pl-2 ml-1 space-y-1`}>
-                  <div className="flex items-center gap-2 h-7">
-                    <span className="text-[11px] flex-1">{fd.label}</span>
-                    <IconBtn onClick={() => moveFilter(i, -1)} title="Earlier in the chain">
-                      ↑
-                    </IconBtn>
-                    <IconBtn onClick={() => removeFilter(i)} title="Remove">
-                      ×
-                    </IconBtn>
-                  </div>
+                <Block
+                  key={i}
+                  title={fd.label}
+                  on={!f.mute}
+                  onToggle={() => patchFilter(i, { mute: f.mute ? undefined : true })}
+                  onUp={i > 0 ? () => moveFilter(i, -1) : undefined}
+                  onDown={i < (layer.filters ?? []).length - 1 ? () => moveFilter(i, 1) : undefined}
+                  onRemove={() => removeFilter(i)}
+                >
                   {(fd.choices ?? []).map((c) => (
                     <Row key={c.key} label={c.label}>
                       <Select
@@ -1968,18 +2152,26 @@ export default function PostLab() {
                       onChange={(v) => patchFilter(i, { [c.key]: v })}
                     />
                   ))}
-                </div>
+                  <p className="text-[10px] text-muted leading-relaxed">{fd.hint}</p>
+                </Block>
               );
             })}
-            <div className="flex flex-wrap gap-1">
-              {FILTERS.filter((f) => !(layer.filters ?? []).some((x) => x.type === f.type)).map(
-                (f) => (
-                  <Btn key={f.type} onClick={() => addFilter(f.type)} title={f.hint}>
-                    + {f.label}
-                  </Btn>
-                ),
-              )}
-            </div>
+            <Row label="add">
+              <Select
+                value=""
+                options={[
+                  { value: "", label: "an effect…" },
+                  ...FILTERS.filter(
+                    (f) => !(layer.filters ?? []).some((x) => x.type === f.type),
+                  ).map((f) => ({ value: f.type, label: f.label })),
+                ]}
+                onChange={(t) => t && addFilter(t)}
+              />
+            </Row>
+            <p className="text-[10px] text-muted leading-relaxed">
+              Order matters: pixelate then grain is a screened image with grain over
+              it; grain then pixelate is grain that got screened.
+            </p>
           </Group>
 
           <Group title="transform" open={false}>

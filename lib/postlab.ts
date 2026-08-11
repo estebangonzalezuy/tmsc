@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 9;
+export const SPEC_VERSION = 10;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -59,6 +59,31 @@ export type Motion = {
 };
 
 export type MotionMap = Record<string, Motion>;
+
+/**
+ * Keep only motion this thing can actually travel, with whole cycle counts.
+ * Both layers and shapes come through here: the cycle count is *forced* to a
+ * whole number rather than trusted, because a fractional one is the single way
+ * a spec could hand back a post that doesn't loop.
+ */
+export function cleanMotion(
+  raw: unknown,
+  controls: { key: string }[],
+): MotionMap | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const keys = new Set(controls.map((c) => c.key));
+  const motion: MotionMap = {};
+  for (const [key, m] of Object.entries(raw as MotionMap)) {
+    if (!keys.has(key) || !m || typeof m.to !== "number") continue;
+    motion[key] = {
+      to: m.to,
+      wave: WAVES.includes(m.wave as Wave) ? m.wave : "sin",
+      cycles: Math.min(8, Math.max(1, Math.round(Number(m.cycles) || 1))),
+      phase: Math.min(1, Math.max(0, Number(m.phase) || 0)),
+    };
+  }
+  return Object.keys(motion).length ? motion : undefined;
+}
 
 /* `x` counts trips. Every shape returns to 0 at every whole x, which is why
    an integer cycle count leaves the loop without a seam. */
@@ -168,7 +193,15 @@ export type LayerSpec = ShaderSpec & {
  * liquid-metal layer and it comes out in the club's hard pixels; leave it
  * off and the metal stays smooth. Filters run in the order they're listed,
  * on the layer's own canvas, before it is composited with the rest. */
-export type FilterSpec = { type: string } & Record<string, number | string | undefined>;
+export type FilterSpec = { type: string } & Record<
+  string,
+  number | string | boolean | undefined
+> & {
+    /** Switched off without being deleted, so a chain can be taken apart and
+        put back together — the thing every effect panel has and the reason you
+        can tell what an effect was doing. Absent means on. */
+    mute?: boolean;
+  };
 
 export type FilterDef = {
   type: string;
@@ -248,6 +281,165 @@ export function defaultFilter(type: string): FilterSpec {
 
 export const MAX_LAYERS = 4;
 
+/* ----------------------------------------------------------------- shapes */
+
+/* Marks on the sheet: the club's motif language as objects you can place, one
+ * at a time, over or under the words. Outlined circles, ovals, rules, arcs,
+ * brackets — the same vocabulary `Motifs.tsx` draws on the site, which is why
+ * there is nothing here with a shadow, a gradient or a rounded corner.
+ *
+ * They are not a layer. A layer is a screenful of pixels a renderer makes; a
+ * shape is one drawn thing with a position, and it lives with the type in
+ * `overlay.ts` because that is what it is compositionally: part of the
+ * typographic layer, not part of the background.
+ */
+export const SHAPE_KINDS = [
+  "circle",
+  "oval",
+  "square",
+  "triangle",
+  "line",
+  "bar",
+  "arc",
+  "cross",
+  "bracket",
+] as const;
+export type ShapeKind = (typeof SHAPE_KINDS)[number];
+
+export type ShapeSpec = {
+  kind: ShapeKind;
+  /** Where it sits, -1..1 from the centre of the frame. */
+  x: number;
+  y: number;
+  /** How big, as a fraction of the frame's short edge. */
+  size: number;
+  /** Stroke width in design units at 1080 wide. 0 fills it instead. */
+  weight: number;
+  rotation: number;
+  opacity: number;
+  /** A hex, or absent for the slide's own ink. */
+  ink?: string;
+  /** Drawn under the words instead of over them. */
+  under?: boolean;
+
+  /* The deformers: what turns one mark into a pattern of them. Every one is
+     absent by default, and absent means a single undeformed shape. */
+  /** How many copies. 1 (or absent) is just the shape. */
+  repeat?: number;
+  /** How the copies are laid out. */
+  along?: "x" | "y" | "arc" | "ring";
+  /** How far apart, as a fraction of the frame. */
+  spread?: number;
+  /** Deterministic scatter — fixed by the shape's seed, so it never crawls. */
+  jitter?: number;
+  /** Each copy turned a little further than the last. */
+  twist?: number;
+  /** Each copy a little smaller than the last, as a fraction. */
+  taper?: number;
+  /** Which scatter you get. Change it to reroll without changing anything else. */
+  seed?: number;
+  /** Parameters that travel over the loop, keyed by name. */
+  motion?: MotionMap;
+};
+
+/** Everything on a shape a number can be set for — and therefore everything a
+    loop can be plugged into. */
+export const SHAPE_CONTROLS: ShaderControl[] = [
+  { key: "x", label: "x", min: -1, max: 1, step: 0.01, def: 0 },
+  { key: "y", label: "y", min: -1, max: 1, step: 0.01, def: 0 },
+  { key: "size", label: "size", min: 0.02, max: 1.4, step: 0.01, def: 0.4 },
+  { key: "weight", label: "weight", min: 0, max: 40, step: 1, def: 3 },
+  { key: "rotation", label: "turn", min: 0, max: 360, step: 1, def: 0 },
+  { key: "opacity", label: "opacity", min: 0.05, max: 1, step: 0.05, def: 1 },
+];
+
+/** The deformer numbers, in the order they read. */
+export const SHAPE_DEFORMERS: ShaderControl[] = [
+  { key: "repeat", label: "copies", min: 1, max: 24, step: 1, def: 1 },
+  { key: "spread", label: "spread", min: 0, max: 1, step: 0.01, def: 0.25 },
+  { key: "jitter", label: "scatter", min: 0, max: 1, step: 0.02, def: 0 },
+  { key: "twist", label: "twist", min: 0, max: 360, step: 1, def: 0 },
+  { key: "taper", label: "taper", min: 0, max: 1, step: 0.02, def: 0 },
+];
+
+export const MAX_SHAPES = 6;
+
+export function defaultShape(kind: ShapeKind = "circle"): ShapeSpec {
+  return { kind, x: 0, y: 0, size: 0.4, weight: 3, rotation: 0, opacity: 1 };
+}
+
+/** A shape with its travelling numbers resolved at `tt` (0-1 through the loop).
+    The same arithmetic as a layer's, for the same reason: preview and export go
+    through one function so they can't disagree. */
+export function resolveShape(shape: ShapeSpec, tt: number): ShapeSpec {
+  if (!shape.motion) return shape;
+  const out = { ...shape } as ShapeSpec & Record<string, number>;
+  delete out.motion;
+  for (const [key, m] of Object.entries(shape.motion)) {
+    const from = typeof (shape as Record<string, unknown>)[key] === "number"
+      ? ((shape as unknown as Record<string, number>)[key] as number)
+      : 0;
+    const cycles = Math.max(1, Math.round(m.cycles ?? 1));
+    out[key] = from + (m.to - from) * waveAt(m.wave ?? "sin", cycles * tt + (m.phase ?? 0));
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ loops */
+
+/* Plug-and-play motion. A wave, a number of trips and how far to go: enough to
+ * name, which is the point — "pulse" is a decision you can make in one click,
+ * `{ wave: "sin", cycles: 2, to: 0.63 }` is arithmetic you have to work out.
+ *
+ * `amount` is how far across the parameter's own range the trip goes, from
+ * wherever the number is now toward whichever end is further away. So the same
+ * loop reads sensibly on a 0-1 warp and on a 0-360 rotation.
+ */
+export const LOOPS: {
+  id: string;
+  name: string;
+  about: string;
+  wave: Wave;
+  cycles: number;
+  amount: number;
+}[] = [
+  { id: "drift", name: "drift", about: "there and back, once, eased", wave: "sin", cycles: 1, amount: 0.35 },
+  { id: "breathe", name: "breathe", about: "there and back, twice", wave: "sin", cycles: 2, amount: 0.25 },
+  { id: "pulse", name: "pulse", about: "four times, eased", wave: "sin", cycles: 4, amount: 0.4 },
+  { id: "swing", name: "swing", about: "straight there and back", wave: "tri", cycles: 2, amount: 0.3 },
+  { id: "sweep", name: "sweep", about: "ramps all the way, then snaps", wave: "saw", cycles: 1, amount: 1 },
+  { id: "march", name: "march", about: "ramps and snaps, three times", wave: "saw", cycles: 3, amount: 0.6 },
+  { id: "blink", name: "blink", about: "switches hard, four times", wave: "square", cycles: 4, amount: 1 },
+  { id: "hold", name: "far and back", about: "all the way to the other end", wave: "sin", cycles: 1, amount: 1 },
+];
+
+export const loopDef = (id: string) => LOOPS.find((l) => l.id === id);
+
+/** The motion a named loop makes for one parameter, from where it sits now. */
+export function applyLoop(id: string, control: ShaderControl, from: number): Motion | null {
+  const loop = loopDef(id);
+  if (!loop) return null;
+  /* Travel toward whichever end is further away, so a number already near the
+     top of its range comes down rather than flattening against the ceiling. */
+  const far = from - control.min > control.max - from ? control.min : control.max;
+  const to = from + (far - from) * loop.amount;
+  return {
+    to: Math.round(Math.min(control.max, Math.max(control.min, to)) * 100) / 100,
+    wave: loop.wave,
+    cycles: loop.cycles,
+    phase: 0,
+  };
+}
+
+/** Which named loop a motion is, if it is one — so the dropdown can show it. */
+export function loopOf(m: Motion | undefined): string {
+  if (!m) return "";
+  const found = LOOPS.find(
+    (l) => l.wave === (m.wave ?? "sin") && l.cycles === Math.round(m.cycles ?? 1),
+  );
+  return found?.id ?? "custom";
+}
+
 /** The switchable parts of the typographic layer, in the order they read. */
 export const SLIDE_PARTS = [
   "kicker",
@@ -258,6 +450,7 @@ export const SLIDE_PARTS = [
   "note",
   "footer",
   "rules",
+  "shapes",
 ] as const;
 
 /** Is this part of the slide drawn? */
@@ -353,6 +546,11 @@ export type SlideSpec = {
       It is the one thing on a slide that makes the *type* move rather than
       the background, and it is what a countdown is. */
   count?: Counter;
+  /** Marks on the sheet — the club's motifs as placed objects, with deformers
+      to turn one into a pattern of them. Drawn with the type, over the words
+      unless a shape says `under`. Absent means none, which is every post
+      written before they existed. */
+  shapes?: ShapeSpec[];
   /** Circled letter drawn top right; empty string hides it. */
   letter: string;
   /** What the top-right circle is for. "auto" — the default — makes it a
@@ -958,6 +1156,7 @@ const STYLE_FIELDS = [
   "theme",
   "background",
   "palette",
+  "shapes",
   "grid",
   "gridAlpha",
   "gridTop",
@@ -1391,6 +1590,48 @@ export function normalizeSpec(raw: unknown): PostSpec {
       } else {
         delete slide.count;
       }
+
+      /* Shapes. Anything unrecognised is dropped rather than handed to the
+         renderer, and every number is clamped here so a hand-written spec can't
+         put a mark somewhere the frame isn't. */
+      const rawShapes = s.shapes;
+      if (Array.isArray(rawShapes) && rawShapes.length) {
+        const clean = rawShapes
+          .filter((sh) => sh && SHAPE_KINDS.includes(sh.kind))
+          .slice(0, MAX_SHAPES)
+          .map((sh) => {
+            const out = { ...defaultShape(sh.kind), ...sh } as ShapeSpec;
+            const fit = (key: string, c: ShaderControl) => {
+              const v = Number((out as unknown as Record<string, number>)[key]);
+              (out as unknown as Record<string, number>)[key] = Number.isFinite(v)
+                ? Math.min(c.max, Math.max(c.min, v))
+                : c.def;
+            };
+            for (const c of SHAPE_CONTROLS) fit(c.key, c);
+            for (const c of SHAPE_DEFORMERS) {
+              const v = Number((sh as unknown as Record<string, number>)[c.key]);
+              if (Number.isFinite(v) && v !== c.def) {
+                (out as unknown as Record<string, number>)[c.key] = Math.min(
+                  c.max,
+                  Math.max(c.min, v),
+                );
+              } else delete (out as unknown as Record<string, unknown>)[c.key];
+            }
+            if (!["x", "y", "arc", "ring"].includes(String(sh.along))) delete out.along;
+            if (sh.under !== true) delete out.under;
+            if (typeof sh.ink === "string" && HEX.test(sh.ink)) out.ink = sh.ink.toLowerCase();
+            else delete out.ink;
+            if (Number.isFinite(Number(sh.seed))) out.seed = Math.round(Number(sh.seed));
+            else delete out.seed;
+            out.motion = cleanMotion(sh.motion, [...SHAPE_CONTROLS, ...SHAPE_DEFORMERS]);
+            if (!out.motion) delete out.motion;
+            return out;
+          });
+        if (clean.length) slide.shapes = clean;
+        else delete slide.shapes;
+      } else {
+        delete slide.shapes;
+      }
       if (!["auto", "letter", "page", "none"].includes(String(s.mark)))
         delete slide.mark;
       const off = Array.isArray(s.off)
@@ -1483,6 +1724,9 @@ export function normalizeSpec(raw: unknown): PostSpec {
                   ? String(f[ch.key])
                   : ch.def;
               }
+              /* Off without being deleted — absent means on, which is how every
+                 chain written before the switch existed still renders. */
+              if (f.mute === true) out.mute = true;
               return out;
             });
           if (list.length) merged.filters = list;
@@ -1503,28 +1747,10 @@ export function normalizeSpec(raw: unknown): PostSpec {
           delete merged.exposure;
         }
 
-        /* Travelling parameters. Only the documented ones survive, and the
-           cycle count is forced to a whole number here rather than trusted
-           — a fractional one is the one way a spec could hand back a post
-           that doesn't loop. */
-        const raw = merged.motion as MotionMap | undefined;
-        if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-          const keys = new Set(animatable(type).map((c) => c.key));
-          const motion: MotionMap = {};
-          for (const [key, m] of Object.entries(raw)) {
-            if (!keys.has(key) || !m || typeof m.to !== "number") continue;
-            motion[key] = {
-              to: m.to,
-              wave: WAVES.includes(m.wave as Wave) ? m.wave : "sin",
-              cycles: Math.min(8, Math.max(1, Math.round(Number(m.cycles) || 1))),
-              phase: Math.min(1, Math.max(0, Number(m.phase) || 0)),
-            };
-          }
-          if (Object.keys(motion).length) merged.motion = motion;
-          else delete merged.motion;
-        } else {
-          delete merged.motion;
-        }
+        /* Travelling parameters — only the ones this layer actually has. */
+        const motion = cleanMotion(merged.motion, animatable(type));
+        if (motion) merged.motion = motion;
+        else delete merged.motion;
         return merged;
       });
 
@@ -1774,6 +2000,45 @@ export const PRESETS: Preset[] = [
           gridTop: true,
           footer: "the Motion Social Club",
           off: ["kicker", "body", "mark"],
+          /* The club's boxed headline, reduced to four corners. */
+          shapes: [{ ...defaultShape("bracket"), size: 0.94, weight: 3 }],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Rosette",
+    about: "Marks and deformers: one shape copied around a ring, turning as it goes.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        sheet({
+          tag: "the club",
+          title: "Same rules.\n*Different piece.*",
+          titleFont: "serif",
+          titleSize: "m",
+          align: "center",
+          margin: 128,
+          grid: 8,
+          gridAlpha: 0.12,
+          off: ["kicker", "body", "mark", "rules"],
+          shapes: [
+            /* One mark, copied around a ring and turned as it goes — the whole
+               point of the deformers in one shape. */
+            {
+              ...defaultShape("oval"),
+              size: 0.1,
+              weight: 2,
+              repeat: 14,
+              along: "ring",
+              spread: 0.38,
+              twist: 26,
+              motion: { rotation: { to: 180, wave: "sin", cycles: 1, phase: 0 } },
+            },
+            { ...defaultShape("circle"), size: 0.52, weight: 2, under: true, opacity: 0.5 },
+          ],
         }),
       ],
     },

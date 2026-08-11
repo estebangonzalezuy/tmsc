@@ -101,6 +101,21 @@ Before writing a countdown, a monthly round-up, a quote card or a big number by
 hand, check `/tools` — those are tools on the site, and a link to one arrives
 filled in. Write a spec when the post is not one of those.
 
+**Marks, and the deformers on them.** `shapes` is up to six of the club's
+motifs placed on the sheet — `circle|oval|square|triangle|line|bar|arc|cross|
+bracket` — each `{ kind, x, y, size, weight, rotation, opacity }`, plus `ink`,
+`under` (behind the words), and the deformers that turn one into a pattern:
+`repeat`, `along` (`x|y|arc|ring`), `spread`, `jitter` (seeded — set `seed`),
+`twist`, `taper`. `weight` is the stroke; 0 fills it. A bracket at `size: 0.9`
+is the club's boxed frame; a `line` repeated `along: "y"` is a ruled block; a
+small `triangle` with `repeat: 7, along: "ring"` is a rosette. Two or three
+marks is a composition; six is a mess.
+
+**Motion has names.** Use the club's loops rather than arbitrary waves: drift
+(sin ×1), breathe (sin ×2), pulse (sin ×4), swing (tri ×2), sweep (saw ×1),
+march (saw ×3), blink (square ×4). They apply to any number on a layer or a
+mark, and the studio shows them by name.
+
 **The ruling.** `grid` is a column count — 6 to 8 on a portrait sheet — drawn
 in square cells that are cut equally at top and bottom. `gridTop: true` puts
 it over the words, which reads as a technical drawing rather than a caption.

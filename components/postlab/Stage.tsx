@@ -32,11 +32,12 @@ export default function Stage({
   const { w, h } = FORMATS[spec.format];
 
   /* The type is redrawn when the post changes, and — only when something in it
-     actually moves — as the playhead does. Two things move: the orbit ring,
-     and a counting slide's number. This redraws every glyph at full
-     resolution, so it deliberately doesn't follow the clock unless it has to,
-     and it follows it at 30fps rather than 60. */
-  const moves = slide.ring || !!slide.count;
+     actually moves — as the playhead does. Three things move: the orbit ring, a
+     counting slide's number, and a shape with a loop plugged into it. This
+     redraws every glyph at full resolution, so it deliberately doesn't follow
+     the clock unless it has to, and it follows it at 30fps rather than 60. */
+  const moves =
+    slide.ring || !!slide.count || (slide.shapes ?? []).some((s) => !!s.motion);
   useEffect(() => {
     const ctx = overlayRef.current?.getContext("2d");
     if (!ctx || !fonts) return;

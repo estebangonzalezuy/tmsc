@@ -525,7 +525,15 @@ export function Group({
   /** One line under the title, for a group whose name isn't enough. */
   note?: string;
 }) {
-  const [open, setOpen] = useState(initial);
+  /* `open` is a hint, not a value: a group that holds nothing starts folded and
+     opens itself the moment it holds something — add an effect from the menu and
+     its group is already open when you look. Once you've folded or unfolded it
+     by hand, your choice sticks. Kept as an override rather than an effect that
+     writes state, which would cascade a render on every hint change. */
+  const [override, setOverride] = useState<boolean | null>(null);
+  const open = override ?? initial;
+  const setOpen = (next: boolean | ((o: boolean) => boolean)) =>
+    setOverride(typeof next === "function" ? next(open) : next);
   return (
     <section className={`border-b ${HAIR}`}>
       <button
@@ -547,6 +555,86 @@ export function Group({
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * One thing in a stack: an effect, a mark. The header carries its name, its
+ * switch and the buttons that move or remove it; the body carries its numbers.
+ * This is the shape every effect panel in every motion tool has, and it is what
+ * makes a stack of five effects readable instead of a wall of sliders.
+ */
+export function Block({
+  title,
+  on = true,
+  onToggle,
+  onUp,
+  onDown,
+  onRemove,
+  children,
+  open: initial = true,
+}: {
+  title: string;
+  on?: boolean;
+  onToggle?: () => void;
+  onUp?: () => void;
+  onDown?: () => void;
+  onRemove?: () => void;
+  children: ReactNode;
+  open?: boolean;
+}) {
+  const [open, setOpen] = useState(initial);
+  return (
+    <div className={`border ${HAIR}`}>
+      <div className={`h-7 flex items-center gap-1 pl-1 pr-0.5 ${open ? `border-b ${HAIR}` : ""}`}>
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            title={on ? "Switch this off" : "Switch this on"}
+            className={`w-3.5 shrink-0 text-[9px] ${on ? "" : "opacity-40"}`}
+          >
+            {on ? "◉" : "○"}
+          </button>
+        )}
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className={`flex-1 flex items-center gap-1 text-[11px] text-left truncate ${
+            on ? "" : "line-through opacity-50"
+          }`}
+        >
+          <span className="text-[9px] opacity-60">{open ? "▾" : "▸"}</span>
+          {title}
+        </button>
+        {onUp && (
+          <button
+            onClick={onUp}
+            title="Earlier in the stack"
+            className="size-6 grid place-items-center text-[10px] text-muted hover:text-foreground"
+          >
+            ↑
+          </button>
+        )}
+        {onDown && (
+          <button
+            onClick={onDown}
+            title="Later in the stack"
+            className="size-6 grid place-items-center text-[10px] text-muted hover:text-foreground"
+          >
+            ↓
+          </button>
+        )}
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            title="Remove"
+            className="size-6 grid place-items-center text-[11px] text-muted hover:text-foreground"
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {open && <div className="p-2 space-y-1">{children}</div>}
+    </div>
   );
 }
 
