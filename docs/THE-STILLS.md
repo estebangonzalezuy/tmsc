@@ -110,6 +110,22 @@ shared with the Desk), and every call goes straight to api.github.com. Nothing
 on Vercel holds a secret and the deployed app needs no environment at all.
 Don't move any of it server-side.
 
+### The token needs two permissions
+
+| Repository permission | What it is for |
+| --- | --- |
+| **Contents: Read and write** | Reading `projects.json`, and committing the frames when you publish. |
+| **Actions: Read and write** | Dispatching the extractor and reading its runs — the link road only. |
+
+Sharing the key with the Desk is a convenience that has one sharp edge: the
+Desk only ever needed Actions, so a token created for it can dispatch a run
+and then fail at the moment you publish, after all the curation work is done.
+That is why the Curator asks GitHub what the token may do when it loads and
+says so up front, rather than letting you find out at the end.
+
+If publishing reports *"Resource not accessible by personal access token"*,
+that is this: Contents is missing.
+
 ## YouTube and the bot check
 
 The most common failure by far, and it is not a bug:

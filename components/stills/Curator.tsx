@@ -10,11 +10,13 @@ import {
 } from "react";
 import {
   GH_REPO,
+  checkAccess,
   dispatchExtract,
   listRuns,
   readProjects,
   tokenStore,
   writeProjects,
+  type Access,
   type Run,
 } from "@/components/stills/github";
 import Scrubber from "@/components/stills/Scrubber";
@@ -60,6 +62,7 @@ export default function Curator() {
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [runs, setRuns] = useState<Run[]>([]);
+  const [access, setAccess] = useState<Access | null>(null);
 
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<Project | null>(null);
@@ -90,6 +93,17 @@ export default function Curator() {
     [token],
   );
 
+  const verifyAccess = useCallback(async () => {
+    if (!token) return;
+    try {
+      setAccess(await checkAccess(token));
+    } catch {
+      // Not being able to ask is not the same as being told no; publishing
+      // will report the truth either way.
+      setAccess(null);
+    }
+  }, [token]);
+
   const refreshRuns = useCallback(async () => {
     if (!token) return;
     try {
@@ -108,9 +122,10 @@ export default function Curator() {
     const id = window.setTimeout(() => {
       load();
       refreshRuns();
+      verifyAccess();
     }, 0);
     return () => window.clearTimeout(id);
-  }, [token, load, refreshRuns]);
+  }, [token, load, refreshRuns, verifyAccess]);
 
   // Poll only while something is actually running.
   const running = runs.some((r) => r.status !== "completed");
@@ -279,6 +294,21 @@ export default function Curator() {
   return (
     <Shell>
       <StatusLine status={status} />
+
+      {access && !access.canWrite && (
+        <p
+          role="alert"
+          className="border border-line bg-foreground text-background px-4 py-3 text-sm leading-relaxed"
+        >
+          {access.problem}{" "}
+          <button
+            onClick={verifyAccess}
+            className="underline underline-offset-4"
+          >
+            Check again
+          </button>
+        </p>
+      )}
 
       <LocalExtractor
         token={token}
@@ -561,7 +591,10 @@ function TokenField({
   return (
     <div className="space-y-2">
       <label className="block text-xs text-muted">
-        GitHub token with write access to {GH_REPO}. Kept in this browser only.
+        GitHub token for {GH_REPO}, kept in this browser only. It needs two
+        repository permissions: <strong>Contents: Read and write</strong> to
+        commit frames, and <strong>Actions: Read and write</strong> to fetch a
+        video by link. A token made for the Desk only has the second.
       </label>
       <input
         type="password"

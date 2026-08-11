@@ -83,8 +83,18 @@ async function fail(res: Response): Promise<never> {
   throw new Error(explain(res.status) + (detail ? ` GitHub said: ${detail}` : ""));
 }
 
+/** The two permissions the Curator needs, written out. A token made for the
+ *  Desk only ever needed Actions, and the Desk is where this token comes from
+ *  — so "can dispatch a run but can't commit a frame" is the normal way to
+ *  arrive here, not an exotic one. */
+export const PERMISSION_HELP =
+  "In GitHub → Settings → Developer settings → Personal access tokens → this token → Repository permissions, set Contents to Read and write. Keep Actions on Read and write too, which is what fetching by link uses.";
+
 function explain(status: number): string {
-  if (status === 401 || status === 403) {
+  if (status === 403) {
+    return `This token can't write to ${GH_REPO}. ${PERMISSION_HELP}`;
+  }
+  if (status === 401) {
     return "GitHub rejected the token — check it and try again.";
   }
   if (status === 404) {
@@ -94,6 +104,42 @@ function explain(status: number): string {
     return "Somebody else pushed while you were editing. Reload and redo the change.";
   }
   return `GitHub said ${status}.`;
+}
+
+export type Access = {
+  canRead: boolean;
+  canWrite: boolean;
+  /** Empty when everything is in order. */
+  problem: string;
+};
+
+/** Asks GitHub what this token may do, before anything depends on the answer.
+ *
+ *  Publishing is the end of a long piece of work — decode a film, cut the
+ *  frames, judge them one by one — and finding out only then that the token
+ *  can read but not write costs all of it. The repo endpoint reports the
+ *  permissions the token actually carries, so the panel can say so on the way
+ *  in instead. */
+export async function checkAccess(token: string): Promise<Access> {
+  const res = await fetch(`https://api.github.com/repos/${GH_REPO}`, {
+    headers: headers(token),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    return { canRead: false, canWrite: false, problem: explain(res.status) };
+  }
+  const body = (await res.json()) as {
+    permissions?: { push?: boolean; admin?: boolean; maintain?: boolean };
+  };
+  const p = body.permissions ?? {};
+  const canWrite = Boolean(p.push || p.maintain || p.admin);
+  return {
+    canRead: true,
+    canWrite,
+    problem: canWrite
+      ? ""
+      : `This token can read ${GH_REPO} but not write to it, so Publish will fail. ${PERMISSION_HELP}`,
+  };
 }
 
 export async function readProjects<T>(
