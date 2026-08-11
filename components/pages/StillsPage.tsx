@@ -7,15 +7,34 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo, useState } from "react";
-import { hiddenSet, studioSection, useContent } from "@/components/content";
+import { studioSection, useContent } from "@/components/content";
 import Cta from "@/components/Cta";
 import GridFillers from "@/components/stills/GridFillers";
 import Lightbox, { type LightboxItem } from "@/components/stills/Lightbox";
-import { emptyWall, frameSrc, timecode } from "@/lib/stills-shared";
-import type { WallData } from "@/lib/stills-shared";
+import { accentHover } from "@/components/Motifs";
+import {
+  emptyWall,
+  frameSrc,
+  hashSeed,
+  pickSpread,
+  seededShuffle,
+  timecode,
+} from "@/lib/stills-shared";
+import type { WallData, WallFrame, WallProject } from "@/lib/stills-shared";
 
-// the Stills — the wall. Every curated frame from every project, in one
-// contact sheet you can filter.
+// the Stills — the wall, in two views.
+//
+// **Projects** is what it opens on, because the curation is the point: a film
+// chosen, gone through frame by frame, and shown as four stills spread across
+// its length so the card says what the whole thing looks like rather than what
+// one second of it does.
+//
+// **Stills** is the other half of the same idea — every kept frame from every
+// project, shuffled, so the wall reads as a wall and not as a list of films.
+// The shuffle is seeded and the seed rides in the URL: prerendered pages can't
+// use Math.random without the server and the browser disagreeing, and a wall
+// that reorders itself on every render is unusable. A seed also makes a
+// particular shuffle a link somebody can send.
 //
 // The wall index arrives as a prop: the route derives it from projects.json at
 // build time (lib/stills), so the client gets every frame it needs to filter
@@ -24,6 +43,9 @@ import type { WallData } from "@/lib/stills-shared";
 
 /* Enough tags to scan, not so many the rail buries the wall. */
 const VISIBLE_TAGS = 18;
+/* Frames on a project card. Four reads as a range at any width and divides
+   evenly into the grid. */
+const CARD_FRAMES = 4;
 
 const fallback = {
   label: "the Stills",
@@ -46,7 +68,6 @@ export default function StillsPage({ wall = emptyWall }: { wall?: WallData }) {
 
 function StillsWall({ wall }: { wall: WallData }) {
   const content = useContent();
-  const hidden = hiddenSet(content);
   const stills =
     (content as { stills?: typeof fallback }).stills ?? fallback;
 
@@ -105,9 +126,37 @@ function StillsWall({ wall }: { wall: WallData }) {
       });
   }, [wall, query, activeTags, activeProject]);
 
+  const view = params.get("view") === "stills" ? "stills" : "projects";
+  const seed = params.get("seed") ?? "";
+
+  /* Projects that still have a frame after filtering, in the wall's own order
+     (newest first), each carrying the four it will show. */
+  const grouped = useMemo(() => {
+    const byProject = new Map<number, WallFrame[]>();
+    for (const { frame } of results) {
+      const list = byProject.get(frame.p);
+      if (list) list.push(frame);
+      else byProject.set(frame.p, [frame]);
+    }
+    return [...byProject.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([p, frames]) => ({
+        project: wall.projects[p] as WallProject,
+        frames,
+        shown: pickSpread(frames, CARD_FRAMES),
+      }));
+  }, [wall, results]);
+
+  /* The shuffled order, and the frames in it. Shuffling the results rather
+     than the whole wall keeps a filtered view filtered. */
+  const shuffled = useMemo(
+    () => (seed ? seededShuffle(results, hashSeed(seed)) : results),
+    [results, seed],
+  );
+
   const items: LightboxItem[] = useMemo(
     () =>
-      results.map(({ frame }) => {
+      shuffled.map(({ frame }) => {
         const project = wall.projects[frame.p];
         return {
           src: frameSrc(wall.assetBase, project.id, frame),
@@ -122,7 +171,7 @@ function StillsWall({ wall }: { wall: WallData }) {
           source: project.source,
         };
       }),
-    [wall, results],
+    [wall, shuffled],
   );
 
   const filtering = Boolean(query || activeTags.length || activeProject);
@@ -230,22 +279,67 @@ function StillsWall({ wall }: { wall: WallData }) {
             </section>
           )}
 
-          <section className="border-t border-line px-5 md:px-6 py-4 flex items-baseline justify-between gap-4 text-sm">
-            <p>
-              <span className="font-serif text-xl">{results.length}</span>{" "}
-              <span className="text-muted">
-                {results.length === 1 ? "frame" : "frames"}
-                {results.length !== wall.frameCount && ` of ${wall.frameCount}`}
-              </span>
-            </p>
-            {filtering && (
-              <button
-                onClick={() => router.replace("?", { scroll: false })}
-                className="underline underline-offset-4 accent-hover-text transition-colors"
+          <section className="border-t border-line px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
+            <div className="flex items-center gap-1.5">
+              {/* Landing on Stills without a seed gives the deterministic
+                  order the server prerendered. Arriving by the tab rolls a
+                  fresh one, which is a click rather than a render, so the
+                  hydration stays honest. */}
+              <Tab
+                on={view === "projects"}
+                onClick={() =>
+                  setParams((next) => {
+                    next.delete("view");
+                    next.delete("seed");
+                  })
+                }
               >
-                Clear
-              </button>
-            )}
+                Projects{" "}
+                <Count on={view === "projects"}>{grouped.length}</Count>
+              </Tab>
+              <Tab
+                on={view === "stills"}
+                onClick={() =>
+                  setParams((next) => {
+                    next.set("view", "stills");
+                    if (!next.get("seed")) {
+                      next.set("seed", Math.random().toString(36).slice(2, 8));
+                    }
+                  })
+                }
+              >
+                Stills <Count on={view === "stills"}>{results.length}</Count>
+              </Tab>
+            </div>
+
+            <div className="flex items-center gap-5">
+              {view === "stills" && results.length > 1 && (
+                <button
+                  onClick={() =>
+                    setParams((next) =>
+                      next.set("seed", Math.random().toString(36).slice(2, 8)),
+                    )
+                  }
+                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
+                >
+                  Shuffle
+                </button>
+              )}
+              {filtering && (
+                <button
+                  onClick={() =>
+                    setParams((next) => {
+                      next.delete("q");
+                      next.delete("tag");
+                      next.delete("project");
+                    })
+                  }
+                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </section>
 
           <section className="border-t border-line">
@@ -253,9 +347,55 @@ function StillsWall({ wall }: { wall: WallData }) {
               <p className="px-5 md:px-6 py-24 text-sm text-muted">
                 Nothing matches that. Try fewer tags.
               </p>
+            ) : view === "projects" ? (
+              <div className="grid md:grid-cols-2 gap-px bg-line">
+                {grouped.map(({ project, frames, shown }) => (
+                  <Link
+                    key={project.id}
+                    href={`/stills/${project.id}`}
+                    className={`group block bg-background p-5 md:p-6 transition-colors ${accentHover(project.id)}`}
+                  >
+                    <div className="grid grid-cols-4 gap-px bg-line">
+                      {shown.map((frame) => (
+                        <span
+                          key={frame.id}
+                          className="relative block aspect-video overflow-hidden bg-background"
+                        >
+                          <img
+                            src={frameSrc(
+                              wall.assetBase,
+                              project.id,
+                              frame,
+                              "thumb",
+                            )}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        </span>
+                      ))}
+                    </div>
+                    <h2 className="mt-5 font-serif text-xl md:text-2xl">
+                      {project.title}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted accent-hover-sub">
+                      {[project.credit || "Uncredited", project.year]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      {" · "}
+                      {frames.length}
+                      {frames.length === project.frameCount
+                        ? " frames"
+                        : ` of ${project.frameCount} frames`}
+                    </p>
+                  </Link>
+                ))}
+                <GridFillers count={grouped.length} cols={[1, 2, 2]} />
+              </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-line">
-                {results.map(({ frame }, i) => {
+                {shuffled.map(({ frame }, i) => {
                   const project = wall.projects[frame.p];
                   return (
                     <button
@@ -285,36 +425,10 @@ function StillsWall({ wall }: { wall: WallData }) {
                     </button>
                   );
                 })}
-                <GridFillers count={results.length} cols={[2, 3, 4]} />
+                <GridFillers count={shuffled.length} cols={[2, 3, 4]} />
               </div>
             )}
           </section>
-
-          {!hidden.has("stillsIndex") && wall.projects.length > 0 && (
-            <section className="border-t border-line px-5 md:px-6 py-16">
-              <p className="text-sm underline underline-offset-4">By project</p>
-              <ul className="mt-8 divide-y divide-line/30">
-                {wall.projects.map((project) => (
-                  <li key={project.id}>
-                    <Link
-                      href={`/stills/${project.id}`}
-                      className="group flex items-baseline justify-between gap-4 py-4"
-                    >
-                      <span className="font-serif text-xl md:text-2xl group-hover:underline underline-offset-4">
-                        {project.title}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted">
-                        {[project.credit, project.year]
-                          .filter(Boolean)
-                          .join(" · ")}{" "}
-                        · {project.frameCount} frames
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </>
       )}
 
@@ -340,5 +454,39 @@ function StillsWall({ wall }: { wall: WallData }) {
         />
       )}
     </>
+  );
+}
+
+/* The two views. A pill, like the tag filters, because it is the same kind of
+   control: something you switch on, not something you press. */
+function Tab({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={on}
+      className={`border border-line rounded-full px-4 py-1.5 text-sm transition-colors ${
+        on ? "bg-foreground text-background" : "accent-hover"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Count({ on, children }: { on: boolean; children: React.ReactNode }) {
+  // Inside a filled pill plain text-muted would survive the fill and go
+  // unreadable, which is what accent-hover-sub exists to prevent.
+  return (
+    <span className={on ? "text-background/60" : "text-muted accent-hover-sub"}>
+      {children}
+    </span>
   );
 }

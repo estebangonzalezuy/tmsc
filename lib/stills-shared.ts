@@ -236,6 +236,52 @@ export function buildWall(data: StillsData): WallData {
   };
 }
 
+/** An even spread of `n` items, ends included. A project card showing four
+ *  frames should show the film's range, not four seconds of it — consecutive
+ *  frames from one shot say nothing a single frame doesn't. */
+export function pickSpread<T>(items: T[], n: number): T[] {
+  if (items.length <= n) return items;
+  const out: T[] = [];
+  for (let i = 0; i < n; i++) {
+    out.push(items[Math.round((i * (items.length - 1)) / (n - 1))]);
+  }
+  return out;
+}
+
+/* mulberry32 — small, fast, and the same everywhere. The shuffle has to be a
+   function of a seed rather than Math.random: these pages are prerendered, so
+   an order the server can't reproduce is a hydration mismatch, and an order
+   that changes on every render is a wall that reshuffles under your cursor. */
+function random(seed: number): () => number {
+  let state = seed >>> 0 || 1;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function seededShuffle<T>(items: T[], seed: number): T[] {
+  const next = random(seed);
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** djb2, so a seed can travel in the URL as anything typeable. */
+export function hashSeed(text: string): number {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) {
+    h = (((h << 5) + h + text.charCodeAt(i)) >>> 0);
+  }
+  return h;
+}
+
 /** An empty wall, so a component that renders before its data arrives — the
  *  Studio preview, mostly — has something of the right shape. */
 export const emptyWall: WallData = {

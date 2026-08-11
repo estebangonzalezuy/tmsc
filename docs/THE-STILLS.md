@@ -56,6 +56,27 @@ sending marked timestamps back for a second cutting pass.
 Either way the scrub sheets get committed, so a project can be scrubbed again
 months later when the file is long gone.
 
+## The wall, in two views
+
+`/stills` opens on **Projects**: one card per film, four frames spread across
+its length. Four consecutive frames from one shot say nothing a single frame
+doesn't, so `pickSpread` takes them from end to end — the card is meant to show
+what the whole thing looks like.
+
+The **Stills** tab is every kept frame from every project, shuffled, so it
+reads as a wall rather than a list of films.
+
+The shuffle is seeded and the seed lives in the URL. That is not decoration:
+these pages are prerendered, so `Math.random` at render time would have the
+server and the browser disagree, and a wall that reorders on every render is
+unusable. Arriving via the tab rolls a fresh seed (a click, not a render);
+landing on `?view=stills` cold gives the deterministic order the build
+produced; and Shuffle re-rolls. A given shuffle is therefore a link.
+
+Search and tags filter the frames, and both views follow: Projects shows the
+films that still have a matching frame, and says "4 of 12 frames" when a
+filter is narrowing one.
+
 ## The loop
 
 1. **Drop in a video**, or paste a link and wait for the runner.
