@@ -38,10 +38,13 @@ export type Frame = {
   id: string;
   /** Seconds into the source video. */
   t: number;
-  /** Filename inside the project's asset directory. */
+  /** Filename inside the project's asset directory. Full size. */
   file: string;
-  /** The wall-sized copy. Falls back to `file`. */
+  /** The wall-sized copy, ~400px. Falls back to `file`. */
   thumb?: string;
+  /** ~900px, written since the browser extractor landed. Absent on older
+   *  projects, which is why frameSrcSet builds its list from what exists. */
+  mid?: string;
   w: number;
   h: number;
   tags?: string[];
@@ -90,6 +93,7 @@ export type WallFrame = {
   t: number;
   file: string;
   thumb?: string;
+  mid?: string;
   w: number;
   h: number;
   tags?: string[];
@@ -129,6 +133,27 @@ export function frameSrc(
   return `${assetBase}/${projectId}/${file}`;
 }
 
+/** Every size of a frame that exists, as a srcSet.
+ *
+ *  The thumb is 400px and the project grid renders cells past 500 CSS pixels,
+ *  doubled again on a retina screen — asking for the thumb there is asking for
+ *  a soft picture. Handing the browser the list and a `sizes` hint lets it
+ *  pick, which is also the only way older projects (thumb and full, no mid)
+ *  and newer ones (all three) can be served by the same markup. */
+export function frameSrcSet(
+  assetBase: string,
+  projectId: string,
+  frame: Frame | WallFrame,
+): string {
+  const at = (file: string, width: number) =>
+    `${assetBase}/${projectId}/${file} ${width}w`;
+  const rungs: string[] = [];
+  if (frame.thumb) rungs.push(at(frame.thumb, Math.min(400, frame.w)));
+  if (frame.mid) rungs.push(at(frame.mid, Math.min(900, frame.w)));
+  rungs.push(at(frame.file, frame.w));
+  return rungs.join(", ");
+}
+
 export function scrubSrc(
   assetBase: string,
   projectId: string,
@@ -151,9 +176,18 @@ export function frameId(t: number): string {
   return `t${String(Math.round(t * 1000)).padStart(8, "0")}`;
 }
 
+/** Whether this project can point back at anything. A project cut from a local
+ *  file has no address until somebody types one in, and a link to nowhere is
+ *  worse than no link. */
+export function hasSource(source: StillsSource): boolean {
+  return Boolean(source.url?.trim());
+}
+
 /** A link that opens the source video at the frame's moment, so a still can
- *  always be checked against the thing it came from. */
+ *  always be checked against the thing it came from. Empty when there is no
+ *  source — callers hide the link rather than render a dead one. */
 export function momentUrl(source: StillsSource, t: number): string {
+  if (!hasSource(source)) return "";
   const secs = Math.max(0, Math.floor(t));
   if (source.platform === "youtube" && source.videoId) {
     return `https://youtu.be/${source.videoId}?t=${secs}`;
@@ -213,6 +247,7 @@ export function buildWall(data: StillsData): WallData {
         t: frame.t,
         file: frame.file,
         ...(frame.thumb ? { thumb: frame.thumb } : {}),
+        ...(frame.mid ? { mid: frame.mid } : {}),
         w: frame.w,
         h: frame.h,
         ...(tags.length ? { tags } : {}),

@@ -5,7 +5,7 @@
    yet, they're object URLs for blobs still sitting in the page. */
 
 import { timecode } from "@/lib/stills-shared";
-import type { Frame, Project } from "@/lib/stills-shared";
+import type { Frame, Project, StillsSource } from "@/lib/stills-shared";
 
 // The frame grid and the field wrapper, shared by both halves of the Curator.
 //
@@ -85,6 +85,46 @@ export function ProjectFields({
       </Field>
     </>
   );
+}
+
+/** Where the video lives, so every frame can point back at the second it came
+ *  from. A project cut from a local file starts with nothing here, and until
+ *  it has something the wall shows a still with no way to check it — which is
+ *  the one thing a reference library must not do. Shared by both halves of the
+ *  Curator so a project can be given its link long after it was published. */
+export function SourceField({
+  source,
+  onChange,
+}: {
+  source: StillsSource;
+  onChange: (source: StillsSource) => void;
+}) {
+  return (
+    <Field label="Source link — where this video lives, so every frame can point back">
+      <input
+        value={source.url}
+        onChange={(e) => onChange(withUrl(source, e.target.value))}
+        placeholder="https://vimeo.com/… or https://framerate.tv/…"
+        className={inputClass}
+      />
+    </Field>
+  );
+}
+
+/** Re-reads the platform and the id from the URL, because a link pasted by
+ *  hand is the only thing that knows them for a locally cut project, and
+ *  momentUrl needs the id to deep-link a YouTube timestamp. */
+export function withUrl(source: StillsSource, url: string): StillsSource {
+  const platform: StillsSource["platform"] = /youtu\.?be|youtube\./i.test(url)
+    ? "youtube"
+    : /vimeo\./i.test(url)
+      ? "vimeo"
+      : "other";
+  const videoId =
+    url.match(/[?&]v=([A-Za-z0-9_-]{6,})/)?.[1] ??
+    url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/)?.[1] ??
+    url.match(/vimeo\.com\/(?:video\/)?(\d+)/)?.[1];
+  return { ...source, url, platform, ...(videoId ? { videoId } : {}) };
 }
 
 export default function FrameGrid({

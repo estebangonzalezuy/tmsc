@@ -7,7 +7,7 @@ import { useState } from "react";
 import Cta from "@/components/Cta";
 import GridFillers from "@/components/stills/GridFillers";
 import Lightbox, { type LightboxItem } from "@/components/stills/Lightbox";
-import { frameSrc, timecode } from "@/lib/stills-shared";
+import { frameSrc, frameSrcSet, hasSource, timecode } from "@/lib/stills-shared";
 import type { Project } from "@/lib/stills-shared";
 
 // One project: every frame kept from one video, in the order they happen.
@@ -59,14 +59,16 @@ export default function StillsProjectPage({
           </p>
         )}
         <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
-          <a
-            href={project.source.url}
-            target="_blank"
-            rel="noreferrer"
-            className="underline underline-offset-4 accent-hover-text transition-colors"
-          >
-            Watch the source →
-          </a>
+          {hasSource(project.source) && (
+            <a
+              href={project.source.url}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 accent-hover-text transition-colors"
+            >
+              Watch the source →
+            </a>
+          )}
           <span className="text-muted">
             {project.frames.length} frames from {timecode(project.duration)}
             {handPicked > 0 && `, ${handPicked} picked by hand`}
@@ -120,7 +122,9 @@ export default function StillsProjectPage({
               className="group relative block aspect-video bg-background overflow-hidden text-left"
             >
               <img
-                src={frameSrc(assetBase, project.id, frame, "thumb")}
+                src={frameSrc(assetBase, project.id, frame)}
+                srcSet={frameSrcSet(assetBase, project.id, frame)}
+                sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                 alt={`Style frame from ${project.title} at ${timecode(frame.t)}`}
                 width={frame.w}
                 height={frame.h}

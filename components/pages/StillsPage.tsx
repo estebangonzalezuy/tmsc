@@ -15,6 +15,7 @@ import { accentHover } from "@/components/Motifs";
 import {
   emptyWall,
   frameSrc,
+  frameSrcSet,
   hashSeed,
   pickSpread,
   seededShuffle,
@@ -368,6 +369,12 @@ function StillsWall({ wall }: { wall: WallData }) {
                               frame,
                               "thumb",
                             )}
+                            srcSet={frameSrcSet(
+                              wall.assetBase,
+                              project.id,
+                              frame,
+                            )}
+                            sizes="(min-width: 768px) 12vw, 24vw"
                             alt=""
                             loading="lazy"
                             decoding="async"
@@ -405,6 +412,8 @@ function StillsWall({ wall }: { wall: WallData }) {
                     >
                       <img
                         src={frameSrc(wall.assetBase, project.id, frame, "thumb")}
+                        srcSet={frameSrcSet(wall.assetBase, project.id, frame)}
+                        sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
                         alt={`Style frame from ${project.title} at ${timecode(frame.t)}`}
                         width={frame.w}
                         height={frame.h}

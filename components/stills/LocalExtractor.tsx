@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import FrameGrid, {
-  Field,
   ProjectFields,
-  inputClass,
+  SourceField,
 } from "@/components/stills/FrameGrid";
 import { commitFiles, readProjects } from "@/components/stills/github";
 import {
@@ -364,38 +363,10 @@ export default function LocalExtractor({
             }
           />
 
-          {/* A curated frame has to be checkable against the thing it came
-              from, and a local file has no address. Without this the wall
-              would carry a still nobody can trace. */}
-          <Field label="Source link — where this video lives, so every frame can point back">
-            <input
-              value={draft.source.url}
-              onChange={(e) =>
-                setDraft((c) =>
-                  c
-                    ? {
-                        ...c,
-                        source: {
-                          ...c.source,
-                          url: e.target.value,
-                          platform: /youtu/.test(e.target.value)
-                            ? "youtube"
-                            : /vimeo/.test(e.target.value)
-                              ? "vimeo"
-                              : "other",
-                          videoId:
-                            e.target.value.match(
-                              /(?:v=|youtu\.be\/|vimeo\.com\/)([A-Za-z0-9_-]+)/,
-                            )?.[1] ?? undefined,
-                        },
-                      }
-                    : c,
-                )
-              }
-              placeholder="https://vimeo.com/… or https://framerate.tv/…"
-              className={inputClass}
-            />
-          </Field>
+          <SourceField
+            source={draft.source}
+            onChange={(source) => setDraft((c) => (c ? { ...c, source } : c))}
+          />
 
           <FrameGrid
             frames={draft.frames}

@@ -92,7 +92,7 @@ For the link road, steps 1 and 3 are the same workflow: empty `times` means
 | Path | What it is |
 | --- | --- |
 | `content/stills/projects.json` | The only source of truth. Every project, every frame, the scrub sheets. |
-| `public/stills/<project-id>/` | The images. Full size, `.thumb`, and `scrub-NNN.jpg`. |
+| `public/stills/<project-id>/` | The images. Full size, `.mid`, `.thumb`, and `scrub-NNN.jpg`. |
 | `lib/stills-shared.ts` | Types and pure helpers. No data — safe in a client component. |
 | `lib/stills-select.mjs` | Which moments to keep. Plain JS with no imports, because Node and the browser both need it and can share nothing else. |
 | `components/stills/localVideo.ts` | The browser extractor: decode, difference, cut, tile. |
@@ -187,6 +187,23 @@ Cookies expire. When YouTube starts refusing again, export a fresh
 `cookies.txt` and update the secret.
 
 **Vimeo does not do any of this.** A Vimeo link needs no secret at all.
+
+## Three sizes, and why
+
+Each frame is written at ~1600px, ~900px and ~400px, and every `<img>` hands
+the browser the whole list through `frameSrcSet` plus a `sizes` hint. The wall
+takes a small rung, the project page a large one, and a retina screen doubles
+whatever it asked for.
+
+This is not premature: the project grid renders cells past 500 CSS pixels, so
+serving the 400px thumb there — which is what it did at first — is a visibly
+soft picture on any modern display.
+
+`mid` arrived after the first projects did, so it is optional and `frameSrcSet`
+builds its list from whatever exists. Older projects serve thumb and full and
+look right; they simply pull a heavier file on the wall than they need to.
+Re-extracting one is the only way to give it the middle rung, and it is not
+worth doing for that alone.
 
 ## Where the images live
 

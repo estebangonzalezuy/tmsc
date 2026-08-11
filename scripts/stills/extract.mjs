@@ -50,6 +50,8 @@ const DEFAULT_COUNT = 18;
 /* Long edge of a published still. 1600 is generous on a wall and still small
    enough that a project costs a couple of megabytes. */
 const FULL_WIDTH = 1600;
+/* A middle rung for the project page, whose cells land near it. */
+const MID_WIDTH = 900;
 const THUMB_WIDTH = 400;
 /* The scrubber's tiles. 160px wide, 100 to a sheet — a five minute video is
    three sheets of about 150KB. */
@@ -304,8 +306,21 @@ async function frameStats(file, t) {
 
 async function grabFrame(video, t, dir, format) {
   const id = frameId(t);
-  const full = `${id}.${format.ext}`;
-  const thumb = `${id}.thumb.${format.ext}`;
+  const names = {
+    full: `${id}.${format.ext}`,
+    mid: `${id}.mid.${format.ext}`,
+    thumb: `${id}.thumb.${format.ext}`,
+  };
+  // One decode, three outputs. ffmpeg reads the input once and feeds each
+  // output its own filter chain, so this costs a seek rather than three.
+  const output = (width, name) => [
+    "-frames:v",
+    "1",
+    "-vf",
+    `scale='min(${width},iw)':-2:flags=lanczos`,
+    ...format.args,
+    path.join(dir, name),
+  ];
   await run("ffmpeg", [
     "-hide_banner",
     "-loglevel",
@@ -315,20 +330,11 @@ async function grabFrame(video, t, dir, format) {
     String(t),
     "-i",
     video,
-    "-frames:v",
-    "1",
-    "-vf",
-    `scale='min(${FULL_WIDTH},iw)':-2:flags=lanczos`,
-    ...format.args,
-    path.join(dir, full),
-    "-frames:v",
-    "1",
-    "-vf",
-    `scale='min(${THUMB_WIDTH},iw)':-2:flags=lanczos`,
-    ...format.args,
-    path.join(dir, thumb),
+    ...output(FULL_WIDTH, names.full),
+    ...output(MID_WIDTH, names.mid),
+    ...output(THUMB_WIDTH, names.thumb),
   ]);
-  return { id, full, thumb };
+  return { id, ...names };
 }
 
 async function buildScrub(video, dir, duration, width, height) {
@@ -481,6 +487,7 @@ async function main() {
         id: grabbed.id,
         t: Number(t.toFixed(3)),
         file: grabbed.full,
+        mid: grabbed.mid,
         thumb: grabbed.thumb,
         w: Math.min(FULL_WIDTH, probed.width),
         h: Math.round(

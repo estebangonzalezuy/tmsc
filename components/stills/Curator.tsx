@@ -23,6 +23,7 @@ import Scrubber from "@/components/stills/Scrubber";
 import LocalExtractor from "@/components/stills/LocalExtractor";
 import FrameGrid, {
   ProjectFields,
+  SourceField,
   inputClass,
 } from "@/components/stills/FrameGrid";
 import { frameSrc, timecode } from "@/lib/stills-shared";
@@ -402,6 +403,11 @@ export default function Curator() {
             </div>
 
             <ProjectFields project={selected} onPatch={patch} />
+
+            <SourceField
+              source={selected.source}
+              onChange={(source) => patch({ source })}
+            />
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <label className="flex items-center gap-2 text-sm">

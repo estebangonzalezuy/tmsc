@@ -26,6 +26,10 @@ import type { Frame, ScrubStrip } from "@/lib/stills-shared";
 
 /* Matches the Actions extractor so the two produce interchangeable projects. */
 const FULL_WIDTH = 1600;
+/* A middle rung, so a project-page cell (roughly 500 CSS pixels, doubled on a
+   retina screen) is served something close to its size instead of choosing
+   between a soft 400 and a wasteful 1600. */
+const MID_WIDTH = 900;
 const THUMB_WIDTH = 400;
 const SCRUB_WIDTH = 160;
 const SCRUB_COLS = 10;
@@ -245,13 +249,14 @@ export async function findCuts(
 async function cutFrame(
   video: LocalVideo,
   t: number,
-  full: HTMLCanvasElement,
-  thumb: HTMLCanvasElement,
+  sizes: { full: HTMLCanvasElement; mid: HTMLCanvasElement; thumb: HTMLCanvasElement },
   origin: "auto" | "hand",
 ): Promise<{ frame: Frame; files: Map<string, Blob> }> {
+  const { full, mid, thumb } = sizes;
   await seek(video.el, t);
-  full.getContext("2d")!.drawImage(video.el, 0, 0, full.width, full.height);
-  thumb.getContext("2d")!.drawImage(video.el, 0, 0, thumb.width, thumb.height);
+  for (const c of [full, mid, thumb]) {
+    c.getContext("2d")!.drawImage(video.el, 0, 0, c.width, c.height);
+  }
 
   const id = frameId(t);
   // WebP everywhere the browser has it, which is everywhere that matters, and
@@ -263,6 +268,7 @@ async function cutFrame(
 
   const files = new Map<string, Blob>();
   files.set(`${id}.${ext}`, await toBlob(full, type, 0.82));
+  files.set(`${id}.mid.${ext}`, await toBlob(mid, type, 0.8));
   files.set(`${id}.thumb.${ext}`, await toBlob(thumb, type, 0.75));
 
   return {
@@ -271,12 +277,26 @@ async function cutFrame(
       id,
       t: Number(t.toFixed(3)),
       file: `${id}.${ext}`,
+      mid: `${id}.mid.${ext}`,
       thumb: `${id}.thumb.${ext}`,
       w: full.width,
       h: full.height,
       origin,
     },
   };
+}
+
+/** The three canvases a cut writes into, sized once per run rather than per
+ *  frame — allocating three canvases forty times is forty times the garbage. */
+function sizeSet(video: LocalVideo) {
+  const at = (width: number) => {
+    const scale = Math.min(1, width / video.width);
+    return canvas(
+      Math.round(video.width * scale),
+      Math.round(video.height * scale),
+    );
+  };
+  return { full: at(FULL_WIDTH), mid: at(MID_WIDTH), thumb: at(THUMB_WIDTH) };
 }
 
 /** One 160px tile per second, a hundred to a sheet: the same scrub strip the
@@ -340,16 +360,7 @@ export async function extractSuggested(
   const cuts = await findCuts(video, onProgress);
   const wanted = chooseTimes(cuts, video.duration, count);
 
-  const scale = Math.min(1, FULL_WIDTH / video.width);
-  const full = canvas(
-    Math.round(video.width * scale),
-    Math.round(video.height * scale),
-  );
-  const thumbScale = Math.min(1, THUMB_WIDTH / video.width);
-  const thumb = canvas(
-    Math.round(video.width * thumbScale),
-    Math.round(video.height * thumbScale),
-  );
+  const sizes = sizeSet(video);
   const scratch = canvas(SCAN_W, SCAN_H);
 
   const frames: Frame[] = [];
@@ -363,7 +374,7 @@ export async function extractSuggested(
       rejected++;
       continue;
     }
-    const cut = await cutFrame(video, t, full, thumb, "auto");
+    const cut = await cutFrame(video, t, sizes, "auto");
     frames.push(cut.frame);
     for (const [name, blob] of cut.files) files.set(name, blob);
     onProgress?.("Cutting the frames", i + 1, wanted.length);
@@ -382,21 +393,11 @@ export async function extractTimes(
   times: number[],
   onProgress?: Progress,
 ): Promise<{ frames: Frame[]; files: Map<string, Blob> }> {
-  const scale = Math.min(1, FULL_WIDTH / video.width);
-  const full = canvas(
-    Math.round(video.width * scale),
-    Math.round(video.height * scale),
-  );
-  const thumbScale = Math.min(1, THUMB_WIDTH / video.width);
-  const thumb = canvas(
-    Math.round(video.width * thumbScale),
-    Math.round(video.height * thumbScale),
-  );
-
+  const sizes = sizeSet(video);
   const frames: Frame[] = [];
   const files = new Map<string, Blob>();
   for (const [i, t] of times.entries()) {
-    const cut = await cutFrame(video, t, full, thumb, "hand");
+    const cut = await cutFrame(video, t, sizes, "hand");
     frames.push(cut.frame);
     for (const [name, blob] of cut.files) files.set(name, blob);
     onProgress?.("Cutting the frames", i + 1, times.length);

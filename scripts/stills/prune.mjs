@@ -40,7 +40,7 @@ async function main() {
     data.projects.map((project) => [
       project.id,
       new Set([
-        ...project.frames.flatMap((f) => [f.file, f.thumb].filter(Boolean)),
+        ...project.frames.flatMap((f) => [f.file, f.mid, f.thumb].filter(Boolean)),
         ...(project.scrub?.files ?? []),
       ]),
     ]),

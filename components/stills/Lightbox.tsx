@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect } from "react";
 import Link from "next/link";
-import { momentUrl, timecode } from "@/lib/stills-shared";
+import { hasSource, momentUrl, timecode } from "@/lib/stills-shared";
 import type { StillsSource } from "@/lib/stills-shared";
 
 /** What the lightbox needs to know about the still it is showing. Deliberately
@@ -128,14 +128,18 @@ export default function Lightbox({
                 </button>
               </span>
             )}
-            <a
-              href={momentUrl(item.source, item.t)}
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-4 hover:opacity-60 transition-opacity"
-            >
-              Watch at {timecode(item.t)} →
-            </a>
+            {hasSource(item.source) ? (
+              <a
+                href={momentUrl(item.source, item.t)}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4 hover:opacity-60 transition-opacity"
+              >
+                Watch at {timecode(item.t)} →
+              </a>
+            ) : (
+              <span className="text-background/60">{timecode(item.t)}</span>
+            )}
           </div>
         </div>
       </div>
