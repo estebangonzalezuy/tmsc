@@ -70,24 +70,48 @@ export class Notion {
   }
 
   /* A page's body as plain text. Dictating into the page rather than into a
-     property is the natural thing to do on a phone, so read both. */
-  async blockText(pageId) {
+     property is the natural thing to do on a phone, so read both.
+
+     It descends, because the text worth having is usually not at the top
+     level. A Notion voice note arrives as a meeting-notes block whose
+     summary and transcript are nested inside it — reading only the first
+     level saw those days as blank pages, which is how the most useful
+     entries in the journal came to be skipped.
+
+     `limit` is there because a transcript can run to tens of thousands of
+     characters and the summary, which is the part worth keeping, comes
+     first. Child pages are left alone: in a journal they're another day. */
+  async blockText(pageId, { depth = 4, limit = 12000 } = {}) {
     const out = [];
-    let cursor;
-    do {
-      const page = await this.req(
-        "GET",
-        `/blocks/${pageId}/children?page_size=100` +
-          (cursor ? `&start_cursor=${cursor}` : ""),
-      );
-      for (const b of page.results) {
-        const rich = b[b.type]?.rich_text;
-        if (Array.isArray(rich) && rich.length) {
-          out.push(rich.map((t) => t.plain_text).join(""));
+    let used = 0;
+
+    const walk = async (id, level) => {
+      let cursor;
+      do {
+        const page = await this.req(
+          "GET",
+          `/blocks/${id}/children?page_size=100` +
+            (cursor ? `&start_cursor=${cursor}` : ""),
+        );
+        for (const b of page.results) {
+          if (used >= limit) return;
+          const rich = b[b.type]?.rich_text;
+          if (Array.isArray(rich) && rich.length) {
+            const line = rich.map((t) => t.plain_text).join("");
+            if (line.trim()) {
+              out.push(line);
+              used += line.length;
+            }
+          }
+          if (b.has_children && b.type !== "child_page" && level < depth) {
+            await walk(b.id, level + 1);
+          }
         }
-      }
-      cursor = page.has_more ? page.next_cursor : undefined;
-    } while (cursor);
+        cursor = page.has_more && used < limit ? page.next_cursor : undefined;
+      } while (cursor);
+    };
+
+    await walk(pageId, 0);
     return out.join("\n");
   }
 
