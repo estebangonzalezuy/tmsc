@@ -17,6 +17,7 @@ from Actions → Run workflow, or from the CLI below.
 | Job | What it does | Model calls |
 |---|---|---|
 | `now` | every `Chosen` row → draft + Post link | 1 per row, 2 with text |
+| `pull` | new entries from the handwritten Journal → the club's, as `Captured` | none |
 | `journal` | every `Make post` capture → a finished post | 1 per entry |
 | `angles` | three things to write next, aimed at the objective | 1 |
 | `review` | how the month is going against its objective | 1 |
@@ -41,6 +42,11 @@ than that and doesn't send mail about it.
 internal, workspace = yours. Copy the secret. Then open each of the three
 databases (Pipeline, Content library, Objectives) → `···` → Connections →
 add the integration. Sharing the parent hub page usually covers all three.
+
+**1b. The handwritten Journal**, if you want `pull` to work. That page lives
+outside the club's hub, so it needs the integration added to it separately:
+open **📔 Journal** → `···` → Connections → the tMSC integration. Without
+it the job says so and does nothing else.
 
 **2. Two repository secrets.** GitHub → Settings → Secrets and variables →
 Actions → New repository secret:

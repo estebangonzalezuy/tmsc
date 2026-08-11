@@ -35,10 +35,18 @@ type Job = {
   lands: { href: string; name: string };
 };
 
-/* The five things worth a button. Nothing runs on a schedule, so these are
+/* The six things worth a button. Nothing runs on a schedule, so these are
    the whole system's trigger surface — the rest of the jobs exist only on
    the command line. */
 const JOBS: Job[] = [
+  {
+    id: "pull",
+    label: "Get my journal",
+    blurb:
+      "Copies anything new from the Journal in Notion into the club's, as Captured. Nothing is posted: you tick “Make post” on the ones worth saying out loud.",
+    cost: "no model calls",
+    lands: { href: NOTION.journal, name: "the Journal" },
+  },
   {
     id: "journal",
     label: "Make the journal posts",

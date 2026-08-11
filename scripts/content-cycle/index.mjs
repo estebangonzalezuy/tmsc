@@ -6,6 +6,7 @@
 // statuses ask for, and stops.
 //
 //   node index.mjs now          every `Chosen` row → draft + visual, one pass
+//   node index.mjs pull         new entries from the handwritten journal
 //   node index.mjs journal      every "Make post" capture → a finished post
 //   node index.mjs review       how the month is going against its objective
 //   node index.mjs queue        journal + drafts + visuals + library (the poll)
@@ -22,7 +23,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { Notion, get, put } from "./notion.mjs";
+import { Notion, get, paragraphs, put } from "./notion.mjs";
 import * as ai from "./claude.mjs";
 import {
   assembleSpec,
@@ -42,6 +43,13 @@ const DB = {
     process.env.NOTION_OBJECTIVES ?? "e57499ed-1671-4267-876b-5b9247aef1f3",
   journal: process.env.NOTION_JOURNAL ?? "90f76b2d-065b-4fe4-a3f6-3b2da5c9f727",
 };
+
+/* Esteban's own journal: an ordinary Notion page with one sub-page per day,
+   written by hand and mostly not about the club at all. The `pull` job
+   copies what's new into the tMSC Journal so a thought written there can
+   become a post without being retyped here. Not a data source — a page. */
+const JOURNAL_PAGE =
+  process.env.NOTION_JOURNAL_PAGE ?? "2f41c0b2-f62f-8095-ac8f-eb182c9d9997";
 const ORIGIN = process.env.SITE_ORIGIN ?? "https://themotionsocialclub.vercel.app";
 const PILLARS = ["Structure", "Criticism", "Honesty"];
 /** Enough angles waiting means the bottleneck is decisions, not ideas. */
@@ -331,6 +339,83 @@ async function jobNow() {
    image — and picks its own shader at random, which costs nothing since
    there is no art direction to do. Tick "Text on visual" to put the
    headline on it instead. */
+/* ---------------------------------------------------------------- pull --- */
+
+/* Bring what's new in the handwritten journal across into the tMSC Journal.
+ *
+ * Everything lands as `Captured`, never as `Make post`. Most of what gets
+ * written in a journal is a day, not an idea — the beach, the shopping, who
+ * went where — and the club has no business turning that into a LinkedIn
+ * post because a script found it. Choosing which thought is worth saying
+ * out loud is the one part of this that stays a person's job.
+ *
+ * Deduplicated on the source page's URL, so this can be run as often as you
+ * like and only ever adds what wasn't there.
+ */
+async function jobPull() {
+  let pages;
+  try {
+    pages = await notion.childPages(JOURNAL_PAGE);
+  } catch (err) {
+    /* By far the likeliest cause, and unguessable from Notion's 404. */
+    say(
+      `pull: can't read the journal page — open it in Notion, ··· → Connections, ` +
+        `and add the tMSC integration. (${err instanceof Error ? err.message.slice(0, 120) : err})`,
+    );
+    return;
+  }
+  if (!pages.length) {
+    say("pull: the journal has no entries yet");
+    return;
+  }
+
+  const already = new Set(
+    (await notion.query(DB.journal)).map((r) => get.url(r, "Source")).filter(Boolean),
+  );
+  const fresh = pages.filter((p) => !already.has(p.url));
+  if (!fresh.length) {
+    say(`pull: nothing new — all ${pages.length} entries are already here`);
+    return;
+  }
+
+  let made = 0;
+  for (const page of fresh) {
+    const body = (await notion.blockText(page.id)).trim();
+    if (body.length < 10) {
+      say(`pull: skipped "${page.title}" — nothing written in it yet`);
+      continue;
+    }
+    /* The titles are dates, so on their own they're unreadable as a list.
+       The first words of the entry are what tell you which day it was. */
+    const opening = body.replace(/\s+/g, " ").slice(0, 70).trim();
+    const name = page.title ? `${page.title} — ${opening}` : opening;
+
+    if (DRY) {
+      say(`pull: would add "${name.slice(0, 60)}…"`);
+      made++;
+      continue;
+    }
+    await notion.createPage(
+      DB.journal,
+      {
+        Name: put.title(name),
+        /* An excerpt in the property so the row reads at a glance; the whole
+           thing in the body, where it can't hit the property's cap. */
+        Entry: put.text(body.slice(0, 1800)),
+        Status: put.select("Captured"),
+        Date: put.date((page.created || today()).slice(0, 10)),
+        Source: put.url(page.url),
+      },
+      paragraphs(body),
+    );
+    made++;
+  }
+  say(
+    `pull: ${made} new ${made === 1 ? "entry" : "entries"} from the journal, ` +
+      `all Captured — tick "Make post" on the ones worth saying out loud`,
+  );
+}
+
 async function jobJournal() {
   const rows = await notion.byStatus(DB.journal, "Make post");
   if (!rows.length) return;
@@ -568,6 +653,7 @@ async function jobObjectives() {
 /* ---------------------------------------------------------------- run --- */
 
 const ALL = {
+  pull: jobPull,
   angles: jobAngles,
   drafts: jobDrafts,
   visuals: jobVisuals,
@@ -578,8 +664,10 @@ const ALL = {
   objectives: jobObjectives,
 };
 const GROUPS = {
-  queue: ["journal", "drafts", "visuals", "library"],
-  weekly: ["journal", "drafts", "visuals", "library", "angles"],
+  /* `pull` leads: a thought written in the journal this morning should be
+     in the queue before anything else looks at the queue. */
+  queue: ["pull", "journal", "drafts", "visuals", "library"],
+  weekly: ["pull", "journal", "drafts", "visuals", "library", "angles"],
   all: Object.keys(ALL),
 };
 

@@ -91,10 +91,38 @@ export class Notion {
     return out.join("\n");
   }
 
-  createPage(dataSource, properties) {
+  /* The sub-pages of an ordinary page, which is what a Notion journal kept
+     by hand actually is: one page per day, nested under one parent. Not a
+     database, so there is nothing to query — the children have to be
+     listed. */
+  async childPages(pageId) {
+    const out = [];
+    let cursor;
+    do {
+      const page = await this.req(
+        "GET",
+        `/blocks/${pageId}/children?page_size=100` +
+          (cursor ? `&start_cursor=${cursor}` : ""),
+      );
+      for (const b of page.results) {
+        if (b.type !== "child_page") continue;
+        out.push({
+          id: b.id,
+          title: b.child_page?.title ?? "",
+          created: b.created_time ?? "",
+          url: `https://www.notion.so/${String(b.id).replace(/-/g, "")}`,
+        });
+      }
+      cursor = page.has_more ? page.next_cursor : undefined;
+    } while (cursor);
+    return out;
+  }
+
+  createPage(dataSource, properties, children) {
     return this.req("POST", "/pages", {
       parent: { type: "data_source_id", data_source_id: dataSource },
       properties,
+      ...(children?.length ? { children } : {}),
     });
   }
 
@@ -112,6 +140,18 @@ const chunks = (s, n = 1900) => {
   for (let i = 0; i < s.length; i += n) out.push(s.slice(i, i + n));
   return out.length ? out : [""];
 };
+
+/* A long capture goes in the page body rather than the Entry property: a
+   rich-text property is capped, and a dictated journal entry runs past it.
+   Every job that reads a journal row reads the body too. */
+export const paragraphs = (s) =>
+  chunks(String(s ?? "").trim())
+    .filter((c) => c.length)
+    .map((content) => ({
+      object: "block",
+      type: "paragraph",
+      paragraph: { rich_text: [{ type: "text", text: { content } }] },
+    }));
 
 export const put = {
   title: (s) => ({ title: [{ text: { content: String(s).slice(0, 1900) } }] }),

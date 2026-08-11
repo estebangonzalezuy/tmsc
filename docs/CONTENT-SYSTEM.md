@@ -15,7 +15,8 @@ scheduled → posting writes it back into the library.**
 | the Desk | <https://themotionsocialclub.vercel.app/desk> | Starts the runs. Five buttons and a live view — the phone-friendly front of the whole system. |
 | the Post Lab | <https://themotionsocialclub.vercel.app/postlab> | Dithering instrument for posts, carousels, reels. PNG / MP4 / GIF export. |
 | the Studio | <https://themotionsocialclub.vercel.app/studio> | Edits site copy in `content/site.json`, publishes to `main`. |
-| tMSC Journal | Notion · `collection://90f76b2d-065b-4fe4-a3f6-3b2da5c9f727` | Raw capture. Set `Make post` and a run turns it into a finished post. |
+| 📔 Journal (Esteban's own) | Notion · page `2f41c0b2f62f8095ac8feb182c9d9997` | Written by hand, one sub-page per day. Not part of the club — the `pull` job reads it. Needs the tMSC integration added to it. |
+| tMSC Journal | Notion · `collection://90f76b2d-065b-4fe4-a3f6-3b2da5c9f727` | Raw capture. Set `Make post` and a run turns it into a finished post. `Source` holds the handwritten entry it came from. |
 | tMSC Pipeline | Notion · `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d` | One row per idea, all the way through. |
 | tMSC Content library | Notion · `collection://59421a28-6325-466b-848e-f59b8bcf0986` | Everything published. Seeded with 51 Substack posts. |
 | tMSC Objectives | Notion · `collection://e57499ed-1671-4267-876b-5b9247aef1f3` | Month / quarter / semester goals. The `Active` row aims the angles; the `review` job writes back **Review**, **Standing**, **Reviewed**. |
@@ -78,6 +79,17 @@ text the run can read — for nothing.
 
 Any session can run these on demand — just ask. The Desk runs them with a
 button; nothing runs on its own.
+
+**Pull the journal.** Reads the sub-pages of the handwritten 📔 Journal and
+copies anything not already here into the tMSC Journal: the first words as
+the Name, the whole entry in the page body, the date it was written, and
+the source page in `Source`, which is what stops it arriving twice.
+
+Everything lands as **`Captured`**, never `Make post`. Most of what goes in
+a journal is a day rather than an idea, and the club has no business
+turning that into a post because a script found it — deciding which thought
+is worth saying out loud stays a person's job. Costs no model call, so it
+is safe to run whenever.
 
 **Propose angles.** Skip if 6+ rows already sit in `Angle`. Otherwise read
 the Content library (what's over- and under-published, what's gone quiet),
@@ -160,6 +172,7 @@ and quieter.
 
 | Button on the Desk | Job | Model calls |
 |---|---|---|
+| Get my journal | `pull` — new entries from the handwritten Journal, as `Captured` | none |
 | Make the journal posts | `journal` — every `Make post` capture → a finished post | 1 per entry |
 | Give me three angles | `angles` — aimed at the month's objective | 1 |
 | Finish what I chose | `now` — every `Chosen` row → draft + Post link | 1 per row, 2 with text on the visual |
