@@ -6,8 +6,13 @@
 // dithered-forms engine (GenerativeLayer), which can colour every pixel.
 // The spec still carries no hex: only a switch and a seed.
 
+import { useEffect, useRef } from "react";
 import { Dithering } from "@paper-design/shaders-react";
-import type { DitheringShape, DitheringType } from "@paper-design/shaders";
+import type {
+  DitheringShape,
+  DitheringType,
+  PaperShaderElement,
+} from "@paper-design/shaders";
 import {
   paletteInk,
   shaderDef,
@@ -16,6 +21,7 @@ import {
   type Theme,
 } from "@/lib/postlab";
 import GenerativeLayer from "./GenerativeLayer";
+import { clock } from "./clock";
 
 const num = (v: unknown, def: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : def;
@@ -26,7 +32,6 @@ const DTYPES = ["random", "2x2", "4x4", "8x8"];
 export default function ShaderLayer({
   shader,
   theme,
-  playing,
   width,
   height,
   duration,
@@ -34,7 +39,6 @@ export default function ShaderLayer({
 }: {
   shader: ShaderSpec;
   theme: Theme;
-  playing: boolean;
   width: number;
   height: number;
   duration: number;
@@ -53,7 +57,6 @@ export default function ShaderLayer({
       <GenerativeLayer
         shader={shader}
         theme={theme}
-        playing={playing}
         width={width}
         height={height}
         duration={duration}
@@ -68,13 +71,43 @@ export default function ShaderLayer({
     );
   }
 
-  const { ink } = tones(theme);
-  const s = shader;
-
   /* "plain" contributes nothing of its own — the slide's background is
      painted behind the whole stack. */
-  if (s.type !== "dithering") return null;
+  if (shader.type !== "dithering") return null;
+  return <DitheringLayer shader={shader} theme={theme} color={color} />;
+}
 
+/* Its own component because it holds a ref and an effect, and the branch
+   above returns before either could be declared. */
+function DitheringLayer({
+  shader: s,
+  theme,
+  color,
+}: {
+  shader: ShaderSpec;
+  theme: Theme;
+  color?: {
+    ink?: string;
+    seed: number;
+    palette?: string[];
+    inks?: string[];
+  };
+}) {
+  const mountRef = useRef<PaperShaderElement>(null);
+  const speed = num(s.speed, 0.5);
+
+  /* The shader is told which frame to be on as the playhead moves. Pushed
+     straight at the mount rather than through a prop, so the tool doesn't
+     re-render sixty times a second to animate a background. */
+  useEffect(() => {
+    const put = (t: number) => {
+      mountRef.current?.paperShaderMount?.setFrame(t * 1000 * speed);
+    };
+    put(clock.get());
+    return clock.watch(put);
+  }, [speed]);
+
+  const { ink } = tones(theme);
   const shape = SHAPES.includes(String(s.shape)) ? String(s.shape) : "sphere";
   const dtype = DTYPES.includes(String(s.dtype)) ? String(s.dtype) : "4x4";
   return (
@@ -102,10 +135,16 @@ export default function ShaderLayer({
             )
           : color?.ink || ink
       }
+      ref={mountRef}
       shape={shape as DitheringShape}
       type={dtype as DitheringType}
       size={num(s.size, 3)}
-      speed={playing ? num(s.speed, 0.5) : 0}
+      /* Driven rather than self-animating: the effect above pushes the frame
+         straight at the shader as the playhead moves, so scrubbing the
+         timeline moves it with everything else — and pushing it imperatively
+         means the tool doesn't re-render to do it. */
+      speed={0}
+      frame={0}
       // Layer transform (drag / wheel / pinch / shift-drag on the canvas).
       scale={num(s.scale, 0.9)}
       rotation={num(s.rotation, 0)}

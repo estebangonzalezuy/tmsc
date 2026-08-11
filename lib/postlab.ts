@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 7;
+export const SPEC_VERSION = 8;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -129,6 +129,9 @@ export type LayerSpec = ShaderSpec & {
   src?: string;
   /** How the picture fills the frame. */
   fit?: "cover" | "contain";
+  /** Switched off without being deleted, so a stack can be taken apart and
+      put back together. Absent means visible. */
+  mute?: boolean;
   /** Superseded by `ink`. Kept so links written when colour was a switch
       still open; normalizeSpec turns it into an `ink` and it is never
       written again. */
@@ -142,6 +145,20 @@ export type LayerSpec = ShaderSpec & {
 };
 
 export const MAX_LAYERS = 4;
+
+/** The switchable parts of the typographic layer, in the order they read. */
+export const SLIDE_PARTS = [
+  "kicker",
+  "title",
+  "body",
+  "mark",
+  "footer",
+  "rules",
+] as const;
+
+/** Is this part of the slide drawn? */
+export const partOn = (slide: { off?: string[] }, part: string) =>
+  !slide.off?.includes(part);
 
 export function defaultLayer(type: ShaderType): LayerSpec {
   const base = defaultShader(type);
@@ -163,6 +180,18 @@ export type SlideSpec = {
   footer: string;
   /** Circled letter drawn top right; empty string hides it. */
   letter: string;
+  /** What the top-right circle is for. "auto" — the default — makes it a
+      page mark on a carousel and the letter on a single post, which is the
+      only time a mark there is saying something you don't already know. */
+  mark?: "auto" | "letter" | "page" | "none";
+  /** Parts of the typographic layer switched off on this slide, by id:
+      kicker, title, body, footer, mark, rules. The words stay in the spec,
+      so switching one back on brings its text with it. Absent means
+      everything is on, which is how every older link was written.
+
+      `rules` is the two decorative lines — the underline beneath the kicker
+      and the hairline above the footer. */
+  off?: string[];
   /** Master switch for the typographic layer (kicker, title, body, footer,
       letter, ring). Off = pure background; the veil still applies. */
   text: boolean;
@@ -448,6 +477,7 @@ export function resolveLayer(layer: LayerSpec, tt: number): LayerSpec {
 const LOOPING_SHAPES = ["swirl"];
 
 export function layerLoops(layer: LayerSpec): boolean {
+  if (layer.mute) return true;
   if (layer.type !== "dithering") return true;
   if (Number(layer.speed ?? 0) === 0) return true;
   return LOOPING_SHAPES.includes(String(layer.shape ?? ""));
@@ -858,6 +888,13 @@ export function normalizeSpec(raw: unknown): PostSpec {
       else slide.titleWeight = Math.min(900, Math.max(100, Number(s.titleWeight) || 400));
       if (s.margin === undefined) delete slide.margin;
       else slide.margin = Math.min(240, Math.max(24, Number(s.margin) || 96));
+      if (!["auto", "letter", "page", "none"].includes(String(s.mark)))
+        delete slide.mark;
+      const off = Array.isArray(s.off)
+        ? [...new Set(s.off.filter((p) => (SLIDE_PARTS as readonly string[]).includes(p)))]
+        : [];
+      if (off.length) slide.off = off;
+      else delete slide.off;
       slide.color = slide.color === true;
       slide.colorSeed = Number(slide.colorSeed) || 1;
       const custom = cleanPalette(s.palette);

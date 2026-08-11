@@ -86,6 +86,15 @@ and dithered once, so the output stays hard-edged pixels. This is where the
 good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
 `mul`, `letter` + `noise` on `sub`.
 
+**What's on the slide.** `off` is an array of parts to leave out — `kicker`,
+`title`, `body`, `mark`, `footer`, `rules` (the two decorative lines). The
+words stay in the spec, so a part switched back on brings its text with it.
+Only a headline: `off: ["kicker","body","mark","footer","rules"]`.
+
+`mark` decides the top-right circle: `auto` (default — the page number on a
+carousel, the letter on a single post) | `letter` | `page` | `none`. When
+it shows the page, the footer drops its counter.
+
 **A photograph is a form.** `pattern: "photo"` with a `src` on the layer —
 a path on this site (`/stills/x.jpg`, travels in the link) or `local:<id>`
 (a file in the owner's browser, doesn't). It gets sampled and thresholded

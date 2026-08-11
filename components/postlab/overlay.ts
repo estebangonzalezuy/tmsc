@@ -2,7 +2,13 @@
 // code produces the on-screen preview overlay and the exported PNG / video
 // frames, so what you see is exactly what downloads.
 
-import { FORMATS, slideTones, type PostSpec, type SlideSpec } from "@/lib/postlab";
+import {
+  FORMATS,
+  partOn,
+  slideTones,
+  type PostSpec,
+  type SlideSpec,
+} from "@/lib/postlab";
 import { BAYER4 } from "./generative";
 
 export type Fonts = { sans: string; serif: string; gothic: string };
@@ -228,6 +234,27 @@ export function drawOverlay(
   /* Text switch off = pure background (the veil above still applies). */
   if (slide.text === false) return;
 
+  /* The two decorative lines: the underline under the kicker and the
+     hairline above the footer. */
+  const rules = partOn(slide, "rules");
+
+  /* What goes in the top-right circle. "auto" is the useful default: a page
+     number when there is more than one slide, the letter otherwise. */
+  const many = spec.slides.length > 1;
+  const mode = slide.mark ?? "auto";
+  const pageMark = String(index + 1).padStart(2, "0");
+  const markChar = !partOn(slide, "mark")
+    ? ""
+    : mode === "none"
+      ? ""
+      : mode === "page"
+        ? pageMark
+        : mode === "letter"
+          ? slide.letter
+          : many
+            ? pageMark
+            : slide.letter;
+
   /* Structural elements (plates, box outline, hairlines, circle frames)
      draw straight onto ctx as they're reached below, in their original
      order. Glyphs go into one of two ink masks — title vs. everything
@@ -289,7 +316,7 @@ export function drawOverlay(
 
   /* Kicker — small underlined label, top left (or centered). Label is ink
      (meta); the underline is structural. */
-  if (slide.kicker) {
+  if (slide.kicker && partOn(slide, "kicker")) {
     mctx.font = `400 ${30 * u}px ${fonts.sans}`;
     mctx.textAlign = center ? "center" : "left";
     mctx.textBaseline = "alphabetic";
@@ -299,19 +326,23 @@ export function drawOverlay(
     strip(center ? kx - kw / 2 : kx, ky - 34 * u, kw, 56 * u);
     mctx.fillStyle = ink;
     mctx.fillText(slide.kicker, kx, ky);
-    ctx.beginPath();
-    ctx.moveTo(center ? kx - kw / 2 : kx, ky + 12 * u);
-    ctx.lineTo(center ? kx + kw / 2 : kx + kw, ky + 12 * u);
-    ctx.strokeStyle = ink;
-    ctx.stroke();
+    if (rules) {
+      ctx.beginPath();
+      ctx.moveTo(center ? kx - kw / 2 : kx, ky + 12 * u);
+      ctx.lineTo(center ? kx + kw / 2 : kx + kw, ky + 12 * u);
+      ctx.strokeStyle = ink;
+      ctx.stroke();
+    }
   }
 
-  /* Circled letter mark, top right (meta group). */
-  if (slide.letter) {
+  /* Circled mark, top right (meta group). On a carousel it's the page you're
+     on, which is the only thing a mark up there can say that the reader
+     doesn't already know; on a single post it's the club's letter. */
+  if (markChar) {
     circledLetter(
       ctx,
       mctx,
-      slide.letter,
+      markChar,
       w - pad - 20 * u,
       pad + 24 * u,
       44 * u,
@@ -348,7 +379,10 @@ export function drawOverlay(
   const titleFont = (px: number) => `${style}${weight} ${px}px ${family}`;
 
   mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
-  const bodyLines = slide.body ? wrap(mctx, slide.body, Math.min(maxW, 720 * u)) : [];
+  const bodyLines =
+    slide.body && partOn(slide, "body")
+      ? wrap(mctx, slide.body, Math.min(maxW, 720 * u))
+      : [];
 
   /* "fit" grows the headline until it fills the frame — as big as the words
      allow inside the margin, with the kicker, the body and the footer left
@@ -366,7 +400,7 @@ export function drawOverlay(
   const titleLH = titlePx * 1.12;
 
   tctx.font = titleFont(titlePx);
-  const titleLines = wrap(tctx, slide.title, maxW);
+  const titleLines = partOn(slide, "title") ? wrap(tctx, slide.title, maxW) : [];
 
   const titleH = titleLines.length * titleLH;
   const bodyH = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
@@ -437,27 +471,29 @@ export function drawOverlay(
     mctx.restore();
   }
 
-  /* Footer — hairline (structural) + handle left, slide counter (or club
-     short) right, both meta ink. */
-  ctx.beginPath();
-  ctx.moveTo(pad, h - pad - 44 * u);
-  ctx.lineTo(w - pad, h - pad - 44 * u);
-  ctx.strokeStyle = ink;
-  ctx.stroke();
-  mctx.font = `400 ${28 * u}px ${fonts.sans}`;
-  const counter =
-    spec.slides.length > 1
-      ? `${String(index + 1).padStart(2, "0")} / ${String(spec.slides.length).padStart(2, "0")}`
-      : "tMSC";
-  if (slide.footer)
-    strip(pad, h - pad - 30 * u, mctx.measureText(slide.footer).width, 44 * u);
-  const cw = mctx.measureText(counter).width;
-  strip(w - pad - cw, h - pad - 30 * u, cw, 44 * u);
-  mctx.textAlign = "left";
-  mctx.fillStyle = ink;
-  if (slide.footer) mctx.fillText(slide.footer, pad, h - pad);
-  mctx.textAlign = "right";
-  mctx.fillText(counter, w - pad, h - pad);
+  /* Footer — hairline (structural) + handle left, club short right, both
+     meta ink. The page number lives in the top-right circle when there is
+     one, so it isn't said twice down here. */
+  if (partOn(slide, "footer")) {
+    if (rules) {
+      ctx.beginPath();
+      ctx.moveTo(pad, h - pad - 44 * u);
+      ctx.lineTo(w - pad, h - pad - 44 * u);
+      ctx.strokeStyle = ink;
+      ctx.stroke();
+    }
+    mctx.font = `400 ${28 * u}px ${fonts.sans}`;
+    const counter = many && markChar !== pageMark ? `${pageMark} / ${String(spec.slides.length).padStart(2, "0")}` : "tMSC";
+    if (slide.footer)
+      strip(pad, h - pad - 30 * u, mctx.measureText(slide.footer).width, 44 * u);
+    const cw = mctx.measureText(counter).width;
+    strip(w - pad - cw, h - pad - 30 * u, cw, 44 * u);
+    mctx.textAlign = "left";
+    mctx.fillStyle = ink;
+    if (slide.footer) mctx.fillText(slide.footer, pad, h - pad);
+    mctx.textAlign = "right";
+    mctx.fillText(counter, w - pad, h - pad);
+  }
 
   /* Cell sizes scale with the canvas so the dithered type keeps the same
      coarseness at 4K instead of turning into fine grain. */

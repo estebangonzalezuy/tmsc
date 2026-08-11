@@ -34,7 +34,7 @@ const compositeOp = (blend: BlendMode): GlobalCompositeOperation =>
  */
 export const canRenderDirectly = (spec: PostSpec, index: number) =>
   spec.slides[index]?.layers.every(
-    (l) => l.type === "none" || shaderDef(l.type).kind === "generative",
+    (l) => l.mute || l.type === "none" || shaderDef(l.type).kind === "generative",
   ) ?? false;
 
 /* One scratch canvas, reused: layers are composited one after another. */
@@ -70,6 +70,7 @@ function drawLayers(
   ctx.fillStyle = slideTones(slide).bg;
   ctx.fillRect(0, 0, w, h);
   slide.layers.forEach((layer, i) => {
+    if (layer.mute) return;
     ctx.globalAlpha = layer.opacity;
     ctx.globalCompositeOperation = compositeOp(layer.blend);
     if (t !== undefined && shaderDef(layer.type).kind === "generative") {

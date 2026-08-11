@@ -11,6 +11,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -21,6 +22,7 @@ import {
   PALETTE,
   PRESETS,
   SHADERS,
+  SLIDE_PARTS,
   SPEC_VERSION,
   WAVES,
   animatable,
@@ -34,6 +36,7 @@ import {
   randomSlide,
   encodeSpec,
   normalizeSpec,
+  partOn,
   shaderDef,
   slideTones,
   specFromQuery,
@@ -60,6 +63,7 @@ import {
   recordVideo,
 } from "./exporter";
 import { loadSlidePhotos, photoUrl, readFile, savePhoto } from "./photos";
+import { clock } from "./clock";
 
 /* ------------------------------------------------------------- panel bits */
 
@@ -377,6 +381,141 @@ const MIX_MODE_HINTS: Record<string, string> = {
   noise: "noise — pixel by pixel, no grid",
 };
 
+/* The readout under the stage is the only place React needs the number. */
+const useTime = () =>
+  useSyncExternalStore(clock.subscribe, clock.get, clock.server);
+
+/* The layer stack and the type over it: the only things that redraw with the
+   clock, so the only things that re-render with it. */
+function Stage({
+  spec,
+  index,
+  fonts,
+  shaderBoxRef,
+  overlayRef,
+  solo,
+}: {
+  spec: PostSpec;
+  index: number;
+  fonts: Fonts | null;
+  shaderBoxRef: React.RefObject<HTMLDivElement | null>;
+  overlayRef: React.RefObject<HTMLCanvasElement | null>;
+  solo: number | null;
+}) {
+  const slide = spec.slides[index];
+  const { w, h } = FORMATS[spec.format];
+
+  /* The type is redrawn when the post changes, and — only if the orbit ring
+     is turning — as the playhead moves. This redraws every glyph at full
+     resolution, so it is deliberately the one thing that doesn't follow the
+     clock unless it has to, and it follows it at 30fps rather than 60. */
+  useEffect(() => {
+    const ctx = overlayRef.current?.getContext("2d");
+    if (!ctx || !fonts) return;
+    drawOverlay(ctx, spec, index, fonts, 0);
+    if (!slide.ring) return;
+    let last = -1;
+    return clock.watch((t) => {
+      if (t - last < 1 / 30 && t > last) return;
+      last = t;
+      drawOverlay(ctx, spec, index, fonts, t);
+    });
+  }, [spec, index, fonts, slide.ring, overlayRef]);
+
+  return (
+    <>
+      <div
+        ref={shaderBoxRef}
+        className="absolute inset-0"
+        style={{ background: slideTones(slide).bg, isolation: "isolate" }}
+      >
+        {slide.layers.map((l, i) => (
+          <div
+            key={`${i}-${l.type}-${slide.theme}-${spec.format}-${index}`}
+            data-layer
+            className="absolute inset-0"
+            style={{
+              opacity: l.opacity,
+              mixBlendMode: l.blend === "normal" ? undefined : l.blend,
+            }}
+          >
+            {/* The wrapper stays even when the layer is off, so the
+                exporter's index-to-canvas mapping doesn't shift. */}
+            {!l.mute && (solo === null || solo === i) && (
+              <ShaderLayer
+                shader={l}
+                theme={slide.theme}
+                width={w}
+                height={h}
+                duration={spec.duration}
+                color={{
+                  ink: l.ink,
+                  seed: slide.colorSeed,
+                  palette: slide.palette,
+                  inks: l.inks,
+                  mixMode: l.mixMode,
+                  mixScale: l.mixScale,
+                  mixSpeed: l.mixSpeed,
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <canvas
+        ref={overlayRef}
+        width={w}
+        height={h}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+      />
+    </>
+  );
+}
+
+/* The playhead readout, on its own so the number can tick without dragging
+   the rest of the tool with it. */
+function Timeline({
+  duration,
+  playing,
+  onPlay,
+}: {
+  duration: number;
+  playing: boolean;
+  onPlay: (p: boolean) => void;
+}) {
+  const time = useTime();
+  return (
+    <div className="border-t border-line px-5 py-3 flex items-center gap-3 shrink-0">
+      <Button onClick={() => onPlay(!playing)}>{playing ? "Pause" : "Play"}</Button>
+      <input
+        type="range"
+        min={0}
+        max={duration}
+        step={1 / 60}
+        value={time}
+        aria-label="Playhead"
+        onChange={(e) => {
+          onPlay(false);
+          clock.set(Number(e.target.value));
+        }}
+        className="flex-1 accent-foreground"
+      />
+      <span className="text-xs text-muted tabular-nums w-24 text-right">
+        {time.toFixed(2)}s / {duration}s
+      </span>
+    </div>
+  );
+}
+
+const TABS = [
+  ["post", "post"],
+  ["text", "text"],
+  ["layers", "layers"],
+  ["make", "make"],
+  ["export", "export"],
+] as const;
+type Tab = (typeof TABS)[number][0];
+
 /* ------------------------------------------------------------------ tool */
 
 export default function PostLab() {
@@ -384,6 +523,9 @@ export default function PostLab() {
   const [active, setActive] = useState(0);
   const [activeLayer, setActiveLayer] = useState(0);
   const [playing, setPlaying] = useState(true);
+  /* Which panel is showing. The tool grew past what one scrolling column
+     can hold; nothing was removed, it's grouped. */
+  const [tab, setTab] = useState<Tab>("post");
   const [fonts, setFonts] = useState<Fonts | null>(null);
   const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
@@ -395,6 +537,9 @@ export default function PostLab() {
   /* A sheet of rolled looks to choose from. Also outside the spec: they're
      candidates, and only the one you pick becomes the post. */
   const [sheet, setSheet] = useState<SlideStyle[]>([]);
+  /* Looking at one layer on its own. A way of working, not a setting — it
+     never reaches the spec or the export. */
+  const [solo, setSolo] = useState<number | null>(null);
   /* An export setting, not a design one, so it stays out of the spec and
      out of shared links. */
   const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
@@ -476,30 +621,46 @@ export default function PostLab() {
     return () => ro.disconnect();
   }, [w, h]);
 
-  /* Draw the text overlay; loop only while the orbit ring is animating. */
+  /* The clock. While playing it advances in real time and wraps at the post
+     duration; scrubbing sets it directly. Everything downstream is a
+     function of it, so a paused frame is exactly the frame that exports. */
   useEffect(() => {
-    const canvas = overlayRef.current;
-    if (!canvas || !fonts) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    if (slide.ring && playing) {
-      let raf = 0;
-      const start = performance.now();
-      let last = 0;
-      const loop = (now: number) => {
-        // ~30fps is plenty for the slow ring spin and keeps the full-res
-        // overlay redraw cheap.
-        if (now - last > 33) {
-          last = now;
-          drawOverlay(ctx, spec, activeIndex, fonts, (now - start) / 1000);
-        }
-        raf = requestAnimationFrame(loop);
-      };
+    if (!playing) return;
+    let raf = 0;
+    let last = performance.now();
+    const loop = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      clock.set((clock.get() + dt) % Math.max(2, spec.duration));
       raf = requestAnimationFrame(loop);
-      return () => cancelAnimationFrame(raf);
-    }
-    drawOverlay(ctx, spec, activeIndex, fonts, 0);
-  }, [spec, activeIndex, fonts, slide.ring, playing]);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, spec.duration]);
+
+  /* The shortcuts a motion tool is expected to have. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      const D = Math.max(2, spec.duration);
+      const step = (by: number) => {
+        setPlaying(false);
+        clock.set(((((clock.get() + by) % D) + D) % D));
+      };
+      if (e.code === "Space") {
+        e.preventDefault();
+        setPlaying((p) => !p);
+      } else if (e.key === "ArrowRight") step(e.shiftKey ? 1 : 1 / 30);
+      else if (e.key === "ArrowLeft") step(e.shiftKey ? -1 : -1 / 30);
+      else if (e.key === "Home") {
+        setPlaying(false);
+        clock.set(0);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [spec.duration]);
 
   /* ------------------------------------------------------------- editing */
 
@@ -515,12 +676,18 @@ export default function PostLab() {
     [activeIndex],
   );
 
-  const patchLayer = (patch: Partial<LayerSpec> | Record<string, number | string>) =>
+  const patchLayerAt = (
+    index: number,
+    patch: Partial<LayerSpec> | Record<string, number | string>,
+  ) =>
     patchSlide({
       layers: slide.layers.map((l, i) =>
-        i === layerIndex ? ({ ...l, ...patch } as LayerSpec) : l,
+        i === index ? ({ ...l, ...patch } as LayerSpec) : l,
       ),
     });
+
+  const patchLayer = (patch: Partial<LayerSpec> | Record<string, number | string>) =>
+    patchLayerAt(layerIndex, patch);
 
   /* Only the club's own renderer reads a parameter every frame; the WebGL
      shader takes its uniforms once. */
@@ -554,6 +721,18 @@ export default function PostLab() {
       motion: Object.keys(motion).length ? motion : undefined,
     } as Partial<LayerSpec>);
   };
+
+  /* Switching a part off keeps its words; `off` is dropped entirely when
+     nothing is hidden, so a link never carries an empty list. */
+  const togglePart = (part: string) => {
+    const off = new Set(slide.off ?? []);
+    if (off.has(part)) off.delete(part);
+    else off.add(part);
+    patchSlide({ off: off.size ? [...off] : undefined });
+  };
+
+  const onlyParts = (keep: string[]) =>
+    patchSlide({ off: SLIDE_PARTS.filter((p) => !keep.includes(p)) });
 
   /* The colours a mix layer is currently allowed to use. No `inks` on the
      layer means all of them, which is the normal case. */
@@ -992,52 +1171,23 @@ export default function PostLab() {
               onPointerUp={onStagePointerUp}
               onPointerCancel={onStagePointerUp}
             >
-              <div
-                ref={shaderBoxRef}
-                className="absolute inset-0"
-                style={{
-                  background: slideTones(slide).bg,
-                  isolation: "isolate",
-                }}
-              >
-                {slide.layers.map((l, i) => (
-                  <div
-                    key={`${i}-${l.type}-${slide.theme}-${spec.format}-${activeIndex}`}
-                    data-layer
-                    className="absolute inset-0"
-                    style={{
-                      opacity: l.opacity,
-                      mixBlendMode: l.blend === "normal" ? undefined : l.blend,
-                    }}
-                  >
-                    <ShaderLayer
-                      shader={l}
-                      theme={slide.theme}
-                      playing={playing}
-                      width={w}
-                      height={h}
-                      duration={spec.duration}
-                      color={{
-                        ink: l.ink,
-                        seed: slide.colorSeed,
-                        palette: slide.palette,
-                        inks: l.inks,
-                        mixMode: l.mixMode,
-                        mixScale: l.mixScale,
-                        mixSpeed: l.mixSpeed,
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <canvas
-                ref={overlayRef}
-                width={w}
-                height={h}
-                className="absolute inset-0 w-full h-full pointer-events-none"
+              <Stage
+                spec={spec}
+                index={activeIndex}
+                fonts={fonts}
+                shaderBoxRef={shaderBoxRef}
+                overlayRef={overlayRef}
+                solo={solo}
               />
             </div>
           </div>
+
+          {/* The loop end to end, with a playhead you can put anywhere. */}
+          <Timeline
+            duration={spec.duration}
+            playing={playing}
+            onPlay={setPlaying}
+          />
 
           {/* Slide strip */}
           <div className="border-t border-line px-5 py-3 flex items-center gap-2 shrink-0">
@@ -1062,17 +1212,36 @@ export default function PostLab() {
               +
             </button>
             <div className="flex-1" />
+            <span className="text-xs text-muted hidden sm:inline">
+              space · ← → step · shift for a second
+            </span>
             <span className="text-xs text-muted">
               {w} × {h}
             </span>
-            <Button onClick={() => setPlaying((p) => !p)}>
-              {playing ? "Pause" : "Play"}
-            </Button>
           </div>
         </div>
 
         {/* Control panel */}
         <aside className="w-full md:w-[340px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto text-sm">
+          {/* Five rooms instead of one corridor. Everything the tool could do
+              before it can still do; it just isn't all in front of you at
+              once. */}
+          <div className="sticky top-0 z-10 bg-background border-b border-line flex divide-x divide-line">
+            {TABS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`flex-1 px-1 py-2.5 text-xs transition-colors ${
+                  tab === id
+                    ? "bg-foreground text-background"
+                    : "hover:text-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {tab === "post" && (
           <Section title="format">
             <Seg
               value={spec.format}
@@ -1112,7 +1281,9 @@ export default function PostLab() {
               <span className="w-8 text-right text-xs">{spec.duration}s</span>
             </Row>
           </Section>
+          )}
 
+          {tab === "text" && (
           <Section title={`slide ${String(activeIndex + 1).padStart(2, "0")}`}>
             <TextInput
               value={slide.kicker}
@@ -1214,6 +1385,52 @@ export default function PostLab() {
                 onChange={(align) => patchSlide({ align })}
               />
             </Row>
+            {/* What's actually on the slide. The words stay in the spec when
+                a part is switched off, so bringing it back brings its text
+                with it — which is what lets you get to only a headline, or
+                only the mark, without retyping anything. */}
+            <p className="text-[10px] uppercase tracking-wide text-muted pt-2">
+              on the slide
+            </p>
+            <div className="flex gap-3 flex-wrap text-xs">
+              {SLIDE_PARTS.map((part) => {
+                const on = partOn(slide, part);
+                return (
+                  <button
+                    key={part}
+                    onClick={() => togglePart(part)}
+                    className={`underline-offset-4 ${on ? "underline" : "text-muted hover:text-foreground"}`}
+                  >
+                    {on ? "◉" : "○"} {part}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-2 flex-wrap pt-1">
+              <Button onClick={() => onlyParts(["title"])}>Only the words</Button>
+              <Button onClick={() => onlyParts(["mark"])}>Only the mark</Button>
+              <Button onClick={() => patchSlide({ off: undefined })}>All of it</Button>
+            </div>
+            <Row label="mark">
+              <Seg
+                value={slide.mark ?? "auto"}
+                options={[
+                  { value: "auto" as const, label: "auto" },
+                  { value: "letter" as const, label: "letter" },
+                  { value: "page" as const, label: "page" },
+                  { value: "none" as const, label: "none" },
+                ]}
+                onChange={(mark) => patchSlide({ mark })}
+              />
+            </Row>
+            <p className="text-xs text-muted leading-relaxed">
+              {(slide.mark ?? "auto") === "auto"
+                ? spec.slides.length > 1
+                  ? "Auto: the top-right circle is the page you're on, because there's more than one slide. The footer drops the counter so it isn't said twice."
+                  : "Auto: one slide, so the top-right circle is the letter. Add slides and it becomes the page mark."
+                : "Set by hand."}
+            </p>
+
             <div className="flex gap-4 text-xs pt-1">
               {(
                 [
@@ -1284,7 +1501,9 @@ export default function PostLab() {
               </Button>
             </div>
           </Section>
+          )}
 
+          {tab === "post" && (
           <Section title="colour">
             <p className="text-xs text-muted">background</p>
             <Swatches
@@ -1355,32 +1574,61 @@ export default function PostLab() {
               Each layer picks its ink from here, below.
             </p>
           </Section>
+          )}
 
+          {tab === "layers" && (
           <Section title="layers">
             <div className="border border-line divide-y divide-line">
               {[...slide.layers].reverse().map((l, ri) => {
                 const i = slide.layers.length - 1 - ri; // top layer listed first
+                const on = !l.mute && (solo === null || solo === i);
                 return (
-                  <button
+                  <div
                     key={i}
-                    onClick={() => setActiveLayer(i)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 text-xs text-left transition-colors ${
-                      i === layerIndex
-                        ? "bg-foreground text-background"
-                        : "hover:text-muted"
+                    className={`flex items-center gap-2 px-2.5 py-2 text-xs ${
+                      i === layerIndex ? "bg-foreground text-background" : ""
                     }`}
                   >
-                    <span className="flex-1">
+                    {/* Off without being deleted, so a stack can be taken
+                        apart and put back together. */}
+                    <button
+                      onClick={() => patchLayerAt(i, { mute: l.mute ? undefined : true })}
+                      title={l.mute ? "Switch this layer on" : "Switch this layer off"}
+                      className={`w-4 shrink-0 ${on ? "" : "opacity-40"}`}
+                    >
+                      {l.mute ? "○" : "◉"}
+                    </button>
+                    <button
+                      onClick={() => setSolo(solo === i ? null : i)}
+                      title="Show this layer on its own"
+                      className={`w-4 shrink-0 ${solo === i ? "" : "opacity-40 hover:opacity-100"}`}
+                    >
+                      {solo === i ? "◆" : "◇"}
+                    </button>
+                    <button
+                      onClick={() => setActiveLayer(i)}
+                      className={`flex-1 text-left truncate ${
+                        i === layerIndex ? "" : "hover:text-muted"
+                      } ${on ? "" : "line-through opacity-50"}`}
+                    >
                       {String(i + 1).padStart(2, "0")} — {shaderDef(l.type).label}
-                    </span>
-                    <span className="opacity-60">
+                      {l.type === "forms" ? ` · ${l.pattern ?? "rings"}` : ""}
+                    </button>
+                    <span className="opacity-60 shrink-0">
                       {l.blend !== "normal" ? l.blend : ""}
                       {l.opacity < 1 ? ` ${Math.round(l.opacity * 100)}%` : ""}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
+            {solo !== null && (
+              <p className="text-xs text-muted">
+                Showing layer {String(solo + 1).padStart(2, "0")} on its own.
+                Solo is a way of looking, not a setting: it isn&apos;t saved and
+                it doesn&apos;t reach the export.
+              </p>
+            )}
             <div className="flex gap-2">
               <Button
                 onClick={addLayer}
@@ -1693,7 +1941,9 @@ export default function PostLab() {
               shift-drag to rotate.
             </p>
           </Section>
+          )}
 
+          {tab === "make" && (
           <Section title="generate">
             <p className="text-xs text-muted leading-relaxed">
               Whole looks rolled from nothing: one to three layers, every
@@ -1722,7 +1972,9 @@ export default function PostLab() {
               </div>
             )}
           </Section>
+          )}
 
+          {tab === "make" && (
           <Section title="style">
             <p className="text-xs text-muted leading-relaxed">
               A look without the words: theme, colour, type settings and the
@@ -1769,7 +2021,9 @@ export default function PostLab() {
               the ones that miss.
             </p>
           </Section>
+          )}
 
+          {tab === "make" && (
           <Section title="presets">
             <div className="flex flex-wrap gap-2">
               {PRESETS.map((p) => (
@@ -1785,7 +2039,9 @@ export default function PostLab() {
               ))}
             </div>
           </Section>
+          )}
 
+          {tab === "export" && (
           <Section title="export">
             <Seg
               value={quality}
@@ -1856,7 +2112,9 @@ export default function PostLab() {
               half size and loop forever.
             </p>
           </Section>
+          )}
 
+          {tab === "export" && (
           <Section title="claude">
             <div className="flex flex-wrap gap-2">
               <Button onClick={copyLink}>Copy link</Button>
@@ -1883,6 +2141,7 @@ export default function PostLab() {
               doc — into a Post Lab link.
             </p>
           </Section>
+          )}
         </aside>
       </div>
     </div>

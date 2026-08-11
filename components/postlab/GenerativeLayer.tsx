@@ -1,18 +1,21 @@
 "use client";
 
-// Mounts a canvas and runs the generative animator for a slide. The canvas
-// is drawn at full export resolution and scaled by CSS, so the exporter can
-// grab frames from it exactly like it does with the WebGL shader canvas.
+// Draws one generative layer at whatever second of the loop the tool asks
+// for. The canvas is at full export resolution and scaled by CSS, so the
+// exporter can grab frames from it exactly like the WebGL shader canvas.
+//
+// It holds no clock of its own: the tool owns the time, which is what makes
+// the preview scrubbable and every layer agree on the same frame.
 
 import { useEffect, useRef } from "react";
 import type { ShaderSpec, Theme } from "@/lib/postlab";
 import { drawGenerative } from "./generative";
 import { loadPhoto } from "./photos";
+import { clock } from "./clock";
 
 export default function GenerativeLayer({
   shader,
   theme,
-  playing,
   width,
   height,
   duration,
@@ -26,7 +29,6 @@ export default function GenerativeLayer({
 }: {
   shader: ShaderSpec;
   theme: Theme;
-  playing: boolean;
   width: number;
   height: number;
   duration: number;
@@ -45,7 +47,6 @@ export default function GenerativeLayer({
   mixSpeed?: number;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const timeRef = useRef(0); // survives pauses and param tweaks
 
   useEffect(() => {
     const ctx = ref.current?.getContext("2d");
@@ -59,43 +60,28 @@ export default function GenerativeLayer({
       mixScale: mixScale || undefined,
       mixSpeed: mixSpeed < 0 ? undefined : mixSpeed,
     };
-    let raf = 0;
     let stopped = false;
-
-    const start = () => {
-      if (stopped) return;
-      if (!playing) {
-        drawGenerative(
-          ctx, shader, theme, timeRef.current, duration, width, height, color,
-        );
-        return;
-      }
-      let last = performance.now();
-      const loop = (now: number) => {
-        timeRef.current += (now - last) / 1000;
-        last = now;
-        drawGenerative(
-          ctx, shader, theme, timeRef.current, duration, width, height, color,
-        );
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
+    let unwatch = () => {};
+    const draw = (t: number) => {
+      if (!stopped)
+        drawGenerative(ctx, shader, theme, t, duration, width, height, color);
     };
-
-    /* A photo layer has nothing to draw until its picture is decoded. The
-       animated path would pick it up on a later frame anyway; a paused one
-       would sit empty forever, so both wait for it. Anything else resolves
+    /* Subscribed rather than re-rendered: the playhead moves sixty times a
+       second and this canvas is the only thing that has to notice. A photo
+       layer waits for its picture to decode first; anything else resolves
        immediately. */
-    void loadPhoto(shader.src as string | undefined).then(start);
-
+    void loadPhoto(shader.src as string | undefined).then(() => {
+      if (stopped) return;
+      draw(clock.get());
+      unwatch = clock.watch(draw);
+    });
     return () => {
       stopped = true;
-      cancelAnimationFrame(raf);
+      unwatch();
     };
   }, [
     shader,
     theme,
-    playing,
     width,
     height,
     duration,

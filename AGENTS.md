@@ -100,6 +100,12 @@ families; extend the dithering vocabulary instead.
   presets, base64url encode/decode. The spec travels in the URL
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
+- `components/postlab/clock.ts` — the playhead, deliberately outside React.
+  Every canvas subscribes and draws itself; only the readout under the stage
+  asks React for the number. It was state once, and re-rendering the tool
+  sixty times a second cost about a third of the frame rate (29fps to 21 on
+  a two-layer post, measured) — so keep new per-frame work subscribing, not
+  re-rendering.
 - `components/postlab/` — `PostLab.tsx` (tool UI), `ShaderLayer.tsx`
   (spec → Paper Shaders, tones from the slide theme or the palette when
   `color` is on), `overlay.ts` (canvas 2D text/motif renderer shared by preview and
