@@ -100,6 +100,12 @@ families; extend the dithering vocabulary instead.
   presets, base64url encode/decode. The spec travels in the URL
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
+- The tool is laid out the way this kind of editor always is, and for the
+  reason it always is: **structure on the left, canvas in the middle,
+  inspector on the right**. Choosing happens on the left (which slide, which
+  layer), changing happens on the right, and the right follows the
+  selection. Put a new control where its subject already lives rather than
+  adding a sixth place to look.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.
   Every canvas subscribes and draws itself; only the readout under the stage
   asks React for the number. It was state once, and re-rendering the tool

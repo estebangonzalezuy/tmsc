@@ -67,12 +67,114 @@ import { clock } from "./clock";
 
 /* ------------------------------------------------------------- panel bits */
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+/* A named group of controls that can be folded away. Open unless said
+   otherwise: nothing should be hidden from someone who hasn't learned the
+   tool yet, but everything should be foldable by someone who has. */
+function Section({
+  title,
+  children,
+  closed = false,
+}: {
+  title: string;
+  children: ReactNode;
+  closed?: boolean;
+}) {
+  const [open, setOpen] = useState(!closed);
   return (
-    <section className="border-b border-line px-5 py-5">
-      <p className="text-xs underline underline-offset-4 mb-4">{title}</p>
-      <div className="space-y-3">{children}</div>
+    <section className="border-b border-line">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-[10px] uppercase tracking-widest text-muted hover:text-foreground transition-colors"
+      >
+        <span>{title}</span>
+        <span className="text-xs">{open ? "−" : "+"}</span>
+      </button>
+      {open && <div className="px-4 pb-4 space-y-2.5">{children}</div>}
     </section>
+  );
+}
+
+/* A number you can type. The sliders are for finding a value; this is for
+   saying one — the difference between a tool you push around and a tool you
+   can be precise in. */
+function NumberField({
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = (raw: string) => {
+    const n = Number(raw);
+    setDraft(null);
+    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
+  };
+  return (
+    <input
+      value={draft ?? (step < 1 ? value.toFixed(2) : String(Math.round(value)))}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        if (e.key === "Escape") setDraft(null);
+      }}
+      inputMode="decimal"
+      className="w-14 shrink-0 border border-line bg-transparent px-1.5 py-1 text-xs text-right tabular-nums focus:outline-none focus:border-foreground"
+    />
+  );
+}
+
+/* Label, slider, and a box you can type the number into. The pair is the
+   point: drag to find it, type to say it. */
+function SliderRow({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  suffix,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  /** Shown instead of the box when the number isn't worth typing. */
+  suffix?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 text-xs">
+      <span className="text-muted shrink-0 w-16 truncate">{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="flex-1 accent-foreground"
+      />
+      {suffix ? (
+        <span className="w-14 text-right text-xs text-muted">{suffix}</span>
+      ) : (
+        <NumberField
+          value={value}
+          min={min}
+          max={max}
+          step={step}
+          onChange={onChange}
+        />
+      )}
+    </div>
   );
 }
 
@@ -271,7 +373,6 @@ function ParamRow({
   onMotion: (m: Motion | null) => void;
 }) {
   const c = control;
-  const fmt = (n: number) => n.toFixed(c.step < 1 ? 2 : 0);
   const slider = (v: number, set: (n: number) => void) => (
     <input
       type="range"
@@ -285,10 +386,16 @@ function ParamRow({
   );
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="text-muted shrink-0 w-20">{c.label}</span>
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="text-muted shrink-0 w-16 truncate">{c.label}</span>
         {slider(value, onChange)}
-        <span className="w-10 text-right text-xs text-muted">{fmt(value)}</span>
+        <NumberField
+          value={value}
+          min={c.min}
+          max={c.max}
+          step={c.step}
+          onChange={onChange}
+        />
         {canMove && (
           <button
             onClick={() =>
@@ -319,16 +426,20 @@ function ParamRow({
       </div>
       {motion && (
         <div className="space-y-1.5 border-l border-line pl-3">
-          <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="text-muted shrink-0 w-20">to</span>
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-muted shrink-0 w-16">to</span>
             {slider(motion.to, (to) => onMotion({ ...motion, to }))}
-            <span className="w-10 text-right text-xs text-muted">
-              {fmt(motion.to)}
-            </span>
+            <NumberField
+              value={motion.to}
+              min={c.min}
+              max={c.max}
+              step={c.step}
+              onChange={(to) => onMotion({ ...motion, to })}
+            />
             <span className="w-4" />
           </div>
-          <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="text-muted shrink-0 w-20">wave</span>
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-muted shrink-0 w-16">wave</span>
             <select
               value={motion.wave ?? "sin"}
               onChange={(e) =>
@@ -507,10 +618,12 @@ function Timeline({
   );
 }
 
+/* The inspector follows the selection, the way this kind of editor always
+   does: the layer you clicked, or the slide it sits on. Make and export are
+   the two things that aren't about a selection at all. */
 const TABS = [
-  ["post", "post"],
-  ["text", "text"],
-  ["layers", "layers"],
+  ["layer", "layer"],
+  ["slide", "slide"],
   ["make", "make"],
   ["export", "export"],
 ] as const;
@@ -525,7 +638,7 @@ export default function PostLab() {
   const [playing, setPlaying] = useState(true);
   /* Which panel is showing. The tool grew past what one scrolling column
      can hold; nothing was removed, it's grouped. */
-  const [tab, setTab] = useState<Tab>("post");
+  const [tab, setTab] = useState<Tab>("slide");
   const [fonts, setFonts] = useState<Fonts | null>(null);
   const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
@@ -1144,8 +1257,14 @@ export default function PostLab() {
           </span>
           <span className="font-serif italic text-lg">the Post Lab</span>
         </div>
-        <div className="flex items-center gap-5 text-xs">
+        <div className="flex items-center gap-4 text-xs">
           {flash && <span className="text-muted">{flash}</span>}
+          <span className="text-muted hidden lg:inline">
+            {w} × {h} · space · ← → step
+          </span>
+          <Button onClick={savePng} primary disabled={!!job}>
+            Quick export
+          </Button>
           <Link href="/desk" className="underline underline-offset-4">
             the Desk
           </Link>
@@ -1156,8 +1275,109 @@ export default function PostLab() {
       </header>
 
       <div className="flex flex-col md:flex-row flex-1 min-h-0">
+        {/* Left: what the post is made of. Choosing happens here, changing
+            happens on the right — which is the shape every editor of this
+            kind settles on, and the reason you always know where to look. */}
+        <aside className="w-full md:w-[210px] shrink-0 border-b md:border-b-0 md:border-r border-line md:overflow-y-auto order-2 md:order-1">
+          <Section title="slides">
+            <div className="border border-line divide-y divide-line">
+              {spec.slides.map((sl, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActive(i)}
+                  className={`w-full flex items-baseline gap-2 px-2.5 py-2 text-xs text-left transition-colors ${
+                    i === activeIndex
+                      ? "bg-foreground text-background"
+                      : "hover:text-muted"
+                  }`}
+                >
+                  <span className="tabular-nums shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="truncate opacity-70">
+                    {sl.title.split("\n")[0] || sl.kicker || "—"}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Button onClick={addSlide}>+</Button>
+              <Button onClick={() => moveSlide(-1)}>←</Button>
+              <Button onClick={() => moveSlide(1)}>→</Button>
+              <Button onClick={removeSlide} disabled={spec.slides.length <= 1}>
+                Delete
+              </Button>
+            </div>
+          </Section>
+
+          <Section title="layers">
+            <div className="border border-line divide-y divide-line">
+              {[...slide.layers].reverse().map((l, ri) => {
+                const i = slide.layers.length - 1 - ri; // top layer listed first
+                const on = !l.mute && (solo === null || solo === i);
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-1.5 px-2 py-2 text-xs ${
+                      i === layerIndex ? "bg-foreground text-background" : ""
+                    }`}
+                  >
+                    {/* Off without being deleted, so a stack can be taken
+                        apart and put back together. */}
+                    <button
+                      onClick={() => patchLayerAt(i, { mute: l.mute ? undefined : true })}
+                      title={l.mute ? "Switch this layer on" : "Switch this layer off"}
+                      className={`w-3.5 shrink-0 ${on ? "" : "opacity-40"}`}
+                    >
+                      {l.mute ? "○" : "◉"}
+                    </button>
+                    <button
+                      onClick={() => setSolo(solo === i ? null : i)}
+                      title="Show this layer on its own"
+                      className={`w-3.5 shrink-0 ${solo === i ? "" : "opacity-40 hover:opacity-100"}`}
+                    >
+                      {solo === i ? "◆" : "◇"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveLayer(i);
+                        setTab("layer");
+                      }}
+                      className={`flex-1 text-left truncate ${
+                        i === layerIndex ? "" : "hover:text-muted"
+                      } ${on ? "" : "line-through opacity-50"}`}
+                    >
+                      {String(i + 1).padStart(2, "0")}{" "}
+                      {l.type === "forms"
+                        ? String(l.pattern ?? "rings")
+                        : shaderDef(l.type).label}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Button onClick={addLayer} disabled={slide.layers.length >= MAX_LAYERS}>
+                +
+              </Button>
+              <Button onClick={() => moveLayer(1)}>↑</Button>
+              <Button onClick={() => moveLayer(-1)}>↓</Button>
+              <Button onClick={removeLayer} disabled={slide.layers.length <= 1}>
+                Delete
+              </Button>
+            </div>
+            {solo !== null && (
+              <p className="text-xs text-muted leading-relaxed">
+                Layer {String(solo + 1).padStart(2, "0")} on its own. Solo is a
+                way of looking, not a setting: it isn&apos;t saved and it
+                doesn&apos;t reach the export.
+              </p>
+            )}
+          </Section>
+        </aside>
+
         {/* Stage */}
-        <div className="md:flex-1 flex flex-col min-w-0">
+        <div className="md:flex-1 flex flex-col min-w-0 order-1 md:order-2">
           <div
             ref={stageRef}
             className="h-[58vh] md:h-auto md:flex-1 flex items-center justify-center min-h-0"
@@ -1189,40 +1409,10 @@ export default function PostLab() {
             onPlay={setPlaying}
           />
 
-          {/* Slide strip */}
-          <div className="border-t border-line px-5 py-3 flex items-center gap-2 shrink-0">
-            {spec.slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActive(i)}
-                className={`inline-flex items-center justify-center rounded-full border border-line size-9 text-xs transition-colors ${
-                  i === activeIndex
-                    ? "bg-foreground text-background"
-                    : "hover:bg-foreground hover:text-background"
-                }`}
-              >
-                {String(i + 1).padStart(2, "0")}
-              </button>
-            ))}
-            <button
-              onClick={addSlide}
-              aria-label="Add slide"
-              className="inline-flex items-center justify-center rounded-full border border-line size-9 text-sm hover:bg-foreground hover:text-background transition-colors"
-            >
-              +
-            </button>
-            <div className="flex-1" />
-            <span className="text-xs text-muted hidden sm:inline">
-              space · ← → step · shift for a second
-            </span>
-            <span className="text-xs text-muted">
-              {w} × {h}
-            </span>
-          </div>
         </div>
 
-        {/* Control panel */}
-        <aside className="w-full md:w-[340px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto text-sm">
+        {/* Right: everything about whatever is selected. */}
+        <aside className="w-full md:w-[330px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto text-sm order-3">
           {/* Five rooms instead of one corridor. Everything the tool could do
               before it can still do; it just isn't all in front of you at
               once. */}
@@ -1241,8 +1431,8 @@ export default function PostLab() {
               </button>
             ))}
           </div>
-          {tab === "post" && (
-          <Section title="format">
+          {tab === "slide" && (
+          <Section title="composition">
             <Seg
               value={spec.format}
               options={(
@@ -1266,25 +1456,19 @@ export default function PostLab() {
                 onChange={(theme) => patchSlide({ theme })}
               />
             </Row>
-            <Row label="duration">
-              <input
-                type="range"
-                min={2}
-                max={15}
-                step={1}
-                value={spec.duration}
-                onChange={(e) =>
-                  setSpec((s) => ({ ...s, duration: Number(e.target.value) }))
-                }
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-8 text-right text-xs">{spec.duration}s</span>
-            </Row>
+            <SliderRow
+              label="duration"
+              value={spec.duration}
+              min={2}
+              max={15}
+              step={1}
+              onChange={(duration) => setSpec((s) => ({ ...s, duration }))}
+            />
           </Section>
           )}
 
-          {tab === "text" && (
-          <Section title={`slide ${String(activeIndex + 1).padStart(2, "0")}`}>
+          {tab === "slide" && (
+          <Section title="text">
             <TextInput
               value={slide.kicker}
               onChange={(kicker) => patchSlide({ kicker })}
@@ -1338,36 +1522,22 @@ export default function PostLab() {
                 onChange={(titleSize) => patchSlide({ titleSize })}
               />
             </Row>
-            <Row label="weight">
-              <input
-                type="range"
-                min={100}
-                max={900}
-                step={100}
-                value={slide.titleWeight ?? defaultWeight}
-                onChange={(e) =>
-                  patchSlide({ titleWeight: Number(e.target.value) })
-                }
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-10 text-right text-xs text-muted">
-                {slide.titleWeight ?? defaultWeight}
-              </span>
-            </Row>
-            <Row label="margin">
-              <input
-                type="range"
-                min={24}
-                max={240}
-                step={4}
-                value={slide.margin ?? 96}
-                onChange={(e) => patchSlide({ margin: Number(e.target.value) })}
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-10 text-right text-xs text-muted">
-                {slide.margin ?? 96}
-              </span>
-            </Row>
+            <SliderRow
+              label="weight"
+              value={slide.titleWeight ?? defaultWeight}
+              min={100}
+              max={900}
+              step={100}
+              onChange={(titleWeight) => patchSlide({ titleWeight })}
+            />
+            <SliderRow
+              label="margin"
+              value={slide.margin ?? 96}
+              min={24}
+              max={240}
+              step={4}
+              onChange={(margin) => patchSlide({ margin })}
+            />
             {slide.titleSize === "fit" && (
               <p className="text-xs text-muted leading-relaxed">
                 The headline grows until it fills the frame inside the margin.
@@ -1450,48 +1620,32 @@ export default function PostLab() {
                 </button>
               ))}
             </div>
-            <Row label="veil">
-              <input
-                type="range"
-                min={0}
-                max={0.9}
-                step={0.05}
-                value={slide.veil}
-                onChange={(e) => patchSlide({ veil: Number(e.target.value) })}
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-8 text-right text-xs text-muted">
-                {slide.veil.toFixed(2)}
-              </span>
-            </Row>
-            <Row label="title px">
-              <input
-                type="range"
-                min={0}
-                max={24}
-                step={1}
-                value={slide.titlePixel}
-                onChange={(e) => patchSlide({ titlePixel: Number(e.target.value) })}
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-8 text-right text-xs text-muted">
-                {slide.titlePixel || "off"}
-              </span>
-            </Row>
-            <Row label="meta px">
-              <input
-                type="range"
-                min={0}
-                max={24}
-                step={1}
-                value={slide.metaPixel}
-                onChange={(e) => patchSlide({ metaPixel: Number(e.target.value) })}
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-8 text-right text-xs text-muted">
-                {slide.metaPixel || "off"}
-              </span>
-            </Row>
+            <SliderRow
+              label="veil"
+              value={slide.veil}
+              min={0}
+              max={0.9}
+              step={0.05}
+              onChange={(veil) => patchSlide({ veil })}
+            />
+            <SliderRow
+              label="title px"
+              value={slide.titlePixel}
+              min={0}
+              max={24}
+              step={1}
+              onChange={(titlePixel) => patchSlide({ titlePixel })}
+              suffix={slide.titlePixel ? undefined : "off"}
+            />
+            <SliderRow
+              label="meta px"
+              value={slide.metaPixel}
+              min={0}
+              max={24}
+              step={1}
+              onChange={(metaPixel) => patchSlide({ metaPixel })}
+              suffix={slide.metaPixel ? undefined : "off"}
+            />
             <div className="flex gap-2 pt-1">
               <Button onClick={addSlide}>Duplicate</Button>
               <Button onClick={() => moveSlide(-1)}>←</Button>
@@ -1503,7 +1657,7 @@ export default function PostLab() {
           </Section>
           )}
 
-          {tab === "post" && (
+          {tab === "slide" && (
           <Section title="colour">
             <p className="text-xs text-muted">background</p>
             <Swatches
@@ -1576,72 +1730,8 @@ export default function PostLab() {
           </Section>
           )}
 
-          {tab === "layers" && (
-          <Section title="layers">
-            <div className="border border-line divide-y divide-line">
-              {[...slide.layers].reverse().map((l, ri) => {
-                const i = slide.layers.length - 1 - ri; // top layer listed first
-                const on = !l.mute && (solo === null || solo === i);
-                return (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-2 px-2.5 py-2 text-xs ${
-                      i === layerIndex ? "bg-foreground text-background" : ""
-                    }`}
-                  >
-                    {/* Off without being deleted, so a stack can be taken
-                        apart and put back together. */}
-                    <button
-                      onClick={() => patchLayerAt(i, { mute: l.mute ? undefined : true })}
-                      title={l.mute ? "Switch this layer on" : "Switch this layer off"}
-                      className={`w-4 shrink-0 ${on ? "" : "opacity-40"}`}
-                    >
-                      {l.mute ? "○" : "◉"}
-                    </button>
-                    <button
-                      onClick={() => setSolo(solo === i ? null : i)}
-                      title="Show this layer on its own"
-                      className={`w-4 shrink-0 ${solo === i ? "" : "opacity-40 hover:opacity-100"}`}
-                    >
-                      {solo === i ? "◆" : "◇"}
-                    </button>
-                    <button
-                      onClick={() => setActiveLayer(i)}
-                      className={`flex-1 text-left truncate ${
-                        i === layerIndex ? "" : "hover:text-muted"
-                      } ${on ? "" : "line-through opacity-50"}`}
-                    >
-                      {String(i + 1).padStart(2, "0")} — {shaderDef(l.type).label}
-                      {l.type === "forms" ? ` · ${l.pattern ?? "rings"}` : ""}
-                    </button>
-                    <span className="opacity-60 shrink-0">
-                      {l.blend !== "normal" ? l.blend : ""}
-                      {l.opacity < 1 ? ` ${Math.round(l.opacity * 100)}%` : ""}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            {solo !== null && (
-              <p className="text-xs text-muted">
-                Showing layer {String(solo + 1).padStart(2, "0")} on its own.
-                Solo is a way of looking, not a setting: it isn&apos;t saved and
-                it doesn&apos;t reach the export.
-              </p>
-            )}
-            <div className="flex gap-2">
-              <Button
-                onClick={addLayer}
-                disabled={slide.layers.length >= MAX_LAYERS}
-              >
-                Add layer
-              </Button>
-              <Button onClick={() => moveLayer(1)}>↑</Button>
-              <Button onClick={() => moveLayer(-1)}>↓</Button>
-              <Button onClick={removeLayer} disabled={slide.layers.length <= 1}>
-                Delete
-              </Button>
-            </div>
+          {tab === "layer" && (
+          <Section title="layer">
             <div className="flex gap-2">
               <Button onClick={randomizeLayer} primary>
                 Randomise this layer
@@ -1730,44 +1820,27 @@ export default function PostLab() {
                       ))}
                     </select>
                   </Row>
-                  <Row label="patch">
-                    <input
-                      type="range"
-                      min={1}
-                      max={12}
-                      step={1}
-                      value={layer.mixScale ?? 3}
-                      onChange={(e) =>
-                        patchLayer({
-                          mixScale: Number(e.target.value),
-                        } as Partial<LayerSpec>)
-                      }
-                      className="flex-1 accent-foreground"
-                    />
-                    <span className="w-10 text-right text-xs text-muted">
-                      {layer.mixScale ?? 3}
-                    </span>
-                  </Row>
-                  <Row label="drift">
-                    <input
-                      type="range"
-                      min={0}
-                      max={3}
-                      step={0.1}
-                      value={layer.mixSpeed ?? 1}
-                      onChange={(e) =>
-                        patchLayer({
-                          mixSpeed: Number(e.target.value),
-                        } as Partial<LayerSpec>)
-                      }
-                      className="flex-1 accent-foreground"
-                    />
-                    <span className="w-10 text-right text-xs text-muted">
-                      {(layer.mixSpeed ?? 1) === 0
-                        ? "still"
-                        : (layer.mixSpeed ?? 1).toFixed(1)}
-                    </span>
-                  </Row>
+                  <SliderRow
+                    label="patch"
+                    value={layer.mixScale ?? 3}
+                    min={1}
+                    max={12}
+                    step={1}
+                    onChange={(mixScale) =>
+                      patchLayer({ mixScale } as Partial<LayerSpec>)
+                    }
+                  />
+                  <SliderRow
+                    label="drift"
+                    value={layer.mixSpeed ?? 1}
+                    min={0}
+                    max={3}
+                    step={0.1}
+                    onChange={(mixSpeed) =>
+                      patchLayer({ mixSpeed } as Partial<LayerSpec>)
+                    }
+                    suffix={(layer.mixSpeed ?? 1) === 0 ? "still" : undefined}
+                  />
                   <div className="flex items-center gap-2">
                     <Button
                       onClick={() =>
@@ -1783,22 +1856,14 @@ export default function PostLab() {
                 </div>
               )}
             </div>
-            <Row label="opacity">
-              <input
-                type="range"
-                min={0.05}
-                max={1}
-                step={0.05}
-                value={layer.opacity}
-                onChange={(e) =>
-                  patchLayer({ opacity: Number(e.target.value) })
-                }
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-10 text-right text-xs text-muted">
-                {Math.round(layer.opacity * 100)}%
-              </span>
-            </Row>
+            <SliderRow
+              label="opacity"
+              value={layer.opacity}
+              min={0.05}
+              max={1}
+              step={0.05}
+              onChange={(opacity) => patchLayer({ opacity })}
+            />
             <div className="flex border border-line divide-x divide-line">
               {SHADERS.map((s) => (
                 <button
@@ -1993,20 +2058,14 @@ export default function PostLab() {
                 </Button>
               )}
             </div>
-            <Row label="wiggle">
-              <input
-                type="range"
-                min={0.05}
-                max={0.6}
-                step={0.05}
-                value={wiggle}
-                onChange={(e) => setWiggle(Number(e.target.value))}
-                className="flex-1 accent-foreground"
-              />
-              <span className="w-10 text-right text-xs text-muted">
-                {Math.round(wiggle * 100)}%
-              </span>
-            </Row>
+            <SliderRow
+              label="wiggle"
+              value={wiggle}
+              min={0.05}
+              max={0.6}
+              step={0.05}
+              onChange={setWiggle}
+            />
             <div className="flex flex-wrap gap-2">
               {[3, 5, 9].map((n) => (
                 <Button key={n} onClick={() => makeVariations(n)}>
