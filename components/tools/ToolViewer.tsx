@@ -28,13 +28,14 @@ import { useExports } from "@/components/postlab/useExports";
 import {
   Btn,
   Dial,
-  Field as TextField,
-  Panel,
+  Group,
+  HAIR,
   Row,
-  Seg,
+  Segmented,
   Swatches,
   Switch,
-} from "@/components/postlab/ui";
+  Text as TextField,
+} from "@/components/postlab/toolcraft";
 
 const GROUND_NAMES = Object.fromEntries(GROUNDS.map((g) => [g.hex, g.label]));
 
@@ -53,7 +54,7 @@ function Transport({
 }) {
   const time = useTime();
   return (
-    <div className="border-t border-line px-5 py-2.5 flex items-center gap-3 text-xs">
+    <div className={`border-t ${HAIR} px-4 py-2 flex items-center gap-3 text-[11px] shrink-0`}>
       <button onClick={() => onPlay(!playing)} className="w-4 text-center hover:text-muted">
         {playing ? "❙❙" : "▶"}
       </button>
@@ -189,7 +190,7 @@ export default function ToolViewer({ id }: { id: string }) {
             type="date"
             value={String(params[f.key] ?? "")}
             onChange={(e) => set(f.key, e.target.value)}
-            className="w-full border border-line bg-transparent px-2.5 py-2 text-sm focus:outline-none focus:border-foreground"
+            className={`w-full h-7 border ${HAIR} bg-transparent px-2 text-[11px] focus:outline-none focus:border-foreground`}
           />
         );
       case "number":
@@ -205,7 +206,7 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "choice":
         return (
-          <Seg
+          <Segmented
             value={String(params[f.key] ?? f.values[0].value)}
             options={f.values}
             onChange={(v) => set(f.key, v)}
@@ -230,7 +231,7 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "format":
         return (
-          <Seg
+          <Segmented
             value={String(params[f.key] ?? "portrait") as PostFormat}
             options={(Object.keys(FORMATS) as PostFormat[]).map((k) => ({
               value: k,
@@ -273,7 +274,7 @@ export default function ToolViewer({ id }: { id: string }) {
               {job.label} — {Math.round(job.frac * 100)}%
             </span>
           )}
-          <Btn onClick={savePng} primary disabled={!!job}>
+          <Btn onClick={savePng} on disabled={!!job}>
             Export PNG
           </Btn>
           <Link href={studioLink()} className="underline underline-offset-4">
@@ -323,7 +324,7 @@ export default function ToolViewer({ id }: { id: string }) {
         </div>
 
         <aside className="w-full md:w-[360px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto">
-          <Panel title="the tool">
+          <Group title="the tool">
             {tool.fields.map((f) =>
               f.kind === "switch" || f.kind === "number" ? (
                 <div key={f.key}>{control(f)}</div>
@@ -338,10 +339,10 @@ export default function ToolViewer({ id }: { id: string }) {
                 </Row>
               ),
             )}
-          </Panel>
+          </Group>
 
-          <Panel title="out">
-            <Seg
+          <Group title="out">
+            <Segmented
               value={quality}
               options={[
                 { value: "mid" as const, label: "mid" },
@@ -354,7 +355,7 @@ export default function ToolViewer({ id }: { id: string }) {
               {outW}×{outH}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Btn onClick={savePng} primary disabled={!!job}>
+              <Btn onClick={savePng} on disabled={!!job}>
                 PNG
               </Btn>
               {spec.slides.length > 1 && (
@@ -377,7 +378,7 @@ export default function ToolViewer({ id }: { id: string }) {
               tool exactly as it is now. The studio link at the top hands over the
               finished post instead — same post, every control.
             </p>
-          </Panel>
+          </Group>
         </aside>
       </div>
     </div>

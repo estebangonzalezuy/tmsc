@@ -159,18 +159,34 @@ never be the reason a loop stops closing. Keep it that way.
     at thumbnail size, because a list of titles tells you what a slide says
     and not what it looks like. The same component draws the recipe shelf and
     the variation sheets, so nothing in the tool offers a choice it can't show.
-  - The inspector's five rooms are **make · words · look · layer · out**, and
-    the studio opens on `make`: the first decision is what kind of post this
-    is, which is what `PRESETS` (recipes, each with an `about` line) answers.
-    Everything the tool could ever do is still there, grouped.
+  - **A menu bar, not tabs.** `Post · Slide · Layer · View · Export` hold
+    everything you do more than twice a day — new slide, add a layer, paste a
+    look, export, variations. The inspector holds what you *set*, as one
+    scrolling column of folded `Group`s (words · setting · on the slide ·
+    counter · sheet · ruling · pixels · palette · layer · filters ·
+    transform), each showing a summary when it's closed. The tool had five
+    tabs once and every control was somewhere else; this is the fix.
+  - **Big grids of pictures go over the canvas**, not in a 320px column:
+    `Drawer` holds the recipe shelf, the rolled looks and the paste-a-spec box.
+    They're moments, not places.
   - `Tracks.tsx` is the timeline: transport, ruler, a track per layer, and a
     lane per travelling parameter with its **wave drawn across the loop**.
     That's an honest picture of this tool's motion model rather than a row of
     borrowed keyframes, and the curve ending where it started is the loop
     contract made visible.
-  - Numbers are draggable (`Num` in `ui.tsx`) as well as typeable, the way
-    they are in every motion tool. `ui.tsx` holds the controls; keep the studio
-    itself reading as layout.
+- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of this
+  is built from, and the club's second register: the site is editorial —
+  generous type, white space — and a tool is not. Small type (11px, 10px
+  uppercase tracked group labels), 28px controls, hairline borders, one control
+  per row with its label at a fixed width, numbers you drag as well as type
+  (`Num`), `Select` for anything past four choices and `Segmented` for fewer.
+  It is still the club's design system: monochrome, no shadows, no gradients,
+  no rounded corners, and **a hover is a wash (`bg-foreground/5`), never a
+  colour** — a tool full of accents is a mess, and colour on this site only
+  ever answers a pointer. `Btn on` / selected states invert to
+  `bg-foreground text-background`.
+  Every tool page uses the same kit — one set of controls, so nothing has to be
+  learned twice. Add to Toolcraft rather than styling a control in place.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.
   Every canvas subscribes and draws itself; only the readout under the stage
   asks React for the number. It was state once, and re-rendering the tool
@@ -178,7 +194,8 @@ never be the reason a loop stops closing. Keep it that way.
   a two-layer post, measured) — so keep new per-frame work subscribing, not
   re-rendering.
 - `components/postlab/` — `PostLab.tsx` (the studio: state and layout),
-  `ui.tsx` (its controls), `Poster.tsx` (a real thumbnail of a slide),
+  `toolcraft.tsx` (its chrome), `Stage.tsx` (the post on screen, shared with the
+  tools), `useExports.ts` (getting one out), `Poster.tsx` (a real thumbnail),
   `Tracks.tsx` (the timeline), `ShaderLayer.tsx` (spec → Paper Shaders, tones
   from the slide theme or the palette when `color` is on), `overlay.ts`
   (canvas 2D type/motif renderer shared by preview and export), `exporter.ts`
