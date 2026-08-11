@@ -1,5 +1,128 @@
 {
   "version": 1,
   "assetBase": "/stills",
-  "projects": []
+  "projects": [
+    {
+      "id": "creativity-explained-on-type-with-erik-spiekermann",
+      "title": "Creativity Explained - On Type with Erik Spiekermann ",
+      "credit": "Oddfellows",
+      "year": "2021",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-08-11",
+      "source": {
+        "url": "",
+        "platform": "other"
+      },
+      "duration": 134.74,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00023850",
+      "scrub": {
+        "files": [
+          "scrub-001.jpg",
+          "scrub-002.jpg"
+        ],
+        "cols": 10,
+        "rows": 10,
+        "tileW": 160,
+        "tileH": 90,
+        "fps": 1,
+        "count": 135
+      },
+      "frames": [
+        {
+          "id": "t00023850",
+          "t": 23.85,
+          "file": "t00023850.webp",
+          "thumb": "t00023850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00042850",
+          "t": 42.85,
+          "file": "t00042850.webp",
+          "thumb": "t00042850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00071850",
+          "t": 71.85,
+          "file": "t00071850.webp",
+          "thumb": "t00071850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00082350",
+          "t": 82.35,
+          "file": "t00082350.webp",
+          "thumb": "t00082350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00086850",
+          "t": 86.85,
+          "file": "t00086850.webp",
+          "thumb": "t00086850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00095850",
+          "t": 95.85,
+          "file": "t00095850.webp",
+          "thumb": "t00095850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00102850",
+          "t": 102.85,
+          "file": "t00102850.webp",
+          "thumb": "t00102850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00111350",
+          "t": 111.35,
+          "file": "t00111350.webp",
+          "thumb": "t00111350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00114350",
+          "t": 114.35,
+          "file": "t00114350.webp",
+          "thumb": "t00114350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00131350",
+          "t": 131.35,
+          "file": "t00131350.webp",
+          "thumb": "t00131350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ]
+    }
+  ]
 }
