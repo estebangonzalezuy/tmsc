@@ -75,6 +75,8 @@ export function GET() {
             "optional boolean — draw the ruling over the type instead of under it, so the sheet's lines cross the words (the technical-drawing look)",
           anchor:
             "optional 'top' | 'middle' (default) | 'bottom' — where the headline block sits in the frame",
+          count:
+            "optional { from, to, pad } — a number that counts over the loop. Every `#` in the slide's words is replaced by its current value, so title '#' with body 'days to go' is a countdown. Each value gets an equal slice of the duration and the last ends where the first begins, so it still loops; `pad` (2-6) holds the same room for every value so the headline doesn't resize as a digit drops. This is the only thing that makes the type itself move.",
           body: "supporting paragraph under the title (string, optional)",
           footer: "bottom-left line, default '@themotionsocialclub'",
           letter: "single character drawn as a circled letter top right; '' hides it",

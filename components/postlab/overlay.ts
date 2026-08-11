@@ -4,6 +4,9 @@
 
 import {
   FORMATS,
+  countAt,
+  countWidest,
+  fillCount,
   partOn,
   slideTones,
   type PostSpec,
@@ -327,6 +330,18 @@ export function drawOverlay(
   const pad = (slide.margin ?? 96) * u;
   const center = slide.align === "center";
 
+  /* A counting slide reads a different number every frame. `said` puts the
+     current value wherever a `#` was written; `widest` is the same words with
+     the longest value this counter can reach, which is what the type is
+     measured against — a headline that resized itself as digits dropped would
+     jump on every tick. */
+  const value = slide.count
+    ? countAt(slide.count, (time / Math.max(2, spec.duration)) % 1)
+    : null;
+  const said = (text: string) => fillCount(text, value);
+  const widest = (text: string) =>
+    slide.count ? fillCount(text, countWidest(slide.count)) : text;
+
   ctx.clearRect(0, 0, w, h);
   ctx.lineWidth = 2 * u;
 
@@ -389,7 +404,7 @@ export function drawOverlay(
   /* A small label top right — a handle, a source, a credit. There is one
      corner, so a note takes it: a line of words up there says more than a
      letter in a circle does, and both at once is two things in one place. */
-  const note = partOn(slide, "note") ? (slide.note ?? "").trim() : "";
+  const note = partOn(slide, "note") ? said(slide.note ?? "").trim() : "";
   const markChar = !partOn(slide, "mark")
     ? ""
     : note
@@ -465,16 +480,17 @@ export function drawOverlay(
 
   /* Kicker — small underlined label, top left (or centered). Label is ink
      (meta); the underline is structural. */
-  if (slide.kicker && partOn(slide, "kicker")) {
+  const kicker = said(slide.kicker);
+  if (kicker && partOn(slide, "kicker")) {
     mctx.font = `400 ${30 * u}px ${fonts.sans}`;
     mctx.textAlign = center ? "center" : "left";
     mctx.textBaseline = "alphabetic";
     const kx = center ? w / 2 : pad;
     const ky = pad + 30 * u;
-    const kw = mctx.measureText(slide.kicker).width;
+    const kw = mctx.measureText(kicker).width;
     strip(center ? kx - kw / 2 : kx, ky - 34 * u, kw, 56 * u);
     mctx.fillStyle = ink;
-    mctx.fillText(slide.kicker, kx, ky);
+    mctx.fillText(kicker, kx, ky);
     if (rules) {
       ctx.beginPath();
       ctx.moveTo(center ? kx - kw / 2 : kx, ky + 12 * u);
@@ -519,7 +535,7 @@ export function drawOverlay(
   /* The oval label above the headline — an issue number, a date, a chapter.
      The outline is structural like every other circle in the club's motifs;
      the characters are ink. */
-  const tag = partOn(slide, "tag") ? (slide.tag ?? "").trim() : "";
+  const tag = partOn(slide, "tag") ? said(slide.tag ?? "").trim() : "";
   const tagPx = 30 * u;
   const tagH = tag ? 60 * u : 0;
   const tagGap = tag ? 34 * u : 0;
@@ -547,7 +563,7 @@ export function drawOverlay(
 
   const bodyLines =
     slide.body && partOn(slide, "body")
-      ? wrap(mctx, slide.body, Math.min(maxW, 720 * u), bodyFace, bodyPx)
+      ? wrap(mctx, said(slide.body), Math.min(maxW, 720 * u), bodyFace, bodyPx)
       : [];
 
   /* "fit" grows the headline until it fills the frame — as big as the words
@@ -560,14 +576,14 @@ export function drawOverlay(
     /* Top: kicker and letter mark. Bottom: the rule and the footer line. */
     const maxH =
       h - 2 * (pad + 78 * u) - bodyRoom - 2 * boxPad - tagH - tagGap;
-    titlePx = fitSize(tctx, slide.title, titleFace, maxW, Math.max(24 * u, maxH));
+    titlePx = fitSize(tctx, widest(slide.title), titleFace, maxW, Math.max(24 * u, maxH));
   } else {
     titlePx = sizes[slide.titleSize] * u;
   }
   const titleLH = titlePx * 1.12;
 
   const titleLines = partOn(slide, "title")
-    ? wrap(tctx, slide.title, maxW, titleFace, titlePx)
+    ? wrap(tctx, said(slide.title), maxW, titleFace, titlePx)
     : [];
   const titleWidths = titleLines.map((line) =>
     lineWidth(tctx, line, titleFace, titlePx),
@@ -685,14 +701,14 @@ export function drawOverlay(
       ctx.stroke();
     }
     mctx.font = `400 ${28 * u}px ${fonts.sans}`;
+    const footer = said(slide.footer);
     const counter = many && markChar !== pageMark ? `${pageMark} / ${String(spec.slides.length).padStart(2, "0")}` : "tMSC";
-    if (slide.footer)
-      strip(pad, h - pad - 30 * u, mctx.measureText(slide.footer).width, 44 * u);
+    if (footer) strip(pad, h - pad - 30 * u, mctx.measureText(footer).width, 44 * u);
     const cw = mctx.measureText(counter).width;
     strip(w - pad - cw, h - pad - 30 * u, cw, 44 * u);
     mctx.textAlign = "left";
     mctx.fillStyle = ink;
-    if (slide.footer) mctx.fillText(slide.footer, pad, h - pad);
+    if (footer) mctx.fillText(footer, pad, h - pad);
     mctx.textAlign = "right";
     mctx.fillText(counter, w - pad, h - pad);
   }

@@ -60,15 +60,11 @@ import {
   type SlideStyle,
   type Wave,
 } from "@/lib/postlab";
-import ShaderLayer from "./ShaderLayer";
-import { drawOverlay, loadFonts, type Fonts } from "./overlay";
-import {
-  canRenderDirectly,
-  exportPng,
-  recordGif,
-  recordVideo,
-} from "./exporter";
-import { loadSlidePhotos, photoUrl, readFile, savePhoto } from "./photos";
+import { loadFonts, type Fonts } from "./overlay";
+import { canRenderDirectly } from "./exporter";
+import { photoUrl, readFile, savePhoto } from "./photos";
+import Stage, { useClockRunning, useStageFit } from "./Stage";
+import { useExports } from "./useExports";
 import { clock } from "./clock";
 import Poster from "./Poster";
 import Tracks from "./Tracks";
@@ -214,93 +210,6 @@ function ParamRow({
   );
 }
 
-/* The layer stack and the type over it: the only things that redraw with the
-   clock, so the only things that re-render with it. */
-function Stage({
-  spec,
-  index,
-  fonts,
-  shaderBoxRef,
-  overlayRef,
-  solo,
-}: {
-  spec: PostSpec;
-  index: number;
-  fonts: Fonts | null;
-  shaderBoxRef: React.RefObject<HTMLDivElement | null>;
-  overlayRef: React.RefObject<HTMLCanvasElement | null>;
-  solo: number | null;
-}) {
-  const slide = spec.slides[index];
-  const { w, h } = FORMATS[spec.format];
-
-  /* The type is redrawn when the post changes, and — only if the orbit ring
-     is turning — as the playhead moves. This redraws every glyph at full
-     resolution, so it is deliberately the one thing that doesn't follow the
-     clock unless it has to, and it follows it at 30fps rather than 60. */
-  useEffect(() => {
-    const ctx = overlayRef.current?.getContext("2d");
-    if (!ctx || !fonts) return;
-    drawOverlay(ctx, spec, index, fonts, 0);
-    if (!slide.ring) return;
-    let last = -1;
-    return clock.watch((t) => {
-      if (t - last < 1 / 30 && t > last) return;
-      last = t;
-      drawOverlay(ctx, spec, index, fonts, t);
-    });
-  }, [spec, index, fonts, slide.ring, overlayRef]);
-
-  return (
-    <>
-      <div
-        ref={shaderBoxRef}
-        className="absolute inset-0"
-        style={{ background: slideTones(slide).bg, isolation: "isolate" }}
-      >
-        {slide.layers.map((l, i) => (
-          <div
-            key={`${i}-${l.type}-${slide.theme}-${spec.format}-${index}`}
-            data-layer
-            className="absolute inset-0"
-            style={{
-              opacity: l.opacity,
-              mixBlendMode: l.blend === "normal" ? undefined : l.blend,
-            }}
-          >
-            {/* The wrapper stays even when the layer is off, so the
-                exporter's index-to-canvas mapping doesn't shift. */}
-            {!l.mute && (solo === null || solo === i) && (
-              <ShaderLayer
-                shader={l}
-                theme={slide.theme}
-                width={w}
-                height={h}
-                duration={spec.duration}
-                color={{
-                  ink: l.ink,
-                  seed: slide.colorSeed,
-                  palette: slide.palette,
-                  inks: l.inks,
-                  mixMode: l.mixMode,
-                  mixScale: l.mixScale,
-                  mixSpeed: l.mixSpeed,
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      <canvas
-        ref={overlayRef}
-        width={w}
-        height={h}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
-    </>
-  );
-}
-
 /* The inspector follows the selection, the way this kind of editor always
    does. Five rooms rather than one corridor: the words, the sheet they're set
    on, the selected layer, the ways of making a post from something other than
@@ -323,7 +232,6 @@ export default function PostLab() {
   const [playing, setPlaying] = useState(true);
   const [tab, setTab] = useState<Tab>("make");
   const [fonts, setFonts] = useState<Fonts | null>(null);
-  const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
   const [flash, setFlash] = useState("");
   const [importText, setImportText] = useState("");
   /* A look held aside to put on other slides. Not part of the spec: it's a
@@ -339,9 +247,6 @@ export default function PostLab() {
   /* The margin drawn over the stage. A view option like every other one in a
      motion tool's view bar: it never reaches the post. */
   const [guides, setGuides] = useState(false);
-  /* An export setting, not a design one, so it stays out of the spec and out
-     of shared links. */
-  const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const shaderBoxRef = useRef<HTMLDivElement>(null);
@@ -350,7 +255,7 @@ export default function PostLab() {
      mistaken for someone opening a link. */
   const ownHashRef = useRef<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const [stageSize, setStageSize] = useState({ w: 400, h: 500 });
+  const stageSize = useStageFit(stageRef, spec.format);
 
   const { w, h } = FORMATS[spec.format];
   const activeIndex = Math.min(active, spec.slides.length - 1);
@@ -406,39 +311,8 @@ export default function PostLab() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  /* Fit the slide into the available stage area. */
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const fit = () => {
-      const pad = 56;
-      const maxW = el.clientWidth - pad;
-      const maxH = el.clientHeight - pad;
-      const s = Math.min(maxW / w, maxH / h);
-      setStageSize({ w: Math.floor(w * s), h: Math.floor(h * s) });
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [w, h]);
-
-  /* The clock. While playing it advances in real time and wraps at the post
-     duration; scrubbing sets it directly. Everything downstream is a function
-     of it, so a paused frame is exactly the frame that exports. */
-  useEffect(() => {
-    if (!playing) return;
-    let raf = 0;
-    let last = performance.now();
-    const loop = (now: number) => {
-      const dt = (now - last) / 1000;
-      last = now;
-      clock.set((clock.get() + dt) % Math.max(2, spec.duration));
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, spec.duration]);
+  /* The loop runs here; every canvas is a function of it. */
+  useClockRunning(playing, spec.duration);
 
   /* The shortcuts a motion tool is expected to have. */
   useEffect(() => {
@@ -848,76 +722,27 @@ export default function PostLab() {
   const loop = loopReport(slide);
   const direct = canRenderDirectly(spec, activeIndex);
 
-  /* 1080 is the Instagram baseline; "max" targets 4K on the long-ish edge. */
-  const scale = quality === "mid" ? 1 : quality === "high" ? 2 : 3840 / 1080;
-  const outW = Math.round(FORMATS[spec.format].w * scale);
-  const outH = Math.round(FORMATS[spec.format].h * scale);
-
-  const layerCanvases = () => {
-    const wrappers = shaderBoxRef.current?.querySelectorAll("[data-layer]");
-    return Array.from(wrappers ?? []).map((el) => el.querySelector("canvas"));
-  };
-
-  const savePng = async () => {
-    if (!overlayRef.current) return;
-    await loadSlidePhotos(slide.layers);
-    exportPng(spec, activeIndex, layerCanvases(), overlayRef.current, fonts, scale);
-  };
-
-  /* Batch runner: walks the slides, letting each remount and render before the
-     per-slide export (PNG capture, video or GIF recording). */
-  const eachSlide = async (
-    label: string,
-    fn: (i: number, report: (f: number) => void) => Promise<void> | void,
-    only?: number,
-  ) => {
-    if (!fonts || job) return;
-    const idx = only !== undefined ? [only] : spec.slides.map((_, i) => i);
-    try {
-      for (const i of idx) {
-        const tag = idx.length > 1 ? `${label} ${i + 1}/${idx.length}` : label;
-        setJob({ label: tag, frac: 0 });
-        setActive(i);
-        /* Nothing gets exported holding a picture that hasn't decoded. */
-        await loadSlidePhotos(spec.slides[i]?.layers ?? []);
-        await new Promise((r) => setTimeout(r, 600));
-        await fn(i, (f) => setJob({ label: tag, frac: f }));
-      }
-      say("Saved");
-    } catch {
-      say(`${label} export failed in this browser`);
-    } finally {
-      setJob(null);
-    }
-  };
-
-  const pngSlide = (i: number) => {
-    const overlay = overlayRef.current;
-    if (!overlay || !fonts) return;
-    const ctx = overlay.getContext("2d");
-    if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
-    exportPng(spec, i, layerCanvases(), overlay, fonts, scale);
-  };
-
-  const saveAllPngs = () => eachSlide("PNG", pngSlide);
-  const saveVideo = () =>
-    eachSlide(
-      "Video",
-      (i, rep) => recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
-      activeIndex,
-    );
-  const saveAllVideos = () =>
-    eachSlide("Video", (i, rep) =>
-      recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
-    );
-  const saveGif = () =>
-    eachSlide(
-      "GIF",
-      (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep, scale),
-      activeIndex,
-    );
-  const saveAllGifs = () =>
-    eachSlide("GIF", (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep, scale));
+  const {
+    job,
+    quality,
+    setQuality,
+    outW,
+    outH,
+    savePng,
+    saveAllPngs,
+    saveVideo,
+    saveAllVideos,
+    saveGif,
+    saveAllGifs,
+  } = useExports({
+    spec,
+    index: activeIndex,
+    fonts,
+    shaderBoxRef,
+    overlayRef,
+    setIndex: setActive,
+    say: (msg) => say(msg),
+  });
 
   /* ------------------------------------------------------- spec sharing */
 
@@ -1390,6 +1215,60 @@ export default function PostLab() {
                     The note has the top-right corner, so the circled mark stands
                     down while it&apos;s there.
                   </p>
+                )}
+              </Panel>
+
+              <Panel
+                title="the counter"
+                hint="A number that counts over the loop. Write # wherever it should appear — “*#* days to go”, “# / 12”. It is the one thing on a slide that makes the type move rather than the background, and it is what a countdown is."
+                closed={!slide.count}
+              >
+                <Switch
+                  label="counting"
+                  on={!!slide.count}
+                  onChange={() =>
+                    patchSlide({
+                      count: slide.count ? undefined : { from: 12, to: 0, pad: 2 },
+                    })
+                  }
+                />
+                {slide.count && (
+                  <>
+                    <Dial
+                      label="from"
+                      value={slide.count.from}
+                      min={0}
+                      max={999}
+                      step={1}
+                      onChange={(from) =>
+                        patchSlide({ count: { ...slide.count!, from } })
+                      }
+                    />
+                    <Dial
+                      label="to"
+                      value={slide.count.to}
+                      min={0}
+                      max={999}
+                      step={1}
+                      onChange={(to) => patchSlide({ count: { ...slide.count!, to } })}
+                    />
+                    <Dial
+                      label="digits"
+                      value={slide.count.pad ?? 0}
+                      min={0}
+                      max={4}
+                      step={1}
+                      onChange={(pad) =>
+                        patchSlide({ count: { ...slide.count!, pad: pad || undefined } })
+                      }
+                      suffix={slide.count.pad ? undefined : "as written"}
+                    />
+                    <p className="text-xs text-muted leading-relaxed">
+                      {Math.abs(slide.count.to - slide.count.from) + 1} values over{" "}
+                      {spec.duration}s. Padding holds the same room for every one of
+                      them, so the headline doesn&apos;t breathe as a digit drops.
+                    </p>
+                  </>
                 )}
               </Panel>
 

@@ -277,6 +277,47 @@ export function defaultLayer(type: ShaderType): LayerSpec {
   };
 }
 
+/* ---------------------------------------------------------------- counting */
+
+/** A number travelling through whole values over the loop. */
+export type Counter = {
+  from: number;
+  to: number;
+  /** Digits to pad to, so "05" holds the same room as "12" and the headline
+      doesn't breathe as the number changes. Absent = no padding. */
+  pad?: number;
+};
+
+const padded = (n: number, pad?: number) =>
+  pad && pad > 1
+    ? (n < 0 ? "-" : "") + String(Math.abs(n)).padStart(pad, "0")
+    : String(n);
+
+/**
+ * What a counting slide reads at `tt` (0-1 through the loop). Every value gets
+ * an equal slice and the last slice ends exactly where the first begins, so a
+ * counting post loops like everything else in here — no seam, and an export is
+ * still a function of the frame number.
+ */
+export function countAt(count: Counter, tt: number): string {
+  const span = Math.round(count.to - count.from);
+  const steps = Math.abs(span) + 1;
+  const i = Math.min(steps - 1, Math.max(0, Math.floor(tt * steps)));
+  return padded(count.from + Math.sign(span) * i, count.pad);
+}
+
+/** The widest value this counter will ever show, for measuring against: a
+    headline that resized itself every time a digit dropped would jump. */
+export const countWidest = (count: Counter) => {
+  const a = padded(count.from, count.pad);
+  const b = padded(count.to, count.pad);
+  return a.length >= b.length ? a : b;
+};
+
+/** `#` stands for the counter's current value, wherever it appears. */
+export const fillCount = (text: string, value: string | null) =>
+  value === null ? text : text.split("#").join(value);
+
 export type SlideSpec = {
   kicker: string;
   /** The headline. `\n` breaks a line; `*a run like this*` switches that run
@@ -305,6 +346,13 @@ export type SlideSpec = {
   /** Where the headline block sits in the frame. Absent = "middle", which is
       how every slide was laid out before this existed. */
   anchor?: "top" | "middle" | "bottom";
+  /** A number that counts over the loop. `#` anywhere in the slide's words is
+      replaced by its current value — "*#* days to go", "# / 12". Absent means
+      the words hold still, which is every post written before this existed.
+
+      It is the one thing on a slide that makes the *type* move rather than
+      the background, and it is what a countdown is. */
+  count?: Counter;
   /** Circled letter drawn top right; empty string hides it. */
   letter: string;
   /** What the top-right circle is for. "auto" — the default — makes it a
@@ -1330,6 +1378,19 @@ export function normalizeSpec(raw: unknown): PostSpec {
       if (["top", "middle", "bottom"].includes(String(s.anchor)))
         slide.anchor = s.anchor;
       else delete slide.anchor;
+      const count = s.count;
+      if (count && Number.isFinite(Number(count.from)) && Number.isFinite(Number(count.to))) {
+        /* No cap on how many values a count runs through. A thousand of them
+           over six seconds is a blur, and a blur of numbers is a real thing a
+           counter does — whether it should is the designer's call, not this
+           function's. */
+        const clamp = (n: number) => Math.min(99999, Math.max(-9999, Math.round(n)));
+        slide.count = { from: clamp(Number(count.from)), to: clamp(Number(count.to)) };
+        const pad = Math.round(Number(count.pad) || 0);
+        if (pad > 1) slide.count.pad = Math.min(6, pad);
+      } else {
+        delete slide.count;
+      }
       if (!["auto", "letter", "page", "none"].includes(String(s.mark)))
         delete slide.mark;
       const off = Array.isArray(s.off)

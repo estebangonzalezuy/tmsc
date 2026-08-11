@@ -89,6 +89,18 @@ set in an outlined oval above the headline. `note` is a handle, a source or a
 credit in the top-right corner; while it's set the circled mark stands down,
 because there is only one corner.
 
+**A counting number.** `count: { from, to, pad? }` makes a number travel over
+the loop, and every `#` in the slide's words becomes its current value — title
+`"#"` with body `"days to go"` is a countdown. It still loops (each value gets
+an equal slice, and the last ends where the first begins), and `pad` holds the
+same room for every value so the headline doesn't resize as a digit drops. Give
+the number the headline and put the words under it in `body`: one size covers a
+whole headline, so `"# days to go"` makes the number just another word.
+
+Before writing a countdown, a monthly round-up, a quote card or a big number by
+hand, check `/tools` — those are tools on the site, and a link to one arrives
+filled in. Write a spec when the post is not one of those.
+
 **The ruling.** `grid` is a column count — 6 to 8 on a portrait sheet — drawn
 in square cells that are cut equally at top and bottom. `gridTop: true` puts
 it over the words, which reads as a technical drawing rather than a caption.

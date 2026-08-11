@@ -18,10 +18,11 @@ type Row = { href: string; name: string; what: string; external?: boolean };
 const groups: { title: string; note: string; rows: Row[] }[] = [
   {
     title: "Make",
-    note: "the four tools",
+    note: "where the work happens",
     rows: [
       { href: "/desk", name: "the Desk", what: "start a run, see what's going" },
-      { href: "/postlab", name: "the Post Lab", what: "the visual — tweak and export" },
+      { href: "/tools", name: "the Tools", what: "a post from four questions" },
+      { href: "/postlab", name: "the Posts Studio", what: "every control, when a tool isn't enough" },
       { href: "/studio", name: "the Studio", what: "the site's own words" },
       { href: "/curate", name: "the Curator", what: "a video in, style frames out" },
     ],

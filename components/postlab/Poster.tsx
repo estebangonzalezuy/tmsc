@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react";
 import { FORMATS, type PostSpec } from "@/lib/postlab";
 import { paintPoster } from "./exporter";
 import type { Fonts } from "./overlay";
+import { clock } from "./clock";
 
 export default function Poster({
   spec,
@@ -17,6 +18,7 @@ export default function Poster({
   fonts,
   width,
   t = 0,
+  live = false,
   className = "",
 }: {
   spec: PostSpec;
@@ -26,6 +28,11 @@ export default function Poster({
   width: number;
   /** Which moment of the loop to draw. */
   t?: number;
+  /** Follow the playhead instead of holding one frame. The canvas subscribes
+      to the clock and repaints itself — a thumbnail that asked React for the
+      time would re-render a wall of them sixty times a second. Eight frames a
+      second is plenty at this size, and a still post never repaints at all. */
+  live?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -38,12 +45,25 @@ export default function Poster({
      because the twenty-first got a new headline. */
   const key = JSON.stringify(spec.slides[index]);
 
+  const slide = spec.slides[index];
+  const moves =
+    !!slide?.count ||
+    !!slide?.ring ||
+    (slide?.layers ?? []).some((l) => !l.mute && l.type !== "none");
+
   useEffect(() => {
     const ctx = ref.current?.getContext("2d");
     if (!ctx) return;
-    paintPoster(ctx, spec, index, w, h, fonts, t);
+    paintPoster(ctx, spec, index, w, h, fonts, live ? clock.get() : t);
+    if (!live || !moves) return;
+    let last = -1;
+    return clock.watch((now) => {
+      if (now - last < 1 / 8 && now > last) return;
+      last = now;
+      paintPoster(ctx, spec, index, w, h, fonts, now);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, index, spec.format, spec.duration, spec.slides.length, w, h, fonts, t]);
+  }, [key, index, spec.format, spec.duration, spec.slides.length, w, h, fonts, t, live, moves]);
 
   return (
     <canvas

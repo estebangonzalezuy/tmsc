@@ -120,6 +120,14 @@ default:
 - **`tag` and `note`.** The oval above the headline, and the top-right corner
   label. There is one corner, so a `note` makes the circled mark stand down.
 
+A fourth thing makes the *type* move rather than the background: **`count`**,
+a number travelling through whole values over the loop, with every `#` in the
+slide's words replaced by its current value. Each value gets an equal slice and
+the last ends where the first begins, so it loops like everything else; the
+headline is measured against the widest value it will ever show, because type
+that resized itself as a digit dropped would jump on every tick. That is what a
+countdown is, and `/tools` is where one gets made.
+
 Both families of graphics remain, with filters between them:
 
 - **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
@@ -238,6 +246,32 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   owner picks colours by hand; that slide then stops following the club
   palette, which is the deliberate cost of the picker. Generated posts
   never set it, and never set `ink` unless colour was asked for.
+
+## the Tools (`/tools`)
+
+The everyday front door to the studio: small tools, one thing each. A
+countdown, a quote card, a monthly round-up, a number, a practice card, a
+pixel note. `/tools` is the wall (every tool showing what it makes, rendered
+live), `/tools/<id>` is the tool.
+
+**A tool is not a template.** It is one function — `build(params) → PostSpec`
+in `lib/tools.ts` — so it asks the four questions that actually differ between
+two of its posts and decides everything else. Because the output is a spec,
+every tool inherits the renderer, the exporter and the shareable link for
+free, and "open in the studio" is not an integration: it hands over the post
+it already built. **No tool may produce a post the studio can't reopen.**
+
+- Adding one is a `ToolDef` in `TOOLS` — id, name, a one-line `about`, its
+  `fields`, `defaults`, and `build`. No route, no component: the wall and the
+  viewer are generic, and `generateStaticParams` picks it up.
+- The field kinds are deliberately few (text, lines, date, number, choice,
+  ground, ink, format, switch). A tool that needs a control the list doesn't
+  have is usually a tool that should have decided for you.
+- Params travel in the URL (`/tools/<id>#p=<encoded>`) the same way a spec
+  does, so a filled-in tool *is* a link.
+- `components/postlab/Stage.tsx`, `useExports.ts`, `Poster.tsx` and `ui.tsx`
+  are shared with the studio on purpose — one renderer, one exporter, one set
+  of controls, two front doors. Don't fork them for a tool.
 
 ## the Directory (`/directory`)
 
