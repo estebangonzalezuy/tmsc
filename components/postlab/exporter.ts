@@ -132,6 +132,33 @@ export const paintSlide = (
   t = 0,
 ) => drawLayers(ctx, spec, index, [], w, h, t);
 
+/**
+ * The whole post at thumbnail size — background stack and type, drawn from
+ * the spec alone. This is what the studio's filmstrip, its recipe shelf and
+ * its variation sheets are made of: a small picture of the real post rather
+ * than a description of one. The type is redrawn at the thumbnail's own size,
+ * so a 4:5 slide at 96px wide still shows where the words break.
+ */
+export function paintPoster(
+  ctx: CanvasRenderingContext2D,
+  spec: PostSpec,
+  index: number,
+  w: number,
+  h: number,
+  fonts: Fonts | null,
+  t = 0,
+) {
+  drawLayers(ctx, spec, index, [], w, h, t);
+  if (!fonts) return;
+  const scale = w / FORMATS[spec.format].w;
+  const type = document.createElement("canvas");
+  type.width = w;
+  type.height = h;
+  drawOverlay(type.getContext("2d")!, spec, index, fonts, t, scale);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(type, 0, 0);
+}
+
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

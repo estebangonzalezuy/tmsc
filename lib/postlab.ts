@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 8;
+export const SPEC_VERSION = 9;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -251,9 +251,11 @@ export const MAX_LAYERS = 4;
 /** The switchable parts of the typographic layer, in the order they read. */
 export const SLIDE_PARTS = [
   "kicker",
+  "tag",
   "title",
   "body",
   "mark",
+  "note",
   "footer",
   "rules",
 ] as const;
@@ -277,9 +279,32 @@ export function defaultLayer(type: ShaderType): LayerSpec {
 
 export type SlideSpec = {
   kicker: string;
+  /** The headline. `\n` breaks a line; `*a run like this*` switches that run
+      to the other voice — italic on a roman slide, roman on an italic one.
+      That mixing is the reference look's whole typographic move, and it is
+      markup rather than a field because it happens mid-sentence. */
   title: string;
   body: string;
   footer: string;
+  /** A short label in an outlined oval above the headline — an issue number,
+      a date, a chapter ("06/26"). Absent or empty draws nothing. */
+  tag?: string;
+  /** A small label top right — a handle, a source, a credit. It takes the
+      circled mark's slot when it's set, because there is only one corner and
+      a note there says more than a letter does. */
+  note?: string;
+  /** Hairline grid over the frame: how many columns. Cells are square, so
+      the row count follows from the format. 0 or absent draws nothing. */
+  grid?: number;
+  /** How present the grid is, 0-1. Absent = 0.16, a drawing-board hairline
+      rather than a table. */
+  gridAlpha?: number;
+  /** Draw the grid over the type instead of under it — the technical-drawing
+      look, where the sheet's ruling crosses the words. */
+  gridTop?: boolean;
+  /** Where the headline block sits in the frame. Absent = "middle", which is
+      how every slide was laid out before this existed. */
+  anchor?: "top" | "middle" | "bottom";
   /** Circled letter drawn top right; empty string hides it. */
   letter: string;
   /** What the top-right circle is for. "auto" — the default — makes it a
@@ -885,6 +910,10 @@ const STYLE_FIELDS = [
   "theme",
   "background",
   "palette",
+  "grid",
+  "gridAlpha",
+  "gridTop",
+  "anchor",
   "veil",
   "titleFont",
   "italic",
@@ -905,9 +934,12 @@ export type SlideStyle = Partial<SlideSpec> & { layers: LayerSpec[] };
 
 export function styleOf(slide: SlideSpec): SlideStyle {
   const style: SlideStyle = { layers: structuredClone(slide.layers) };
+  /* Every field, including the ones this slide doesn't carry: a look has to
+     be able to say "no grid" and "no ground", or pasting a plain look onto a
+     decorated slide would leave the decoration behind. An absent field
+     travels as an explicit undefined and minifySpec drops it again. */
   for (const key of STYLE_FIELDS) {
-    const v = slide[key];
-    if (v !== undefined) (style as Record<string, unknown>)[key] = v;
+    (style as Record<string, unknown>)[key] = slide[key];
   }
   return structuredClone(style);
 }
@@ -1101,6 +1133,22 @@ export const PALETTE = [
   "#fffdf0", // cream
 ] as const;
 
+/* The grounds: the sheet a post is printed on.
+ *
+ * Deliberately not the palette. The palette is colour, and on the site
+ * colour only ever answers a pointer; a ground is paper — the neutral a
+ * whole post sits on, which in this register is almost never pure white. A
+ * slide's `background` can still be any hex the owner picks; these are the
+ * ones worth having a button for. */
+export const GROUNDS: { hex: string; label: string }[] = [
+  { hex: "#ffffff", label: "white" },
+  { hex: "#f4f3ef", label: "paper" },
+  { hex: "#e6e5e1", label: "ash" },
+  { hex: "#fffdf0", label: "cream" },
+  { hex: "#1a1a1a", label: "slate" },
+  { hex: "#0d0d0d", label: "black" },
+];
+
 /* Deterministic pick, so preview and export agree and a link always renders
    the same post. */
 export function paletteAt(
@@ -1265,6 +1313,23 @@ export function normalizeSpec(raw: unknown): PostSpec {
       else slide.titleWeight = Math.min(900, Math.max(100, Number(s.titleWeight) || 400));
       if (s.margin === undefined) delete slide.margin;
       else slide.margin = Math.min(240, Math.max(24, Number(s.margin) || 96));
+
+      /* Everything below is absent by default, and absent means the layout
+         every older link was shared with. */
+      if (typeof s.tag === "string" && s.tag.trim()) slide.tag = s.tag;
+      else delete slide.tag;
+      if (typeof s.note === "string" && s.note.trim()) slide.note = s.note;
+      else delete slide.note;
+      const cols = Math.round(Number(s.grid) || 0);
+      if (cols >= 2) slide.grid = Math.min(24, cols);
+      else delete slide.grid;
+      if (s.gridAlpha === undefined) delete slide.gridAlpha;
+      else slide.gridAlpha = Math.min(1, Math.max(0, Number(s.gridAlpha) || 0));
+      if (s.gridTop === true) slide.gridTop = true;
+      else delete slide.gridTop;
+      if (["top", "middle", "bottom"].includes(String(s.anchor)))
+        slide.anchor = s.anchor;
+      else delete slide.anchor;
       if (!["auto", "letter", "page", "none"].includes(String(s.mark)))
         delete slide.mark;
       const off = Array.isArray(s.off)
@@ -1476,113 +1541,279 @@ export function decodeSpec(encoded: string): PostSpec | null {
 
 /* ---------------------------------------------------------------- presets */
 
-export const PRESETS: { name: string; spec: PostSpec }[] = [
+/* A recipe: a whole post, named for what it makes rather than for the
+   machinery it uses, with a line saying when to reach for it. They are the
+   studio's front door — the first thing to do with a tool this size is
+   choose the kind of post you're making, not a shader. */
+export type Preset = { name: string; about: string; spec: PostSpec };
+
+/* The sheet most of these are printed on: paper, ruled, nothing dithered
+   behind the words. It is a plain slide in the strictest sense — the club's
+   pixels are one of the things a post can have, not the only one. */
+const sheet = (partial: Partial<SlideSpec> = {}): SlideSpec =>
+  defaultSlide({
+    kicker: "",
+    body: "",
+    footer: "@themotionsocialclub",
+    letter: "",
+    mark: "none",
+    veil: 0,
+    grid: 7,
+    background: "#e6e5e1",
+    layers: [defaultLayer("none")],
+    off: ["kicker", "body", "mark", "rules"],
+    ...partial,
+  });
+
+export const PRESETS: Preset[] = [
   {
-    name: "Quote",
-    spec: {
-      v: SPEC_VERSION,
-      format: "square",
-      duration: 6,
-      slides: [
-        defaultSlide({
-          kicker: "from the club",
-          title:
-            "Stop comparing your chapter one\nto someone else's chapter twenty.",
-          titleFont: "serif",
-          italic: true,
-          align: "center",
-          letter: "",
-          theme: "dark",
-          veil: 0.5,
-          layers: [{ ...defaultLayer("dithering"), shape: "sphere", speed: 0.4 }],
-        }),
-      ],
-    },
-  },
-  {
-    name: "Announcement",
+    name: "Saved for later",
+    about: "The monthly round-up cover: an oval date, one headline, ruled paper.",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
       duration: 6,
       slides: [
-        defaultSlide({
-          kicker: "new in the club",
-          title: "MOTION BASICS\nFOR DESIGNERS",
-          body: "A short course on the fundamentals that carry across every tool — made for designers stepping into motion.",
-          titleFont: "sans",
-          titleSize: "l",
-          boxed: true,
-          plate: true,
-          veil: 0,
-          layers: [{ ...defaultLayer("dithering"), shape: "wave", speed: 0.3 }],
+        sheet({
+          tag: "08/26",
+          title: "What the club\n*saved for later*\nin August",
+          titleFont: "serif",
+          titleSize: "fit",
+          align: "center",
+          margin: 128,
         }),
       ],
     },
   },
   {
-    name: "Practice File",
+    name: "One line",
+    about: "A sentence worth keeping, with the club's pixels loose behind it.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        sheet({
+          kicker: "design inspiration",
+          note: "@themotionsocialclub",
+          title: "A mind too full of information\nhas no space left\nfor inspiration.",
+          titleFont: "sans",
+          titleSize: "m",
+          titleWeight: 500,
+          align: "left",
+          /* The words sit on the paper and the pixels sit above them. That is
+             the reference's own arrangement, and it is the only reliable one:
+             where a procedural blob lands can't be promised, so the type is
+             given a half of the sheet rather than asked to survive whatever
+             turns up behind it. */
+          anchor: "bottom",
+          grid: 0,
+          background: "#f4f3ef",
+          off: ["body", "mark", "rules", "footer"],
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "blobs",
+              density: 21,
+              pixel: 10,
+              warp: 0.25,
+              speed: 0.3,
+              scale: 0.58,
+              offsetY: -0.18,
+              ink: "#3d3deb",
+              /* One number travelling is the difference between a shape and a
+                 piece of motion, and it shows in the timeline as a wave. */
+              motion: { warp: { to: 0.6, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "The quote",
+    about: "Someone else's words, set the way a book would set them.",
     spec: {
       v: SPEC_VERSION,
       format: "square",
       duration: 6,
       slides: [
-        defaultSlide({
-          kicker: "the practice file — #01",
-          title: "Contrast",
-          body: "Start here — black and white only. One bounded exercise, no pressure for perfection.",
+        sheet({
+          title:
+            "„The work nobody sees\nis the work *everybody* sees.”",
+          titleFont: "serif",
+          italic: false,
+          titleSize: "fit",
+          align: "center",
+          footer: "— the club",
+          grid: 6,
+          gridAlpha: 0.12,
+          margin: 144,
+          off: ["kicker", "body", "mark", "rules"],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Reference card",
+    about: "One piece of work, credited: title at the top, the note in the corner.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        sheet({
+          tag: "03",
+          title: "Loewe\n180 years *film*",
+          body: "Crafted out of 2,000 sheets of watercolour paper, made with ten artists. Seen this week and still being thought about.",
+          titleFont: "sans",
           titleSize: "l",
-          letter: "P",
-          ring: true,
-          plate: true,
-          veil: 0.35,
-          layers: [{ ...defaultLayer("forms"), pattern: "rings", warp: 0.3 }],
+          titleWeight: 400,
+          align: "left",
+          anchor: "top",
+          note: "seen this week",
+          theme: "dark",
+          background: "#1a1a1a",
+          grid: 6,
+          gridAlpha: 0.14,
+          off: ["kicker", "mark", "rules"],
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "blobs",
+              density: 5,
+              pixel: 10,
+              warp: 0.2,
+              speed: 0.25,
+              offsetY: 0.42,
+              scale: 0.7,
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Grid poster",
+    about: "The ruling crosses the words — a drawing rather than a caption.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        sheet({
+          title: "PRACTICE\nOVER\nTUTORIALS",
+          titleFont: "sans",
+          titleSize: "fit",
+          titleWeight: 700,
+          align: "left",
+          margin: 72,
+          grid: 6,
+          gridAlpha: 0.22,
+          gridTop: true,
+          footer: "the Motion Social Club",
+          off: ["kicker", "body", "mark"],
         }),
       ],
     },
   },
   {
     name: "Carousel",
+    about: "Four sheets that read as one piece: a cover, then one idea a slide.",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
       duration: 6,
       slides: [
-        defaultSlide({
-          kicker: "the Motion Social Club",
-          title: "Three ideas\nthe club keeps\ncoming back to",
-          theme: "dark",
-          layers: [{ ...defaultLayer("dithering"), shape: "swirl", speed: 0.4 }],
+        sheet({
+          tag: "08/26",
+          title: "Three ideas\nthe club keeps\n*returning to*",
+          titleFont: "serif",
+          titleSize: "fit",
+          align: "center",
+          margin: 128,
         }),
-        defaultSlide({
-          kicker: "01 — practice over tutorials",
-          title: "Watching is not\nthe same as learning.",
+        sheet({
+          tag: "01",
+          title: "Watching is not\nthe same as *learning*.",
           body: "Short, bounded exercises beat one more tutorial every time.",
-          letter: "1",
-          veil: 0.5,
-          layers: [{ ...defaultLayer("dithering"), shape: "simplex" }],
+          titleFont: "serif",
+          titleSize: "m",
+          align: "left",
+          anchor: "middle",
+          off: ["kicker", "mark", "rules"],
         }),
-        defaultSlide({
-          kicker: "02 — fundamentals over tools",
-          title: "Tools are exhausting.\nFoundations are permanent.",
-          body: "Easing, timing, contrast, hierarchy.",
-          letter: "2",
-          veil: 0.5,
-          layers: [{ ...defaultLayer("forms"), pattern: "ramp", warp: 0.25 }],
+        sheet({
+          tag: "02",
+          title: "Tools are exhausting.\n*Foundations* are permanent.",
+          body: "Easing, timing, contrast, hierarchy — they carry across every tool.",
+          titleFont: "serif",
+          titleSize: "m",
+          align: "left",
+          off: ["kicker", "mark", "rules"],
         }),
-        defaultSlide({
-          kicker: "03 — small and consistent",
-          title: "The work no one sees\nshapes your skill.",
-          body: "The gym metaphor: short sessions, no pressure for perfection.",
-          letter: "3",
-          veil: 0.45,
-          layers: [{ ...defaultLayer("dithering"), shape: "ripple", speed: 0.35 }],
+        sheet({
+          tag: "03",
+          title: "The work no one sees\nshapes *your* skill.",
+          body: "Short sessions, no pressure for perfection. The gym, not the gallery.",
+          titleFont: "serif",
+          titleSize: "m",
+          align: "left",
+          off: ["kicker", "mark", "rules"],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Announcement",
+    about: "Something new, said plainly: boxed sans on paper.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        sheet({
+          tag: "new",
+          title: "MOTION BASICS\nFOR DESIGNERS",
+          body: "A short course on the fundamentals that carry across every tool — made for designers stepping into motion.",
+          titleFont: "sans",
+          titleSize: "m",
+          titleWeight: 600,
+          boxed: true,
+          align: "left",
+          grid: 8,
+          background: "#f4f3ef",
+          off: ["kicker", "mark", "rules"],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Practice file",
+    about: "The series slide: a number, a word, and one bounded exercise.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        sheet({
+          tag: "the practice file — 01",
+          title: "Contrast",
+          body: "Black and white only. One bounded exercise, no pressure for perfection.",
+          titleFont: "serif",
+          titleSize: "fit",
+          italic: true,
+          align: "center",
+          margin: 160,
+          grid: 7,
+          off: ["kicker", "mark", "rules"],
         }),
       ],
     },
   },
   {
     name: "Reel",
+    about: "Nine-by-sixteen, one thought, a background that keeps moving.",
     spec: {
       v: SPEC_VERSION,
       format: "story",
@@ -1590,10 +1821,11 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
       slides: [
         defaultSlide({
           kicker: "the Motion Social Club",
-          title: "Motion design\nshouldn't feel\nthis lonely.",
+          title: "Motion design\nshouldn't feel\n*this lonely*.",
           body: "Real conversations over algorithm-driven encounters.",
           theme: "dark",
           letter: "",
+          mark: "none",
           veil: 0.3,
           layers: [{ ...defaultLayer("dithering"), shape: "sphere", speed: 0.5 }],
         }),
@@ -1602,6 +1834,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
   },
   {
     name: "Type",
+    about: "The club's letter, dithered enormous, with the words on a plate.",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
@@ -1630,6 +1863,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
     /* Two forms interfering inside one layer — the cheapest way to a
        pattern neither of them makes alone. */
     name: "Interference",
+    about: "Two forms arguing inside one layer — the dither at its least tidy.",
     spec: {
       v: SPEC_VERSION,
       format: "square",
@@ -1661,6 +1895,7 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
     /* Colour as a field rather than confetti: broad patches drifting slowly
        through three of the palette's colours. */
     name: "Colour field",
+    about: "No words at all: broad patches of the palette drifting on cream.",
     spec: {
       v: SPEC_VERSION,
       format: "portrait",
@@ -1697,6 +1932,20 @@ export const PRESETS: { name: string; spec: PostSpec }[] = [
     },
   },
 ];
+
+/** The post the studio opens on when nothing was asked for. A real recipe
+    rather than a blank: the fastest way to say what this tool makes now is
+    to already be showing one. `defaultSpec` stays where it is — it is the
+    normalisation baseline every link is minified against, and moving it
+    would change what an old link decodes to. */
+export function openingSpec(): PostSpec {
+  return normalizeSpec(structuredClone(PRESETS[0].spec));
+}
+
+/** A headline with its emphasis markers taken out — for lists and labels,
+    where the words matter and the voice doesn't. */
+export const plainTitle = (title: string) =>
+  title.replace(/\*/g, "").split("\n").join(" ");
 
 /* ------------------------------------------------- instant links (no AI) */
 

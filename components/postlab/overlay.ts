@@ -33,27 +33,130 @@ export async function loadFonts(): Promise<Fonts> {
   };
 }
 
+/* ------------------------------------------------------------- rich text */
+
+/* A word and which voice it is in. `em` doesn't mean italic on its own: it
+   means the *other* voice, so a run marked with asterisks comes out italic on
+   a roman slide and roman on an italic one. Mixing the two mid-sentence is
+   the reference look's whole typographic move — "What the club *saved for
+   later* in August" — and it has to survive wrapping, measuring and the
+   fit-to-frame search, which is why type is measured a word at a time from
+   here on rather than a line at a time. */
+type Run = { text: string; em: boolean };
+
+/* A word is a list of runs rather than one, because a voice can change inside
+   a word: the full stop after "*learning*" belongs to that word and has to
+   stay glued to it, or it wraps onto a line of its own. */
+export type Word = Run[];
+
+/** A font for one voice at one size. */
+export type Face = (px: number, em: boolean) => string;
+
+/** Split a written line into words, toggling voice at every asterisk. */
+function readWords(line: string): Word[] {
+  const words: Word[] = [];
+  let word: Word = [];
+  let em = false;
+  line.split("*").forEach((run, i) => {
+    if (i > 0) em = !em;
+    /* Keeping the separators means a marker that lands mid-word doesn't
+       silently insert a space where the writer didn't put one. */
+    for (const bit of run.split(/(\s+)/)) {
+      if (!bit) continue;
+      if (/^\s+$/.test(bit)) {
+        if (word.length) words.push(word);
+        word = [];
+      } else {
+        word.push({ text: bit, em });
+      }
+    }
+  });
+  if (word.length) words.push(word);
+  return words;
+}
+
+/* The space between two words belongs to the voice on its left, which is what
+   keeps a roman space from opening up between two italic words. */
+const spaceWidth = (
+  ctx: CanvasRenderingContext2D,
+  before: Word,
+  face: Face,
+  px: number,
+) => {
+  ctx.font = face(px, before[before.length - 1].em);
+  return ctx.measureText(" ").width;
+};
+
+const wordWidth = (
+  ctx: CanvasRenderingContext2D,
+  word: Word,
+  face: Face,
+  px: number,
+) =>
+  word.reduce((w, run) => {
+    ctx.font = face(px, run.em);
+    return w + ctx.measureText(run.text).width;
+  }, 0);
+
+const lineWidth = (
+  ctx: CanvasRenderingContext2D,
+  line: Word[],
+  face: Face,
+  px: number,
+) =>
+  line.reduce(
+    (w, word, i) =>
+      w +
+      (i ? spaceWidth(ctx, line[i - 1], face, px) : 0) +
+      wordWidth(ctx, word, face, px),
+    0,
+  );
+
+/** Wrap text to `maxWidth`, honouring the line breaks that were typed. */
 function wrap(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
-): string[] {
-  const lines: string[] = [];
+  face: Face,
+  px: number,
+): Word[][] {
+  const lines: Word[][] = [];
   for (const hard of text.split("\n")) {
-    const words = hard.split(/\s+/).filter(Boolean);
+    const words = readWords(hard);
     if (!words.length) continue;
-    let line = words[0];
+    let line: Word[] = [words[0]];
     for (const word of words.slice(1)) {
-      if (ctx.measureText(line + " " + word).width <= maxWidth) {
-        line += " " + word;
-      } else {
+      if (lineWidth(ctx, [...line, word], face, px) <= maxWidth) line.push(word);
+      else {
         lines.push(line);
-        line = word;
+        line = [word];
       }
     }
     lines.push(line);
   }
   return lines;
+}
+
+/** Draw one wrapped line, word by word, switching face as the voice does. */
+function drawWords(
+  ctx: CanvasRenderingContext2D,
+  line: Word[],
+  x: number,
+  baseline: number,
+  face: Face,
+  px: number,
+) {
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  let cx = x;
+  line.forEach((word, i) => {
+    if (i) cx += spaceWidth(ctx, line[i - 1], face, px);
+    for (const run of word) {
+      ctx.font = face(px, run.em);
+      ctx.fillText(run.text, cx, baseline);
+      cx += ctx.measureText(run.text).width;
+    }
+  });
 }
 
 /* Circled letter mark: the circle (frame, plus an optional bg backing disc
@@ -172,17 +275,22 @@ function compositeMask(
 function fitSize(
   ctx: CanvasRenderingContext2D,
   text: string,
-  font: (px: number) => string,
+  face: Face,
   maxW: number,
   maxH: number,
 ): number {
+  /* The breaks the writer typed. "fit" is not allowed to add any: the panel
+     promises that line breaks are yours to place, and a headline that
+     re-flows as it grows would make a mess of the one thing this register is
+     for. So the size comes down until every typed line stands on its own. */
+  const typed = text.split("\n").filter((l) => l.trim()).length;
   const fits = (px: number) => {
-    ctx.font = font(px);
-    const lines = wrap(ctx, text, maxW);
+    const lines = wrap(ctx, text, maxW, face, px);
+    if (lines.length > typed) return false;
     if (lines.length * px * 1.12 > maxH) return false;
     /* A word longer than the frame can't be wrapped out of trouble, so the
        size has to come down until it fits on its own. */
-    return lines.every((line) => ctx.measureText(line).width <= maxW);
+    return lines.every((line) => lineWidth(ctx, line, face, px) <= maxW);
   };
   let lo = 12;
   let hi = 400;
@@ -231,8 +339,43 @@ export function drawOverlay(
     ctx.restore();
   }
 
+  /* The sheet's ruling: a hairline grid in square cells, centred vertically
+     so the top and bottom rows are cut equally. It belongs to the paper
+     rather than to the words, so it survives the text switch below — and
+     `gridTop` draws it last instead, crossing the type the way a ruled sheet
+     crosses anything written on it. */
+  const drawGrid = () => {
+    const cols = slide.grid ?? 0;
+    if (cols < 2) return;
+    const cell = w / cols;
+    const rows = Math.floor(h / cell);
+    const offY = (h - rows * cell) / 2;
+    ctx.save();
+    ctx.globalAlpha = slide.gridAlpha ?? 0.16;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = Math.max(1, 1.5 * u);
+    ctx.beginPath();
+    for (let i = 1; i < cols; i++) {
+      const x = Math.round(i * cell) + 0.5;
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    for (let j = 0; j <= rows; j++) {
+      const y = Math.round(offY + j * cell) + 0.5;
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  if (!slide.gridTop) drawGrid();
+
   /* Text switch off = pure background (the veil above still applies). */
-  if (slide.text === false) return;
+  if (slide.text === false) {
+    if (slide.gridTop) drawGrid();
+    return;
+  }
 
   /* The two decorative lines: the underline under the kicker and the
      hairline above the footer. */
@@ -243,17 +386,23 @@ export function drawOverlay(
   const many = spec.slides.length > 1;
   const mode = slide.mark ?? "auto";
   const pageMark = String(index + 1).padStart(2, "0");
+  /* A small label top right — a handle, a source, a credit. There is one
+     corner, so a note takes it: a line of words up there says more than a
+     letter in a circle does, and both at once is two things in one place. */
+  const note = partOn(slide, "note") ? (slide.note ?? "").trim() : "";
   const markChar = !partOn(slide, "mark")
     ? ""
-    : mode === "none"
+    : note
       ? ""
-      : mode === "page"
-        ? pageMark
-        : mode === "letter"
-          ? slide.letter
-          : many
-            ? pageMark
-            : slide.letter;
+      : mode === "none"
+        ? ""
+        : mode === "page"
+          ? pageMark
+          : mode === "letter"
+            ? slide.letter
+            : many
+              ? pageMark
+              : slide.letter;
 
   /* Structural elements (plates, box outline, hairlines, circle frames)
      draw straight onto ctx as they're reached below, in their original
@@ -350,15 +499,30 @@ export function drawOverlay(
       null,
       fonts.sans,
     );
+  } else if (note) {
+    mctx.font = `400 ${30 * u}px ${fonts.sans}`;
+    mctx.textAlign = "right";
+    mctx.textBaseline = "alphabetic";
+    const nw = mctx.measureText(note).width;
+    strip(w - pad - nw, pad - 4 * u, nw, 56 * u);
+    mctx.fillStyle = ink;
+    mctx.fillText(note, w - pad, pad + 30 * u);
   }
 
-  /* Title + body block, vertically centered. Title is its own ink group;
-     body is meta. */
+  /* Title + body block. Title is its own ink group; body is meta. */
   const sizes = { s: 64, m: 92, l: 128 } as const;
   const bodyPx = 34 * u;
   const bodyLH = bodyPx * 1.45;
   const boxPad = slide.boxed ? 36 * u : 0;
   const maxW = w - 2 * pad - 2 * boxPad;
+
+  /* The oval label above the headline — an issue number, a date, a chapter.
+     The outline is structural like every other circle in the club's motifs;
+     the characters are ink. */
+  const tag = partOn(slide, "tag") ? (slide.tag ?? "").trim() : "";
+  const tagPx = 30 * u;
+  const tagH = tag ? 60 * u : 0;
+  const tagGap = tag ? 34 * u : 0;
 
   /* Pirata has one weight drawn and Lora's axis stops at 700; asking a
      variable font for a weight it doesn't have gets you a synthesised one,
@@ -369,19 +533,21 @@ export function drawOverlay(
     slide.titleWeight ??
       (slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600),
   );
-  const style = slide.italic ? "italic " : "";
   const family =
     slide.titleFont === "serif"
       ? fonts.serif
       : slide.titleFont === "gothic"
         ? fonts.gothic
         : fonts.sans;
-  const titleFont = (px: number) => `${style}${weight} ${px}px ${family}`;
+  /* `em` is the other voice, not italic outright: an asterisked run reads
+     italic on a roman slide and roman on an italic one. */
+  const titleFace: Face = (px, em) =>
+    `${slide.italic !== em ? "italic " : ""}${weight} ${px}px ${family}`;
+  const bodyFace: Face = (px, em) => `${em ? "italic " : ""}400 ${px}px ${fonts.sans}`;
 
-  mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
   const bodyLines =
     slide.body && partOn(slide, "body")
-      ? wrap(mctx, slide.body, Math.min(maxW, 720 * u))
+      ? wrap(mctx, slide.body, Math.min(maxW, 720 * u), bodyFace, bodyPx)
       : [];
 
   /* "fit" grows the headline until it fills the frame — as big as the words
@@ -392,29 +558,65 @@ export function drawOverlay(
   if (slide.titleSize === "fit") {
     const bodyRoom = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
     /* Top: kicker and letter mark. Bottom: the rule and the footer line. */
-    const maxH = h - 2 * (pad + 78 * u) - bodyRoom - 2 * boxPad;
-    titlePx = fitSize(tctx, slide.title, titleFont, maxW, Math.max(24 * u, maxH));
+    const maxH =
+      h - 2 * (pad + 78 * u) - bodyRoom - 2 * boxPad - tagH - tagGap;
+    titlePx = fitSize(tctx, slide.title, titleFace, maxW, Math.max(24 * u, maxH));
   } else {
     titlePx = sizes[slide.titleSize] * u;
   }
   const titleLH = titlePx * 1.12;
 
-  tctx.font = titleFont(titlePx);
-  const titleLines = partOn(slide, "title") ? wrap(tctx, slide.title, maxW) : [];
+  const titleLines = partOn(slide, "title")
+    ? wrap(tctx, slide.title, maxW, titleFace, titlePx)
+    : [];
+  const titleWidths = titleLines.map((line) =>
+    lineWidth(tctx, line, titleFace, titlePx),
+  );
 
   const titleH = titleLines.length * titleLH;
   const bodyH = bodyLines.length ? 40 * u + bodyLines.length * bodyLH : 0;
-  const blockH = titleH + 2 * boxPad + bodyH;
-  const y = (h - blockH) / 2 + boxPad;
+  const blockH = tagH + tagGap + titleH + 2 * boxPad + bodyH;
 
-  tctx.textAlign = center ? "center" : "left";
+  /* Where the block sits. The reserved rooms at the top and bottom are the
+     kicker/mark row and the footer row, so an anchored block lands under one
+     and above the other rather than on top of them. */
+  const room = pad + 96 * u;
+  const anchor = slide.anchor ?? "middle";
+  const blockTop =
+    anchor === "top"
+      ? room
+      : anchor === "bottom"
+        ? Math.max(room, h - room - blockH)
+        : (h - blockH) / 2;
+  const y = blockTop + tagH + tagGap + boxPad;
+
   tctx.textBaseline = "alphabetic";
   const tx = center ? w / 2 : pad + boxPad;
+  const maxLineW = titleWidths.length ? Math.max(...titleWidths) : 0;
 
-  tctx.font = titleFont(titlePx);
-  let maxLineW = 0;
-  for (const line of titleLines)
-    maxLineW = Math.max(maxLineW, tctx.measureText(line).width);
+  if (tag) {
+    const tagW = ((): number => {
+      mctx.font = `400 ${tagPx}px ${fonts.sans}`;
+      return mctx.measureText(tag).width;
+    })();
+    const rx = tagW / 2 + 34 * u;
+    const cx = center ? w / 2 : pad + rx;
+    const cy = blockTop + tagH / 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, tagH / 2, 0, 0, Math.PI * 2);
+    if (slide.plate) {
+      ctx.fillStyle = bg;
+      ctx.fill();
+    }
+    ctx.strokeStyle = ink;
+    ctx.stroke();
+    mctx.save();
+    mctx.fillStyle = ink;
+    mctx.textAlign = "center";
+    mctx.textBaseline = "middle";
+    mctx.fillText(tag, cx, cy + tagPx * 0.04);
+    mctx.restore();
+  }
 
   /* Plate — filled background behind the headline. With a box it fills the
      whole box; otherwise each line gets its own strip, editorial-style.
@@ -426,8 +628,8 @@ export function drawOverlay(
       ctx.fillRect(bx, y - boxPad, maxLineW + 2 * boxPad, titleH + 2 * boxPad);
     } else {
       const stripPad = 20 * u;
-      titleLines.forEach((line, i) => {
-        const lw = tctx.measureText(line).width;
+      titleLines.forEach((_, i) => {
+        const lw = titleWidths[i];
         const lx = center ? w / 2 - lw / 2 : tx;
         ctx.fillRect(
           lx - stripPad,
@@ -441,7 +643,8 @@ export function drawOverlay(
 
   tctx.fillStyle = ink;
   titleLines.forEach((line, i) => {
-    tctx.fillText(line, tx, y + titlePx * 0.82 + i * titleLH);
+    const lx = center ? w / 2 - titleWidths[i] / 2 : tx;
+    drawWords(tctx, line, lx, y + titlePx * 0.82 + i * titleLH, titleFace, titlePx);
   });
 
   if (slide.boxed && titleLines.length) {
@@ -452,13 +655,11 @@ export function drawOverlay(
 
   if (bodyLines.length) {
     const by = y + titleH + boxPad + 40 * u;
-    mctx.font = `400 ${bodyPx}px ${fonts.sans}`;
-    /* Said out loud rather than inherited: this canvas is shared, and a
-       slide without a kicker never sets it. */
-    mctx.textAlign = center ? "center" : "left";
-    mctx.textBaseline = "alphabetic";
-    bodyLines.forEach((line, i) => {
-      const lw = mctx.measureText(line).width;
+    const bodyWidths = bodyLines.map((line) =>
+      lineWidth(mctx, line, bodyFace, bodyPx),
+    );
+    bodyLines.forEach((_, i) => {
+      const lw = bodyWidths[i];
       const lx = center ? w / 2 - lw / 2 : pad;
       strip(lx, by + i * bodyLH - bodyPx * 0.1, lw, bodyLH);
     });
@@ -466,7 +667,8 @@ export function drawOverlay(
     mctx.globalAlpha = 0.78;
     mctx.fillStyle = ink;
     bodyLines.forEach((line, i) => {
-      mctx.fillText(line, center ? w / 2 : pad, by + bodyPx * 0.8 + i * bodyLH);
+      const lx = center ? w / 2 - bodyWidths[i] / 2 : pad;
+      drawWords(mctx, line, lx, by + bodyPx * 0.8 + i * bodyLH, bodyFace, bodyPx);
     });
     mctx.restore();
   }
@@ -499,4 +701,7 @@ export function drawOverlay(
      coarseness at 4K instead of turning into fine grain. */
   compositeMask(ctx, titleMask, w, h, slide.titlePixel * u, ink);
   compositeMask(ctx, metaMask, w, h, slide.metaPixel * u, ink);
+
+  /* Last, so the ruling crosses the words rather than sitting behind them. */
+  if (slide.gridTop) drawGrid();
 }

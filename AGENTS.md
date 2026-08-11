@@ -55,7 +55,7 @@ browser). Therefore:
 - **Colour only ever answers a pointer.** At rest a page is black, white and
   gray — nothing on the site is coloured until it is hovered or focused. The
   palette lives in two places kept in step by hand: `PALETTE` in
-  `lib/postlab.ts` (the Post Lab's exporter needs it at module scope) and the
+  `lib/postlab.ts` (the studio's exporter needs it at module scope) and the
   `--accent*` variables in `app/globals.css`.
 - **A hover picks its colour from the whole palette**, so a grid lights up
   differently as you cross it. Don't write hover colours by hand: use
@@ -74,10 +74,14 @@ browser). Therefore:
   colour (see `CircleLetter`'s `text-foreground`), or the glyph inherits the
   block's hover type and disappears.
 - Never colour body copy, a heading, a border or a section background, and
-  never introduce a hex outside the palette. The Post Lab is still the one
-  place colour can fill a surface without being asked.
+  never introduce a hex outside the palette. the Posts Studio is still the one
+  place colour can fill a surface without being asked — and the one place with
+  a second list of hexes: `GROUNDS` in `lib/postlab.ts`, the neutral papers a
+  *post* is printed on. They are not accents and they never touch the site.
 - **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
-  emphasis) via `next/font`. No other fonts.
+  emphasis) via `next/font`, both loaded with their real italics — the studio
+  mixes roman and italic inside one headline, and a browser-slanted roman
+  gives that away immediately. No other fonts.
 - **Motifs:** outlined circles, circled letters, orbital rings, boxed
   headlines, underlined labels — the components in `Motifs.tsx`. Don't
   introduce new decorative elements (shadows, gradients, rounded cards,
@@ -85,14 +89,38 @@ browser). Therefore:
 - 1px `border-line` borders separate sections; `gap-px bg-line` grids make
   hairline tables.
 
-## The Post Lab (`/postlab`)
+## the Posts Studio (`/postlab`)
 
 An internal design tool (like `/studio`, not in the nav) for generating the
-club's animated Instagram posts, carousels, and reels: dithered animated
-backgrounds under the club's typography, with PNG, video, and GIF export.
-**Two families, and filters between them.** It began as a dithering
-instrument only, and that rule is gone on purpose — the owner asked for the
-other half in August 2026.
+club's Instagram posts, carousels, and reels, with PNG, video, and GIF export.
+
+**Two registers, one spec.** The tool began as a dithering instrument and grew
+the rest of Paper Shaders; in August 2026 it grew the half that most posts
+actually need — the *sheet*.
+
+- **the sheet** — ruled paper, an outlined oval label, an editorial headline
+  that mixes roman and italic, small labels in the corners. A ground from
+  `GROUNDS` (paper, ash, cream, slate — neutrals, not the palette), a `grid`
+  column count, `veil: 0`, one layer of type `"none"`. This is the club's
+  default register and the one the recipes lead with.
+- **the club's pixels** — the dithered graphics below, on the sheet or
+  instead of it.
+
+Three things carry the sheet, all of them in `overlay.ts` and all absent by
+default:
+
+- **The ruling.** `grid` columns in square cells, cut equally top and bottom;
+  `gridAlpha` for presence, `gridTop` to draw it over the words. It belongs to
+  the paper, not to the type, so it survives `text: false`.
+- **Emphasis is markup, not a field.** `*a run like this*` in a `title` flips
+  that run to the other voice — italic in a roman headline, roman in an italic
+  one. It happens mid-sentence, so it can't be a switch. Type is therefore
+  measured a word at a time (`Word`, `Face`, `wrap`, `drawWords`), and the
+  fit-to-frame search goes through the same measurement.
+- **`tag` and `note`.** The oval above the headline, and the top-right corner
+  label. There is one corner, so a `note` makes the circled mark stand down.
+
+Both families of graphics remain, with filters between them:
 
 - **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
   forms renderer (`components/postlab/generative.ts`, canvas 2D). Hard
@@ -113,22 +141,40 @@ never be the reason a loop stops closing. Keep it that way.
   presets, base64url encode/decode. The spec travels in the URL
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
-- The tool is laid out the way this kind of editor always is, and for the
-  reason it always is: **structure on the left, canvas in the middle,
-  inspector on the right**. Choosing happens on the left (which slide, which
-  layer), changing happens on the right, and the right follows the
-  selection. Put a new control where its subject already lives rather than
-  adding a sixth place to look.
+- The tool is laid out the way every editor of a moving image is, and for the
+  reason they all are: **structure on the left, canvas in the middle,
+  inspector on the right, the loop along the bottom**. Choosing happens on the
+  left (which slide, which layer), changing happens on the right, and the
+  right follows the selection. Put a new control where its subject already
+  lives rather than adding another place to look.
+  - The left rail is a **filmstrip** — `Poster.tsx` draws every slide for real
+    at thumbnail size, because a list of titles tells you what a slide says
+    and not what it looks like. The same component draws the recipe shelf and
+    the variation sheets, so nothing in the tool offers a choice it can't show.
+  - The inspector's five rooms are **make · words · look · layer · out**, and
+    the studio opens on `make`: the first decision is what kind of post this
+    is, which is what `PRESETS` (recipes, each with an `about` line) answers.
+    Everything the tool could ever do is still there, grouped.
+  - `Tracks.tsx` is the timeline: transport, ruler, a track per layer, and a
+    lane per travelling parameter with its **wave drawn across the loop**.
+    That's an honest picture of this tool's motion model rather than a row of
+    borrowed keyframes, and the curve ending where it started is the loop
+    contract made visible.
+  - Numbers are draggable (`Num` in `ui.tsx`) as well as typeable, the way
+    they are in every motion tool. `ui.tsx` holds the controls; keep the studio
+    itself reading as layout.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.
   Every canvas subscribes and draws itself; only the readout under the stage
   asks React for the number. It was state once, and re-rendering the tool
   sixty times a second cost about a third of the frame rate (29fps to 21 on
   a two-layer post, measured) — so keep new per-frame work subscribing, not
   re-rendering.
-- `components/postlab/` — `PostLab.tsx` (tool UI), `ShaderLayer.tsx`
-  (spec → Paper Shaders, tones from the slide theme or the palette when
-  `color` is on), `overlay.ts` (canvas 2D text/motif renderer shared by preview and
-  export), `exporter.ts` (PNG + MediaRecorder video).
+- `components/postlab/` — `PostLab.tsx` (the studio: state and layout),
+  `ui.tsx` (its controls), `Poster.tsx` (a real thumbnail of a slide),
+  `Tracks.tsx` (the timeline), `ShaderLayer.tsx` (spec → Paper Shaders, tones
+  from the slide theme or the palette when `color` is on), `overlay.ts`
+  (canvas 2D type/motif renderer shared by preview and export), `exporter.ts`
+  (PNG + MediaRecorder video + `paintPoster` for the thumbnails).
 - `app/api/postlab/schema/route.ts` — public, static JSON description of
   the spec so a Claude session anywhere can fetch it and generate links.
 - `.claude/skills/postlab/SKILL.md` — the skill for doing exactly that from
@@ -268,7 +314,7 @@ The scheduled half of it lives in `scripts/content-cycle/` and runs from
 chat session involved. It keeps its own `package.json` on purpose: the
 deployed app must stay dependency- and secret-free, so never move those
 dependencies into the root manifest or add env vars to Vercel for it. It
-reads the Post Lab vocabulary from the live `/api/postlab/schema` rather
+reads the studio's vocabulary from the live `/api/postlab/schema` rather
 than duplicating `lib/postlab.ts`; keep that endpoint accurate and the
 automation follows.
 

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import PostLab from "@/components/postlab/PostLab";
 
 export const metadata: Metadata = {
-  title: "the Post Lab — the Motion Social Club",
+  title: "the Posts Studio — the Motion Social Club",
   description:
-    "Generate the club's animated posts, carousels, and reels with shader backgrounds.",
+    "Make the club's posts, carousels, and reels: ruled sheets, editorial type, and dithered graphics.",
   robots: { index: false, follow: false },
 };
 

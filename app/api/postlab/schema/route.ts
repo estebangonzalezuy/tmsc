@@ -19,10 +19,10 @@ export const dynamic = "force-static";
 export function GET() {
   const example = defaultSpec();
   const body = {
-    tool: "the Post Lab — the Motion Social Club",
+    tool: "the Posts Studio — the Motion Social Club",
     version: SPEC_VERSION,
     about:
-      "Generates the club's animated Instagram posts, carousels, and reels: grayscale shader backgrounds with the club's typography. A PostSpec (JSON) fully describes a post. Open the tool with a spec preloaded via <site-origin>/postlab#spec=<encoded>.",
+      "Generates the club's Instagram posts, carousels, and reels. Two registers, one spec: a sheet — ruled paper, an oval label, an editorial headline that mixes roman and italic — and the club's dithered graphics, which can be layered behind or instead of it. A PostSpec (JSON) fully describes a post. Open the tool with a spec preloaded via <site-origin>/postlab#spec=<encoded>.",
     how_to_build_a_link: [
       "1. Build a PostSpec JSON (see `spec` below; omitted fields fall back to defaults).",
       "2. Encode it as base64url of the UTF-8 JSON string (standard base64 with + -> -, / -> _, padding stripped). Node: Buffer.from(JSON.stringify(spec)).toString('base64url').",
@@ -31,6 +31,9 @@ export function GET() {
     ],
     writing_guidance: [
       "Voice: honest, human, lowercase-friendly, anti-hype. Short lines. Use \\n in titles to control line breaks.",
+      "Start from the sheet, not the shader. The club's reference register is a ruled paper ground with almost nothing behind the words: `background` a neutral ground (#f4f3ef paper, #e6e5e1 ash, #fffdf0 cream, #1a1a1a slate), `grid` a column count for the hairline ruling, `veil` 0, and a single layer of type 'none'. Reach for a dithered layer when the post wants a graphic, not by default.",
+      "Emphasis is markup inside the headline: `*a run like this*` switches that run to the other voice — italic in a roman headline, roman in an italic one. Mixing the two mid-sentence (\"What the club *saved for later* in August\") is the club's editorial move; use it on one phrase, not on every other word.",
+      "`tag` is a short label in an outlined oval above the headline — an issue number, a date, a chapter ('08/26', '01'). `note` is a small label in the top-right corner — a handle, a source, a credit; it takes the circled mark's slot while it's there. `anchor` ('top' | 'middle' | 'bottom', default middle) is where the headline block sits.",
       "Design is black & white by default. Colour is set per layer, with `ink`: a hex for one flat colour, \"mix\" to scatter the club palette across the pixels, or leave it out for the theme's ink (the black-and-white default, and the right answer unless colour was asked for). The club palette is periwinkle, green, black, white, orange red, indigo, cream; a slide can override it wholesale with `palette`, and can set its own `background` hex.",
       "A \"mix\" layer has four optional dials, all of which can be left out: `inks` (array of hexes — the subset of the palette this layer may use, so one layer can hold three colours and another the rest), `mixMode` (blocks|bands|radial|source|noise — how colour is handed out across the pixels; 'source' makes colour follow the shape's own shading), `mixScale` (1-12, how big one patch of colour is), and `mixSpeed` (0-3, how fast colour travels through the list; 0 freezes it). `colorSeed` on the slide decides which colour starts where.",
       "The older `color: true` switch still works and is read as \"put the palette on every layer\"; new specs should set `ink` per layer instead.",
@@ -62,12 +65,21 @@ export function GET() {
         about: "1-10 slides; more than one makes a carousel",
         fields: {
           kicker: "small underlined label, top left (string)",
-          title: "headline; supports \\n for manual line breaks (string)",
+          title:
+            "headline; \\n breaks a line, and *a run in asterisks* flips to the other voice — italic in a roman headline, roman in an italic one (string)",
+          tag: "optional short label in an outlined oval above the headline — an issue number, a date, a chapter ('08/26')",
+          note: "optional small label top right — a handle, a source, a credit. It takes the circled mark's slot while it's set.",
+          grid: "optional number 2-24 — columns of a hairline grid ruled over the whole frame, in square cells. Omit for no grid. This is the reference register's signature: 6-8 columns on a paper ground.",
+          gridAlpha: "optional number 0-1 (default 0.16) — how present the ruling is",
+          gridTop:
+            "optional boolean — draw the ruling over the type instead of under it, so the sheet's lines cross the words (the technical-drawing look)",
+          anchor:
+            "optional 'top' | 'middle' (default) | 'bottom' — where the headline block sits in the frame",
           body: "supporting paragraph under the title (string, optional)",
           footer: "bottom-left line, default '@themotionsocialclub'",
           letter: "single character drawn as a circled letter top right; '' hides it",
           mark: "'auto' (default) | 'letter' | 'page' | 'none' — what the top-right circle is. Auto is the page number on a carousel, the letter on a single post.",
-          off: "optional array of parts to leave out: 'kicker' | 'title' | 'body' | 'mark' | 'footer' | 'rules'. The words stay in the spec, so a part switched back on brings its text with it.",
+          off: "optional array of parts to leave out: 'kicker' | 'tag' | 'title' | 'body' | 'mark' | 'note' | 'footer' | 'rules'. The words stay in the spec, so a part switched back on brings its text with it.",
           text: "boolean (default true) — false hides the whole typographic layer for a pure background slide",
           titleFont:
             "'serif' (Lora, editorial) | 'sans' (Archivo, poster) | 'gothic' (Pirata One, blackletter)",
@@ -141,7 +153,7 @@ export function GET() {
       encoded: encodeSpec(example),
       link: "/postlab#spec=" + encodeSpec(example),
     },
-    presets: PRESETS.map((p) => ({ name: p.name, spec: p.spec })),
+    presets: PRESETS.map((p) => ({ name: p.name, about: p.about, spec: p.spec })),
   };
 
   return NextResponse.json(body, {

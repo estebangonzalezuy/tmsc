@@ -13,7 +13,7 @@ scheduled → posting writes it back into the library.**
 | Piece | Where | Notes |
 |---|---|---|
 | the Desk | <https://themotionsocialclub.vercel.app/desk> | Starts the runs. Five buttons and a live view — the phone-friendly front of the whole system. |
-| the Post Lab | <https://themotionsocialclub.vercel.app/postlab> | Dithering instrument for posts, carousels, reels. PNG / MP4 / GIF export. |
+| the Posts Studio | <https://themotionsocialclub.vercel.app/postlab> | Where posts, carousels and reels are made: ruled sheets, editorial type, dithered graphics. PNG / MP4 / GIF export. |
 | the Studio | <https://themotionsocialclub.vercel.app/studio> | Edits site copy in `content/site.json`, publishes to `main`. |
 | 📔 Journal (Esteban's own) | Notion · page `2f41c0b2f62f8095ac8feb182c9d9997` | Written by hand, one sub-page per day. Not part of the club — the `pull` job reads it. Needs the tMSC integration added to it. |
 | tMSC Journal | Notion · `collection://90f76b2d-065b-4fe4-a3f6-3b2da5c9f727` | Raw capture. Set `Make post` and a run turns it into a finished post. `Source` holds the handwritten entry it came from. |
@@ -23,7 +23,7 @@ scheduled → posting writes it back into the library.**
 | Canva masters | `DAHPx9zFsfY` (poster), `DAHPx5Abjpo` (serif quote) | Out of the loop — kept for one-off manual work only. See below. |
 | Club facts & pillars | `content/site.json` in this repo | `pillars`, `threads`, `quotes`, `archive`. |
 | How Esteban writes | `docs/voice/` in this repo | `PROFILE.md` (the rules) and `EXAMPLES.md` (20 published posts). Every writing job reads these. |
-| Post spec reference | `.claude/skills/postlab/SKILL.md` | How to build a Post Lab link. |
+| Post spec reference | `.claude/skills/postlab/SKILL.md` | How to build a Posts Studio link. |
 
 All Notion databases live under the **The Motion Social Club** hub page.
 
@@ -148,7 +148,7 @@ judgment: angles and drafts.
 
 ## Why Canva is not in the loop
 
-The Post Lab already makes the poster and the serif quote, it's
+the Posts Studio already makes the poster and the serif quote, it's
 mobile-friendly, and it exports PNG / MP4 / GIF. Canva was doing the same
 job through an MCP connector, and that connector was the **only** piece of
 the system that required a live chat session — automating it from a script
@@ -313,7 +313,7 @@ weekly routine back instead of Actions.
   job and why. A bad `NOTION_TOKEN` shows up as a 401, a database that
   wasn't shared with the integration as a 404. Re-run it; nothing
   duplicates.
-- **A Post Lab link won't open.** Old links from earlier spec versions are
+- **A Posts Studio link won't open.** Old links from earlier spec versions are
   auto-migrated; if one truly breaks, rebuild it from the row's fields.
 - **Angles feel generic.** The `Active` objective's Goal is probably empty —
   write one sentence in it and the angles have something to aim at. The
@@ -324,7 +324,7 @@ weekly routine back instead of Actions.
 
 ## Working from anywhere
 
-- **Phone / tablet** — Notion app for the pipeline, the Post Lab for the
+- **Phone / tablet** — Notion app for the pipeline, the Posts Studio for the
   visual, the Studio for site copy. All three are mobile-friendly, and
   nothing else is needed.
 - **Any Claude chat with the Notion connector** — say *"read

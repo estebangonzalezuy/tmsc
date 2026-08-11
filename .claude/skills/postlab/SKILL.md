@@ -1,14 +1,26 @@
 ---
 name: postlab
-description: Turn a prompt, note, or Notion doc into a tMSC Post Lab link — an animated Instagram post, carousel, or reel spec for /postlab. Use when the user asks to "make a post", "create a carousel/reel", or wants club content turned into social posts.
+description: Turn a prompt, note, or Notion doc into a tMSC Posts Studio link — an Instagram post, carousel, or reel spec for /postlab. Use when the user asks to "make a post", "create a carousel/reel", or wants club content turned into social posts.
 ---
 
-# Generating tMSC posts with the Post Lab
+# Generating tMSC posts with the Posts Studio
 
-The Post Lab (`/postlab`) renders the club's posts: a grayscale animated
-shader background (Paper Shaders) plus the club's typography (Archivo/Lora,
-circled letters, boxed headlines, orbit rings). A post is fully described by
-a **PostSpec** JSON; your job is to write that JSON and hand back a link.
+The Posts Studio (`/postlab`) renders the club's posts. A post is fully
+described by a **PostSpec** JSON; your job is to write that JSON and hand
+back a link.
+
+There are two registers and they share every control:
+
+- **The sheet** — ruled paper, an oval label, an editorial headline that
+  mixes roman and italic, corner labels. This is the club's default and what
+  most posts should be: a ground from the neutrals, a `grid`, `veil: 0`, and
+  a single layer of type `"none"`.
+- **The club's pixels** — dithered graphics, animated, in black and white or
+  one flat colour from the palette. Reach for them when the post wants a
+  graphic, not by default.
+
+They mix: a sheet with one dithered form on it is the club's most useful
+post. What you must not do is reach for a shader because it's there.
 
 ## Workflow
 
@@ -33,35 +45,53 @@ tweak and export. Alternatively give the user the raw JSON — the tool's
 
 ```jsonc
 {
-  "v": 1,
+  "v": 9,
   "format": "square" | "portrait" | "story" | "landscape",  // 1:1 post, 4:5 feed/carousel, 9:16 reel, 16:9 link/video post
   "duration": 6,                               // seconds recorded for video export
   "slides": [{
-    "kicker": "the Motion Social Club",        // small underlined label
-    "title": "Line one\nLine two",             // headline
+    "kicker": "design inspiration",            // small label, top left
+    "tag": "08/26",                            // short label in an outlined oval above the headline
+    "title": "What the club\n*saved for later*\nin August",  // *run* = the other voice
     "body": "",                                // optional supporting sentence
+    "note": "@themotionsocialclub",            // small label top right; takes the mark's slot
     "footer": "@themotionsocialclub",
     "letter": "M",                             // circled letter top right, "" hides
-    "text": true,                              // false = pure background, no typography
+    "text": true,                              // false = the sheet with no words on it
     "titleFont": "serif" | "sans" | "gothic",  // serif = editorial, sans = poster, gothic = blackletter
-    "italic": false,                            // serif italic = the club's emphasis
-    "titleSize": "s" | "m" | "l",
+    "italic": false,                            // the whole headline in the italic; *runs* then read roman
+    "titleSize": "s" | "m" | "l" | "fit",
+    "anchor": "top" | "middle" | "bottom",     // where the headline block sits; middle is the default
     "boxed": false,                             // outlined box around headline
     "plate": false,                             // filled bg behind headline (legibility)
     "align": "left" | "center",
     "ring": false,                              // orbit ring of circled letters
-    "veil": 0.25,                               // 0-0.9 wash dimming the background
+    "grid": 7,                                  // columns of hairline ruling; omit for none
+    "gridAlpha": 0.16,                          // how present the ruling is
+    "gridTop": false,                           // ruling over the type instead of under it
+    "background": "#e6e5e1",                   // the ground: paper #f4f3ef, ash #e6e5e1, cream #fffdf0, slate #1a1a1a
+    "veil": 0,                                  // 0-0.9 wash dimming the background
     "titlePixel": 0,                            // 0-32, dithers the title into sharp blocks; 0 = off
     "metaPixel": 0,                             // 0-32, same dithering for kicker/body/footer/letter/ring
     "theme": "light" | "dark",
-    "layers": [                                 // 1-4 background layers, bottom first
-      { "type": "mesh", "speed": 0.4 },
-      { "type": "dithering", "shape": "simplex", "size": 2,
-        "blend": "multiply", "opacity": 0.8 }
-    ]
+    "off": ["kicker", "body", "mark", "rules"], // parts to leave out; the words stay in the spec
+    "layers": [{ "type": "none" }]              // 1-4 layers, bottom first; "none" = a plain sheet
   }]
 }
 ```
+
+**Emphasis is markup.** `*a run like this*` inside a `title` (or `body`)
+switches that run to the other voice — italic in a roman headline, roman in
+an italic one. Mixing the two mid-sentence is the club's editorial move; use
+it on one phrase per headline, never on every other word.
+
+**The oval and the corner.** `tag` is a date, an issue number or a chapter,
+set in an outlined oval above the headline. `note` is a handle, a source or a
+credit in the top-right corner; while it's set the circled mark stands down,
+because there is only one corner.
+
+**The ruling.** `grid` is a column count — 6 to 8 on a portrait sheet — drawn
+in square cells that are cut equally at top and bottom. `gridTop: true` puts
+it over the words, which reads as a technical drawing rather than a caption.
 
 Each layer also accepts `opacity` (0-1), `blend` (normal | multiply |
 screen | overlay | darken | lighten | difference | exclusion), and a
@@ -69,8 +99,9 @@ transform: `offsetX`/`offsetY` (-1..1), `rotation` (degrees), `scale`
 (0.1-4). Blending a texture over a gradient (mesh + dithering multiply)
 is the signature look. v1 specs with a single `shader` field still load.
 
-The Post Lab is a **dithering instrument** — every background is dithered
-pixels. Two layer types (plus `none` for plain):
+When a post does want a graphic, the club's own half is a **dithering
+instrument** — hard-edged, thresholded pixels. Two layer types (plus `none`,
+which draws nothing and is what a sheet wants):
 
 - `dithering` (Paper Shaders): `shape` simplex|warp|dots|wave|ripple|swirl|
   sphere, `dtype` 4x4|8x8|2x2|random, `size` (pixel 1-14), `speed`, `scale`.
@@ -87,9 +118,9 @@ good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
 `mul`, `letter` + `noise` on `sub`.
 
 **What's on the slide.** `off` is an array of parts to leave out — `kicker`,
-`title`, `body`, `mark`, `footer`, `rules` (the two decorative lines). The
-words stay in the spec, so a part switched back on brings its text with it.
-Only a headline: `off: ["kicker","body","mark","footer","rules"]`.
+`tag`, `title`, `body`, `mark`, `note`, `footer`, `rules` (the two decorative
+lines). The words stay in the spec, so a part switched back on brings its text
+with it. Only a headline: `off: ["kicker","tag","body","mark","note","footer","rules"]`.
 
 `mark` decides the top-right circle: `auto` (default — the page number on a
 carousel, the letter on a single post) | `letter` | `page` | `none`. When
@@ -193,16 +224,31 @@ library (Channel, Date, Type, Pillar) so future angle proposals see it.
 
 ## Editorial defaults
 
-- Single quote/thought → `square`, dark theme, `dithering` sphere, serif
-  italic, centered, no letter, veil ~0.5.
-- Announcement → `portrait`, light, `dithering` wave, sans `l` boxed with
-  plate.
-- Carousel → `portrait`, dark hook slide first, then one idea per slide,
-  numbered circled letters ("1", "2", …), kickers like "01 — idea name";
-  vary the dithering shape (or a `forms` pattern) per slide.
-- Reel → `story`, one slide, `dithering` sphere or `forms` rings/letter,
-  duration 6-10 — everything loops seamlessly at exactly that length.
-- Link / video share (YouTube, article) → `landscape`, one slide, shorter
-  title (titleSize `s`/`m`), keep the block tight since the frame is short.
+The studio's own recipes are the reference — fetch `/api/postlab/schema` and
+read `presets`, or copy one of these. Every one of them is a sheet unless it
+says otherwise.
+
+- **A month's round-up** → `portrait`, ash ground, `grid: 7`, a `tag` of
+  `MM/YY`, serif `fit` headline centred with one italic run, everything else
+  off. The club's most-used post.
+- **A line worth keeping** → `portrait`, paper ground, sans `m` headline at
+  `anchor: "bottom"`, `kicker` top left and `note` top right, and one `forms`
+  `blobs` layer inked from the palette, scaled to about 0.6 and pushed to the
+  half of the sheet the words don't use. Never let a procedural form land
+  behind the headline — give the type its own half.
+- **A quote** → `square`, ash ground, `grid: 6` at `gridAlpha: 0.12`, serif
+  `fit` centred with German low quotes („…"), the attribution in `footer`.
+- **A reference card** → `portrait`, slate ground, `theme: "dark"`, sans
+  headline at `anchor: "top"` with the source in `body`, a numbered `tag`, a
+  `note` for where it was seen.
+- **A poster** → `square`, ash, sans `fit` in caps at weight 700, `grid: 6`
+  with `gridTop: true` so the ruling crosses the letters.
+- **Carousel** → `portrait`, one sheet per idea with the same ground and
+  ruling throughout (that sameness is what makes four slides read as one
+  piece), a `tag` of `01`, `02`, `03`, and the cover carrying the promise.
+- **Reel** → `story`, one slide, a dithered background, duration 6-10 —
+  `forms` loops seamlessly at exactly that length, `dithering` does not.
+- **Link / video share** → `landscape`, one slide, shorter title (`s`/`m`),
+  keep the block tight since the frame is short.
 - Content to draw from lives in `content/site.json` (quotes, threads,
   pillars, archive titles).
