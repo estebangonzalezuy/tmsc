@@ -219,30 +219,24 @@ intro copy lives in `content/site.json` under `stills`, edited in the Studio.
 
 The constraint that shapes it: a browser cannot take a frame out of a YouTube
 or Vimeo *embed* (cross-origin, tainted canvas) — but it can from a file the
-owner picked off their own disk, where the canvas stays clean. Hence two roads
-into the Curator (`/curate`), and they must stay interchangeable:
+owner picked off their own disk, where the canvas stays clean. So the Curator
+(`/curate`) takes the film itself and does the whole job in the page:
+`components/stills/localVideo.ts` decodes it, differences frames for the cuts,
+and writes the stills; publishing lands the JSON and every new image as one
+commit through the Git Data API. Nothing uploads until Publish, and a dropped
+frame was never committed, so this road leaves no orphans.
 
-- **Drop in a video** — `components/stills/localVideo.ts` decodes, differences
-  frames for cuts, and writes stills, thumbs and scrub sheets in the browser.
-  Nothing uploads until Publish, which lands everything as one commit through
-  the Git Data API. This is the road that works when YouTube refuses.
-- **Fetch by link** — `scripts/stills/extract.mjs` (yt-dlp + ffmpeg) in
-  `.github/workflows/stills.yml`, for when there is no file. Its two passes,
-  suggest and cut-these-timestamps, stay in one workflow.
+There was a second road — paste a URL, let a GitHub Actions runner fetch it
+with yt-dlp. It was removed: YouTube refuses datacentre addresses, and every
+film has to be downloaded to be watched anyway. If it ever returns, put it
+behind `ProjectEditor` rather than beside it. Two editors meant the second one
+silently couldn't do half of what the first could.
 
-Both call `chooseTimes` in `lib/stills-select.mjs` — plain JS with no imports
-precisely because Node and the browser both need it and can share nothing
-else. Keep it that way; two copies of the selection rules would mean the same
-film curated differently depending on how it arrived.
-
-The per-second sprite sheets are committed by both roads, so a project can be
-scrubbed again long after the file is gone.
-
-Don't add a generated `wall.json`: the lean index the wall filters over is
-derived by `buildWall` at build time precisely so there is one implementation
-rather than one in Node and one in the browser. And don't move the Curator's
-GitHub calls server-side — it keeps the Studio and Desk's zero-config contract,
-token in the browser, no secret on Vercel.
+`ProjectEditor` is that one editor: without `existing` it makes a new project
+from a dropped file, with `existing` it reopens a committed one and attaching
+the film again is what lets you cut more frames into it. The Curator gives it
+a `key` per project so switching remounts it rather than an effect chasing the
+prop.
 
 Everything the site renders goes through `frameSrc`/`scrubSrc` and the
 `assetBase` field, so moving the images off the repo later is that one string.

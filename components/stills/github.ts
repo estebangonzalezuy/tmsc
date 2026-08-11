@@ -5,14 +5,14 @@
 // nothing on Vercel holds a secret. The deployed app needs no environment at
 // all, which is the whole reason the club's tools work this way.
 //
-// The Curator writes one file — content/stills/projects.json — so the plain
-// contents API is enough; there is no multi-file tree to keep atomic. What
-// the public wall shows is derived from that file when the site builds.
+// Publishing a project means one commit carrying content/stills/projects.json
+// and every image it just cut, so it goes through the Git Data API rather than
+// the contents API. What the public wall shows is derived from that file when
+// the site builds.
 
 export const GH_REPO = "estebangonzalezuy/tmsc";
 export const GH_BRANCH = "main";
 export const GH_FILE = "content/stills/projects.json";
-export const GH_WORKFLOW = "stills.yml";
 /** Shared with the Desk on purpose: it's the same token doing the same job,
  *  and being asked for it twice is friction with nothing behind it. */
 export const TOKEN_KEY = "desk-github-token";
@@ -49,13 +49,6 @@ function headers(token: string) {
   };
 }
 
-function b64encode(str: string): string {
-  const bytes = new TextEncoder().encode(str);
-  let bin = "";
-  bytes.forEach((b) => (bin += String.fromCharCode(b)));
-  return btoa(bin);
-}
-
 function b64decode(b64: string): string {
   const bin = atob(b64.replace(/\s/g, ""));
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
@@ -83,12 +76,11 @@ async function fail(res: Response): Promise<never> {
   throw new Error(explain(res.status) + (detail ? ` GitHub said: ${detail}` : ""));
 }
 
-/** The two permissions the Curator needs, written out. A token made for the
- *  Desk only ever needed Actions, and the Desk is where this token comes from
- *  — so "can dispatch a run but can't commit a frame" is the normal way to
- *  arrive here, not an exotic one. */
+/** The permission the Curator needs, written out. The token key is shared with
+ *  the Desk, and the Desk only ever needed Actions — so arriving here with a
+ *  token that cannot commit is the normal way to arrive, not an exotic one. */
 export const PERMISSION_HELP =
-  "In GitHub → Settings → Developer settings → Personal access tokens → this token → Repository permissions, set Contents to Read and write. Keep Actions on Read and write too, which is what fetching by link uses.";
+  "In GitHub → Settings → Developer settings → Personal access tokens → this token → Repository permissions, set Contents to Read and write.";
 
 function explain(status: number): string {
   if (status === 403) {
@@ -152,63 +144,6 @@ export async function readProjects<T>(
   if (!res.ok) await fail(res);
   const body = (await res.json()) as { content: string; sha: string };
   return { data: JSON.parse(b64decode(body.content)) as T, sha: body.sha };
-}
-
-export async function writeProjects(
-  token: string,
-  data: unknown,
-  sha: string,
-  message: string,
-): Promise<string> {
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
-    {
-      method: "PUT",
-      headers: headers(token),
-      body: JSON.stringify({
-        message,
-        content: b64encode(JSON.stringify(data, null, 2) + "\n"),
-        sha,
-        branch: GH_BRANCH,
-      }),
-    },
-  );
-  if (!res.ok) await fail(res);
-  const body = (await res.json()) as { content: { sha: string } };
-  return body.content.sha;
-}
-
-/** Starts the extractor. `times` empty means "suggest frames"; a list of
- *  seconds means "cut exactly these". */
-export async function dispatchExtract(
-  token: string,
-  inputs: { url: string; times?: string; id?: string; count?: string },
-): Promise<void> {
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`,
-    {
-      method: "POST",
-      headers: { ...headers(token), "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ref: GH_BRANCH,
-        inputs: {
-          url: inputs.url,
-          times: inputs.times ?? "",
-          id: inputs.id ?? "",
-          count: inputs.count ?? "18",
-        },
-      }),
-    },
-  );
-  // A dispatch answers 204 with no body when it worked.
-  if (!res.ok) {
-    if (res.status === 422) {
-      throw new Error(
-        "GitHub wouldn't start the run — the workflow has to exist on main before it can be dispatched.",
-      );
-    }
-    await fail(res);
-  }
 }
 
 /* ---------- committing a whole project at once ---------- */
@@ -333,23 +268,4 @@ export async function commitFiles(
   }
   tick();
   return commit.sha;
-}
-
-export type Run = {
-  id: number;
-  status: string;
-  conclusion: string | null;
-  created_at: string;
-  html_url: string;
-  display_title: string;
-};
-
-export async function listRuns(token: string, limit = 5): Promise<Run[]> {
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/runs?per_page=${limit}`,
-    { headers: headers(token), cache: "no-store" },
-  );
-  if (!res.ok) await fail(res);
-  const body = (await res.json()) as { workflow_runs: Run[] };
-  return body.workflow_runs ?? [];
 }

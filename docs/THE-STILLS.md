@@ -20,41 +20,33 @@ from it is tainted, and the IFrame API exposes no pixels.
 
 That is true of an *embed*. It is not true of a file you picked off your own
 disk — an object URL is same-origin, the canvas stays clean, and `getImageData`
-works. So there are two ways in, and which one applies depends on whether you
-have the video or only a link to it.
+works. So the Curator asks for the film itself, and does everything in the
+page: decode it, difference downscaled frames to find the cuts, write the
+stills. Nothing is uploaded, nothing runs on a server, and only the frames that
+survive curation are ever committed.
 
-### Two roads
+### There used to be a second road
 
-**Drop in a video (the short one).** The browser decodes the file, differences
-downscaled frames to find the cuts, and writes the stills, the thumbs and the
-scrub sheets itself. Nothing is uploaded, nothing runs on a server, and no
-site gets a vote on whether you may have the frames. Only the frames you keep
-are ever committed. `components/stills/localVideo.ts`.
+Paste a URL, and a GitHub Actions runner fetched it with `yt-dlp` and cut the
+frames with `ffmpeg`. It is gone, deliberately.
 
-**Fetch it by link (the long one).** For when you don't have the file. A GitHub
-Actions runner downloads it with `yt-dlp`, cuts the frames with `ffmpeg`, and
-commits them. Vimeo and direct media URLs are reliable here; YouTube usually
-refuses — see below. `scripts/stills/extract.mjs`.
+It worked for Vimeo and for direct media URLs. It did not work for YouTube:
+YouTube treats runners as datacentre traffic and challenges them, and no
+arrangement of player clients talked it out of that reliably. Cookies would
+have, at the cost of a secret that expires and a Google account you would
+rather not put on a server. Meanwhile every film has to be downloaded before
+anyone can watch it anyway, so the road mostly bought a four-minute wait before
+a failure.
 
-Both produce the same thing, and deliberately so: they call the same
-`chooseTimes` in `lib/stills-select.mjs`, so a film curated one way and a film
-curated the other are curated by the same rules. Only the way candidates are
-*found* differs, because that is what each side can do — ffmpeg scores scene
-changes, the browser differences pixels by hand.
+If it ever comes back, it belongs behind the same editor rather than beside it:
+the lesson of having two was that the second one silently lacked half the
+first one's abilities.
 
 ### The half that matters
 
-Scene detection finds cuts, and a cut is not a composition. So both roads have
-a second pass for the frames the machine walked past.
-
-With a local file, the Curator just shows you the video: pause anywhere, mark
-the moment, and it is cut at once, exactly. With a link, the video is not in
-the browser to show — so the extractor writes a **scrub strip**, one 160px tile
-per second packed a hundred to a sheet, and the Curator scrubs that instead,
-sending marked timestamps back for a second cutting pass.
-
-Either way the scrub sheets get committed, so a project can be scrubbed again
-months later when the file is long gone.
+Scene detection finds cuts, and a cut is not a composition. So the editor also
+just shows you the film: pause anywhere, mark the moment, and it is cut at
+once, exactly — not to the nearest second, because the video is right there.
 
 ## The wall, in two views
 
@@ -79,33 +71,31 @@ filter is narrowing one.
 
 ## The loop
 
-1. **Drop in a video**, or paste a link and wait for the runner.
-2. **Curate.** Drop what isn't a style frame. Tag it, credit it, pick a cover.
-3. **Find what it missed.** Mark moments and cut them.
+1. **Drop in the film.** The browser cuts a spread of frames from it.
+2. **Curate.** Drop what isn't a style frame. Tag it, credit it, link it back,
+   pick a cover.
+3. **Find what it missed.** Scrub, mark, cut.
 4. **Publish.** Only published projects reach the wall.
 
-For the link road, steps 1 and 3 are the same workflow: empty `times` means
-"suggest", a list of seconds means "cut exactly these".
+Reopening a project from the Projects list runs the same editor over what is
+already in the repo. Attach the film again and steps 3 and 4 work exactly as
+they did the first time; leave it off and everything except cutting still does.
 
 ## The pieces
 
 | Path | What it is |
 | --- | --- |
-| `content/stills/projects.json` | The only source of truth. Every project, every frame, the scrub sheets. |
-| `public/stills/<project-id>/` | The images. Full size, `.mid`, `.thumb`, and `scrub-NNN.jpg`. |
+| `content/stills/projects.json` | The only source of truth. Every project, every frame. |
+| `public/stills/<project-id>/` | The images: full size, `.mid`, `.thumb`. Older projects also carry `scrub-NNN.jpg` sheets, which nothing reads any more. |
 | `lib/stills-shared.ts` | Types and pure helpers. No data — safe in a client component. |
-| `lib/stills-select.mjs` | Which moments to keep. Plain JS with no imports, because Node and the browser both need it and can share nothing else. |
-| `components/stills/localVideo.ts` | The browser extractor: decode, difference, cut, tile. |
+| `components/stills/localVideo.ts` | The browser extractor: decode, difference, cut. |
 | `lib/stills.ts` | Reads projects.json. **Server components only.** |
-| `scripts/stills/extract.mjs` | The extractor. yt-dlp + ffmpeg. |
 | `scripts/stills/prune.mjs` | Deletes images no project claims any more. |
-| `.github/workflows/stills.yml` | Where the extractor runs. |
 | `components/pages/StillsPage.tsx` | The wall. |
 | `components/pages/StillsProjectPage.tsx` | One project. |
-| `components/stills/Curator.tsx` | The curation tool at `/curate`. |
-| `components/stills/Scrubber.tsx` | The sprite-sheet scrubber, for projects whose file is gone. |
-| `components/stills/LocalExtractor.tsx` | The drop-in-a-video half of the Curator. |
-| `components/stills/FrameGrid.tsx` | The frame grid, shared by both halves. |
+| `components/stills/Curator.tsx` | The tool at `/curate`: the token, the project list, the editor. |
+| `components/stills/ProjectEditor.tsx` | The editor, for a new project and an existing one alike. |
+| `components/stills/FrameGrid.tsx` | The frame grid and the shared fields. |
 
 **The entries are data, the framing is copy** — the same split the Directory
 keeps. The wall's intro lives in `content/site.json` under `stills` and is
@@ -119,9 +109,8 @@ none of the detail. That lean index is **derived at build time** by `buildWall`
 in `lib/stills-shared.ts`, and handed to the client component as a prop.
 
 It is deliberately not a committed `wall.json`. Such a file would have to be
-written by the extractor in Node *and* by the Curator in the browser, and the
-two implementations would drift the first time either changed. One function,
-called at build, cannot.
+written by whatever cuts the frames *and* read by the site, and the two would
+drift the first time either changed. One function, called at build, cannot.
 
 ## Zero configuration, still
 
@@ -131,62 +120,25 @@ shared with the Desk), and every call goes straight to api.github.com. Nothing
 on Vercel holds a secret and the deployed app needs no environment at all.
 Don't move any of it server-side.
 
-### The token needs two permissions
+### The token needs Contents: Read and write
 
-| Repository permission | What it is for |
-| --- | --- |
-| **Contents: Read and write** | Reading `projects.json`, and committing the frames when you publish. |
-| **Actions: Read and write** | Dispatching the extractor and reading its runs — the link road only. |
+That is the only permission, and it covers both halves of the job: reading
+`projects.json` and committing the frames.
 
-Sharing the key with the Desk is a convenience that has one sharp edge: the
-Desk only ever needed Actions, so a token created for it can dispatch a run
-and then fail at the moment you publish, after all the curation work is done.
-That is why the Curator asks GitHub what the token may do when it loads and
-says so up front, rather than letting you find out at the end.
+The key is shared with the Desk, which is a convenience with one sharp edge —
+the Desk only ever needed Actions, so a token made for it reads fine and then
+fails at the moment you publish, after all the curation work is done. That is
+why the Curator asks GitHub what the token may do when it loads and says so up
+front. If publishing reports *"Resource not accessible by personal access
+token"*, that is this.
 
-If publishing reports *"Resource not accessible by personal access token"*,
-that is this: Contents is missing.
+## YouTube
 
-## YouTube and the bot check
-
-The most common failure by far, and it is not a bug:
-
-```
-ERROR: [youtube] xxxx: Sign in to confirm you're not a bot.
-```
-
-YouTube treats GitHub's runners as datacentre traffic and challenges them. It
-challenges a home connection far less, which is why a link that downloads fine
-on your laptop fails in Actions.
-
-The extractor already tries six of YouTube's player clients before giving up
-(`YT_CLIENTS` in `extract.mjs`) — which of them is being served changes month
-to month, so one of them often still works. That is a moving target, not a fix.
-
-**The short answer is to stop asking YouTube.** Download the video however you
-normally would and drop the file into the Curator — the browser cuts the frames
-with nobody's permission, and it is faster than the runner anyway.
-
-**If you want the link road to work,** the fix is cookies. Add one repository secret, used only inside
-Actions:
-
-| Secret | What |
-| --- | --- |
-| `YTDLP_COOKIES` | base64 of a `cookies.txt` exported from a signed-in browser. |
-
-```bash
-# after exporting cookies.txt with a cookies.txt browser extension
-base64 -w0 cookies.txt
-```
-
-Paste the output into **Settings → Secrets and variables → Actions → New
-repository secret**, named `YTDLP_COOKIES`. When it is set the extractor skips
-the client hunt and uses the cookies directly.
-
-Cookies expire. When YouTube starts refusing again, export a fresh
-`cookies.txt` and update the secret.
-
-**Vimeo does not do any of this.** A Vimeo link needs no secret at all.
+There is nothing to configure. Download the film the way you normally would —
+yt-dlp on your own machine, a browser extension, whatever you use — and drop
+the file in. Your own connection is not a datacentre address, so nothing
+refuses it, and a downloaded file gives better frames than any capture of a
+player would.
 
 ## Three sizes, and why
 

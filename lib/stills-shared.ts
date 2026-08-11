@@ -18,8 +18,12 @@ export type StillsSource = {
   author?: string;
 };
 
-/** The sprite sheets that let the Curator scrub a video it cannot play:
- *  one low-res tile per second, packed `cols` x `rows` to a sheet. */
+/** Legacy. The Curator used to scrub a video it could not play by walking
+ *  sprite sheets of one tile per second, because the frames it wanted lived on
+ *  a runner. Now the film is in the browser and the player does that job
+ *  exactly, so nothing writes these any more — the field stays only so
+ *  projects that already carry it still parse. `scripts/stills/prune.mjs`
+ *  removes the files once nothing references them. */
 export type ScrubStrip = {
   files: string[];
   cols: number;
@@ -71,6 +75,7 @@ export type Project = {
   height: number;
   /** Frame id used as the project's cover. Falls back to the first frame. */
   cover?: string;
+  /** @deprecated see ScrubStrip. */
   scrub?: ScrubStrip;
   frames: Frame[];
 };
@@ -152,14 +157,6 @@ export function frameSrcSet(
   if (frame.mid) rungs.push(at(frame.mid, Math.min(900, frame.w)));
   rungs.push(at(frame.file, frame.w));
   return rungs.join(", ");
-}
-
-export function scrubSrc(
-  assetBase: string,
-  projectId: string,
-  file: string,
-): string {
-  return `${assetBase}/${projectId}/${file}`;
 }
 
 /** m:ss, the way a timeline reads it. */
@@ -328,3 +325,87 @@ export const emptyWall: WallData = {
   projects: [],
   frames: [],
 };
+
+/* ---------- choosing which moments to keep ---------- */
+//
+// These lived in their own plain-JS module while the Actions extractor needed
+// them too: Node cannot import TypeScript, so the only shape that fit both was
+// a file with no imports. There is one extractor now, in the browser, so they
+// come home.
+
+/* Two candidates closer together than this are the same idea twice. */
+export const MIN_GAP = 2.0;
+
+export function slugify(text: string): string {
+  return (
+    String(text)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "untitled"
+  );
+}
+
+/** A spread, not a top-N. Slice the timeline into `count` buckets and take the
+ *  strongest cut in each: you get the film's range instead of ten frames from
+ *  its busiest ten seconds. Buckets with no cut fall back to their own
+ *  midpoint, so a slow film still yields a full sheet.
+ *
+ *  `cuts` is [{ t, score }]. Returns timestamps in order. */
+export function chooseTimes(
+  cuts: { t: number; score: number }[],
+  duration: number,
+  count: number,
+): number[] {
+  const start = Math.min(0.5, duration * 0.02);
+  const end = Math.max(start, duration - 0.3);
+  const span = end - start;
+  if (span <= 0) return [];
+
+  const picked: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const from = start + (span * i) / count;
+    const to = start + (span * (i + 1)) / count;
+    const inBucket = cuts.filter((c) => c.t >= from && c.t < to);
+    if (inBucket.length) {
+      inBucket.sort((a, b) => b.score - a.score);
+      // A cut is the first frame of a new shot; a breath later is usually the
+      // composed one, not the one caught mid-transition.
+      picked.push(Math.min(inBucket[0].t + 0.35, end));
+    } else {
+      picked.push((from + to) / 2);
+    }
+  }
+
+  const spaced: number[] = [];
+  for (const t of picked.sort((a, b) => a - b)) {
+    if (!spaced.length || t - spaced[spaced.length - 1] >= MIN_GAP) spaced.push(t);
+  }
+  return spaced;
+}
+
+/** Mean and spread of a tiny grey copy of one frame, whoever measured it.
+ *  Catches the three things nobody wants on a wall: black, blown out, and a
+ *  flat colour card. */
+export function isWorthKeeping(
+  stats: { mean: number; deviation: number } | null,
+): boolean {
+  if (!stats) return false;
+  if (stats.mean < 10 || stats.mean > 248) return false; // black, or blown out
+  return stats.deviation >= 3; // a flat card is not a style frame
+}
+
+/** Mean and standard deviation of an array of 0-255 samples. */
+export function greyStats(
+  values: number[],
+): { mean: number; deviation: number } | null {
+  if (!values.length) return null;
+  let sum = 0;
+  for (const v of values) sum += v;
+  const mean = sum / values.length;
+  let variance = 0;
+  for (const v of values) variance += (v - mean) ** 2;
+  return { mean, deviation: Math.sqrt(variance / values.length) };
+}

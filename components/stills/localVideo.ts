@@ -10,30 +10,25 @@
 // cookies and no upload. Everything here happens on the machine you are
 // sitting at, and only the finished frames are ever sent anywhere.
 //
-// The candidate-picking is deliberately the same as the Actions extractor's:
-// both call chooseTimes in lib/stills-select.mjs, so a film curated here and
-// a film curated there are curated the same way. Only the way candidates are
-// *found* differs — ffmpeg scores scene changes, and this differences
-// downscaled frames by hand, because that is what each side can do.
+// Candidates are found by differencing downscaled frames: the browser's answer
+// to a scene-detection filter. What happens to those candidates afterwards —
+// the spread across the timeline, the black-and-flat test — lives in
+// lib/stills-shared.ts, next to everything else the site reasons about.
 
 import {
   chooseTimes,
   frameId,
   greyStats,
   isWorthKeeping,
-} from "@/lib/stills-select.mjs";
-import type { Frame, ScrubStrip } from "@/lib/stills-shared";
+} from "@/lib/stills-shared";
+import type { Frame } from "@/lib/stills-shared";
 
-/* Matches the Actions extractor so the two produce interchangeable projects. */
 const FULL_WIDTH = 1600;
 /* A middle rung, so a project-page cell (roughly 500 CSS pixels, doubled on a
    retina screen) is served something close to its size instead of choosing
    between a soft 400 and a wasteful 1600. */
 const MID_WIDTH = 900;
 const THUMB_WIDTH = 400;
-const SCRUB_WIDTH = 160;
-const SCRUB_COLS = 10;
-const SCRUB_ROWS = 10;
 /* Frames per second sampled while hunting for cuts. Two is enough to catch a
    shot change and cheap enough to walk a five minute film in under a minute. */
 const SCAN_FPS = 2;
@@ -54,7 +49,6 @@ export type ExtractResult = {
   frames: Frame[];
   /** Blobs to commit, keyed by the filename the project refers to. */
   files: Map<string, Blob>;
-  scrub: ScrubStrip;
   rejected: number;
 };
 
@@ -299,59 +293,8 @@ function sizeSet(video: LocalVideo) {
   return { full: at(FULL_WIDTH), mid: at(MID_WIDTH), thumb: at(THUMB_WIDTH) };
 }
 
-/** One 160px tile per second, a hundred to a sheet: the same scrub strip the
- *  Actions extractor builds with ffmpeg's tile filter, so the Curator's
- *  scrubber cannot tell which extractor made a project. */
-async function buildScrub(
-  video: LocalVideo,
-  onProgress?: Progress,
-): Promise<{ scrub: ScrubStrip; files: Map<string, Blob> }> {
-  const tileW = SCRUB_WIDTH;
-  const tileH = Math.round((SCRUB_WIDTH * video.height) / video.width / 2) * 2;
-  const perSheet = SCRUB_COLS * SCRUB_ROWS;
-  const count = Math.max(1, Math.ceil(video.duration));
-  const sheets = Math.ceil(count / perSheet);
-
-  const files = new Map<string, Blob>();
-  const names: string[] = [];
-
-  for (let s = 0; s < sheets; s++) {
-    const sheet = canvas(SCRUB_COLS * tileW, SCRUB_ROWS * tileH);
-    const ctx = sheet.getContext("2d")!;
-    for (let i = 0; i < perSheet; i++) {
-      const second = s * perSheet + i;
-      if (second >= count) break;
-      await seek(video.el, second);
-      ctx.drawImage(
-        video.el,
-        (i % SCRUB_COLS) * tileW,
-        Math.floor(i / SCRUB_COLS) * tileH,
-        tileW,
-        tileH,
-      );
-      onProgress?.("Building the scrubber", second + 1, count);
-    }
-    const name = `scrub-${String(s + 1).padStart(3, "0")}.jpg`;
-    files.set(name, await toBlob(sheet, "image/jpeg", 0.7));
-    names.push(name);
-  }
-
-  return {
-    files,
-    scrub: {
-      files: names,
-      cols: SCRUB_COLS,
-      rows: SCRUB_ROWS,
-      tileW,
-      tileH,
-      fps: 1,
-      count,
-    },
-  };
-}
-
 /** The whole first pass: find the cuts, keep a spread of them, cut those
- *  frames, and build the scrubber. */
+ *  frames. */
 export async function extractSuggested(
   video: LocalVideo,
   count: number,
@@ -380,10 +323,7 @@ export async function extractSuggested(
     onProgress?.("Cutting the frames", i + 1, wanted.length);
   }
 
-  const built = await buildScrub(video, onProgress);
-  for (const [name, blob] of built.files) files.set(name, blob);
-
-  return { frames, files, scrub: built.scrub, rejected };
+  return { frames, files, rejected };
 }
 
 /** The second pass: exactly these moments, no filtering. A frame picked by
