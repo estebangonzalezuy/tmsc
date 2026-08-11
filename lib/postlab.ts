@@ -25,7 +25,18 @@ export type Theme = "light" | "dark";
 /* The Post Lab is a dithering instrument: every background is either
    Paper Shaders' Dithering ("dithering") or our own canvas-2D ordered-dither
    renderer ("forms", for shapes the shader doesn't have). "none" = plain. */
-export type ShaderType = "none" | "dithering" | "forms";
+/* Two families and a blank.
+ *
+ * "pixelated" is the club's own: Paper's dithering and our ordered-dither
+ * forms renderer, everything hard-edged and thresholded. "clean" is the
+ * other half — smooth shaders that draw an image rather than a screen of
+ * pixels. They are families of *drawing*, and they are not the whole story:
+ * a clean layer can be put through the pixelate filter and come out in the
+ * club's pixels, which is the point of splitting the two in the first
+ * place. Drawing and screening stopped being the same decision. */
+export type ShaderFamily = "plain" | "pixelated" | "clean";
+
+export type ShaderType = "none" | "dithering" | "forms" | CleanType;
 
 /* ------------------------------------------------------------------ waves */
 
@@ -70,7 +81,7 @@ export function waveAt(wave: Wave, x: number): number {
    `motion`; every shader parameter is still a number or a choice string. */
 export type ShaderSpec = { type: ShaderType } & Record<
   string,
-  number | string | boolean | string[] | MotionMap | undefined
+  number | string | boolean | string[] | MotionMap | FilterSpec[] | undefined
 >;
 
 /* How stacked layers mix — CSS mix-blend-mode names, which map 1:1 onto
@@ -132,6 +143,10 @@ export type LayerSpec = ShaderSpec & {
   /** Switched off without being deleted, so a stack can be taken apart and
       put back together. Absent means visible. */
   mute?: boolean;
+  /** What happens to this layer after it's drawn, in order. Absent means
+      nothing does — which is how every layer written before filters
+      existed still renders. */
+  filters?: FilterSpec[];
   /** Superseded by `ink`. Kept so links written when colour was a switch
       still open; normalizeSpec turns it into an `ink` and it is never
       written again. */
@@ -143,6 +158,93 @@ export type LayerSpec = ShaderSpec & {
   rotation: number; // degrees
   scale: number;
 };
+
+/* ---------------------------------------------------------------- filters */
+
+/* What happens to a layer after it has been drawn.
+ *
+ * This is the half that makes two families worth having: the club's screen
+ * is no longer welded to the thing that drew the image. Put `pixelate` on a
+ * liquid-metal layer and it comes out in the club's hard pixels; leave it
+ * off and the metal stays smooth. Filters run in the order they're listed,
+ * on the layer's own canvas, before it is composited with the rest. */
+export type FilterSpec = { type: string } & Record<string, number | string | undefined>;
+
+export type FilterDef = {
+  type: string;
+  label: string;
+  hint: string;
+  controls: ShaderControl[];
+  choices?: ShaderChoice[];
+};
+
+export const FILTERS: FilterDef[] = [
+  {
+    type: "pixelate",
+    label: "pixelate",
+    hint: "The club's screen, over anything. Averages into cells and thresholds each one — the same ordered dither the pixelated family draws with.",
+    controls: [
+      { key: "cell", label: "cell", min: 2, max: 32, step: 1, def: 6 },
+      { key: "amount", label: "amount", min: 0, max: 1, step: 0.05, def: 1 },
+    ],
+    choices: [
+      {
+        key: "dtype",
+        label: "screen",
+        values: ["4x4", "8x8", "2x2", "lines", "noise"],
+        def: "4x4",
+      },
+    ],
+  },
+  {
+    type: "posterize",
+    label: "posterize",
+    hint: "Fewer steps per channel. Keeps the colour and throws away the gradient.",
+    controls: [{ key: "steps", label: "steps", min: 2, max: 16, step: 1, def: 4 }],
+  },
+  {
+    type: "levels",
+    label: "levels",
+    hint: "Brightness and contrast, for pushing a shader somewhere the shader won't go on its own.",
+    controls: [
+      { key: "brightness", label: "bright", min: -1, max: 1, step: 0.02, def: 0 },
+      { key: "contrast", label: "contrast", min: -1, max: 1, step: 0.02, def: 0 },
+    ],
+  },
+  {
+    type: "grain",
+    label: "grain",
+    hint: "Film grain. Fixed, not animated, so it never opens a seam in a loop.",
+    controls: [
+      { key: "amount", label: "amount", min: 0, max: 1, step: 0.02, def: 0.25 },
+      { key: "size", label: "size", min: 1, max: 8, step: 1, def: 1 },
+    ],
+  },
+  {
+    type: "mono",
+    label: "monochrome",
+    hint: "Down to the slide's two tones, whatever the shader was coloured.",
+    controls: [{ key: "amount", label: "amount", min: 0, max: 1, step: 0.05, def: 1 }],
+  },
+  {
+    type: "invert",
+    label: "invert",
+    hint: "Flips it.",
+    controls: [{ key: "amount", label: "amount", min: 0, max: 1, step: 0.05, def: 1 }],
+  },
+];
+
+export const filterDef = (type: string): FilterDef | undefined =>
+  FILTERS.find((f) => f.type === type);
+
+/** A filter with every parameter it doesn't carry filled in. */
+export function defaultFilter(type: string): FilterSpec {
+  const def = filterDef(type);
+  const spec: FilterSpec = { type };
+  for (const c of def?.controls ?? []) spec[c.key] = c.def;
+  for (const c of def?.choices ?? []) spec[c.key] = c.def;
+  return spec;
+}
 
 export const MAX_LAYERS = 4;
 
@@ -270,6 +372,9 @@ export type ShaderChoice = {
 export type ShaderDef = {
   type: ShaderType;
   label: string;
+  /** Which half of the tool it belongs to. Absent means pixelated, which is
+      what everything was before there was a second half. */
+  family?: ShaderFamily;
   animated: boolean;
   /** "shader" renders via Paper Shaders (WebGL); "generative" via canvas 2D
       procedural animators that loop seamlessly over the post duration. */
@@ -300,6 +405,7 @@ const paperDithering: ShaderDef = {
   label: "dithering",
   animated: true,
   kind: "shader",
+  family: "pixelated",
   controls: [
     speed(0.5),
     scale(0.9),
@@ -373,6 +479,7 @@ const ditheredForms: ShaderDef = {
   label: "dithered forms",
   animated: true,
   kind: "generative",
+  family: "pixelated",
   controls: [
     speed(0.5),
     { key: "pixel", label: "pixel", min: 2, max: 16, step: 1, def: 6 },
@@ -426,11 +533,281 @@ const ditheredForms: ShaderDef = {
   ],
 };
 
+/* ------------------------------------------------------------ the clean */
+
+/* Paper Shaders ships far more than the dithering we were using; these are
+ * the ones that draw something a post can be built on. Every number below
+ * is the shader's own default, so a layer starts where its author put it.
+ *
+ * Colour is not in here on purpose. Each of these takes a different set of
+ * colour props and the club's answer is always the same — the slide's two
+ * tones, or the layer's inks when colour was asked for — so it is worked
+ * out in one place (`paintProps`) rather than nineteen. */
+const n = (
+  key: string,
+  min: number,
+  max: number,
+  step: number,
+  def: number,
+  label = key,
+): ShaderControl => ({ key, label, min, max, step, def });
+
+const c = (key: string, values: string[], def: string, label = key): ShaderChoice => ({
+  key,
+  label,
+  values,
+  def,
+});
+
+const CLEAN: {
+  type: string;
+  label: string;
+  controls: ShaderControl[];
+  choices?: ShaderChoice[];
+}[] = [
+  {
+    type: "metal",
+    label: "liquid metal",
+    controls: [
+      speed(1),
+      scale(1),
+      n("repetition", 1, 8, 0.1, 2),
+      n("distortion", 0, 1, 0.01, 0.07),
+      n("contour", 0, 1, 0.01, 0.4),
+      n("softness", 0, 1, 0.01, 0.1),
+      n("shiftRed", -1, 1, 0.01, 0.3, "red"),
+      n("shiftBlue", -1, 1, 0.01, 0.3, "blue"),
+      n("angle", 0, 360, 1, 70),
+    ],
+    choices: [
+      /* "none" fills the frame, which is what a background wants; the
+         shapes are there for when it shouldn't. */
+      c("shape", ["none", "circle", "daisy", "metaballs", "diamond"], "none"),
+    ],
+  },
+  {
+    type: "mesh",
+    label: "mesh gradient",
+    controls: [speed(1), n("distortion", 0, 1, 0.01, 0.8), n("swirl", 0, 1, 0.01, 0.1)],
+  },
+  {
+    type: "smoke",
+    label: "gem smoke",
+    controls: [
+      speed(1),
+      scale(0.6),
+      n("size", 0, 2, 0.01, 0.8),
+      n("innerDistortion", 0, 2, 0.01, 0.8, "inner"),
+      n("outerDistortion", 0, 2, 0.01, 0.6, "outer"),
+      n("outerGlow", 0, 1, 0.01, 0.55, "glow"),
+      n("angle", 0, 360, 1, 0),
+    ],
+    choices: [c("shape", ["circle", "diamond", "square"], "diamond")],
+  },
+  {
+    type: "rays",
+    label: "god rays",
+    controls: [
+      speed(0.75),
+      n("density", 0, 1, 0.01, 0.3),
+      n("intensity", 0, 1, 0.01, 0.8),
+      n("spotty", 0, 1, 0.01, 0.3),
+      n("bloom", 0, 1, 0.01, 0.4),
+      n("midSize", 0, 1, 0.01, 0.2, "mid size"),
+    ],
+  },
+  {
+    type: "grain",
+    label: "grain gradient",
+    controls: [
+      speed(1),
+      n("softness", 0, 1, 0.01, 0.5),
+      n("intensity", 0, 1, 0.01, 0.5),
+      n("noise", 0, 1, 0.01, 0.25),
+    ],
+    choices: [
+      c(
+        "shape",
+        ["wave", "dots", "truchet", "corners", "ripple", "blob", "sphere"],
+        "corners",
+      ),
+    ],
+  },
+  {
+    type: "water",
+    label: "water",
+    controls: [
+      speed(1),
+      scale(0.8),
+      n("size", 0, 2, 0.01, 1),
+      n("waves", 0, 1, 0.01, 0.3),
+      n("caustic", 0, 1, 0.01, 0.1),
+      n("edges", 0, 1, 0.01, 0.8),
+      n("layering", 0, 1, 0.01, 0.5),
+    ],
+  },
+  {
+    type: "ring",
+    label: "smoke ring",
+    controls: [
+      speed(0.5),
+      scale(0.8),
+      n("radius", 0, 1, 0.01, 0.25),
+      n("thickness", 0, 1, 0.01, 0.65),
+      n("innerShape", 0, 2, 0.01, 0.7, "inner"),
+      n("noiseScale", 0.5, 6, 0.1, 3, "noise"),
+    ],
+  },
+  {
+    type: "balls",
+    label: "metaballs",
+    controls: [speed(1), scale(1), n("count", 1, 20, 1, 10), n("size", 0, 2, 0.01, 0.83)],
+  },
+  {
+    type: "neuro",
+    label: "neuro noise",
+    controls: [
+      speed(1),
+      scale(1),
+      n("brightness", 0, 1, 0.01, 0.05),
+      n("contrast", 0, 1, 0.01, 0.3),
+    ],
+  },
+  {
+    type: "cells",
+    label: "voronoi",
+    controls: [
+      speed(0.5),
+      scale(0.5),
+      n("distortion", 0, 1, 0.01, 0.4),
+      n("gap", 0, 0.5, 0.01, 0.04),
+      n("glow", 0, 1, 0.01, 0),
+      n("stepsPerColor", 1, 8, 1, 3, "steps"),
+    ],
+  },
+  {
+    type: "warpfield",
+    label: "warp",
+    controls: [
+      speed(1),
+      n("proportion", 0, 1, 0.01, 0.45),
+      n("softness", 0, 1, 0.01, 1),
+      n("distortion", 0, 1, 0.01, 0.25),
+      n("swirl", 0, 1, 0.01, 0.8),
+      n("shapeScale", 0, 1, 0.01, 0.1, "shape sc."),
+      n("rotation", 0, 360, 1, 0),
+    ],
+    choices: [c("shape", ["stripes", "checks", "edge"], "checks")],
+  },
+  {
+    type: "twist",
+    label: "swirl",
+    controls: [
+      speed(0.32),
+      n("bandCount", 1, 12, 1, 4, "bands"),
+      n("twist", 0, 1, 0.01, 0.1),
+      n("center", 0, 1, 0.01, 0.2),
+      n("softness", 0, 1, 0.01, 0),
+      n("noise", 0, 1, 0.01, 0.2),
+    ],
+  },
+  {
+    type: "ripples",
+    label: "waves",
+    controls: [
+      scale(0.6),
+      n("frequency", 0, 2, 0.01, 0.5),
+      n("amplitude", 0, 2, 0.01, 0.5),
+      n("spacing", 0, 3, 0.01, 1.2),
+      n("proportion", 0, 1, 0.01, 0.1),
+      n("softness", 0, 1, 0.01, 0),
+      n("rotation", 0, 360, 1, 0),
+    ],
+  },
+  {
+    type: "coil",
+    label: "spiral",
+    controls: [
+      speed(1),
+      scale(1),
+      n("density", 0, 4, 0.05, 1),
+      n("distortion", 0, 1, 0.01, 0),
+      n("strokeWidth", 0, 1, 0.01, 0.5, "stroke"),
+      n("strokeTaper", 0, 1, 0.01, 0, "taper"),
+      n("noise", 0, 1, 0.01, 0),
+      n("softness", 0, 1, 0.01, 0),
+    ],
+  },
+  {
+    type: "orbit",
+    label: "dot orbit",
+    controls: [
+      speed(1.5),
+      scale(1),
+      n("size", 0, 2, 0.01, 1),
+      n("sizeRange", 0, 1, 0.01, 0),
+      n("spreading", 0, 1, 0.01, 1),
+    ],
+  },
+  {
+    type: "panels",
+    label: "colour panels",
+    controls: [
+      speed(0.5),
+      scale(0.8),
+      n("density", 1, 8, 1, 3),
+      n("length", 0, 3, 0.05, 1.1),
+      n("blur", 0, 1, 0.01, 0),
+      n("gradient", 0, 1, 0.01, 0),
+      n("angle1", 0, 360, 1, 0, "angle a"),
+      n("angle2", 0, 360, 1, 0, "angle b"),
+    ],
+  },
+  {
+    type: "paper",
+    label: "paper texture",
+    controls: [
+      scale(0.6),
+      n("contrast", 0, 1, 0.01, 0.3),
+      n("roughness", 0, 1, 0.01, 0.4),
+      n("fiber", 0, 1, 0.01, 0.3),
+      n("crumples", 0, 1, 0.01, 0.3),
+      n("folds", 0, 1, 0.01, 0.65),
+      n("foldCount", 0, 12, 1, 5, "fold no."),
+      n("drops", 0, 1, 0.01, 0.2),
+    ],
+  },
+];
+
+export type CleanType = (typeof CLEAN)[number]["type"];
+
+const cleanDefs: ShaderDef[] = CLEAN.map((s) => ({
+  type: s.type as ShaderType,
+  label: s.label,
+  animated: true,
+  kind: "shader",
+  family: "clean",
+  controls: s.controls,
+  choices: s.choices,
+}));
+
 export const SHADERS: ShaderDef[] = [
-  { type: "none", label: "plain", animated: false, kind: "shader", controls: [] },
+  {
+    type: "none",
+    label: "plain",
+    animated: false,
+    kind: "shader",
+    family: "plain",
+    controls: [],
+  },
   paperDithering,
   ditheredForms,
+  ...cleanDefs,
 ];
+
+/** Every family that draws, grouped the way the tool offers them. */
+export const familyOf = (type: ShaderType): ShaderFamily =>
+  shaderDef(type).family ?? "pixelated";
 
 export const shaderDef = (type: ShaderType): ShaderDef =>
   SHADERS.find((s) => s.type === type) ?? SHADERS[0];
@@ -957,6 +1334,35 @@ export function normalizeSpec(raw: unknown): PostSpec {
           delete merged.mixMode;
           delete merged.mixScale;
           delete merged.mixSpeed;
+        }
+
+        /* Filters, in order, with anything unrecognised dropped rather than
+           handed to the renderer. */
+        const rawFilters = merged.filters;
+        if (Array.isArray(rawFilters) && rawFilters.length) {
+          const list = (rawFilters as FilterSpec[])
+            .filter((f) => f && filterDef(String(f.type)))
+            .slice(0, 6)
+            .map((f) => {
+              const def = filterDef(String(f.type))!;
+              const out: FilterSpec = { type: def.type };
+              for (const ctrl of def.controls) {
+                const v = Number(f[ctrl.key]);
+                out[ctrl.key] = Number.isFinite(v)
+                  ? Math.min(ctrl.max, Math.max(ctrl.min, v))
+                  : ctrl.def;
+              }
+              for (const ch of def.choices ?? []) {
+                out[ch.key] = ch.values.includes(String(f[ch.key]))
+                  ? String(f[ch.key])
+                  : ch.def;
+              }
+              return out;
+            });
+          if (list.length) merged.filters = list;
+          else delete merged.filters;
+        } else {
+          delete merged.filters;
         }
 
         /* A picture only means anything to a photo pattern. */

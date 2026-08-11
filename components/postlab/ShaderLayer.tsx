@@ -17,10 +17,12 @@ import {
   paletteInk,
   shaderDef,
   tones,
+  type LayerSpec,
   type ShaderSpec,
   type Theme,
 } from "@/lib/postlab";
 import GenerativeLayer from "./GenerativeLayer";
+import PaperLayer, { isCleanType } from "./PaperLayer";
 import { clock } from "./clock";
 
 const num = (v: unknown, def: number) =>
@@ -67,6 +69,24 @@ export default function ShaderLayer({
         mixMode={color?.mixMode ?? ""}
         mixScale={color?.mixScale ?? 0}
         mixSpeed={color?.mixSpeed ?? -1}
+      />
+    );
+  }
+
+  /* The clean families: Paper's other shaders, which draw an image rather
+     than a screen of pixels. A filter can put them through the club's
+     screen afterwards. */
+  if (isCleanType(shader.type)) {
+    return (
+      <PaperLayer
+        layer={shader as LayerSpec}
+        theme={theme}
+        width={width}
+        height={height}
+        ink={color?.ink}
+        inks={color?.inks}
+        palette={color?.palette}
+        seed={color?.seed}
       />
     );
   }

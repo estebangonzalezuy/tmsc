@@ -18,11 +18,13 @@ import {
   PALETTE,
   resolveLayer,
   tones,
+  type FilterSpec,
   type LayerSpec,
   type ShaderSpec,
   type Theme,
 } from "@/lib/postlab";
 import { photo } from "./photos";
+import { applyFilters } from "./filters";
 
 const TAU = Math.PI * 2;
 
@@ -74,7 +76,7 @@ const hash01 = (a: number, b: number, c: number) => {
 /* The screen a cell is measured against. Ordered matrices give the classic
    cross-hatch; "lines" is a one-dimensional screen (engraving); "noise" is
    a fixed random screen (grainier, no visible grid). */
-function thresholdAt(kind: string, cx: number, cy: number): number {
+export function screenAt(kind: string, cx: number, cy: number): number {
   switch (kind) {
     case "2x2":
       return (BAYER2[cy % 2][cx % 2] + 0.5) / 4;
@@ -459,7 +461,7 @@ export function drawGenerative(
   for (let cy = 0; cy < chh; cy++) {
     for (let cx = 0; cx < cw; cx++) {
       const d = darkness(cx, cy);
-      if (d > thresholdAt(dtype, cx, cy)) {
+      if (d > screenAt(dtype, cx, cy)) {
         const [r, g, bb] = inks[pickInk(cx, cy, d)];
         const o = (cy * cw + cx) * 4;
         data[o] = r;
@@ -493,4 +495,9 @@ export function drawGenerative(
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(outCanvas, 0, 0, cw * px, chh * px);
   ctx.restore();
+
+  /* Filters run over the finished layer, the same chain the clean families
+     get. Dithered pixels can be posterised, grained or inverted like
+     anything else. */
+  applyFilters(ctx, w, h, s.filters as FilterSpec[] | undefined, theme, ink);
 }

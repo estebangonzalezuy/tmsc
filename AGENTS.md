@@ -90,11 +90,24 @@ browser). Therefore:
 An internal design tool (like `/studio`, not in the nav) for generating the
 club's animated Instagram posts, carousels, and reels: dithered animated
 backgrounds under the club's typography, with PNG, video, and GIF export.
-The tool is deliberately a dithering instrument — backgrounds are Paper
-Shaders' Dithering (`@paper-design/shaders-react`) or the club's own
-ordered-dither forms renderer (`components/postlab/generative.ts`, canvas
-2D), looping seamlessly over the post duration. Don't add other shader
-families; extend the dithering vocabulary instead.
+**Two families, and filters between them.** It began as a dithering
+instrument only, and that rule is gone on purpose — the owner asked for the
+other half in August 2026.
+
+- **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
+  forms renderer (`components/postlab/generative.ts`, canvas 2D). Hard
+  edges, thresholded, loops seamlessly.
+- **clean** — the rest of Paper Shaders (`PaperLayer.tsx`): liquid metal,
+  mesh gradient, gem smoke, god rays, water, voronoi, warp and the others.
+  They draw an image rather than a screen of pixels.
+- **filters** (`filters.ts`) run over a layer *after* it is drawn, and
+  `pixelate` is one of them. That is the whole point of the split: the
+  club's screen is no longer welded to the thing that drew the image, so a
+  liquid-metal layer can come out in the club's pixels. Drawing and
+  screening are separate decisions now.
+
+Filters take no time as an input — not even the grain — so a filter can
+never be the reason a loop stops closing. Keep it that way.
 
 - `lib/postlab.ts` — the **PostSpec** model: types, shader registry,
   presets, base64url encode/decode. The spec travels in the URL

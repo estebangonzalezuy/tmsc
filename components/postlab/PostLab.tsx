@@ -21,6 +21,7 @@ import {
   MIX_MODES,
   PALETTE,
   PRESETS,
+  FILTERS,
   SHADERS,
   SLIDE_PARTS,
   SPEC_VERSION,
@@ -28,9 +29,11 @@ import {
   animatable,
   applyStyle,
   decodeSpec,
+  defaultFilter,
   defaultLayer,
   defaultSlide,
   defaultSpec,
+  filterDef,
   loopReport,
   randomShader,
   randomSlide,
@@ -43,6 +46,7 @@ import {
   styleOf,
   usesPhoto,
   varyStyle,
+  type FilterSpec,
   type LayerSpec,
   type Motion,
   type PostFormat,
@@ -822,6 +826,32 @@ export default function PostLab() {
     } catch {
       say("Couldn't read that file");
     }
+  };
+
+  /* The filter chain on the selected layer. Dropped entirely when it empties
+     so a link never carries an empty list. */
+  const setFilters = (list: FilterSpec[]) =>
+    patchLayer({ filters: list.length ? list : undefined } as Partial<LayerSpec>);
+
+  const addFilter = (type: string) =>
+    setFilters([...(layer.filters ?? []), defaultFilter(type)]);
+
+  const removeFilter = (i: number) =>
+    setFilters((layer.filters ?? []).filter((_, j) => j !== i));
+
+  const patchFilter = (i: number, patch: Record<string, number | string>) =>
+    setFilters(
+      (layer.filters ?? []).map((f, j) => (j === i ? { ...f, ...patch } : f)),
+    );
+
+  /* Order matters: pixelate before grain is a screened image with grain over
+     it, grain before pixelate is grain that got screened. */
+  const moveFilter = (i: number, dir: -1 | 1) => {
+    const list = [...(layer.filters ?? [])];
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    setFilters(list);
   };
 
   /* Give a parameter a wave, or take it away. An empty motion map is
@@ -1864,18 +1894,105 @@ export default function PostLab() {
               step={0.05}
               onChange={(opacity) => patchLayer({ opacity })}
             />
-            <div className="flex border border-line divide-x divide-line">
-              {SHADERS.map((s) => (
+            {/* Two families and a blank. Pixelated is the club's own screen;
+                clean draws an image and can be put through that screen with
+                the pixelate filter below. */}
+            {(["plain", "pixelated", "clean"] as const).map((fam) => {
+              const list = SHADERS.filter((s) => (s.family ?? "pixelated") === fam);
+              if (!list.length) return null;
+              return (
+                <div key={fam} className="space-y-1.5">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">
+                    {fam === "plain" ? "nothing" : fam}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {list.map((s) => (
+                      <button
+                        key={s.type}
+                        onClick={() => setShaderType(s.type)}
+                        className={`border border-line px-2 py-1 text-xs transition-colors ${
+                          layer.type === s.type
+                            ? "bg-foreground text-background"
+                            : "bg-background hover:text-muted"
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* The filter chain: what happens to this layer after it's been
+                drawn, in order. */}
+            <p className="text-[10px] uppercase tracking-wide text-muted pt-2">
+              filters
+            </p>
+            {(layer.filters ?? []).map((f, i) => {
+              const fd = filterDef(String(f.type));
+              if (!fd) return null;
+              return (
+                <div key={i} className="border-l border-line pl-3 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span>{fd.label}</span>
+                    <span className="flex gap-2">
+                      <button
+                        onClick={() => moveFilter(i, -1)}
+                        title="Earlier in the chain"
+                        className="text-muted hover:text-foreground"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => removeFilter(i)}
+                        title="Remove"
+                        className="text-muted hover:text-foreground"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  </div>
+                  {(fd.choices ?? []).map((c) => (
+                    <Row key={c.key} label={c.label}>
+                      <select
+                        value={String(f[c.key] ?? c.def)}
+                        onChange={(e) => patchFilter(i, { [c.key]: e.target.value })}
+                        className="flex-1 border border-line bg-transparent px-2 py-1 text-xs focus:outline-none"
+                      >
+                        {c.values.map((v) => (
+                          <option key={v} value={v}>
+                            {v}
+                          </option>
+                        ))}
+                      </select>
+                    </Row>
+                  ))}
+                  {fd.controls.map((c) => (
+                    <SliderRow
+                      key={c.key}
+                      label={c.label}
+                      value={Number(f[c.key] ?? c.def)}
+                      min={c.min}
+                      max={c.max}
+                      step={c.step}
+                      onChange={(v) => patchFilter(i, { [c.key]: v })}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+            <div className="flex flex-wrap gap-1">
+              {FILTERS.filter(
+                (f) => !(layer.filters ?? []).some((x) => x.type === f.type),
+              ).map((f) => (
                 <button
-                  key={s.type}
-                  onClick={() => setShaderType(s.type)}
-                  className={`flex-1 px-2 py-1.5 text-xs transition-colors ${
-                    layer.type === s.type
-                      ? "bg-foreground text-background"
-                      : "bg-background hover:text-muted"
-                  }`}
+                  key={f.type}
+                  onClick={() => addFilter(f.type)}
+                  title={f.hint}
+                  className="border border-line px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
                 >
-                  {s.label}
+                  + {f.label}
                 </button>
               ))}
             </div>
