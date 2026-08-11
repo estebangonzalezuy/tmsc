@@ -428,6 +428,7 @@ async function jobJournal() {
     name: get.title(r),
     date: get.date(r, "Date"),
     pillar: get.select(r, "Pillar"),
+    landed: get.text(r, "How it landed"),
   }));
 
   for (const row of rows) {
@@ -537,6 +538,7 @@ async function jobReview() {
       date: get.date(r, "Date"),
       channel: get.select(r, "Channel"),
       pillar: get.select(r, "Pillar"),
+      landed: get.text(r, "How it landed"),
     }))
     .filter((r) => r.date >= start)
     .sort((a, b) => a.date.localeCompare(b.date));

@@ -193,6 +193,14 @@ export function proposeAngles({ voice, library, objective, pillars, existing, in
       "Propose exactly three angles for the next posts. Rules:",
       "- Vary them across the three pillars; look at which pillar is thin",
       "  in the library and correct the imbalance.",
+      "- Some pieces carry what they did in the world (landed: impressions,",
+      "  interactions, engagement rate). Read it as attention, not as",
+      "  quality: a post can reach a hundred thousand people and say",
+      "  nothing. What it is good for is telling you which subjects this",
+      "  audience turns up for. Prefer extending one of those, and prefer",
+      "  the ones with a high engagement rate over the ones with big",
+      "  impressions — those are the posts people answered rather than",
+      "  scrolled past.",
       "- Prefer extending a thread that already landed over inventing new",
       "  territory. Cite the piece(s) by [n] in `sources`, and say in",
       "  `builds_on` what you're taking from them and what you're adding.",
@@ -297,7 +305,11 @@ const journalSchema = (pillars, formats) => ({
 
 export function readJournal({ voice, entry, library, objective, pillars, formats }) {
   const shelf = library
-    .map((r, i) => `[${i}] ${r.date || "?"} · ${r.pillar || "—"} · ${r.name}`)
+    .map(
+      (r, i) =>
+        `[${i}] ${r.date || "?"} · ${r.pillar || "—"} · ${r.name}` +
+        (r.landed ? ` (landed: ${r.landed})` : ""),
+    )
     .join("\n");
 
   return ask({
@@ -377,12 +389,18 @@ export function reviewObjective({ voice, objective, published, pipeline, daysIn,
       `Started ${objective.start}. ${daysIn} days in, ${daysLeft} left.`,
       "",
       published.length
-        ? `Published in this period (${published.length}):\n${published.map((p) => `- ${p.date || "?"} · ${p.channel || "?"} · ${p.pillar || "—"} · ${p.name}`).join("\n")}`
+        ? `Published in this period (${published.length}):\n${published.map((p) => `- ${p.date || "?"} · ${p.channel || "?"} · ${p.pillar || "—"} · ${p.name}${p.landed ? ` (landed: ${p.landed})` : ""}`).join("\n")}`
         : "Nothing published in this period yet.",
       "",
       pipeline.length
         ? `In the pipeline right now:\n${pipeline.map((p) => `- [${p.status}] ${p.name}`).join("\n")}`
         : "The pipeline is empty.",
+      "",
+      "Some pieces carry what they did in the world (landed: impressions,",
+      "interactions, engagement rate). That is attention, not quality, and",
+      "it is not the objective either — use it to say which subjects the",
+      "audience turned up for, and only judge the month against the goal",
+      "he wrote.",
       "",
       "Read it and answer the schema. `next` should be things he can do,",
       "not principles he should hold.",

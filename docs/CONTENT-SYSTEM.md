@@ -102,6 +102,16 @@ month has a Goal written, every angle has to move it. Vary across pillars;
 prefer extending threads that worked over inventing new territory, and
 don't repeat a beat that's already sitting in the Pipeline.
 
+A library row may carry a **How it landed** text — impressions,
+interactions and engagement rate, pasted in from the channel's own export
+(LinkedIn's is under *Settings → Get a copy of your data → Posts*). Every
+job that reads the library passes it to the model as *attention, not
+quality*: a post can reach a hundred thousand people and say nothing. What
+it is for is telling the club which subjects this audience turns up for,
+and a high engagement rate counts for more than big impressions — those
+are the posts people answered rather than scrolled past. Leave the field
+empty and nothing changes; the jobs simply don't mention it.
+
 **Review the month.** Reads the `Active` objective's Goal, everything
 published since its Start date, and what's still unposted in the Pipeline,
 then writes back a short standing (`on track` / `slipping` / `off track` /
