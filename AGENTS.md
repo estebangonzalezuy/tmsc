@@ -228,9 +228,17 @@ never be the reason a loop stops closing. Keep it that way.
     thumbnail follows the playhead rather than holding frame zero, because a
     post in this studio moves.
 - **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of it is
-  built from — modelled on toolcraft.sh, which gets one thing exactly right: a
-  tool is a canvas with chrome floating over it. The anatomy, and it is the same
-  everywhere:
+  built from — a *reproduction* of toolcraft.sh rather than an interpretation of
+  it: dark glass panels floating over a full-bleed canvas, the same metrics, the
+  same control shapes, the same order. It gets one thing exactly right: a tool is
+  a canvas with chrome floating over it. Every colour, radius and height is a
+  token in `app/globals.css` under `.toolcraft`, and nothing in the component
+  file hardcodes one — dressing the studio in the club's own black and white
+  later is that block and nothing else. **The rules suspended inside the chrome
+  stay inside it**: rounded corners, a shadow, a translucent surface and one blue
+  switch are allowed here, and the posts and the public site keep every rule they
+  always had. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
+  same everywhere:
   - `Panel` — a floating card: title, reset, fold, a scrolling body, and a
     footer holding the one button you press at the end
   - `Section` — an uppercase label with its own reset and fold
@@ -248,12 +256,13 @@ never be the reason a loop stops closing. Keep it that way.
   - `Block` — one thing in a stack: switch, name, reorder, remove, numbers
   - `Menu` / `MenuItem` / `MenuRow` — the things you do
   - `Toolbar`, `Drawer`, `Help`, `Primary`
-  It is still the club's design system, not a copy of someone else's: white
-  chrome on black, near-black ink, 1px hairlines, no shadows, no gradients, no
-  rounded corners, and **a hover is a wash, never a colour**. Anything that
-  floats must carry `bg-background` — a transparent control over the black stage
-  is a near-black border on near-black. Add to Toolcraft rather than styling a
-  control in place, and use the same kit on every tool page.
+  Anything that floats carries `tc-float`, anything with its own ground carries
+  `tc-field`, and a slider's track is drawn by two spans behind a transparent
+  native input — never by the input itself, which paints over the fill. Add to
+  Toolcraft rather than styling a control in place, and use the same kit on every
+  tool page. `/tools` — the wall — is *not* chrome: it is a page of the site and
+  stays in the club's white, hairlines and accent hovers. The wall is the club's;
+  the instrument is the instrument.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.
   Every canvas subscribes and draws itself; only the readout under the stage
   asks React for the number. It was state once, and re-rendering the tool
@@ -296,15 +305,24 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   post are byte-identical. The WebGL dithering can't do this (its shapes
   walk through noise that never repeats), so `loopReport` says so in the
   export panel rather than letting a seam ship.
-- **A photograph is a form, not a layer type.** `pattern: "photo"` reads the
-  layer's `src`, samples it at the cell size and pushes it through the same
-  threshold, so it mixes, folds and inks like anything else. The picture
-  itself never enters the spec: `components/postlab/photos.ts` keeps a
-  picked file in that browser under `local:<id>`, the same bargain the
-  Studio and the Desk make with the token. A `src` starting with `/` is a
-  path on this site and does travel in a link — cross-origin is refused on
-  purpose, because a tainted canvas breaks the dither, the export and the
-  GIF at once and does it silently.
+- **A photograph is a form, not a layer type — and so is a film.**
+  `pattern: "photo"` reads the layer's `src`, samples it at the cell size and
+  pushes it through the same threshold, so it mixes, folds and inks like anything
+  else. The picture itself never enters the spec:
+  `components/postlab/photos.ts` keeps a picked file in that browser under
+  `local:<id>`, the same bargain the Studio and the Desk make with the token. A
+  `src` starting with `/` is a path on this site and does travel in a link —
+  cross-origin is refused on purpose, because a tainted canvas breaks the dither,
+  the export and the GIF at once and does it silently.
+  `components/postlab/clips.ts` does the same for a **film or a GIF** under
+  `clip:<id>`: decoded once on the way in to at most 96 grayscale frames at 512px
+  on the long edge, kept in IndexedDB, and sampled straight into the cell grid
+  with no canvas in between. Which frame is `floor(p · clipCycles · n) mod n`
+  with whole `clipCycles`, so a film can no more open a seam than a travelling
+  number can, and the exporter stays a function of the frame number. Uploading is
+  one door — the `media` block in `source` takes a picture, a film or a GIF and
+  puts the layer on `photo` itself, because a file *is* the choice of what to
+  draw.
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
   `varyStyle`, plus `randomSlide` for a look rolled from nothing (the
   generate sheet). A roll decides the graphic only: it never touches

@@ -128,3 +128,149 @@ body {
 .animate-orbit-reverse {
   animation: orbit var(--orbit-duration, 60s) linear infinite reverse;
 }
+
+/* ------------------------------------------------------------- Toolcraft */
+
+/* The studio's chrome, and only the studio's: dark glass floating over a
+   full-bleed canvas, reproduced from toolcraft.sh. Every value lives here
+   once — nothing in `toolcraft.tsx` hardcodes a colour, a radius or a height,
+   so dressing the studio differently later is this block and nothing else.
+   See docs/THE-STUDIO-CHROME.md for why the club's rules are suspended
+   inside the chrome and nowhere else. */
+.toolcraft {
+  --tc-glass: rgba(18, 20, 24, 0.66);
+  --tc-glass-solid: #14161a;
+  --tc-blur: 28px;
+  --tc-edge: rgba(255, 255, 255, 0.1);
+  --tc-edge-on: rgba(255, 255, 255, 0.22);
+  --tc-rule: rgba(255, 255, 255, 0.07);
+  --tc-ink: rgba(255, 255, 255, 0.95);
+  --tc-ink-2: rgba(255, 255, 255, 0.72);
+  --tc-ink-3: rgba(255, 255, 255, 0.45);
+  --tc-field: rgba(255, 255, 255, 0.06);
+  --tc-field-hi: rgba(255, 255, 255, 0.1);
+  --tc-field-on: rgba(255, 255, 255, 0.14);
+  --tc-track: rgba(255, 255, 255, 0.14);
+  --tc-live: #3b82f6;
+  --tc-r: 10px;
+  --tc-r-sm: 6px;
+  --tc-r-lg: 12px;
+  --tc-r-pill: 14px;
+  --tc-h: 34px;
+  --tc-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  /* Instrument furniture, not the club's typefaces: a post set in Lora
+     sitting inside a panel also set in Lora is a post you cannot see. */
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--tc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Anything that floats: the panel, the toolbar, a drawer, the filmstrip. */
+.tc-float {
+  background: var(--tc-glass);
+  backdrop-filter: blur(var(--tc-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--tc-blur)) saturate(140%);
+  border: 1px solid var(--tc-edge);
+  box-shadow: var(--tc-shadow);
+}
+
+/* A control with its own ground: a select, a button, a pad, a dropzone. */
+.tc-field {
+  background: var(--tc-field);
+  border: 1px solid var(--tc-edge);
+  border-radius: var(--tc-r);
+  color: var(--tc-ink);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.tc-field:hover:not(:disabled) {
+  background: var(--tc-field-hi);
+}
+.tc-field:disabled {
+  opacity: 0.4;
+}
+.tc-field-on {
+  background: var(--tc-field-on);
+  border-color: var(--tc-edge-on);
+}
+
+/* The one shape the reference is most particular about: a hairline track with
+   a small white rounded-square handle, and the travelled part filled. */
+.tc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+.tc-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: transparent;
+}
+.tc-range::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: transparent;
+}
+.tc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  border-radius: 3px;
+  background: #fff;
+  border: none;
+}
+.tc-range::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: #fff;
+  border: none;
+}
+.tc-range:focus-visible {
+  outline: none;
+}
+.tc-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+/* The filled part of a track, drawn behind the input rather than by it, so a
+   two-handle range and a one-handle slider fill the same way. */
+.tc-fill {
+  position: absolute;
+  top: 50%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.toolcraft :focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 1px;
+}
+
+/* The panel's body scrolls a lot; the reference's scrollbar is a hairline. */
+.tc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.tc-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.tc-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.tc-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}

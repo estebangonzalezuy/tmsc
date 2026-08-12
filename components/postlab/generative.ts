@@ -24,6 +24,7 @@ import {
   type Theme,
 } from "@/lib/postlab";
 import { photo } from "./photos";
+import { clip, frameAt } from "./clips";
 import { applyFilters } from "./filters";
 
 const TAU = Math.PI * 2;
@@ -197,7 +198,35 @@ export function drawGenerative(
      folded and inked exactly like a drawn one. */
   let pic: Float32Array | null = null;
   if (pattern === "photo" || pattern2 === "photo") {
-    const img = photo(typeof s.src === "string" ? s.src : undefined);
+    const src = typeof s.src === "string" ? s.src : undefined;
+    const gamma = Math.max(0.2, num(s.exposure, 1));
+    const film = clip(src);
+    if (film) {
+      /* A clip is already grayscale at sample resolution, so it skips the
+         canvas: nearest-neighbour straight into the cell grid. Which frame is
+         a whole number of trips through the clip over the loop, so a film can
+         no more open a seam than a travelling number can. */
+      const frame = frameAt(film, tt, num(s.clipCycles, 1));
+      const contain = s.fit === "contain";
+      const k = contain
+        ? Math.min(cw / film.w, chh / film.h)
+        : Math.max(cw / film.w, chh / film.h);
+      const dw = film.w * k;
+      const dh = film.h * k;
+      const ox = (cw - dw) / 2;
+      const oy = (chh - dh) / 2;
+      pic = new Float32Array(cw * chh);
+      for (let y = 0; y < chh; y++) {
+        const sy = Math.floor((y - oy) / k);
+        for (let x = 0; x < cw; x++) {
+          const sx = Math.floor((x - ox) / k);
+          if (sx < 0 || sy < 0 || sx >= film.w || sy >= film.h) continue;
+          /* Darkness, not brightness: everywhere else in here 1 means ink. */
+          pic[y * cw + x] = Math.pow(1 - frame[sy * film.w + sx] / 255, gamma);
+        }
+      }
+    }
+    const img = film ? null : photo(src);
     if (img && img.width && img.height) {
       if (!picCanvas) picCanvas = document.createElement("canvas");
       picCanvas.width = cw;
@@ -214,7 +243,6 @@ export function drawGenerative(
       const dh = img.height * k;
       pctx.drawImage(img, (cw - dw) / 2, (chh - dh) / 2, dw, dh);
       const px4 = pctx.getImageData(0, 0, cw, chh).data;
-      const gamma = Math.max(0.2, num(s.exposure, 1));
       pic = new Float32Array(cw * chh);
       for (let j = 0; j < pic.length; j++) {
         const o = j * 4;

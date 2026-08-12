@@ -1,32 +1,35 @@
 "use client";
 
-// Toolcraft — the club's tool chrome.
+// Toolcraft — the studio's chrome.
 //
-// Modelled on toolcraft.sh, which gets one thing exactly right: a tool is a
-// *canvas* with chrome floating over it, not a page divided into columns. The
-// stage is the whole window and it is dark; everything you touch is a panel on
-// top of it. Nothing is docked, so the post is never squeezed into what's left
-// after the furniture.
+// A reproduction of toolcraft.sh, not an interpretation of it: the same
+// metrics, the same control shapes, the same order. A tool is a *canvas* with
+// chrome floating over it, never a page divided into columns — the canvas is
+// the whole window and it continues underneath the panel, so the work is never
+// squeezed into what is left after the furniture.
 //
-// The anatomy, and it is the same everywhere:
+// The anatomy, and it is the same on every tool page:
 //
-//   Panel      a floating card — title, a reset, a fold, a scrolling body and a
-//              footer that holds the one button you press at the end
-//   Section    an uppercase label with its own reset and fold
-//   Slider     label on the left, value on the right, the track full width
-//              underneath — never a slider squeezed between two labels
-//   Toggle     a pill switch for one yes/no
+//   Panel      a floating card of dark glass — title, a menu, a reset, a fold,
+//              a scrolling body, and a footer holding the one button you press
+//              at the end
+//   Section    an uppercase heading with its own reset and fold
+//   Slider     label left, value right, the track full width underneath —
+//              never a slider squeezed between two labels
+//   Range      the same track with two handles, for a number that travels
+//   Toggle     a pill switch; on is the one place a colour appears
 //   Segmented  two to four choices side by side; past that, Select
 //   Dots       colour as circles you point at
 //   XYPad      two numbers that are really one place
-//   Dropzone   a file, dragged or clicked
-//   Toolbar    the floating bar under the stage: undo, zoom, the transport
+//   Dropzone   a file, dragged or clicked; Thumb is what was picked
+//   Toolbar    the pill under the canvas: undo, zoom, the transport
 //
-// It is still the club's design system, not a copy of someone else's: white
-// chrome, near-black ink, 1px hairlines, no shadows, no gradients, no rounded
-// corners, and **a hover is a wash, never a colour** — colour on this site only
-// ever answers a pointer. The reference is dark chrome on a light canvas; ours
-// is the club's white chrome on the club's own black.
+// Every colour, radius and height is a token in `app/globals.css` under
+// `.toolcraft`. Nothing here hardcodes one, so dressing the studio in the
+// club's own black and white later is that block and nothing else. The rules
+// suspended in here — rounded corners, a shadow, a translucent surface, a blue
+// switch — stay suspended in here: the posts and the public site keep every one
+// of them. See docs/THE-STUDIO-CHROME.md.
 
 import {
   createContext,
@@ -37,24 +40,28 @@ import {
   type ReactNode,
 } from "react";
 
-export const HAIR = "border-line";
-/** The stage: the club's ink, used as a surface. Everything floats on this. */
-export const STAGE = "bg-foreground";
+/** Kept for callers that draw their own hairline beside ours. */
+export const HAIR = "border-[color:var(--tc-edge)]";
+/** The stage the chrome floats on. The canvas is drawn over this, not in it. */
+export const STAGE = "toolcraft bg-[#0b0c0e]";
+
+const INK = "text-[color:var(--tc-ink)]";
+const INK2 = "text-[color:var(--tc-ink-2)]";
+const INK3 = "text-[color:var(--tc-ink-3)]";
 
 /* ------------------------------------------------------------------ atoms */
 
+/** A group heading: uppercase, letter-spaced, quiet. */
 export function Label({ children }: { children: ReactNode }) {
-  return (
-    <span className="text-[10px] uppercase tracking-widest text-muted">{children}</span>
-  );
+  return <span className={`text-[10px] uppercase tracking-[0.09em] ${INK3}`}>{children}</span>;
 }
 
-/** The little ? that carries the sentence a label hasn't got room for. */
+/** The circled question mark the reference puts after a label that needs one. */
 export function Help({ children }: { children: string }) {
   return (
     <span
       title={children}
-      className={`inline-grid place-items-center size-3.5 shrink-0 border ${HAIR} text-[8px] text-muted cursor-help align-middle`}
+      className={`inline-grid place-items-center size-[13px] shrink-0 rounded-full border border-[color:var(--tc-ink-3)] text-[8px] leading-none ${INK3} cursor-help`}
     >
       ?
     </span>
@@ -81,16 +88,18 @@ export function Btn({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`h-8 px-2.5 border ${HAIR} text-[11px] whitespace-nowrap transition-colors disabled:opacity-40 disabled:pointer-events-none ${
-        wide ? "flex-1" : ""
-      } ${on ? "bg-foreground text-background" : "hover:bg-foreground/5"}`}
+      className={`tc-field ${
+        on ? "tc-field-on" : ""
+      } h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${
+        wide ? "flex-1 min-w-0" : "shrink-0"
+      }`}
     >
       {children}
     </button>
   );
 }
 
-/** The one button at the bottom of a panel. */
+/** The one button you press at the end. Lives in the panel's footer. */
 export function Primary({
   onClick,
   children,
@@ -107,13 +116,14 @@ export function Primary({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="w-full h-9 bg-foreground text-background text-[11px] transition-opacity hover:opacity-80 disabled:opacity-40 disabled:pointer-events-none"
+      className="tc-field tc-field-on w-full h-10 text-[13px] inline-flex items-center justify-center gap-2"
     >
       {children}
     </button>
   );
 }
 
+/** An icon in a square hit area. `bare` drops the ground, for a toolbar. */
 export function IconBtn({
   onClick,
   children,
@@ -127,7 +137,6 @@ export function IconBtn({
   title: string;
   on?: boolean;
   disabled?: boolean;
-  /** No border — for the small marks in a header. */
   bare?: boolean;
 }) {
   return (
@@ -135,25 +144,32 @@ export function IconBtn({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`${bare ? "size-5" : `size-8 border ${HAIR}`} shrink-0 grid place-items-center text-[11px] transition-colors disabled:opacity-30 disabled:pointer-events-none ${
-        on ? "bg-foreground text-background" : "hover:bg-foreground/5 text-muted hover:text-foreground"
-      }`}
+      aria-label={title}
+      className={
+        bare
+          ? `size-8 shrink-0 grid place-items-center rounded-[var(--tc-r-sm)] text-[13px] transition-colors disabled:opacity-30 ${
+              on
+                ? `${INK} bg-[color:var(--tc-field-on)]`
+                : `${INK3} hover:text-[color:var(--tc-ink)] hover:bg-[color:var(--tc-field)]`
+            }`
+          : `tc-field ${on ? "tc-field-on" : ""} size-8 shrink-0 grid place-items-center text-[13px]`
+      }
     >
       {children}
     </button>
   );
 }
 
-/** A row of buttons that share a line. */
 export function Buttons({ children }: { children: ReactNode }) {
-  return <div className="flex items-stretch gap-1.5">{children}</div>;
+  return <div className="flex items-center gap-1.5">{children}</div>;
 }
 
-/* ----------------------------------------------------------------- panels */
+/* ------------------------------------------------------------------ panel */
 
 /**
- * A floating card over the stage. The body scrolls; the footer doesn't, so the
- * button you press at the end is always where you left it.
+ * The floating card. One column of groups, read downwards, with the way out
+ * pinned to its foot — the reference is emphatic about that, and it is right:
+ * a tool's export is not one more group of settings.
  */
 export function Panel({
   title,
@@ -161,8 +177,9 @@ export function Panel({
   footer,
   onReset,
   right,
+  menu,
   className = "",
-  width = 316,
+  width = 320,
 }: {
   title: string;
   children: ReactNode;
@@ -170,6 +187,8 @@ export function Panel({
   onReset?: () => void;
   /** Anything that belongs beside the title. */
   right?: ReactNode;
+  /** The `⋯` menu. This chrome has no menu bar, so this is where one goes. */
+  menu?: ReactNode;
   className?: string;
   width?: number;
 }) {
@@ -177,16 +196,17 @@ export function Panel({
   return (
     <section
       /* Full width on a phone, its own width once there's room to float. */
-      className={`bg-background border ${HAIR} flex flex-col min-h-0 w-full ${className}`}
+      className={`tc-float rounded-[var(--tc-r-lg)] flex flex-col min-h-0 w-full ${className}`}
       style={{ maxWidth: width }}
     >
       <header
-        className={`h-10 shrink-0 flex items-center gap-1.5 pl-3 pr-1.5 ${
-          open ? `border-b ${HAIR}` : ""
+        className={`h-11 shrink-0 flex items-center gap-1 pl-4 pr-2 ${
+          open ? "border-b border-[color:var(--tc-rule)]" : ""
         }`}
       >
-        <span className="text-[11px] flex-1 truncate">{title}</span>
+        <span className={`text-[13px] font-medium flex-1 truncate ${INK}`}>{title}</span>
         {right}
+        {menu}
         {onReset && (
           <IconBtn onClick={onReset} title="Put this back as it was" bare>
             ↺
@@ -198,8 +218,10 @@ export function Panel({
       </header>
       {open && (
         <>
-          <div className="flex-1 min-h-0 overflow-y-auto">{children}</div>
-          {footer && <div className={`shrink-0 border-t ${HAIR} p-2`}>{footer}</div>}
+          <div className="tc-scroll flex-1 min-h-0 overflow-y-auto">{children}</div>
+          {footer && (
+            <div className="shrink-0 border-t border-[color:var(--tc-rule)] p-3">{footer}</div>
+          )}
         </>
       )}
     </section>
@@ -207,8 +229,8 @@ export function Panel({
 }
 
 /**
- * A named group inside a panel: an uppercase label, its own reset, its own
- * fold, and a summary while it's folded so a closed group still says something.
+ * A named group: an uppercase heading, its own reset, its own fold, and a
+ * summary while it's folded so a closed group still says something.
  */
 export function Section({
   title,
@@ -230,15 +252,15 @@ export function Section({
   const [override, setOverride] = useState<boolean | null>(null);
   const open = override ?? initial;
   return (
-    <div className={`border-b ${HAIR} last:border-b-0`}>
-      <div className="h-9 flex items-center gap-1 pl-3 pr-1.5">
+    <div className="border-b border-[color:var(--tc-rule)] last:border-b-0">
+      <div className="h-9 flex items-center gap-1 pl-4 pr-2">
         <button
           onClick={() => setOverride(!open)}
           className="flex-1 flex items-center gap-2 text-left h-full min-w-0"
         >
           <Label>{title}</Label>
           {!open && summary && (
-            <span className="ml-auto text-[10px] text-muted truncate">{summary}</span>
+            <span className={`ml-auto text-[11px] truncate ${INK3}`}>{summary}</span>
           )}
         </button>
         {onReset && open && (
@@ -251,8 +273,8 @@ export function Section({
         </IconBtn>
       </div>
       {open && (
-        <div className="px-3 pb-3 space-y-2.5">
-          {note && <p className="text-[10px] text-muted leading-relaxed">{note}</p>}
+        <div className="px-4 pb-4 space-y-3.5">
+          {note && <p className={`text-[11px] leading-relaxed ${INK3}`}>{note}</p>}
           {children}
         </div>
       )}
@@ -282,62 +304,49 @@ export function Num({
   onChange: (v: number) => void;
   suffix?: string;
 }) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const drag = useRef<{ x: number; from: number; moved: boolean } | null>(null);
-  const snap = (v: number) => {
-    const stepped = Math.round(v / step) * step;
-    return Math.min(max, Math.max(min, Math.round(stepped * 1e4) / 1e4));
+  const [text, setText] = useState<string | null>(null);
+  const drag = useRef<{ x: number; from: number } | null>(null);
+  const dp = step < 1 ? (String(step).split(".")[1]?.length ?? 2) : 0;
+  const shown = text ?? (dp ? value.toFixed(dp) : String(Math.round(value)));
+
+  const commit = (raw: string) => {
+    const n = Number(raw);
+    setText(null);
+    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
   };
-  const shown = step < 1 ? value.toFixed(2) : String(Math.round(value));
+
   return (
-    <span className="flex items-baseline gap-0.5 shrink-0">
+    <span
+      className="inline-flex items-center cursor-ew-resize select-none touch-none"
+      onPointerDown={(e) => {
+        drag.current = { x: e.clientX, from: value };
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        const d = drag.current;
+        if (!d) return;
+        const span = max - min;
+        const next = d.from + ((e.clientX - d.x) / 180) * span;
+        const snapped = Math.round(next / step) * step;
+        onChange(Math.min(max, Math.max(min, Number(snapped.toFixed(4)))));
+      }}
+      onPointerUp={() => (drag.current = null)}
+      onPointerCancel={() => (drag.current = null)}
+    >
       <input
-        value={draft ?? shown}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={(e) => {
-          const n = Number(e.target.value);
-          setDraft(null);
-          if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-          if (e.key === "Escape") setDraft(null);
-          if (e.key === "ArrowUp") onChange(snap(value + step));
-          if (e.key === "ArrowDown") onChange(snap(value - step));
-        }}
-        onPointerDown={(e) => {
-          if (e.button !== 0) return;
-          drag.current = { x: e.clientX, from: value, moved: false };
-        }}
-        onPointerMove={(e) => {
-          const d = drag.current;
-          if (!d) return;
-          const dx = e.clientX - d.x;
-          if (!d.moved) {
-            if (Math.abs(dx) < 3) return;
-            d.moved = true;
-            (e.target as HTMLInputElement).blur();
-            e.currentTarget.setPointerCapture(e.pointerId);
-          }
-          onChange(snap(d.from + dx * ((max - min) / 240) * (e.shiftKey ? 0.25 : 1)));
-        }}
-        onPointerUp={() => {
-          drag.current = null;
-        }}
-        inputMode="decimal"
-        size={Math.max(2, shown.length)}
-        className="bg-transparent text-[11px] text-right tabular-nums cursor-ew-resize touch-none focus:outline-none focus:cursor-text w-[5ch]"
+        value={shown}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && commit((e.target as HTMLInputElement).value)}
+        onPointerDown={(e) => e.stopPropagation()}
+        className={`w-11 bg-transparent text-right text-[12.5px] tabular-nums focus:outline-none ${INK}`}
       />
-      {suffix && <span className="text-[11px] text-muted">{suffix}</span>}
+      {suffix && <span className={`text-[11px] ${INK3}`}>{suffix}</span>}
     </span>
   );
 }
 
-/**
- * The control this whole kit is built around: what it's called on the left, what
- * it says on the right, and the track across the full width underneath. A
- * slider squeezed between a label and a box is a slider you can't aim.
- */
+/** Label left, value right, track full width underneath. */
 export function Slider({
   label,
   value,
@@ -345,7 +354,7 @@ export function Slider({
   max,
   step,
   onChange,
-  suffix = "",
+  suffix,
   display,
   help,
   right,
@@ -356,22 +365,22 @@ export function Slider({
   max: number;
   step: number;
   onChange: (v: number) => void;
-  /** Unit shown after the number — px, %, ×. */
   suffix?: string;
-  /** Instead of the number, when the number isn't the point ("off", "still"). */
+  /** A word where the number would be — "off", "none", "as written". */
   display?: string;
   help?: string;
-  /** Anything at the end of the label line — the loop dot. */
+  /** Anything that belongs after the value — the loop dot, for instance. */
   right?: ReactNode;
 }) {
+  const pct = ((value - min) / (max - min)) * 100;
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="truncate">{label}</span>
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <span className={`text-[12.5px] truncate ${INK2}`}>{label}</span>
         {help && <Help>{help}</Help>}
-        <span className="ml-auto flex items-center gap-1.5">
+        <span className="ml-auto flex items-center gap-1.5 shrink-0">
           {display ? (
-            <span className="text-[11px] text-muted">{display}</span>
+            <span className={`text-[12.5px] ${INK3}`}>{display}</span>
           ) : (
             <Num
               value={value}
@@ -385,21 +394,25 @@ export function Slider({
           {right}
         </span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        aria-label={label}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-foreground"
-      />
+      <div className="relative h-3">
+        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-sm bg-[color:var(--tc-track)]" />
+        <span className="tc-fill" style={{ left: 0, width: `${pct}%` }} />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          aria-label={label}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="tc-range absolute inset-0"
+        />
+      </div>
     </div>
   );
 }
 
-/** A label and a control on one line, for the things that aren't numbers. */
+/** A label and a control on one line, for a choice rather than a number. */
 export function Row({
   label,
   children,
@@ -410,25 +423,30 @@ export function Row({
   help?: string;
 }) {
   return (
-    <label className="flex items-center gap-2 min-h-8">
-      {label !== undefined && (
-        <span className="w-[72px] shrink-0 text-[11px] truncate flex items-center gap-1">
+    <div className="flex items-center gap-2 min-w-0">
+      {label && (
+        <span
+          className={`text-[12.5px] shrink-0 w-[84px] truncate flex items-center gap-1.5 ${INK2}`}
+        >
           {label}
           {help && <Help>{help}</Help>}
         </span>
       )}
-      <span className="flex-1 min-w-0 flex items-center gap-1.5">{children}</span>
-    </label>
+      {children}
+    </div>
   );
 }
 
-/** Two controls side by side, each with its name above it — typeface and its
-    weight, a size and a case. Half the rows for the same number of decisions. */
+/** Two controls on one line. */
 export function Cols({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 gap-2">{children}</div>;
+  return <div className="grid grid-cols-2 gap-x-3 gap-y-3.5">{children}</div>;
 }
 
-/** Two handles on one track: a number that is really a range. */
+/**
+ * Two handles on one track. A number that travels is drawn with this rather
+ * than as two sliders: where it rests and where it goes are one journey, and
+ * `cross` lets the handles pass each other so a number can travel downwards.
+ */
 export function Range({
   label,
   from,
@@ -449,9 +467,6 @@ export function Range({
   step: number;
   onChange: (from: number, to: number) => void;
   suffix?: string;
-  /** Let the handles pass each other, because the pair is a journey and not a
-      span: a number that travels downwards has its destination below where it
-      rests, and clamping the handles apart would make that unsayable. */
   cross?: boolean;
   /** Anything that belongs after the two numbers. */
   right?: ReactNode;
@@ -461,21 +476,21 @@ export function Range({
   const lo = Math.min(from, to);
   const hi = Math.max(from, to);
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="truncate">{label}</span>
-        <span className="ml-auto text-muted tabular-nums">
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <span className={`text-[12.5px] truncate ${INK2}`}>{label}</span>
+        <span className={`ml-auto text-[12.5px] tabular-nums shrink-0 ${INK}`}>
           {show(from)}
           {suffix} {cross ? "→" : "–"} {show(to)}
           {suffix}
         </span>
         {right}
       </div>
-      <div className="relative h-4">
-        <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-line/40" />
+      <div className="relative h-3">
+        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-sm bg-[color:var(--tc-track)]" />
         <span
-          className="absolute top-1/2 -translate-y-1/2 h-px bg-foreground"
-          style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
+          className="tc-fill"
+          style={{ left: `${pct(lo)}%`, width: `${pct(hi) - pct(lo)}%` }}
         />
         {/* Two ranges stacked: the one you grab is whichever handle is nearer,
             which is what makes a two-handle track feel like one control. */}
@@ -490,7 +505,7 @@ export function Range({
             const v = Number(e.target.value);
             onChange(cross ? v : Math.min(v, to), to);
           }}
-          className="absolute inset-0 w-full appearance-none bg-transparent accent-foreground"
+          className="tc-range absolute inset-0"
         />
         <input
           type="range"
@@ -503,7 +518,7 @@ export function Range({
             const v = Number(e.target.value);
             onChange(from, cross ? v : Math.max(v, from));
           }}
-          className="absolute inset-0 w-full appearance-none bg-transparent accent-foreground"
+          className="tc-range absolute inset-0"
         />
       </div>
     </div>
@@ -513,16 +528,16 @@ export function Range({
 /** A control that wants the whole width, with its name above it. */
 export function Stack({ label, children }: { label?: string; children: ReactNode }) {
   return (
-    <div className="space-y-1">
-      {label && <p className="text-[11px]">{label}</p>}
+    <div className="space-y-1.5 min-w-0">
+      {label && <div className={`text-[12.5px] ${INK2}`}>{label}</div>}
       {children}
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- choices */
+/* --------------------------------------------------------------- switches */
 
-/** A pill switch: one yes/no, said out loud. */
+/** One yes/no. On is the single place a colour appears in this chrome. */
 export function Toggle({
   label,
   on,
@@ -535,28 +550,27 @@ export function Toggle({
   help?: string;
 }) {
   return (
-    <label className="flex items-center gap-2 min-h-8 cursor-pointer">
+    <div className="flex items-center gap-2.5 min-w-0">
       <button
         onClick={onChange}
         role="switch"
         aria-checked={on}
         aria-label={label ?? "toggle"}
-        className={`w-8 h-[18px] shrink-0 border ${HAIR} relative transition-colors ${
-          on ? "bg-foreground" : "bg-transparent"
-        }`}
+        className="relative w-[30px] h-[18px] shrink-0 rounded-full transition-colors"
+        style={{ background: on ? "var(--tc-live)" : "var(--tc-track)" }}
       >
         <span
-          className={`absolute top-[2px] size-3 transition-all ${
-            on ? "left-[16px] bg-background" : "left-[2px] bg-foreground/40"
-          }`}
+          className="absolute top-[2px] size-[14px] rounded-full bg-white transition-all"
+          style={{ left: on ? 14 : 2 }}
         />
       </button>
-      {label && <span className="text-[11px]">{label}</span>}
+      {label && <span className={`text-[12.5px] truncate ${INK2}`}>{label}</span>}
       {help && <Help>{help}</Help>}
-    </label>
+    </div>
   );
 }
 
+/** Two to four choices, side by side. Past four, use a Select. */
 export function Segmented<T extends string>({
   value,
   options,
@@ -567,27 +581,31 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <span className={`flex-1 flex border ${HAIR} divide-x divide-line`}>
+    <div
+      className="flex items-center p-[2px] gap-[2px] rounded-[var(--tc-r)] border border-[color:var(--tc-edge)]"
+      style={{ background: "var(--tc-field)" }}
+    >
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
           title={o.title}
-          className={`flex-1 h-8 text-[11px] transition-colors ${
-            value === o.value ? "bg-foreground text-background" : "hover:bg-foreground/5"
+          className={`flex-1 min-w-0 h-[28px] rounded-[var(--tc-r-sm)] text-[12.5px] truncate px-2 transition-colors ${
+            value === o.value
+              ? `bg-[color:var(--tc-field-on)] ${INK}`
+              : `${INK3} hover:bg-[color:var(--tc-field)]`
           }`}
         >
           {o.label}
         </button>
       ))}
-    </span>
+    </div>
   );
 }
 
-export type Option = { value: string; label: string; group?: string };
+type Option = { value: string; label: string; group?: string; title?: string };
 
-/** Native on purpose: it inherits the keyboard, the type-ahead and the way a
-    phone shows a picker. Only the chrome is ours. */
+/** More than four choices. Grouped when the options say so. */
 export function Select({
   value,
   options,
@@ -601,40 +619,43 @@ export function Select({
   title?: string;
   flex?: boolean;
 }) {
-  const groups = [...new Set(options.map((o) => o.group).filter(Boolean))] as string[];
+  const groups = [...new Set(options.map((o) => o.group ?? ""))];
   return (
-    <span className={`relative ${flex ? "flex-1" : ""} min-w-0`}>
+    <div className={`relative ${flex ? "flex-1 min-w-0" : "shrink-0"}`}>
       <select
         value={value}
         title={title}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full h-8 appearance-none border ${HAIR} bg-transparent pl-2 pr-6 text-[11px] truncate hover:bg-foreground/5 focus:outline-none focus:border-foreground`}
+        className="tc-field w-full h-[var(--tc-h)] pl-3 pr-7 text-[13px] appearance-none focus:outline-none cursor-pointer"
       >
-        {groups.length === 0
-          ? options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))
-          : groups.map((g) => (
-              <optgroup key={g} label={g}>
+        {groups.length > 1
+          ? groups.map((g) => (
+              <optgroup key={g} label={g || "—"}>
                 {options
-                  .filter((o) => o.group === g)
+                  .filter((o) => (o.group ?? "") === g)
                   .map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
                   ))}
               </optgroup>
+            ))
+          : options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
       </select>
-      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[8px] opacity-50">
-        ⌄
+      <span
+        className={`pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] ${INK3}`}
+      >
+        ▾
       </span>
-    </span>
+    </div>
   );
 }
 
+/** Words. One line or several. */
 export function Text({
   value,
   onChange,
@@ -648,8 +669,8 @@ export function Text({
   placeholder?: string;
   mono?: boolean;
 }) {
-  const cls = `w-full border ${HAIR} bg-transparent px-2 text-[11px] leading-relaxed focus:outline-none focus:border-foreground ${
-    mono ? "font-mono" : ""
+  const shared = `tc-field w-full px-3 text-[13px] focus:outline-none focus:border-[color:var(--tc-edge-on)] placeholder:text-[color:var(--tc-ink-3)] ${
+    mono ? "font-mono text-[11.5px]" : ""
   }`;
   return rows > 1 ? (
     <textarea
@@ -657,27 +678,28 @@ export function Text({
       rows={rows}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className={`${cls} py-1.5 resize-none`}
+      className={`${shared} py-2 leading-snug resize-y`}
     />
   ) : (
     <input
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className={`${cls} h-8`}
+      className={`${shared} h-[var(--tc-h)]`}
     />
   );
 }
 
 /* ----------------------------------------------------------------- colour */
 
-/** A swatch, its hex, and the picker behind both. */
+/** A swatch, its hex, the picker behind both, and what it's worth. */
 export function ColorRow({
   label = "Colour",
   value,
   onChange,
   onClear,
   onRemove,
+  amount,
 }: {
   label?: string;
   value: string;
@@ -686,14 +708,16 @@ export function ColorRow({
   onClear?: () => void;
   /** Take this colour out of the list it belongs to. */
   onRemove?: () => void;
+  /** The reference's right-hand percentage. */
+  amount?: string;
 }) {
   return (
     <Stack label={label}>
-      <div className={`flex items-center gap-0 border ${HAIR} h-8`}>
+      <div className="tc-field h-[var(--tc-h)] flex items-center overflow-hidden">
         {/* Its own right-hand rule, so a white swatch still reads as a swatch
             and not as a gap in the row. */}
         <label
-          className={`size-8 shrink-0 cursor-pointer border-r ${HAIR}`}
+          className="w-8 h-full shrink-0 cursor-pointer border-r border-[color:var(--tc-edge)]"
           style={{ background: value }}
         >
           <input
@@ -706,13 +730,14 @@ export function ColorRow({
         <input
           value={value}
           onChange={(e) => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && onChange(e.target.value)}
-          className="flex-1 min-w-0 h-full bg-transparent px-2 text-[11px] tabular-nums focus:outline-none"
+          className={`flex-1 min-w-0 h-full bg-transparent px-2.5 text-[12.5px] tabular-nums focus:outline-none ${INK}`}
         />
+        {amount && <span className={`px-2 text-[11.5px] tabular-nums ${INK3}`}>{amount}</span>}
         {onClear && (
           <button
             onClick={onClear}
             title="Back to the theme's own"
-            className={`h-full px-2 text-[10px] text-muted hover:text-foreground border-l ${HAIR}`}
+            className={`h-full px-2.5 text-[11px] border-l border-[color:var(--tc-edge)] ${INK3} hover:text-[color:var(--tc-ink)]`}
           >
             auto
           </button>
@@ -721,7 +746,7 @@ export function ColorRow({
           <button
             onClick={onRemove}
             title="Take this colour out"
-            className={`h-full px-2 text-[10px] text-muted hover:text-foreground border-l ${HAIR}`}
+            className={`h-full px-2.5 text-[11px] border-l border-[color:var(--tc-edge)] ${INK3} hover:text-[color:var(--tc-ink)]`}
           >
             ×
           </button>
@@ -747,16 +772,14 @@ export function Dots({
   labels?: Record<string, string>;
 }) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-2 flex-wrap">
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
-          className={`h-6 px-2 border text-[10px] transition-colors ${
-            value === o.value
-              ? "border-foreground bg-foreground text-background"
-              : `${HAIR} text-muted hover:text-foreground`
-          }`}
+          className={`tc-field ${
+            value === o.value ? "tc-field-on" : ""
+          } h-7 px-2.5 text-[11.5px] shrink-0`}
         >
           {o.label}
         </button>
@@ -765,10 +788,12 @@ export function Dots({
         <button
           key={hex}
           onClick={() => onChange(hex)}
-          title={labels?.[hex] ? `${labels[hex]} — ${hex}` : hex}
+          title={labels?.[hex] ?? hex}
           style={{ background: hex }}
-          className={`size-6 rounded-full border transition-transform ${
-            value === hex ? "border-foreground scale-115" : `${HAIR} hover:scale-110`
+          className={`size-[26px] shrink-0 rounded-full transition-transform ${
+            value === hex
+              ? "ring-2 ring-white ring-offset-2 ring-offset-[color:var(--tc-glass-solid)]"
+              : "border border-[color:var(--tc-edge)] hover:scale-110"
           }`}
         />
       ))}
@@ -776,11 +801,9 @@ export function Dots({
   );
 }
 
-/* -------------------------------------------------------------- placement */
-
-/** Two numbers that are really one place. Drag the dot. */
+/** Two numbers that are really one place. */
 export function XYPad({
-  label = "Position",
+  label,
   x,
   y,
   onChange,
@@ -794,51 +817,50 @@ export function XYPad({
   min?: number;
   max?: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const set = (clientX: number, clientY: number) => {
-    const box = ref.current?.getBoundingClientRect();
-    if (!box) return;
-    const fx = (clientX - box.left) / box.width;
-    const fy = (clientY - box.top) / box.height;
+  const box = useRef<HTMLDivElement>(null);
+  const put = (e: React.PointerEvent) => {
+    const r = box.current?.getBoundingClientRect();
+    if (!r) return;
+    const nx = min + ((e.clientX - r.left) / r.width) * (max - min);
+    const ny = min + ((e.clientY - r.top) / r.height) * (max - min);
     onChange(
-      Math.round((min + fx * (max - min)) * 100) / 100,
-      Math.round((min + fy * (max - min)) * 100) / 100,
+      Math.min(max, Math.max(min, Number(nx.toFixed(3)))),
+      Math.min(max, Math.max(min, Number(ny.toFixed(3)))),
     );
   };
-  const px = ((x - min) / (max - min)) * 100;
-  const py = ((y - min) / (max - min)) * 100;
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
   return (
-    <div className="space-y-1">
-      <div className="flex items-center text-[11px]">
-        <span>{label}</span>
-        <span className="ml-auto text-muted tabular-nums">
+    <div className="space-y-1.5">
+      <div className="flex items-center">
+        <span className={`text-[12.5px] ${INK2}`}>{label ?? "Position"}</span>
+        <span className={`ml-auto text-[12.5px] tabular-nums ${INK}`}>
           {x.toFixed(2)}, {y.toFixed(2)}
         </span>
       </div>
       <div
-        ref={ref}
+        ref={box}
         onPointerDown={(e) => {
-          e.currentTarget.setPointerCapture(e.pointerId);
-          set(e.clientX, e.clientY);
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+          put(e);
         }}
-        onPointerMove={(e) => e.buttons === 1 && set(e.clientX, e.clientY)}
-        className={`relative border ${HAIR} h-24 cursor-crosshair touch-none`}
+        onPointerMove={(e) => e.buttons === 1 && put(e)}
+        className="tc-field relative h-[104px] cursor-crosshair touch-none"
       >
-        <span className="absolute left-0 right-0 top-1/2 border-t border-line/30" />
-        <span className="absolute top-0 bottom-0 left-1/2 border-l border-line/30" />
+        <span className="absolute left-0 right-0 top-1/2 h-px bg-[color:var(--tc-rule)]" />
+        <span className="absolute top-0 bottom-0 left-1/2 w-px bg-[color:var(--tc-rule)]" />
         <span
-          className="absolute size-2 bg-foreground -translate-x-1/2 -translate-y-1/2"
-          style={{ left: `${px}%`, top: `${py}%` }}
+          className="absolute size-[10px] rounded-full bg-white -translate-x-1/2 -translate-y-1/2"
+          style={{ left: `${pct(x)}%`, top: `${pct(y)}%` }}
         />
       </div>
     </div>
   );
 }
 
-/** A file, dragged or clicked. */
+/** A file, dragged onto it or clicked for. */
 export function Dropzone({
   onFile,
-  hint = "Click to choose a file, or drop it on the canvas",
+  hint = "Click to upload a file",
   accept = "image/*",
 }: {
   onFile: (file: File) => void;
@@ -859,28 +881,66 @@ export function Dropzone({
         const f = e.dataTransfer.files?.[0];
         if (f) onFile(f);
       }}
-      className={`block border border-dashed ${
-        over ? "border-foreground bg-foreground/5" : HAIR
-      } px-3 py-6 text-center text-[10px] text-muted leading-relaxed cursor-pointer hover:bg-foreground/5 transition-colors`}
+      className={`tc-field ${
+        over ? "tc-field-on" : ""
+      } h-[112px] flex flex-col items-center justify-center gap-1.5 cursor-pointer text-center px-4`}
     >
-      {hint}
+      <span className={`text-[18px] leading-none ${INK3}`}>⤒</span>
+      <span className={`text-[12.5px] ${INK2}`}>{hint}</span>
+      <span className={`text-[11px] ${INK3}`}>or drag it onto the canvas</span>
       <input
         type="file"
         accept={accept}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
         className="sr-only"
-        onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
       />
     </label>
   );
 }
 
+/**
+ * What was picked, and the way to drop it — the reference's source thumbnail.
+ * `children` draws instead of an `<img>`, which is how a clip shows a frame.
+ */
+export function Thumb({
+  src,
+  onRemove,
+  caption,
+  children,
+}: {
+  src?: string;
+  onRemove: () => void;
+  caption?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="tc-field relative overflow-hidden">
+        {children ??
+          (src ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={src} alt="" className="w-full block max-h-[160px] object-cover" />
+          ) : null)}
+        <button
+          onClick={onRemove}
+          title="Take this out"
+          className="absolute top-1.5 right-1.5 size-[20px] grid place-items-center rounded-full bg-black/55 text-white text-[11px] hover:bg-black/80"
+        >
+          ×
+        </button>
+      </div>
+      {caption && <p className={`text-[11px] leading-relaxed ${INK3}`}>{caption}</p>}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ stack */
 
-/**
- * One thing in a stack — an effect, a mark. Switch, name, order, remove, and its
- * numbers inside. Every effect panel in every motion tool is this shape, because
- * a stack of five effects has to be readable as five things.
- */
+/** One thing in a stack: a switch, a name, reorder, remove, its numbers. */
 export function Block({
   title,
   on = true,
@@ -902,24 +962,28 @@ export function Block({
 }) {
   const [open, setOpen] = useState(initial);
   return (
-    <div className={`border ${HAIR}`}>
-      <div className={`h-8 flex items-center gap-1 pl-1.5 pr-0.5 ${open ? `border-b ${HAIR}` : ""}`}>
+    <div className="rounded-[var(--tc-r)] border border-[color:var(--tc-edge)]">
+      <div
+        className={`h-9 flex items-center gap-1 pl-2 pr-0.5 ${
+          open ? "border-b border-[color:var(--tc-rule)]" : ""
+        }`}
+      >
         {onToggle && (
           <button
             onClick={onToggle}
             title={on ? "Switch this off" : "Switch this on"}
-            className={`w-3.5 shrink-0 text-[9px] ${on ? "" : "opacity-40"}`}
+            className={`w-3.5 shrink-0 text-[9px] ${on ? INK : INK3}`}
           >
             {on ? "◉" : "○"}
           </button>
         )}
         <button
           onClick={() => setOpen((o) => !o)}
-          className={`flex-1 flex items-center gap-1 text-[11px] text-left truncate ${
-            on ? "" : "line-through opacity-50"
+          className={`flex-1 flex items-center gap-1.5 text-[12.5px] text-left truncate ${
+            on ? INK2 : `${INK3} line-through`
           }`}
         >
-          <span className="text-[8px] opacity-60">{open ? "⌃" : "⌄"}</span>
+          <span className={`text-[8px] ${INK3}`}>{open ? "⌃" : "⌄"}</span>
           {title}
         </button>
         {onUp && (
@@ -938,64 +1002,64 @@ export function Block({
           </IconBtn>
         )}
       </div>
-      {open && <div className="p-2 space-y-2">{children}</div>}
+      {open && <div className="p-2.5 space-y-3">{children}</div>}
     </div>
   );
 }
 
 /* ---------------------------------------------------------------- toolbar */
 
-/** The floating bar under the stage. */
+/** The floating pill under the canvas. */
 export function Toolbar({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`bg-background border ${HAIR} h-10 px-1.5 flex items-center gap-1 text-[11px]`}
-    >
+    <div className="tc-float rounded-[var(--tc-r-pill)] h-11 px-2 flex items-center gap-0.5 text-[12.5px]">
       {children}
     </div>
   );
 }
 
 export function Sep() {
-  return <span className="w-px h-4 bg-line/30 mx-1 shrink-0" />;
+  return <span className="w-px h-5 mx-1.5 shrink-0 bg-[color:var(--tc-edge)]" />;
 }
 
-/* --------------------------------------------------------------- dropdown */
+/* ------------------------------------------------------------------- menu */
 
-const MenuCtx = createContext<() => void>(() => {});
-
-/** Close on Escape, or on a click that isn't inside. */
 function useDismiss(open: boolean, close: () => void) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    const away = (e: MouseEvent) => {
       if (!ref.current?.contains(e.target as Node)) close();
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("keydown", onKey);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && close();
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
     return () => {
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", away);
+      document.removeEventListener("keydown", esc);
     };
   }, [open, close]);
   return ref;
 }
 
-/** A menu on a floating bar: the things you do, as opposed to the things you set. */
+const MenuClose = createContext<() => void>(() => {});
+
+/**
+ * The things you *do*. This chrome has no menu bar — the reference doesn't have
+ * one, and a bar of six menus over the canvas is six things floating where the
+ * work is — so a menu hangs off the panel's header or the toolbar instead.
+ */
 export function Menu({
   label,
   children,
   align = "left",
   up = false,
-  width = 244,
-  title,
+  width = 236,
+  title = "Everything you can do",
 }: {
   label: string;
   children: ReactNode;
   align?: "left" | "right";
-  /** Opens upward — for a menu on the bottom bar. */
   up?: boolean;
   width?: number;
   title?: string;
@@ -1003,27 +1067,21 @@ export function Menu({
   const [open, setOpen] = useState(false);
   const ref = useDismiss(open, () => setOpen(false));
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        title={title}
-        /* Its own ground: a menu floats over the black stage, and a transparent
-           button there is a near-black border on near-black. */
-        className={`h-8 px-2.5 text-[11px] border ${HAIR} transition-colors ${
-          open ? "bg-foreground text-background" : "bg-background hover:bg-foreground/5"
-        }`}
-      >
-        {label} <span className="opacity-50 text-[8px]">⌄</span>
-      </button>
+    <div ref={ref} className="relative shrink-0">
+      <IconBtn onClick={() => setOpen((o) => !o)} title={title} on={open} bare>
+        {label}
+      </IconBtn>
       {open && (
-        <div
-          className={`absolute z-50 ${up ? "bottom-[calc(100%+5px)]" : "top-[calc(100%+5px)]"} ${
-            align === "right" ? "right-0" : "left-0"
-          } bg-background border ${HAIR} max-h-[70vh] overflow-y-auto`}
-          style={{ width }}
-        >
-          <MenuCtx.Provider value={() => setOpen(false)}>{children}</MenuCtx.Provider>
-        </div>
+        <MenuClose.Provider value={() => setOpen(false)}>
+          <div
+            className={`tc-float tc-scroll rounded-[var(--tc-r)] absolute z-50 py-1 max-h-[72vh] overflow-y-auto ${
+              align === "right" ? "right-0" : "left-0"
+            } ${up ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"}`}
+            style={{ width }}
+          >
+            {children}
+          </div>
+        </MenuClose.Provider>
       )}
     </div>
   );
@@ -1042,29 +1100,28 @@ export function MenuItem({
   disabled?: boolean;
   on?: boolean;
 }) {
-  const close = useContext(MenuCtx);
+  const close = useContext(MenuClose);
   return (
     <button
       onClick={() => {
-        if (disabled) return;
         onClick();
         close();
       }}
       disabled={disabled}
-      className="w-full flex items-center gap-2 px-2.5 py-2 text-[11px] text-left hover:bg-foreground/5 disabled:opacity-40 disabled:pointer-events-none"
+      className={`w-full text-left px-3 h-8 flex items-center gap-2 text-[12.5px] disabled:opacity-30 hover:bg-[color:var(--tc-field)] ${INK2}`}
     >
       {on !== undefined && (
-        <span className="w-2.5 text-[9px] shrink-0">{on ? "◉" : "○"}</span>
+        <span className={`w-3 text-[9px] ${on ? INK : INK3}`}>{on ? "◉" : "○"}</span>
       )}
       <span className="flex-1 truncate">{children}</span>
-      {hint && <span className="text-muted text-[10px] shrink-0">{hint}</span>}
+      {hint && <span className={`text-[10.5px] tabular-nums ${INK3}`}>{hint}</span>}
     </button>
   );
 }
 
 export function MenuRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="px-2.5 py-2 space-y-1.5">
+    <div className="px-3 py-2 space-y-1.5">
       <Label>{label}</Label>
       <div className="flex items-center gap-1.5">{children}</div>
     </div>
@@ -1072,13 +1129,12 @@ export function MenuRow({ label, children }: { label: string; children: ReactNod
 }
 
 export function MenuSep() {
-  return <div className={`border-t ${HAIR}`} />;
+  return <div className="my-1 h-px bg-[color:var(--tc-rule)]" />;
 }
 
 /* ----------------------------------------------------------------- drawer */
 
-/** A panel over the stage for the things that need room: the recipes, a sheet of
-    rolled looks. Moments, not places. */
+/** A grid of pictures over the canvas. A moment, not a place. */
 export function Drawer({
   title,
   onClose,
@@ -1092,19 +1148,21 @@ export function Drawer({
 }) {
   const ref = useDismiss(true, onClose);
   return (
-    <div className="absolute inset-0 z-40 bg-foreground/60 flex items-stretch justify-center p-4 md:p-10">
+    <div className="absolute inset-3 z-40 flex items-start justify-center pointer-events-none">
       <div
         ref={ref}
-        className={`w-full max-w-5xl bg-background border ${HAIR} flex flex-col min-h-0`}
+        className="tc-float rounded-[var(--tc-r-lg)] w-full max-h-full flex flex-col pointer-events-auto"
       >
-        <div className={`border-b ${HAIR} h-10 px-3 flex items-center gap-3 shrink-0`}>
+        <header className="h-11 shrink-0 flex items-center gap-2 pl-4 pr-2 border-b border-[color:var(--tc-rule)]">
           <Label>{title}</Label>
-          <span className="ml-auto flex items-center gap-1.5">{right}</span>
-          <IconBtn onClick={onClose} title="Close (esc)" bare>
-            ×
-          </IconBtn>
-        </div>
-        <div className="overflow-y-auto p-3">{children}</div>
+          <span className="ml-auto flex items-center gap-1.5">
+            {right}
+            <IconBtn onClick={onClose} title="Close" bare>
+              ×
+            </IconBtn>
+          </span>
+        </header>
+        <div className="tc-scroll flex-1 min-h-0 overflow-y-auto p-4">{children}</div>
       </div>
     </div>
   );

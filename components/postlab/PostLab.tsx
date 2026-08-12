@@ -88,6 +88,7 @@ import {
 import { loadFonts, type Fonts } from "./overlay";
 import { canRenderDirectly } from "./exporter";
 import { photoUrl, readFile, savePhoto } from "./photos";
+import { clip as clipOf, isClip, paintFrame, saveClip, type Clip } from "./clips";
 import Stage, { useClockRunning, useStageFit } from "./Stage";
 import { useExports } from "./useExports";
 import { clock } from "./clock";
@@ -104,6 +105,7 @@ import {
   Dropzone,
   HAIR,
   IconBtn,
+  Label,
   Menu,
   MenuItem,
   MenuRow,
@@ -120,6 +122,7 @@ import {
   Slider,
   Stack,
   Text,
+  Thumb,
   Toggle,
   Toolbar,
   XYPad,
@@ -155,6 +158,54 @@ const FAMILY_NAMES: Record<string, string> = {
 const rollSeed = () => Math.floor(Math.random() * 9999) + 1;
 /* Also outside: the clock is read when an edit happens, not while rendering. */
 const stamp = () => Date.now();
+
+/** What the layer is holding, for the block's own title. */
+const mediaName = (l: LayerSpec) => {
+  if (!l.src) return "none";
+  if (isClip(l.src)) {
+    const c = clipOf(l.src);
+    return c ? `${c.kind} · ${c.frames.length}f` : "reading…";
+  }
+  return l.src.startsWith("local:") ? "a picture" : l.src;
+};
+
+/** What it costs, said where the file was picked rather than in a doc. */
+const mediaNote = (l: LayerSpec, film: Clip | null) => {
+  if (film)
+    return `${film.frames.length} frames at ${film.w}×${film.h}, in this browser only — a shared link won't carry the film. It becomes a grayscale source like any other form: sampled at the cell size, thresholded, and inked.`;
+  if (!l.src) return undefined;
+  if (!photoUrl(l.src)) return "That picture isn't on this device. Choose the file again.";
+  return l.src.startsWith("local:")
+    ? "This picture lives in this browser only, so a shared link won't carry it."
+    : "A path on this site, so this one travels in the link.";
+};
+
+/** One frame of a clip, following the playhead — a thumbnail that moves. */
+function ClipFrame({ clip, cycles }: { clip: Clip; cycles: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    let last = -1;
+    /* Subscribing rather than re-rendering: the clock is deliberately outside
+       React, and a thumbnail is not a reason to bring it back in. */
+    return clock.subscribe(() => {
+      const canvas = ref.current;
+      if (!canvas) return;
+      const now = Math.floor(clock.get() * 8);
+      if (now === last) return;
+      last = now;
+      paintFrame(canvas, clip, clock.get() / 6, cycles);
+    });
+  }, [clip, cycles]);
+  return <canvas ref={ref} className="w-full block max-h-[160px] object-cover" />;
+}
+
+/* A heading inside the one menu. The menu carries what used to be six menus,
+   so it needs the names those menus had. */
+const MenuLabel = ({ children }: { children: string }) => (
+  <div className="px-3 pt-2 pb-1">
+    <Label>{children}</Label>
+  </div>
+);
 
 const layerName = (l: LayerSpec) =>
   l.type === "forms" ? String(l.pattern ?? "rings") : shaderDef(l.type).label;
@@ -192,7 +243,9 @@ function LoopRow({
       onClick={() => onMotion(motion ? null : applyLoop("drift", c, value))}
       title={motion ? "Hold this one still" : "Plug a loop into this number"}
       className={`w-3 shrink-0 text-[9px] ${
-        motion ? "text-foreground" : "text-muted hover:text-foreground"
+        motion
+                ? "text-[color:var(--tc-ink)]"
+                : "text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)]"
       }`}
     >
       {motion ? "◉" : "○"}
@@ -292,6 +345,8 @@ export default function PostLab() {
   const [strip, setStrip] = useState(true);
   const [tracks, setTracks] = useState(false);
   const [zoom, setZoom] = useState(1);
+  /* A file is picked once; asking for another opens the door again. */
+  const [pickMore, setPickMore] = useState(0);
   /* What's over the stage, when something needs the room. */
   const [drawer, setDrawer] = useState<"recipes" | "generate" | "spec" | null>(null);
 
@@ -408,6 +463,7 @@ export default function PostLab() {
      shader takes its uniforms once. */
   const canMove = shaderDef(layer.type).kind === "generative";
   const wantsPhoto = usesPhoto(layer);
+  const film = clipOf(layer.src);
   const defaultWeight =
     slide.titleFont === "serif" ? 500 : slide.titleFont === "gothic" ? 400 : 600;
 
@@ -416,16 +472,38 @@ export default function PostLab() {
     setTimeout(() => setFlash(""), 2500);
   };
 
-  /* The file never leaves the browser: the layer keeps a `local:` handle and the
-     picture sits in this device's storage, like the Studio's token. */
-  const pickPhoto = async (file: File | undefined) => {
+  /**
+   * A picture, a film or a GIF, all through one door. The file never leaves the
+   * browser: the layer keeps a `local:` or `clip:` handle and the media sits in
+   * this device's storage, like the Studio's token.
+   *
+   * Picking one also puts the layer on the `photo` pattern rather than asking
+   * for that separately — a file *is* the choice of what to draw, and making
+   * someone find a dropdown afterwards is a step that says nothing.
+   */
+  const pickMedia = async (file: File | undefined) => {
     if (!file) return;
+    const film = /^video\//.test(file.type) || /gif|webp/i.test(file.type);
     try {
-      const src = savePhoto(await readFile(file));
-      patchLayer({ src } as Partial<LayerSpec>);
-      say("Photo on this device");
-    } catch {
-      say("Couldn't read that file");
+      let src: string;
+      if (film) {
+        say("Reading it…");
+        src = await saveClip(file, (stage, done, total) =>
+          setFlash(`${stage} — ${Math.round((done / total) * 100)}%`),
+        );
+      } else {
+        src = savePhoto(await readFile(file));
+      }
+      /* On the layer, and drawing: a layer that draws nothing has nowhere to
+         put a picture, so switching it to forms is part of taking the file. */
+      const onForms =
+        layer.type === "forms"
+          ? { src, pattern: "photo" }
+          : { ...defaultLayer("forms"), pattern: "photo", src, opacity: layer.opacity };
+      patchLayer(onForms as Partial<LayerSpec>);
+      say(film ? "On this device, frame by frame" : "Photo on this device");
+    } catch (e) {
+      say(e instanceof Error ? e.message : "Couldn't read that file");
     }
   };
 
@@ -896,11 +974,11 @@ export default function PostLab() {
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
         >
           <div
             ref={frameRef}
-            className="relative overflow-hidden cursor-move touch-none shrink-0"
+            className="relative overflow-hidden cursor-move touch-none shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
             style={{ width: stageSize.w, height: stageSize.h }}
             onPointerDown={onStagePointerDown}
             onPointerMove={onStagePointerMove}
@@ -928,233 +1006,210 @@ export default function PostLab() {
           </div>
         </div>
 
-        {/* Top left: what this is, and what you do. */}
-        <div className="md:absolute md:top-3 md:left-3 z-20 flex items-center gap-1.5 p-2 md:p-0 overflow-x-auto">
-          <span
-            className={`bg-background border ${HAIR} h-8 pl-2 pr-2.5 flex items-center gap-2 shrink-0`}
-          >
-            <span
-              className={`inline-grid place-items-center rounded-full border ${HAIR} size-5 text-[9px]`}
-            >
-              P
-            </span>
-            <span className="font-serif italic text-[13px] hidden lg:inline">
-              the Posts Studio
-            </span>
-          </span>
-
-          <Menu label="Post">
-            <MenuItem onClick={() => setDrawer("recipes")} hint="r">
-              Recipes…
-            </MenuItem>
-            <MenuItem onClick={() => roll(12)}>Generate a look…</MenuItem>
-            <MenuSep />
-            <MenuRow label="format">
-              <Segmented
-                value={spec.format}
-                options={(Object.keys(FORMATS) as (keyof typeof FORMATS)[]).map((f) => ({
-                  value: f,
-                  label: FORMATS[f].label,
-                  title: FORMATS[f].hint,
-                }))}
-                onChange={(format) => setSpec({ ...spec, format })}
-              />
-            </MenuRow>
-            <div className="px-2.5 pb-2">
-              <Slider
-                label="loop"
-                value={spec.duration}
-                min={2}
-                max={15}
-                step={1}
-                suffix="s"
-                onChange={(duration) => setSpec({ ...spec, duration })}
-              />
-            </div>
-            <MenuSep />
-            <MenuItem onClick={copyLink}>Copy link to this post</MenuItem>
-            <MenuItem onClick={copyJson}>Copy spec JSON</MenuItem>
-            <MenuItem onClick={() => setDrawer("spec")}>Paste a spec…</MenuItem>
-          </Menu>
-
-          <Menu label="Slide">
-            <MenuItem onClick={addSlide} hint={`${spec.slides.length} / 20`}>
-              Duplicate this slide
-            </MenuItem>
-            <MenuItem onClick={removeSlide} disabled={spec.slides.length <= 1}>
-              Delete it
-            </MenuItem>
-            <MenuItem onClick={() => moveSlide(-1)} disabled={activeIndex === 0}>
-              Move earlier
-            </MenuItem>
-            <MenuItem
-              onClick={() => moveSlide(1)}
-              disabled={activeIndex >= spec.slides.length - 1}
-            >
-              Move later
-            </MenuItem>
-            <MenuSep />
-            <MenuItem onClick={() => onlyParts(["title"])}>Only the words</MenuItem>
-            <MenuItem onClick={() => onlyParts(["tag", "title"])}>Oval + words</MenuItem>
-            <MenuItem onClick={() => patchSlide({ off: undefined })}>Everything on</MenuItem>
-            <MenuSep />
-            <MenuItem onClick={copyStyle}>Copy this look</MenuItem>
-            <MenuItem onClick={() => pasteStyle(false)} disabled={!styleClip}>
-              Paste the look here
-            </MenuItem>
-            <MenuItem
-              onClick={() => pasteStyle(true)}
-              disabled={!styleClip || spec.slides.length < 2}
-            >
-              Paste it on all {spec.slides.length}
-            </MenuItem>
-            <MenuRow label="variations of this slide">
-              {[3, 5, 9].map((n) => (
-                <Btn key={n} onClick={() => makeVariations(n)} wide>
-                  {n}
-                </Btn>
-              ))}
-            </MenuRow>
-            <div className="px-2.5 pb-2">
-              <Slider
-                label="how far they wander"
-                value={wiggle}
-                min={0.05}
-                max={0.6}
-                step={0.05}
-                onChange={setWiggle}
-              />
-            </div>
-          </Menu>
-
-          <Menu label="Layer">
-            <MenuItem onClick={addLayer} disabled={slide.layers.length >= MAX_LAYERS}>
-              Add a layer, moving
-            </MenuItem>
-            <MenuItem onClick={removeLayer} disabled={slide.layers.length <= 1}>
-              Delete this one
-            </MenuItem>
-            <MenuItem onClick={() => moveLayer(1)}>Bring forward</MenuItem>
-            <MenuItem onClick={() => moveLayer(-1)}>Send back</MenuItem>
-            <MenuSep />
-            <MenuItem
-              on={!layer.mute}
-              onClick={() => patchLayer({ mute: layer.mute ? undefined : true })}
-            >
-              Visible
-            </MenuItem>
-            <MenuItem
-              on={solo === layerIndex}
-              onClick={() => setSolo(solo === layerIndex ? null : layerIndex)}
-            >
-              On its own
-            </MenuItem>
-            <MenuSep />
-            <MenuItem onClick={randomizeLayer}>Randomise this layer</MenuItem>
-            <MenuItem onClick={randomizeSlide} disabled={slide.layers.length < 2}>
-              Randomise all {slide.layers.length}
-            </MenuItem>
-            <MenuSep />
-            {FILTERS.filter((f) => !(layer.filters ?? []).some((x) => x.type === f.type)).map(
-              (f) => (
-                <MenuItem key={f.type} onClick={() => addFilter(f.type)}>
-                  Add effect · {f.label}
-                </MenuItem>
-              ),
-            )}
-          </Menu>
-
-          <Menu label="View">
-            <MenuItem on={strip} onClick={() => setStrip((v) => !v)}>
-              The filmstrip
-            </MenuItem>
-            <MenuItem on={tracks} onClick={() => setTracks((v) => !v)}>
-              The loop, in tracks
-            </MenuItem>
-            <MenuItem on={guides} onClick={() => setGuides((v) => !v)} hint="g">
-              Margin guides
-            </MenuItem>
-            <MenuSep />
-            <MenuItem onClick={() => setZoom(1)} hint="0">
-              Zoom to fit
-            </MenuItem>
-            <MenuItem
-              on={solo !== null}
-              onClick={() => setSolo(null)}
-              disabled={solo === null}
-            >
-              Stop looking at one layer
-            </MenuItem>
-          </Menu>
-
-          <Menu label="Export" width={268}>
-            <MenuRow label="size">
-              <Segmented
-                value={quality}
-                options={[
-                  { value: "mid" as const, label: "1080" },
-                  { value: "high" as const, label: "2×" },
-                  { value: "max" as const, label: "4K" },
-                ]}
-                onChange={setQuality}
-              />
-            </MenuRow>
-            <MenuItem onClick={savePng} hint={`${outW}×${outH}`} disabled={!!job}>
-              PNG — this slide
-            </MenuItem>
-            <MenuItem onClick={saveAllPngs} disabled={!!job || spec.slides.length < 2}>
-              PNG — all {spec.slides.length}
-            </MenuItem>
-            <MenuItem onClick={saveVideo} hint={`${spec.duration}s`} disabled={!!job}>
-              Video — this slide
-            </MenuItem>
-            <MenuItem onClick={saveAllVideos} disabled={!!job || spec.slides.length < 2}>
-              Video — all {spec.slides.length}
-            </MenuItem>
-            <MenuItem onClick={saveGif} hint={`${spec.duration}s`} disabled={!!job}>
-              GIF — this slide
-            </MenuItem>
-            <MenuItem onClick={saveAllGifs} disabled={!!job || spec.slides.length < 2}>
-              GIF — all {spec.slides.length}
-            </MenuItem>
-            <MenuSep />
-            <div className="px-2.5 py-2 space-y-1">
-              <p className="text-[11px]">
-                {loop.loops ? "◉ This slide loops." : "○ This slide won't loop."}
-              </p>
-              <p className="text-[10px] text-muted leading-relaxed">
-                {loop.loops
-                  ? direct
-                    ? "Every frame is drawn at its exact moment, at export size. The last runs into the first with no seam."
-                    : "The forms return to where they started, but the WebGL layer is filmed as it plays, so the clip can drift by a frame."
-                  : loop.why.join(" ")}
-              </p>
-            </div>
-          </Menu>
-
-          <Menu label="Go" align="right" width={180}>
-            <MenuItem onClick={() => router.push("/tools")}>the Tools</MenuItem>
-            <MenuItem onClick={() => router.push("/desk")}>the Desk</MenuItem>
-            <MenuItem onClick={() => router.push("/studio")}>the Studio</MenuItem>
-            <MenuItem onClick={() => router.push("/hub")}>the Hub</MenuItem>
-          </Menu>
-
-          {(flash || job) && (
-            <span
-              className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center text-[11px] shrink-0 tabular-nums`}
-            >
-              {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
-            </span>
-          )}
-        </div>
-
         {/* Top right: one panel, one column. */}
         <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
           <Panel
             title="the Posts Studio"
+            /* Everything you *do*, in one menu off the panel's header. This
+               chrome has no menu bar: the reference doesn't have one, and six
+               menus floating over the canvas are six things standing where the
+               work is. */
+            menu={
+              <Menu label="⋯" align="right" width={248}>
+                <MenuLabel>the post</MenuLabel>
+                  <MenuItem onClick={() => setDrawer("recipes")} hint="r">
+                    Recipes…
+                  </MenuItem>
+                  <MenuItem onClick={() => roll(12)}>Generate a look…</MenuItem>
+                  <MenuSep />
+                  <MenuRow label="format">
+                    <Segmented
+                      value={spec.format}
+                      options={(Object.keys(FORMATS) as (keyof typeof FORMATS)[]).map((f) => ({
+                        value: f,
+                        label: FORMATS[f].label,
+                        title: FORMATS[f].hint,
+                      }))}
+                      onChange={(format) => setSpec({ ...spec, format })}
+                    />
+                  </MenuRow>
+                  <div className="px-2.5 pb-2">
+                    <Slider
+                      label="loop"
+                      value={spec.duration}
+                      min={2}
+                      max={15}
+                      step={1}
+                      suffix="s"
+                      onChange={(duration) => setSpec({ ...spec, duration })}
+                    />
+                  </div>
+                  <MenuSep />
+                  <MenuItem onClick={copyLink}>Copy link to this post</MenuItem>
+                  <MenuItem onClick={copyJson}>Copy spec JSON</MenuItem>
+                  <MenuItem onClick={() => setDrawer("spec")}>Paste a spec…</MenuItem>
+                <MenuSep />
+                <MenuLabel>this slide</MenuLabel>
+                  <MenuItem onClick={addSlide} hint={`${spec.slides.length} / 20`}>
+                    Duplicate this slide
+                  </MenuItem>
+                  <MenuItem onClick={removeSlide} disabled={spec.slides.length <= 1}>
+                    Delete it
+                  </MenuItem>
+                  <MenuItem onClick={() => moveSlide(-1)} disabled={activeIndex === 0}>
+                    Move earlier
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => moveSlide(1)}
+                    disabled={activeIndex >= spec.slides.length - 1}
+                  >
+                    Move later
+                  </MenuItem>
+                  <MenuSep />
+                  <MenuItem onClick={() => onlyParts(["title"])}>Only the words</MenuItem>
+                  <MenuItem onClick={() => onlyParts(["tag", "title"])}>Oval + words</MenuItem>
+                  <MenuItem onClick={() => patchSlide({ off: undefined })}>Everything on</MenuItem>
+                  <MenuSep />
+                  <MenuItem onClick={copyStyle}>Copy this look</MenuItem>
+                  <MenuItem onClick={() => pasteStyle(false)} disabled={!styleClip}>
+                    Paste the look here
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => pasteStyle(true)}
+                    disabled={!styleClip || spec.slides.length < 2}
+                  >
+                    Paste it on all {spec.slides.length}
+                  </MenuItem>
+                  <MenuRow label="variations of this slide">
+                    {[3, 5, 9].map((n) => (
+                      <Btn key={n} onClick={() => makeVariations(n)} wide>
+                        {n}
+                      </Btn>
+                    ))}
+                  </MenuRow>
+                  <div className="px-2.5 pb-2">
+                    <Slider
+                      label="how far they wander"
+                      value={wiggle}
+                      min={0.05}
+                      max={0.6}
+                      step={0.05}
+                      onChange={setWiggle}
+                    />
+                  </div>
+                <MenuSep />
+                <MenuLabel>this layer</MenuLabel>
+                  <MenuItem onClick={addLayer} disabled={slide.layers.length >= MAX_LAYERS}>
+                    Add a layer, moving
+                  </MenuItem>
+                  <MenuItem onClick={removeLayer} disabled={slide.layers.length <= 1}>
+                    Delete this one
+                  </MenuItem>
+                  <MenuItem onClick={() => moveLayer(1)}>Bring forward</MenuItem>
+                  <MenuItem onClick={() => moveLayer(-1)}>Send back</MenuItem>
+                  <MenuSep />
+                  <MenuItem
+                    on={!layer.mute}
+                    onClick={() => patchLayer({ mute: layer.mute ? undefined : true })}
+                  >
+                    Visible
+                  </MenuItem>
+                  <MenuItem
+                    on={solo === layerIndex}
+                    onClick={() => setSolo(solo === layerIndex ? null : layerIndex)}
+                  >
+                    On its own
+                  </MenuItem>
+                  <MenuSep />
+                  <MenuItem onClick={randomizeLayer}>Randomise this layer</MenuItem>
+                  <MenuItem onClick={randomizeSlide} disabled={slide.layers.length < 2}>
+                    Randomise all {slide.layers.length}
+                  </MenuItem>
+                  <MenuSep />
+                  {FILTERS.filter((f) => !(layer.filters ?? []).some((x) => x.type === f.type)).map(
+                    (f) => (
+                      <MenuItem key={f.type} onClick={() => addFilter(f.type)}>
+                        Add effect · {f.label}
+                      </MenuItem>
+                    ),
+                  )}
+                <MenuSep />
+                <MenuLabel>the view</MenuLabel>
+                  <MenuItem on={strip} onClick={() => setStrip((v) => !v)}>
+                    The filmstrip
+                  </MenuItem>
+                  <MenuItem on={tracks} onClick={() => setTracks((v) => !v)}>
+                    The loop, in tracks
+                  </MenuItem>
+                  <MenuItem on={guides} onClick={() => setGuides((v) => !v)} hint="g">
+                    Margin guides
+                  </MenuItem>
+                  <MenuSep />
+                  <MenuItem onClick={() => setZoom(1)} hint="0">
+                    Zoom to fit
+                  </MenuItem>
+                  <MenuItem
+                    on={solo !== null}
+                    onClick={() => setSolo(null)}
+                    disabled={solo === null}
+                  >
+                    Stop looking at one layer
+                  </MenuItem>
+                <MenuSep />
+                <MenuLabel>out</MenuLabel>
+                  <MenuRow label="size">
+                    <Segmented
+                      value={quality}
+                      options={[
+                        { value: "mid" as const, label: "1080" },
+                        { value: "high" as const, label: "2×" },
+                        { value: "max" as const, label: "4K" },
+                      ]}
+                      onChange={setQuality}
+                    />
+                  </MenuRow>
+                  <MenuItem onClick={savePng} hint={`${outW}×${outH}`} disabled={!!job}>
+                    PNG — this slide
+                  </MenuItem>
+                  <MenuItem onClick={saveAllPngs} disabled={!!job || spec.slides.length < 2}>
+                    PNG — all {spec.slides.length}
+                  </MenuItem>
+                  <MenuItem onClick={saveVideo} hint={`${spec.duration}s`} disabled={!!job}>
+                    Video — this slide
+                  </MenuItem>
+                  <MenuItem onClick={saveAllVideos} disabled={!!job || spec.slides.length < 2}>
+                    Video — all {spec.slides.length}
+                  </MenuItem>
+                  <MenuItem onClick={saveGif} hint={`${spec.duration}s`} disabled={!!job}>
+                    GIF — this slide
+                  </MenuItem>
+                  <MenuItem onClick={saveAllGifs} disabled={!!job || spec.slides.length < 2}>
+                    GIF — all {spec.slides.length}
+                  </MenuItem>
+                  <MenuSep />
+                  <div className="px-2.5 py-2 space-y-1">
+                    <p className="text-[11px]">
+                      {loop.loops ? "◉ This slide loops." : "○ This slide won't loop."}
+                    </p>
+                    <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
+                      {loop.loops
+                        ? direct
+                          ? "Every frame is drawn at its exact moment, at export size. The last runs into the first with no seam."
+                          : "The forms return to where they started, but the WebGL layer is filmed as it plays, so the clip can drift by a frame."
+                        : loop.why.join(" ")}
+                    </p>
+                  </div>
+                <MenuSep />
+                <MenuLabel>go</MenuLabel>
+                  <MenuItem onClick={() => router.push("/tools")}>the Tools</MenuItem>
+                  <MenuItem onClick={() => router.push("/desk")}>the Desk</MenuItem>
+                  <MenuItem onClick={() => router.push("/studio")}>the Studio</MenuItem>
+                  <MenuItem onClick={() => router.push("/hub")}>the Hub</MenuItem>
+              </Menu>
+            }
             onReset={() => patchSlide(defaultSlide({ title: slide.title }))}
             right={
-              <span className="text-[10px] text-muted tabular-nums pr-1">
+              <span className="text-[11px] text-[color:var(--tc-ink-3)] tabular-nums pr-1">
                 {String(activeIndex + 1).padStart(2, "0")}/
                 {String(spec.slides.length).padStart(2, "0")} · {FORMATS[spec.format].label}
               </span>
@@ -1202,14 +1257,14 @@ export default function PostLab() {
               <Cols>
                 <Stack label="canvas width">
                   <span
-                    className={`h-8 border ${HAIR} px-2 flex items-center text-[11px] tabular-nums text-muted`}
+                    className="tc-field h-[var(--tc-h)] px-3 flex items-center text-[12.5px] tabular-nums text-[color:var(--tc-ink-2)]"
                   >
                     {FORMATS[spec.format].w}
                   </span>
                 </Stack>
                 <Stack label="canvas height">
                   <span
-                    className={`h-8 border ${HAIR} px-2 flex items-center text-[11px] tabular-nums text-muted`}
+                    className="tc-field h-[var(--tc-h)] px-3 flex items-center text-[12.5px] tabular-nums text-[color:var(--tc-ink-2)]"
                   >
                     {FORMATS[spec.format].h}
                   </span>
@@ -1226,7 +1281,7 @@ export default function PostLab() {
                   onChange={setQuality}
                 />
               </Stack>
-              <p className="text-[10px] text-muted tabular-nums">
+              <p className="text-[11px] text-[color:var(--tc-ink-3)] tabular-nums">
                 exports at {outW}×{outH}
               </p>
               <Slider
@@ -1291,8 +1346,82 @@ export default function PostLab() {
                 onChange={(veil) => patchSlide({ veil })}
                 help="A wash of the ground over the graphic, so the words can be read"
               />
+              {/* The file, in the group the reference keeps it in: a picture,
+                  a film or a GIF is what the post is *of*, so it sits with the
+                  paper rather than inside the effect that screens it. */}
+              <Block
+                title={`media — ${mediaName(layer)}`}
+                open={!!layer.src}
+              >
+                {layer.src ? (
+                  <Thumb
+                    src={film ? undefined : (photoUrl(layer.src) ?? undefined)}
+                    onRemove={() =>
+                      patchLayer({ src: undefined, clipCycles: undefined } as Partial<LayerSpec>)
+                    }
+                    caption={mediaNote(layer, film)}
+                  >
+                    {film && <ClipFrame clip={film} cycles={layer.clipCycles ?? 1} />}
+                  </Thumb>
+                ) : (
+                  <Dropzone
+                    onFile={(f) => pickMedia(f)}
+                    hint="Click to upload a picture, a film or a GIF"
+                    accept="image/*,video/*"
+                  />
+                )}
+                {layer.src && (
+                  <>
+                    <Row label="fill">
+                      <Segmented
+                        value={layer.fit === "contain" ? "contain" : "cover"}
+                        options={[
+                          { value: "cover" as const, label: "cover" },
+                          { value: "contain" as const, label: "contain" },
+                        ]}
+                        onChange={(fit) =>
+                          patchLayer({
+                            fit: fit === "contain" ? "contain" : undefined,
+                          } as Partial<LayerSpec>)
+                        }
+                      />
+                    </Row>
+                    {film && (
+                      <Slider
+                        label="times through"
+                        value={layer.clipCycles ?? 1}
+                        min={1}
+                        max={6}
+                        step={1}
+                        suffix="×"
+                        onChange={(clipCycles) =>
+                          patchLayer({
+                            clipCycles: clipCycles === 1 ? undefined : clipCycles,
+                          } as Partial<LayerSpec>)
+                        }
+                        help="Whole trips through the film over one loop — whole numbers only, which is what stops it opening a seam"
+                      />
+                    )}
+                    <Buttons>
+                      <Btn onClick={() => setPickMore((n) => n + 1)} wide>
+                        Choose another
+                      </Btn>
+                    </Buttons>
+                    {pickMore > 0 && (
+                      <Dropzone
+                        onFile={(f) => {
+                          setPickMore(0);
+                          pickMedia(f);
+                        }}
+                        hint="Click to upload a picture, a film or a GIF"
+                        accept="image/*,video/*"
+                      />
+                    )}
+                  </>
+                )}
+              </Block>
               <Block title="the ruling" open={(slide.grid ?? 0) >= 2}>
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   The hairline grid the club&apos;s sheets are drawn on: square
                   cells, cut equally top and bottom.
                 </p>
@@ -1377,7 +1506,7 @@ export default function PostLab() {
                   />
                 </Stack>
               </Cols>
-              <p className="text-[10px] text-muted leading-relaxed">
+              <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                 {slide.note
                   ? "The note has the top-right corner, so the circled mark stands down while it's there."
                   : "Wrap a run in *asterisks* to flip it to the other voice — italic in a roman headline, roman in an italic one."}
@@ -1493,7 +1622,7 @@ export default function PostLab() {
                 title={`on the slide — ${parts.length} of ${SLIDE_PARTS.length}`}
                 open={false}
               >
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   Switching a part off keeps its words, so switching it back on
                   brings them with it.
                 </p>
@@ -1526,7 +1655,7 @@ export default function PostLab() {
                 }`}
                 open={!!slide.count}
               >
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   A number that counts over the loop. Write # wherever it should
                   appear — “#” with “days to go” under it is a countdown.
                 </p>
@@ -1567,7 +1696,7 @@ export default function PostLab() {
                       }
                       help="Padding holds the same room for every value, so the headline doesn't breathe as a digit drops"
                     />
-                    <p className="text-[10px] text-muted leading-relaxed">
+                    <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                       {Math.abs(slide.count.to - slide.count.from) + 1} values over{" "}
                       {spec.duration}s.
                     </p>
@@ -1580,7 +1709,7 @@ export default function PostLab() {
                 }`}
                 open={false}
               >
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   Every glyph thresholded into hard ink-or-nothing blocks at
                   this cell size.
                 </p>
@@ -1852,42 +1981,6 @@ export default function PostLab() {
                     />
                   </Row>
                 ))}
-              {wantsPhoto && (
-                <div className="space-y-2">
-                  {layer.src ? (
-                    <Buttons>
-                      <Btn onClick={() => patchLayer({ src: undefined } as Partial<LayerSpec>)} wide>
-                        Remove the picture
-                      </Btn>
-                    </Buttons>
-                  ) : (
-                    <Dropzone onFile={(f) => pickPhoto(f)} />
-                  )}
-                  <Row label="fill">
-                    <Segmented
-                      value={layer.fit === "contain" ? "contain" : "cover"}
-                      options={[
-                        { value: "cover" as const, label: "cover" },
-                        { value: "contain" as const, label: "contain" },
-                      ]}
-                      onChange={(fit) =>
-                        patchLayer({
-                          fit: fit === "contain" ? "contain" : undefined,
-                        } as Partial<LayerSpec>)
-                      }
-                    />
-                  </Row>
-                  <p className="text-[10px] text-muted leading-relaxed">
-                    {!layer.src
-                      ? "The photo becomes a grayscale source like any other form: sampled at the cell size, thresholded, and inked."
-                      : photoUrl(layer.src)
-                        ? layer.src.startsWith("local:")
-                          ? "This picture lives in this browser only, so a shared link won't carry it."
-                          : "A path on this site, so this one travels in the link."
-                        : "That picture isn't on this device. Choose the file again."}
-                  </p>
-                </div>
-              )}
               {def.controls
                 .filter((c) => c.key !== "exposure" || wantsPhoto)
                 .map((c) => (
@@ -1902,7 +1995,7 @@ export default function PostLab() {
                   />
                 ))}
               {def.controls.length === 0 && (
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   Nothing to set: this layer draws nothing at all, which is what a sheet
                   wants behind its words.
                 </p>
@@ -1917,7 +2010,7 @@ export default function PostLab() {
                 }`}
                 open={(layer.filters ?? []).length > 0}
               >
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   What happens to this layer after it&apos;s drawn, top to bottom.
                   Each one arrives with a number already travelling.
                 </p>
@@ -1958,7 +2051,7 @@ export default function PostLab() {
                           onMotion={(m) => setFilterMotion(i, c.key, m)}
                         />
                       ))}
-                      <p className="text-[10px] text-muted leading-relaxed">{fd.hint}</p>
+                      <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">{fd.hint}</p>
                     </Block>
                   );
                 })}
@@ -2004,7 +2097,7 @@ export default function PostLab() {
                 >
                   Reset the transform
                 </Btn>
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   {canMove
                     ? "Drag the post to move this layer, scroll to scale, shift-drag to turn. The ○ beside a number plugs a loop into it."
                     : "Travelling numbers are a dithered-forms thing: the WebGL shader takes its numbers once, not every frame."}
@@ -2139,7 +2232,7 @@ export default function PostLab() {
                     </Btn>
                   )}
                 </Buttons>
-                <p className="text-[10px] text-muted leading-relaxed">
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                   {slide.palette
                     ? "This post no longer follows the club palette."
                     : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}
@@ -2153,7 +2246,7 @@ export default function PostLab() {
         {strip && spec.slides.length > 0 && (
           <div className="md:absolute md:left-3 md:bottom-3 z-20 p-2 md:p-0 max-w-full">
             <div
-              className={`bg-background border ${HAIR} p-1.5 flex items-end gap-1.5 overflow-x-auto`}
+              className="tc-float rounded-[var(--tc-r-lg)] p-2 flex items-end gap-2 overflow-x-auto"
             >
               {spec.slides.map((sl, i) => (
                 <button
@@ -2161,7 +2254,9 @@ export default function PostLab() {
                   onClick={() => setActive(i)}
                   title={plainTitle(sl.title) || sl.kicker || "—"}
                   className={`shrink-0 border transition-colors ${
-                    i === activeIndex ? "border-foreground" : `${HAIR} hover:border-foreground/50`
+                    i === activeIndex
+                      ? "border-white"
+                      : "border-[color:var(--tc-edge)] hover:border-white/40"
                   }`}
                 >
                   <Poster spec={spec} index={i} fonts={fonts} width={64} live />
@@ -2174,8 +2269,13 @@ export default function PostLab() {
           </div>
         )}
 
-        {/* Bottom centre: the toolbar. */}
-        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex justify-center">
+        {/* Bottom centre: the toolbar, and whatever it has to say. */}
+        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex flex-col items-center gap-2">
+          {(flash || job) && (
+            <span className="tc-float rounded-[var(--tc-r)] h-8 px-3 flex items-center text-[12.5px] tabular-nums whitespace-nowrap">
+              {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
+            </span>
+          )}
           <Toolbar>
             <IconBtn onClick={undo} title="Undo (⌘Z)" disabled={!past.length} bare>
               ↺
@@ -2194,7 +2294,7 @@ export default function PostLab() {
             <button
               onClick={() => setZoom(1)}
               title="Zoom to fit (0)"
-              className="px-1 tabular-nums text-[11px] hover:text-muted min-w-[46px]"
+              className="px-1 tabular-nums text-[12.5px] text-[color:var(--tc-ink-2)] hover:text-[color:var(--tc-ink)] min-w-[48px]"
             >
               {percent}%
             </button>
@@ -2236,8 +2336,8 @@ export default function PostLab() {
 
         {/* The loop, when you ask for it. */}
         {tracks && (
-          <div className="md:absolute md:bottom-[68px] md:left-3 md:right-[340px] z-20 p-2 md:p-0">
-            <div className={`bg-background border ${HAIR}`}>
+          <div className="md:absolute md:bottom-[68px] md:left-3 md:right-[352px] z-20 p-2 md:p-0">
+            <div className="tc-float rounded-[var(--tc-r-lg)] overflow-hidden">
               <Tracks
                 slide={slide}
                 duration={spec.duration}
@@ -2262,7 +2362,7 @@ export default function PostLab() {
                   key={p.name}
                   onClick={() => loadPreset(i)}
                   title={p.about}
-                  className={`border ${HAIR} hover:border-foreground transition-colors text-left`}
+                  className={"rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-white/50 transition-colors text-left overflow-hidden"}
                 >
                   <Poster
                     spec={normalizeSpec(structuredClone(p.spec))}
@@ -2296,7 +2396,7 @@ export default function PostLab() {
                     setDrawer(null);
                   }}
                   title="Use this one"
-                  className={`block border ${HAIR} hover:border-foreground transition-colors`}
+                  className={"block rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-white/50 transition-colors overflow-hidden"}
                 >
                   <Poster
                     spec={{
@@ -2338,12 +2438,12 @@ export default function PostLab() {
                 <a
                   href="/api/postlab/schema"
                   target="_blank"
-                  className={`h-8 px-2.5 border ${HAIR} text-[11px] inline-flex items-center hover:bg-foreground/5`}
+                  className="tc-field h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center"
                 >
                   the spec schema →
                 </a>
               </Buttons>
-              <p className="text-[10px] text-muted leading-relaxed">
+              <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                 A post is a spec, and a spec is text: anything that can write JSON can hand you
                 a finished post.
               </p>

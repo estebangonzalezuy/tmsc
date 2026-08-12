@@ -12,6 +12,7 @@ import { FORMATS, type PostSpec } from "@/lib/postlab";
 import { drawOverlay, type Fonts } from "./overlay";
 import { exportPng, recordGif, recordVideo } from "./exporter";
 import { loadSlidePhotos } from "./photos";
+import { loadSlideClips } from "./clips";
 
 export type Quality = "mid" | "high" | "max";
 
@@ -50,6 +51,7 @@ export function useExports({
   const savePng = async () => {
     if (!overlayRef.current) return;
     await loadSlidePhotos(spec.slides[index]?.layers ?? []);
+    await loadSlideClips(spec.slides[index]?.layers ?? []);
     exportPng(spec, index, layerCanvases(), overlayRef.current, fonts, scale);
   };
 
@@ -69,6 +71,7 @@ export function useExports({
         setIndex(i);
         /* Nothing gets exported holding a picture that hasn't decoded. */
         await loadSlidePhotos(spec.slides[i]?.layers ?? []);
+        await loadSlideClips(spec.slides[i]?.layers ?? []);
         await new Promise((r) => setTimeout(r, 600));
         await fn(i, (f) => setJob({ label: tag, frac: f }));
       }

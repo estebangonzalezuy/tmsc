@@ -158,11 +158,16 @@ export type LayerSpec = ShaderSpec & {
       WebGL shader's parameters are uniforms set once per render, and
       pushing new ones every frame is not what it is for. */
   motion?: MotionMap;
-  /** The picture behind a `photo` pattern. Either a path on this site
-      (`/stills/…`, which travels in a link) or `local:<id>` for a file the
-      owner picked, which lives in that browser and nowhere else — the same
-      zero-config bargain the Studio and the Desk make. */
+  /** The picture behind a `photo` pattern. A path on this site (`/stills/…`,
+      which travels in a link), `local:<id>` for a file the owner picked, or
+      `clip:<id>` for a film or GIF they picked — the last two live in that
+      browser and nowhere else, the same zero-config bargain the Studio and the
+      Desk make. */
   src?: string;
+  /** Only for a `clip:` src — whole trips through the film over one loop.
+      Absent = 1. Whole numbers only, which is what stops a film opening a
+      seam the way every other travelling number is stopped. */
+  clipCycles?: number;
   /** How the picture fills the frame. */
   fit?: "cover" | "contain";
   /** Switched off without being deleted, so a stack can be taken apart and

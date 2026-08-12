@@ -32,7 +32,6 @@ import {
   Btn,
   Buttons,
   Dots,
-  HAIR,
   IconBtn,
   Panel,
   Primary,
@@ -58,21 +57,27 @@ function Playhead({ duration, onScrub }: { duration: number; onScrub: () => void
   const time = useTime();
   return (
     <>
-      <input
-        type="range"
-        min={0}
-        max={duration}
-        step={1 / 60}
-        value={time}
-        aria-label="Playhead"
-        onChange={(e) => {
-          /* Taking hold of the playhead is taking hold of the post. */
-          onScrub();
-          clock.set(Number(e.target.value));
-        }}
-        className="w-32 sm:w-48 accent-foreground"
-      />
-      <span className="text-muted tabular-nums w-20 text-right">
+      {/* The same track shape as every slider in the chrome: a hairline with the
+          travelled part filled behind the input, which paints nothing itself. */}
+      <span className="relative h-3 w-32 sm:w-48">
+        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-sm bg-[color:var(--tc-track)]" />
+        <span className="tc-fill" style={{ left: 0, width: `${(time / duration) * 100}%` }} />
+        <input
+          type="range"
+          min={0}
+          max={duration}
+          step={1 / 60}
+          value={time}
+          aria-label="Playhead"
+          onChange={(e) => {
+            /* Taking hold of the playhead is taking hold of the post. */
+            onScrub();
+            clock.set(Number(e.target.value));
+          }}
+          className="tc-range absolute inset-0"
+        />
+      </span>
+      <span className="text-[color:var(--tc-ink-3)] tabular-nums w-20 text-right">
         {time.toFixed(2)}/{duration.toFixed(0)}s
       </span>
     </>
@@ -191,7 +196,7 @@ export default function ToolViewer({ id }: { id: string }) {
             type="date"
             value={String(params[f.key] ?? "")}
             onChange={(e) => set(f.key, e.target.value)}
-            className={`w-full h-8 border ${HAIR} bg-transparent px-2 text-[11px] focus:outline-none focus:border-foreground`}
+            className="tc-field w-full h-[var(--tc-h)] px-3 text-[13px] focus:outline-none"
           />
         );
       case "number":
@@ -259,10 +264,10 @@ export default function ToolViewer({ id }: { id: string }) {
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
         >
           <div
-            className="relative overflow-hidden shrink-0"
+            className="relative overflow-hidden shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
             style={{ width: stageSize.w, height: stageSize.h }}
           >
             <Stage
@@ -280,26 +285,26 @@ export default function ToolViewer({ id }: { id: string }) {
           <Link
             href="/tools"
             title="every tool"
-            className={`bg-background border ${HAIR} size-8 shrink-0 inline-grid place-items-center text-[11px] hover:bg-foreground hover:text-background transition-colors`}
+            className="tc-float rounded-[var(--tc-r)] size-9 shrink-0 inline-grid place-items-center text-[13px] hover:bg-white/10 transition-colors"
           >
             ←
           </Link>
           <span
-            className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center gap-2 shrink-0`}
+            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center gap-2.5 shrink-0"
           >
-            <span className="font-serif italic text-[13px]">{tool.name}</span>
-            <span className="text-[10px] text-muted hidden xl:inline">{tool.about}</span>
+            <span className="text-[13px] font-medium">{tool.name}</span>
+            <span className="text-[11px] text-[color:var(--tc-ink-3)] hidden xl:block max-w-[320px] truncate">
+              {tool.about}
+            </span>
           </span>
           <Link
             href={studioLink()}
-            className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center text-[11px] shrink-0 hover:bg-foreground/5`}
+            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 hover:bg-white/10"
           >
             open in the studio →
           </Link>
           {(flash || job) && (
-            <span
-              className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center text-[11px] shrink-0 tabular-nums`}
-            >
+            <span className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 tabular-nums">
               {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
             </span>
           )}
@@ -361,7 +366,7 @@ export default function ToolViewer({ id }: { id: string }) {
                   onChange={setQuality}
                 />
               </Stack>
-              <p className="text-[10px] text-muted tabular-nums">
+              <p className="text-[11px] text-[color:var(--tc-ink-3)] tabular-nums">
                 exports at {outW}×{outH}
               </p>
               {spec.slides.length > 1 && (
@@ -369,7 +374,7 @@ export default function ToolViewer({ id }: { id: string }) {
                   PNG — all {spec.slides.length}
                 </Btn>
               )}
-              <p className="text-[10px] text-muted leading-relaxed">
+              <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                 Everything you changed is in the address bar, so the Link button
                 hands over this tool exactly as it is now. The studio link at the
                 top hands over the finished post instead — same post, every
@@ -383,14 +388,16 @@ export default function ToolViewer({ id }: { id: string }) {
         {spec.slides.length > 1 && (
           <div className="md:absolute md:left-3 md:bottom-3 z-20 p-2 md:p-0 max-w-full">
             <div
-              className={`bg-background border ${HAIR} p-1.5 flex items-end gap-1.5 overflow-x-auto`}
+              className="tc-float rounded-[var(--tc-r-lg)] p-2 flex items-end gap-2 overflow-x-auto"
             >
               {spec.slides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setIndex(i)}
                   className={`shrink-0 border transition-colors ${
-                    i === active ? "border-foreground" : `${HAIR} hover:border-foreground/50`
+                    i === active
+                      ? "border-white"
+                      : "border-[color:var(--tc-edge)] hover:border-white/40"
                   }`}
                 >
                   <Poster spec={spec} index={i} fonts={fonts} width={64} live />

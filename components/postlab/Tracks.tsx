@@ -29,7 +29,7 @@ const useTime = () => useSyncExternalStore(clock.subscribe, clock.get, clock.ser
 function Readout({ duration }: { duration: number }) {
   const time = useTime();
   return (
-    <span className="text-xs text-muted tabular-nums">
+    <span className="text-xs text-[color:var(--tc-ink-3)] tabular-nums">
       {time.toFixed(2)}
       <span className="opacity-50"> / {duration.toFixed(2)}s</span>
     </span>
@@ -110,25 +110,25 @@ export default function Tracks({
   const marks = (slide.shapes ?? []).map((shape, i) => ({ shape, i }));
 
   return (
-    <div className="border-t border-line shrink-0 flex text-xs select-none">
+    <div className="border-t border-[color:var(--tc-edge)] shrink-0 flex text-xs select-none">
       {/* Transport and the names, in one gutter so a track's label sits
           against its own lane. */}
-      <div className="w-[168px] shrink-0 border-r border-line">
-        <div className="h-8 border-b border-line flex items-center gap-2 px-3">
+      <div className="w-[168px] shrink-0 border-r border-[color:var(--tc-edge)]">
+        <div className="h-8 border-b border-[color:var(--tc-edge)] flex items-center gap-2 px-3">
           <button
             onClick={() => {
               onPlay(false);
               clock.set(0);
             }}
             title="Back to the top of the loop (Home)"
-            className="text-muted hover:text-foreground"
+            className="text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)]"
           >
             ⏮
           </button>
           <button
             onClick={() => onPlay(!playing)}
             title="Play / pause (space)"
-            className="hover:text-muted w-3 text-center"
+            className="hover:text-[color:var(--tc-ink-3)] w-3 text-center"
           >
             {playing ? "❙❙" : "▶"}
           </button>
@@ -141,8 +141,8 @@ export default function Tracks({
                 onClick={() => onSelectLayer(i)}
                 className={`w-full h-6 flex items-center gap-2 px-3 text-left truncate transition-colors ${
                   i === layerIndex
-                    ? "bg-foreground text-background"
-                    : "text-muted hover:text-foreground"
+                    ? "bg-white text-[#0b0c0e]"
+                    : "text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)]"
                 }`}
               >
                 <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
@@ -152,7 +152,7 @@ export default function Tracks({
               {Object.keys(layer.motion ?? {}).map((key) => (
                 <div
                   key={key}
-                  className="h-4 flex items-center pl-9 pr-3 text-[10px] text-muted truncate"
+                  className="h-4 flex items-center pl-9 pr-3 text-[10px] text-[color:var(--tc-ink-3)] truncate"
                 >
                   {key}
                 </div>
@@ -161,7 +161,7 @@ export default function Tracks({
           ))}
           {marks.map(({ shape, i }) => (
             <div key={`m${i}`}>
-              <div className="h-6 flex items-center gap-2 px-3 text-muted truncate">
+              <div className="h-6 flex items-center gap-2 px-3 text-[color:var(--tc-ink-3)] truncate">
                 <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                 <span className="truncate">
                   {shape.kind}
@@ -171,7 +171,7 @@ export default function Tracks({
               {Object.keys(shape.motion ?? {}).map((key) => (
                 <div
                   key={key}
-                  className="h-4 flex items-center pl-9 pr-3 text-[10px] text-muted truncate"
+                  className="h-4 flex items-center pl-9 pr-3 text-[10px] text-[color:var(--tc-ink-3)] truncate"
                 >
                   {key}
                 </div>
@@ -195,11 +195,11 @@ export default function Tracks({
         }}
       >
         {/* Ruler */}
-        <div className="h-8 border-b border-line relative">
+        <div className="h-8 border-b border-[color:var(--tc-edge)] relative">
           {seconds.map((s) => (
             <div
               key={s}
-              className="absolute top-0 bottom-0 border-l border-line/30 pl-1 text-[10px] text-muted tabular-nums"
+              className="absolute top-0 bottom-0 border-l border-[color:var(--tc-rule)] pl-1 text-[10px] text-[color:var(--tc-ink-3)] tabular-nums"
               style={{ left: `${(s / Math.max(2, duration)) * 100}%` }}
             >
               {s < duration ? `${s}s` : ""}
@@ -211,8 +211,8 @@ export default function Tracks({
             <div key={i}>
               <div
                 onClick={() => onSelectLayer(i)}
-                className={`h-6 border-b border-line/20 ${
-                  i === layerIndex ? "bg-foreground/5" : ""
+                className={`h-6 border-b border-[color:var(--tc-rule)] ${
+                  i === layerIndex ? "bg-white/5" : ""
                 }`}
               >
                 {/* A layer with nothing travelling still occupies the loop —
@@ -228,7 +228,7 @@ export default function Tracks({
               {Object.entries(layer.motion ?? {}).map(([key, m]) => (
                 <div
                   key={key}
-                  className="h-4 relative border-b border-line/20 text-foreground/70"
+                  className="h-4 relative border-b border-[color:var(--tc-rule)] text-[color:var(--tc-ink-2)]"
                 >
                   <Wave
                     cycles={Math.max(1, Math.round(m.cycles ?? 1))}
@@ -241,13 +241,13 @@ export default function Tracks({
           ))}
           {marks.map(({ shape, i }) => (
             <div key={`m${i}`}>
-              <div className="h-6 border-b border-line/20 flex items-center">
+              <div className="h-6 border-b border-[color:var(--tc-rule)] flex items-center">
                 <div className="h-px w-full bg-line/40" />
               </div>
               {Object.entries(shape.motion ?? {}).map(([key, m]) => (
                 <div
                   key={key}
-                  className="h-4 relative border-b border-line/20 text-foreground/70"
+                  className="h-4 relative border-b border-[color:var(--tc-rule)] text-[color:var(--tc-ink-2)]"
                 >
                   <Wave
                     cycles={Math.max(1, Math.round(m.cycles ?? 1))}
@@ -261,7 +261,7 @@ export default function Tracks({
         </div>
         <div
           ref={headRef}
-          className="absolute top-0 bottom-0 w-px bg-foreground pointer-events-none"
+          className="absolute top-0 bottom-0 w-px bg-white pointer-events-none"
           style={{ left: 0 }}
         />
       </div>
