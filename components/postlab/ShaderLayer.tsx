@@ -87,6 +87,7 @@ export default function ShaderLayer({
         inks={color?.inks}
         palette={color?.palette}
         seed={color?.seed}
+        duration={duration}
       />
     );
   }

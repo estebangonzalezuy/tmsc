@@ -201,6 +201,10 @@ export type FilterSpec = { type: string } & Record<
         put back together — the thing every effect panel has and the reason you
         can tell what an effect was doing. Absent means on. */
     mute?: boolean;
+    /** Numbers on this effect that travel over the loop. An effect still never
+        reads the clock itself — it is handed already-resolved numbers, on whole
+        cycles — so it can't be the reason a loop stops closing. */
+    motion?: MotionMap;
   };
 
 export type FilterDef = {
@@ -1207,14 +1211,34 @@ export function animatable(type: ShaderType): ShaderControl[] {
  */
 export function resolveLayer(layer: LayerSpec, tt: number): LayerSpec {
   const motion = layer.motion;
-  if (!motion) return layer;
+  const chain = layer.filters?.some((f) => f.motion);
+  if (!motion && !chain) return layer;
   const out = { ...layer } as LayerSpec;
   delete out.motion;
-  for (const [key, m] of Object.entries(motion)) {
+  for (const [key, m] of Object.entries(motion ?? {})) {
     const from = typeof layer[key] === "number" ? (layer[key] as number) : 0;
     const cycles = Math.max(1, Math.round(m.cycles ?? 1));
     const k = waveAt(m.wave ?? "sin", cycles * tt + (m.phase ?? 0));
     out[key] = from + (m.to - from) * k;
+  }
+  /* An effect's own numbers travel the same way. The effect is handed the
+     resolved value — it never reads the clock — so the chain animates without
+     any of it being able to open a seam. */
+  if (chain) out.filters = layer.filters!.map((f) => resolveFilter(f, tt));
+  return out;
+}
+
+/** One effect with its travelling numbers resolved at `tt`. */
+export function resolveFilter(f: FilterSpec, tt: number): FilterSpec {
+  if (!f.motion) return f;
+  const out = { ...f } as FilterSpec & Record<string, number>;
+  delete out.motion;
+  for (const [key, m] of Object.entries(f.motion)) {
+    const from = typeof (f as Record<string, unknown>)[key] === "number"
+      ? ((f as unknown as Record<string, number>)[key] as number)
+      : 0;
+    const cycles = Math.max(1, Math.round(m.cycles ?? 1));
+    out[key] = from + (m.to - from) * waveAt(m.wave ?? "sin", cycles * tt + (m.phase ?? 0));
   }
   return out;
 }
@@ -1832,6 +1856,8 @@ export function normalizeSpec(raw: unknown): PostSpec {
               /* Off without being deleted — absent means on, which is how every
                  chain written before the switch existed still renders. */
               if (f.mute === true) out.mute = true;
+              const fm = cleanMotion(f.motion, def.controls);
+              if (fm) out.motion = fm;
               return out;
             });
           if (list.length) merged.filters = list;

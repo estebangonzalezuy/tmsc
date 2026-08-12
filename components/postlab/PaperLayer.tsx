@@ -39,6 +39,7 @@ import {
 import {
   PALETTE,
   paletteInk,
+  resolveFilter,
   shaderDef,
   tones,
   type FilterSpec,
@@ -131,11 +132,14 @@ export default function PaperLayer({
   inks,
   palette,
   seed,
+  duration = 6,
 }: {
   layer: LayerSpec;
   theme: Theme;
   width: number;
   height: number;
+  /** The loop, in seconds — an effect's travelling numbers divide it. */
+  duration?: number;
   ink?: string;
   inks?: string[];
   palette?: string[];
@@ -169,16 +173,26 @@ export default function PaperLayer({
     const ctx = out?.getContext("2d", { willReadFrequently: true });
     if (!out || !ctx) return;
     const inkColour = ink && ink !== "mix" ? ink : tones(theme).ink;
-    const run = () => {
+    /* Resolved every frame, so an effect's own travelling numbers move here
+       exactly as they do on the club's own renderer. */
+    const run = (t = clock.get()) => {
       const src = mountRef.current?.querySelector("canvas");
       if (!src || !src.width) return;
+      const tt = (t / Math.max(2, duration)) % 1;
       ctx.clearRect(0, 0, out.width, out.height);
       ctx.drawImage(src, 0, 0, out.width, out.height);
-      applyFilters(ctx, out.width, out.height, filters, theme, inkColour);
+      applyFilters(
+        ctx,
+        out.width,
+        out.height,
+        filters.map((f) => resolveFilter(f, tt)),
+        theme,
+        inkColour,
+      );
     };
     run();
     return clock.watch(run);
-  }, [filters, theme, ink, width, height]);
+  }, [filters, theme, ink, width, height, duration]);
 
   if (!Component) return null;
 

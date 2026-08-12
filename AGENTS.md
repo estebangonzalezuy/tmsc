@@ -142,6 +142,13 @@ name instead of by arithmetic and still show "custom" for a hand-written spec.
 Every number on a layer *and* on a shape takes one, which is what makes motion
 plug-and-play here.
 
+**Nothing is added still.** A mark, a layer and an effect all arrive with a
+loop already plugged in — `addShape`, `addLayer` and `addFilter` each attach one
+— because this is a studio for motion and a still thing is the exception. An
+effect's numbers travel like any other: `resolveFilter` hands the chain
+already-resolved values, so an effect still never reads the clock itself and
+still can't be the reason a loop stops closing.
+
 `SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
 bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
 the studio leads with. **A mark arrives already moving** (a frame breathes, a
@@ -185,44 +192,48 @@ never be the reason a loop stops closing. Keep it that way.
   presets, base64url encode/decode. The spec travels in the URL
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
-- The tool is laid out the way every editor of a moving image is, and for the
-  reason they all are: **structure on the left, canvas in the middle,
-  inspector on the right, the loop along the bottom**. Choosing happens on the
-  left (which slide, which layer), changing happens on the right, and the
-  right follows the selection. Put a new control where its subject already
-  lives rather than adding another place to look.
-  - The left rail is a **filmstrip** — `Poster.tsx` draws every slide for real
-    at thumbnail size, because a list of titles tells you what a slide says
-    and not what it looks like. The same component draws the recipe shelf and
-    the variation sheets, so nothing in the tool offers a choice it can't show.
-  - **A menu bar, not tabs.** `Post · Slide · Layer · View · Export` hold
-    everything you do more than twice a day — new slide, add a layer, paste a
-    look, export, variations. The inspector holds what you *set*, as one
-    scrolling column of folded `Group`s (words · setting · on the slide ·
-    counter · sheet · ruling · pixels · palette · layer · filters ·
-    transform), each showing a summary when it's closed. The tool had five
-    tabs once and every control was somewhere else; this is the fix.
-  - **Big grids of pictures go over the canvas**, not in a 320px column:
-    `Drawer` holds the recipe shelf, the rolled looks and the paste-a-spec box.
-    They're moments, not places.
-  - `Tracks.tsx` is the timeline: transport, ruler, a track per layer, and a
-    lane per travelling parameter with its **wave drawn across the loop**.
-    That's an honest picture of this tool's motion model rather than a row of
-    borrowed keyframes, and the curve ending where it started is the loop
-    contract made visible.
-- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of this
-  is built from, and the club's second register: the site is editorial —
-  generous type, white space — and a tool is not. Small type (11px, 10px
-  uppercase tracked group labels), 28px controls, hairline borders, one control
-  per row with its label at a fixed width, numbers you drag as well as type
-  (`Num`), `Select` for anything past four choices and `Segmented` for fewer.
-  It is still the club's design system: monochrome, no shadows, no gradients,
-  no rounded corners, and **a hover is a wash (`bg-foreground/5`), never a
-  colour** — a tool full of accents is a mess, and colour on this site only
-  ever answers a pointer. `Btn on` / selected states invert to
-  `bg-foreground text-background`.
-  Every tool page uses the same kit — one set of controls, so nothing has to be
-  learned twice. Add to Toolcraft rather than styling a control in place.
+- **The stage is the whole window, and it is black.** Nothing is docked: the
+  post sits in the middle of the club's own ink and every control floats over
+  it, which is the one thing a studio has to get right — the post is never
+  squeezed into what's left after the furniture. Top left is the identity and
+  the menus (what you *do*), top right is one panel (what you *set*), bottom
+  left the filmstrip, bottom centre the toolbar: undo, zoom, transport, guides,
+  the loop.
+  - **One panel, two halves.** `type` — the words, how they're set, what's on
+    the slide, the counter, the club's screen over the type — and `graphics` —
+    the sheet, its ruling, its marks, the layer, its effects, where it sits, the
+    palette. A post is words on a picture, so every control belongs to one or
+    the other. Inside, `Section`s fold and show a summary when closed.
+  - **Big grids of pictures go over the stage**: `Drawer` holds the recipe
+    shelf, the rolled looks and the paste-a-spec box. Moments, not places.
+  - `Tracks.tsx` is the loop in tracks — transport, ruler, a lane per travelling
+    parameter with its **wave drawn across the loop**, marks included. It floats
+    above the toolbar and is off until asked for.
+  - The filmstrip is `Poster.tsx` drawing every slide for real, and **live**: a
+    thumbnail follows the playhead rather than holding frame zero, because a
+    post in this studio moves.
+- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of it is
+  built from — modelled on toolcraft.sh, which gets one thing exactly right: a
+  tool is a canvas with chrome floating over it. The anatomy, and it is the same
+  everywhere:
+  - `Panel` — a floating card: title, reset, fold, a scrolling body, and a
+    footer holding the one button you press at the end
+  - `Section` — an uppercase label with its own reset and fold
+  - `Slider` — label left, value right, **track full width underneath**; never a
+    slider squeezed between two labels. `Num` inside it drags as well as types
+  - `Toggle` (a pill), `Segmented` (2-4 choices), `Select` (past four),
+    `Cols` (two controls on one line), `Range` (two handles, one track)
+  - `Dots` (colour as circles), `ColorRow` (swatch + hex + auto),
+    `XYPad` (two numbers that are one place), `Dropzone`
+  - `Block` — one thing in a stack: switch, name, reorder, remove, numbers
+  - `Menu` / `MenuItem` / `MenuRow` — the things you do
+  - `Toolbar`, `Drawer`, `Help`, `Primary`
+  It is still the club's design system, not a copy of someone else's: white
+  chrome on black, near-black ink, 1px hairlines, no shadows, no gradients, no
+  rounded corners, and **a hover is a wash, never a colour**. Anything that
+  floats must carry `bg-background` — a transparent control over the black stage
+  is a near-black border on near-black. Add to Toolcraft rather than styling a
+  control in place, and use the same kit on every tool page.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.
   Every canvas subscribes and draws itself; only the readout under the stage
   asks React for the number. It was state once, and re-rendering the tool

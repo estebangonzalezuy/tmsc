@@ -27,14 +27,17 @@ import { loadFonts, type Fonts } from "@/components/postlab/overlay";
 import { useExports } from "@/components/postlab/useExports";
 import {
   Btn,
-  Dial,
-  Group,
+  Buttons,
+  Dots,
   HAIR,
+  Primary,
   Row,
+  Section,
   Segmented,
-  Swatches,
-  Switch,
+  Slider,
+  Stack,
   Text as TextField,
+  Toggle,
 } from "@/components/postlab/toolcraft";
 
 const GROUND_NAMES = Object.fromEntries(GROUNDS.map((g) => [g.hex, g.label]));
@@ -195,7 +198,7 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "number":
         return (
-          <Dial
+          <Slider
             label={f.label}
             value={Number(params[f.key] ?? f.min)}
             min={f.min}
@@ -214,8 +217,8 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "ground":
         return (
-          <Swatches
-            palette={GROUNDS.map((g) => g.hex)}
+          <Dots
+            colors={GROUNDS.map((g) => g.hex)}
             labels={GROUND_NAMES}
             value={String(params[f.key] ?? "")}
             onChange={(v) => set(f.key, v)}
@@ -223,8 +226,8 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "ink":
         return (
-          <Swatches
-            palette={PALETTE}
+          <Dots
+            colors={PALETTE}
             value={String(params[f.key] ?? "")}
             onChange={(v) => set(f.key, v)}
           />
@@ -243,11 +246,11 @@ export default function ToolViewer({ id }: { id: string }) {
         );
       case "switch":
         return (
-          <Switch
+          <Toggle
             label={f.label}
             on={params[f.key] === true}
             onChange={() => set(f.key, !(params[f.key] === true))}
-            title={f.hint}
+            help={f.hint}
           />
         );
     }
@@ -275,7 +278,7 @@ export default function ToolViewer({ id }: { id: string }) {
             </span>
           )}
           <Btn onClick={savePng} on disabled={!!job}>
-            Export PNG
+            ⤓ Export PNG
           </Btn>
           <Link href={studioLink()} className="underline underline-offset-4">
             open in the studio
@@ -324,24 +327,23 @@ export default function ToolViewer({ id }: { id: string }) {
         </div>
 
         <aside className="w-full md:w-[360px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto">
-          <Group title="the tool">
+          <Section title="the tool">
             {tool.fields.map((f) =>
               f.kind === "switch" || f.kind === "number" ? (
                 <div key={f.key}>{control(f)}</div>
               ) : f.kind === "text" || f.kind === "lines" ? (
-                <div key={f.key} className="space-y-1.5">
-                  <p className="text-xs text-muted">{f.label}</p>
+                <Stack key={f.key} label={f.label}>
                   {control(f)}
-                </div>
+                </Stack>
               ) : (
                 <Row key={f.key} label={f.label}>
                   {control(f)}
                 </Row>
               ),
             )}
-          </Group>
+          </Section>
 
-          <Group title="out">
+          <Section title="out">
             <Segmented
               value={quality}
               options={[
@@ -354,8 +356,8 @@ export default function ToolViewer({ id }: { id: string }) {
             <p className="text-xs text-muted tabular-nums">
               {outW}×{outH}
             </p>
-            <div className="flex flex-wrap gap-2">
-              <Btn onClick={savePng} on disabled={!!job}>
+            <Buttons>
+              <Btn onClick={savePng} on disabled={!!job} wide>
                 PNG
               </Btn>
               {spec.slides.length > 1 && (
@@ -366,19 +368,17 @@ export default function ToolViewer({ id }: { id: string }) {
               <Btn onClick={saveVideo} disabled={!!job}>
                 Video — {spec.duration}s
               </Btn>
-              <Btn onClick={saveGif} disabled={!!job}>
+              <Btn onClick={saveGif} disabled={!!job} wide>
                 GIF
               </Btn>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Btn onClick={copyLink}>Copy this tool&apos;s link</Btn>
-            </div>
+            </Buttons>
+            <Primary onClick={copyLink}>Copy this tool&apos;s link</Primary>
             <p className="text-xs text-muted leading-relaxed">
               Everything you changed is in the address bar, so this link opens the
               tool exactly as it is now. The studio link at the top hands over the
               finished post instead — same post, every control.
             </p>
-          </Group>
+          </Section>
         </aside>
       </div>
     </div>
