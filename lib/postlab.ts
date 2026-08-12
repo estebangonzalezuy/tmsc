@@ -365,7 +365,10 @@ export const SHAPE_DEFORMERS: ShaderControl[] = [
 export const MAX_SHAPES = 6;
 
 export function defaultShape(kind: ShapeKind = "circle"): ShapeSpec {
-  return { kind, x: 0, y: 0, size: 0.4, weight: 3, rotation: 0, opacity: 1 };
+  /* A bracket is a frame and a rule is a rule: starting them at a badge's size
+     would mean every first click needs a correction. */
+  const size = kind === "bracket" ? 0.92 : kind === "line" || kind === "bar" ? 0.55 : 0.4;
+  return { kind, x: 0, y: 0, size, weight: 3, rotation: 0, opacity: 1 };
 }
 
 /** A shape with its travelling numbers resolved at `tt` (0-1 through the loop).
@@ -414,6 +417,108 @@ export const LOOPS: {
 ];
 
 export const loopDef = (id: string) => LOOPS.find((l) => l.id === id);
+
+/* Named motion for a whole mark rather than for one of its numbers.
+ *
+ * "Make it spin" is a decision; `{ rotation: { to: 374, wave: "saw", cycles: 1 } }`
+ * is arithmetic. Each one reads the mark it's given and moves from wherever it
+ * already sits, so plugging one in never also moves the mark. This is why a
+ * shape in this studio is an animated thing by default: one dropdown, and it
+ * lives — a still mark is the exception, and it's one dropdown back.
+ */
+export const SHAPE_LOOPS: {
+  id: string;
+  name: string;
+  about: string;
+  motion: (s: ShapeSpec) => MotionMap;
+}[] = [
+  {
+    id: "sway",
+    name: "sway",
+    about: "rocks a little, twice",
+    motion: (s) => ({ rotation: { to: s.rotation + 14, wave: "sin", cycles: 2, phase: 0 } }),
+  },
+  {
+    id: "spin",
+    name: "spin",
+    about: "one whole turn",
+    motion: (s) => ({ rotation: { to: s.rotation + 360, wave: "saw", cycles: 1, phase: 0 } }),
+  },
+  {
+    id: "breathe",
+    name: "breathe",
+    about: "grows and shrinks, twice",
+    motion: (s) => ({
+      size: { to: Math.min(1.4, s.size * 1.45), wave: "sin", cycles: 2, phase: 0 },
+    }),
+  },
+  {
+    id: "pulse",
+    name: "pulse",
+    about: "fades away and back, four times",
+    motion: () => ({ opacity: { to: 0.15, wave: "sin", cycles: 4, phase: 0 } }),
+  },
+  {
+    id: "drift",
+    name: "drift",
+    about: "wanders and comes back",
+    motion: (s) => ({
+      x: { to: Math.max(-1, Math.min(1, s.x + 0.16)), wave: "sin", cycles: 1, phase: 0 },
+      y: { to: Math.max(-1, Math.min(1, s.y - 0.11)), wave: "sin", cycles: 1, phase: 0.25 },
+    }),
+  },
+  {
+    id: "bloom",
+    name: "bloom",
+    about: "the copies open out and close — needs more than one",
+    motion: (s) => ({
+      spread: {
+        to: Math.min(1, (s.spread ?? 0.25) + 0.3),
+        wave: "sin",
+        cycles: 1,
+        phase: 0,
+      },
+    }),
+  },
+  {
+    id: "unfold",
+    name: "unfold",
+    about: "the copies twist round and back",
+    motion: (s) => ({
+      twist: { to: Math.min(360, (s.twist ?? 0) + 120), wave: "sin", cycles: 1, phase: 0 },
+    }),
+  },
+  {
+    id: "shiver",
+    name: "shiver",
+    about: "the scatter opens up, three times",
+    motion: (s) => ({
+      jitter: { to: Math.min(1, (s.jitter ?? 0) + 0.35), wave: "sin", cycles: 3, phase: 0 },
+    }),
+  },
+];
+
+export const shapeLoopDef = (id: string) => SHAPE_LOOPS.find((l) => l.id === id);
+
+/** Which named loop a mark is running, if it is one of them. */
+export function shapeLoopOf(shape: ShapeSpec): string {
+  const has = Object.keys(shape.motion ?? {});
+  if (!has.length) return "";
+  for (const l of SHAPE_LOOPS) {
+    const mine = l.motion(shape);
+    const keys = Object.keys(mine);
+    if (keys.length !== has.length || !keys.every((k) => has.includes(k))) continue;
+    const same = keys.every((k) => {
+      const a = shape.motion![k];
+      return (
+        (a.wave ?? "sin") === mine[k].wave &&
+        Math.round(a.cycles ?? 1) === Math.round(mine[k].cycles ?? 1)
+      );
+    });
+    if (same) return l.id;
+  }
+  return "custom";
+}
 
 /** The motion a named loop makes for one parameter, from where it sits now. */
 export function applyLoop(id: string, control: ShaderControl, from: number): Motion | null {
@@ -2000,8 +2105,16 @@ export const PRESETS: Preset[] = [
           gridTop: true,
           footer: "the Motion Social Club",
           off: ["kicker", "body", "mark"],
-          /* The club's boxed headline, reduced to four corners. */
-          shapes: [{ ...defaultShape("bracket"), size: 0.94, weight: 3 }],
+          /* The club's boxed headline, reduced to four corners — and breathing,
+             because a mark in this studio is an animated thing. */
+          shapes: [
+            {
+              ...defaultShape("bracket"),
+              size: 0.94,
+              weight: 3,
+              motion: { size: { to: 0.88, wave: "sin", cycles: 2, phase: 0 } },
+            },
+          ],
         }),
       ],
     },

@@ -103,9 +103,11 @@ export default function Tracks({
   const seconds = Array.from({ length: Math.max(2, Math.round(duration)) + 1 }, (_, i) => i);
 
   /* Top layer first, the way the stack is listed everywhere else in the tool. */
-  const rows = slide.layers
-    .map((layer, i) => ({ layer, i }))
-    .reverse();
+  const rows = slide.layers.map((layer, i) => ({ layer, i })).reverse();
+
+  /* Marks travel too, and a loop you can't see in the timeline is a loop you
+     have to remember. They read as tracks like anything else that moves. */
+  const marks = (slide.shapes ?? []).map((shape, i) => ({ shape, i }));
 
   return (
     <div className="border-t border-line shrink-0 flex text-xs select-none">
@@ -148,6 +150,25 @@ export default function Tracks({
                 {layer.mute && <span className="opacity-60">off</span>}
               </button>
               {Object.keys(layer.motion ?? {}).map((key) => (
+                <div
+                  key={key}
+                  className="h-4 flex items-center pl-9 pr-3 text-[10px] text-muted truncate"
+                >
+                  {key}
+                </div>
+              ))}
+            </div>
+          ))}
+          {marks.map(({ shape, i }) => (
+            <div key={`m${i}`}>
+              <div className="h-6 flex items-center gap-2 px-3 text-muted truncate">
+                <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                <span className="truncate">
+                  {shape.kind}
+                  {(shape.repeat ?? 1) > 1 ? ` ×${Math.round(shape.repeat ?? 1)}` : ""}
+                </span>
+              </div>
+              {Object.keys(shape.motion ?? {}).map((key) => (
                 <div
                   key={key}
                   className="h-4 flex items-center pl-9 pr-3 text-[10px] text-muted truncate"
@@ -205,6 +226,25 @@ export default function Tracks({
                 </div>
               </div>
               {Object.entries(layer.motion ?? {}).map(([key, m]) => (
+                <div
+                  key={key}
+                  className="h-4 relative border-b border-line/20 text-foreground/70"
+                >
+                  <Wave
+                    cycles={Math.max(1, Math.round(m.cycles ?? 1))}
+                    wave={m.wave ?? "sin"}
+                    phase={m.phase ?? 0}
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+          {marks.map(({ shape, i }) => (
+            <div key={`m${i}`}>
+              <div className="h-6 border-b border-line/20 flex items-center">
+                <div className="h-px w-full bg-line/40" />
+              </div>
+              {Object.entries(shape.motion ?? {}).map(([key, m]) => (
                 <div
                   key={key}
                   className="h-4 relative border-b border-line/20 text-foreground/70"

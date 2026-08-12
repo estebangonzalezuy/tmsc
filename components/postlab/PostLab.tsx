@@ -35,6 +35,7 @@ import {
   SHAPE_CONTROLS,
   SHAPE_DEFORMERS,
   SHAPE_KINDS,
+  SHAPE_LOOPS,
   SLIDE_PARTS,
   SPEC_VERSION,
   WAVES,
@@ -43,6 +44,8 @@ import {
   applyStyle,
   defaultShape,
   loopOf,
+  shapeLoopDef,
+  shapeLoopOf,
   decodeSpec,
   defaultFilter,
   defaultLayer,
@@ -134,6 +137,10 @@ const FAMILY_NAMES: Record<string, string> = {
   clean: "clean shaders",
 };
 
+/* Outside the component: a seed is rolled when a mark is made, not while the
+   studio renders. */
+const rollSeed = () => Math.floor(Math.random() * 9999) + 1;
+
 const layerName = (l: LayerSpec) =>
   l.type === "forms" ? String(l.pattern ?? "rings") : shaderDef(l.type).label;
 
@@ -148,6 +155,7 @@ function ParamRow({
   canMove,
   onChange,
   onMotion,
+  detail = true,
 }: {
   control: ShaderControl;
   value: number;
@@ -155,6 +163,10 @@ function ParamRow({
   canMove: boolean;
   onChange: (v: number) => void;
   onMotion: (m: Motion | null) => void;
+  /** Show this number's own loop controls. Off when something above it already
+      owns the motion — a mark running a named loop says so once, at the top,
+      rather than once per number it moves. */
+  detail?: boolean;
 }) {
   return (
     <>
@@ -178,7 +190,7 @@ function ParamRow({
           </button>
         )}
       </Dial>
-      {motion && (
+      {motion && detail && (
         <div className={`border-l ${HAIR} pl-2 ml-1 space-y-1`}>
           {/* The loop, by name. Everything under it is the fine print: the loop
               sets the wave and the number of trips, and `to` is how far. */}
@@ -258,6 +270,9 @@ export default function PostLab() {
   /* What's over the canvas, if anything: the recipes, a sheet of rolled looks,
      or the paste-a-spec box. Panels, not tabs — they're moments, not places. */
   const [drawer, setDrawer] = useState<"recipes" | "generate" | "spec" | null>(null);
+  /* Which half of the post the inspector is showing. Two panels, because a
+     post is words on a picture and every control belongs to one or the other. */
+  const [panel, setPanel] = useState<"type" | "graphics">("type");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const shaderBoxRef = useRef<HTMLDivElement>(null);
@@ -442,9 +457,19 @@ export default function PostLab() {
 
   const addShape = (kind: ShapeKind) => {
     if ((slide.shapes ?? []).length >= MAX_SHAPES) return;
+    const base = defaultShape(kind);
+    /* Marks arrive moving. This is a studio for motion, so a still mark is the
+       exception — and "still" is one dropdown away. A frame breathes and a mark
+       sways: rocking a bracket off its own axis is the one default that would
+       need undoing every time. */
+    const frame = ["bracket", "square", "circle", "oval"].includes(kind);
     setShapes([
       ...(slide.shapes ?? []),
-      { ...defaultShape(kind), seed: Math.floor(Math.random() * 9999) + 1 },
+      {
+        ...base,
+        seed: rollSeed(),
+        motion: shapeLoopDef(frame ? "breathe" : "sway")!.motion(base),
+      },
     ]);
   };
 
@@ -1103,7 +1128,7 @@ export default function PostLab() {
                     i === activeIndex ? "border-foreground" : `${HAIR} hover:border-foreground/50`
                   }`}
                 >
-                  <Poster spec={spec} index={i} fonts={fonts} width={150} />
+                  <Poster spec={spec} index={i} fonts={fonts} width={150} live />
                   <span
                     className={`block px-1.5 py-1 text-[10px] tabular-nums text-left truncate ${
                       i === activeIndex ? "bg-foreground text-background" : "text-muted"
@@ -1275,6 +1300,7 @@ export default function PostLab() {
                       index={0}
                       fonts={fonts}
                       width={220}
+                      live
                     />
                     <span className="block px-2 py-1.5 space-y-0.5">
                       <span className="block text-[11px]">{p.name}</span>
@@ -1315,7 +1341,7 @@ export default function PostLab() {
                       index={0}
                       fonts={null}
                       width={180}
-                      t={spec.duration / 3}
+                      live
                     />
                   </button>
                 ))}
@@ -1365,15 +1391,31 @@ export default function PostLab() {
         <aside
           className={`w-full md:w-[320px] shrink-0 border-t md:border-t-0 md:border-l ${HAIR} md:overflow-y-auto order-3`}
         >
+          {/* Two panels, and that's the whole division: everything about the
+              words, and everything about the picture they sit on. Nine
+              top-level groups was nine decisions about where to look. */}
           <div
-            className={`sticky top-0 z-10 bg-background border-b ${HAIR} h-9 px-3 flex items-center gap-2`}
+            className={`sticky top-0 z-10 bg-background border-b ${HAIR} h-9 px-2 flex items-center gap-2`}
           >
-            <Label>slide {String(activeIndex + 1).padStart(2, "0")}</Label>
-            <span className="ml-auto text-[10px] text-muted truncate">
-              {FORMATS[spec.format].label} · {slide.layers.length} layer
-              {slide.layers.length > 1 ? "s" : ""}
+            <Segmented
+              value={panel}
+              options={[
+                { value: "type" as const, label: "type", title: "The words, and how they're set" },
+                {
+                  value: "graphics" as const,
+                  label: "graphics",
+                  title: "The sheet, its marks, and the layers behind them",
+                },
+              ]}
+              onChange={setPanel}
+            />
+            <span className="text-[10px] text-muted tabular-nums shrink-0 pr-1">
+              {String(activeIndex + 1).padStart(2, "0")}
             </span>
           </div>
+
+          {panel === "type" && (
+            <>
 
           <Group title="words" summary={plainTitle(slide.title).slice(0, 28)}>
             <Row label="kicker">
@@ -1617,6 +1659,37 @@ export default function PostLab() {
           </Group>
 
           <Group
+            title="the pixels, on the type"
+            summary={slide.titlePixel || slide.metaPixel ? "on" : "off"}
+            open={false}
+            note="The club's screen, over the type: every glyph thresholded into hard ink-or-nothing blocks at this cell size."
+          >
+            <Dial
+              label="title"
+              value={slide.titlePixel}
+              min={0}
+              max={24}
+              step={1}
+              onChange={(titlePixel) => patchSlide({ titlePixel })}
+              suffix={slide.titlePixel ? undefined : "off"}
+            />
+            <Dial
+              label="everything else"
+              value={slide.metaPixel}
+              min={0}
+              max={24}
+              step={1}
+              onChange={(metaPixel) => patchSlide({ metaPixel })}
+              suffix={slide.metaPixel ? undefined : "off"}
+            />
+          </Group>
+
+            </>
+          )}
+
+          {panel === "graphics" && (
+            <>
+          <Group
             title="the sheet"
             summary={GROUND_NAMES[slide.background ?? ""] ?? slide.theme}
             note="What the post is printed on. A ground is paper, not colour — almost nothing in this register sits on pure white."
@@ -1713,6 +1786,7 @@ export default function PostLab() {
           >
             {(slide.shapes ?? []).map((shape, i) => {
               const repeat = Math.round(shape.repeat ?? 1);
+              const named = shapeLoopOf(shape);
               return (
                 <Block
                   key={i}
@@ -1731,6 +1805,28 @@ export default function PostLab() {
                       onChange={(kind) => patchShape(i, { kind: kind as ShapeKind })}
                     />
                   </Row>
+                  {/* The whole mark, animated, in one control. A still mark is
+                      the exception in a studio for motion. */}
+                  <Row label="loop">
+                    <Select
+                      value={named}
+                      options={[
+                        { value: "", label: "still" },
+                        ...SHAPE_LOOPS.map((l) => ({
+                          value: l.id,
+                          label: `${l.name} — ${l.about}`,
+                        })),
+                        ...(named === "custom"
+                          ? [{ value: "custom", label: "custom — set number by number" }]
+                          : []),
+                      ]}
+                      onChange={(id) => {
+                        if (!id) return patchShape(i, { motion: undefined });
+                        const l = shapeLoopDef(id);
+                        if (l) patchShape(i, { motion: l.motion(shape) });
+                      }}
+                    />
+                  </Row>
                   {SHAPE_CONTROLS.map((c) => (
                     <ParamRow
                       key={c.key}
@@ -1738,6 +1834,7 @@ export default function PostLab() {
                       value={Number((shape as unknown as Record<string, number>)[c.key] ?? c.def)}
                       motion={shape.motion?.[c.key]}
                       canMove
+                      detail={named === "" || named === "custom"}
                       onChange={(v) => patchShape(i, { [c.key]: v } as Partial<ShapeSpec>)}
                       onMotion={(m) => setShapeMotion(i, c.key, m)}
                     />
@@ -1757,8 +1854,17 @@ export default function PostLab() {
                       onChange={() => patchShape(i, { under: shape.under ? undefined : true })}
                     />
                   </Row>
-                  <div className={`border-t ${HAIR} pt-1.5 mt-1 space-y-1`}>
-                    <Label>deformers</Label>
+                  <Block
+                    title={`deformers${repeat > 1 ? ` — ${shape.along ?? "in a row"}` : ""}`}
+                    open={
+                      repeat > 1 ||
+                      SHAPE_DEFORMERS.some(
+                        (c) =>
+                          (shape as unknown as Record<string, number | undefined>)[c.key] !==
+                          undefined,
+                      )
+                    }
+                  >
                     <Row label="laid out">
                       <Select
                         value={shape.along ?? "x"}
@@ -1784,6 +1890,7 @@ export default function PostLab() {
                         )}
                         motion={shape.motion?.[c.key]}
                         canMove
+                        detail={named === "" || named === "custom"}
                         onChange={(v) =>
                           patchShape(i, {
                             [c.key]: v === c.def ? undefined : v,
@@ -1795,53 +1902,31 @@ export default function PostLab() {
                     {!!shape.jitter && (
                       <Btn
                         onClick={() =>
-                          patchShape(i, { seed: Math.floor(Math.random() * 9999) + 1 })
+                          patchShape(i, { seed: rollSeed() })
                         }
                         title="The scatter is fixed, so it never crawls — this rolls a different one"
                       >
                         Rescatter
                       </Btn>
                     )}
-                  </div>
+                  </Block>
                 </Block>
               );
             })}
-            <Row label="add">
-              <Select
-                value=""
-                options={[
-                  { value: "", label: `a mark…  (${(slide.shapes ?? []).length}/${MAX_SHAPES})` },
-                  ...SHAPE_KINDS.map((k) => ({ value: k, label: k })),
-                ]}
-                onChange={(k) => k && addShape(k as ShapeKind)}
-              />
-            </Row>
-          </Group>
-
-          <Group
-            title="the pixels, on the type"
-            summary={slide.titlePixel || slide.metaPixel ? "on" : "off"}
-            open={false}
-            note="The club's screen, over the type: every glyph thresholded into hard ink-or-nothing blocks at this cell size."
-          >
-            <Dial
-              label="title"
-              value={slide.titlePixel}
-              min={0}
-              max={24}
-              step={1}
-              onChange={(titlePixel) => patchSlide({ titlePixel })}
-              suffix={slide.titlePixel ? undefined : "off"}
-            />
-            <Dial
-              label="everything else"
-              value={slide.metaPixel}
-              min={0}
-              max={24}
-              step={1}
-              onChange={(metaPixel) => patchSlide({ metaPixel })}
-              suffix={slide.metaPixel ? undefined : "off"}
-            />
+            {/* One click, one mark. It arrives with a loop already plugged in,
+                because a mark that doesn't move is the exception here. */}
+            <div className="flex flex-wrap gap-1 pt-1">
+              {SHAPE_KINDS.map((k) => (
+                <Btn
+                  key={k}
+                  onClick={() => addShape(k)}
+                  disabled={(slide.shapes ?? []).length >= MAX_SHAPES}
+                  title={`Add a ${k}, swaying`}
+                >
+                  + {k}
+                </Btn>
+              ))}
+            </div>
           </Group>
 
           <Group
@@ -2156,18 +2241,15 @@ export default function PostLab() {
                 </Block>
               );
             })}
-            <Row label="add">
-              <Select
-                value=""
-                options={[
-                  { value: "", label: "an effect…" },
-                  ...FILTERS.filter(
-                    (f) => !(layer.filters ?? []).some((x) => x.type === f.type),
-                  ).map((f) => ({ value: f.type, label: f.label })),
-                ]}
-                onChange={(t) => t && addFilter(t)}
-              />
-            </Row>
+            <div className="flex flex-wrap gap-1 pt-1">
+              {FILTERS.filter((f) => !(layer.filters ?? []).some((x) => x.type === f.type)).map(
+                (f) => (
+                  <Btn key={f.type} onClick={() => addFilter(f.type)} title={f.hint}>
+                    + {f.label}
+                  </Btn>
+                ),
+              )}
+            </div>
             <p className="text-[10px] text-muted leading-relaxed">
               Order matters: pixelate then grain is a screened image with grain over
               it; grain then pixelate is grain that got screened.
@@ -2199,6 +2281,8 @@ export default function PostLab() {
                 : "Travelling parameters are a dithered-forms thing: the WebGL shader takes its numbers once, not every frame."}
             </p>
           </Group>
+            </>
+          )}
         </aside>
       </div>
 

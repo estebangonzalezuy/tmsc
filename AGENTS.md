@@ -142,6 +142,15 @@ name instead of by arithmetic and still show "custom" for a hand-written spec.
 Every number on a layer *and* on a shape takes one, which is what makes motion
 plug-and-play here.
 
+`SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
+bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
+the studio leads with. **A mark arrives already moving** (a frame breathes, a
+mark sways) because this is a studio for motion and a still mark is the
+exception; "still" is the first option in the same dropdown. `shapeLoopOf` names
+what a mark is running, and while it's running a named loop the per-number loop
+rows stay folded away — one control at a time, not two views of the same wave.
+Everything that moves gets a track in `Tracks.tsx`, marks included.
+
 Anything with a stack — effects on a layer, marks on a slide — is drawn as
 `Block`s in Toolcraft: a switch, a name, reorder, remove, and its numbers
 inside. An effect switched off (`mute`) stays in the chain rather than being
