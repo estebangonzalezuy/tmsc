@@ -7,13 +7,19 @@
 // after the furniture, which is the one thing a studio has to get right.
 //
 //   top left      the identity, and the menus: what you *do*
-//   top right     one panel: what you *set*, in two halves — type and graphics
+//   top right     one panel: what you *set*, one column, read downwards
 //   bottom left   the filmstrip, when there is more than one slide
 //   bottom centre the toolbar: undo, zoom, the transport, the loop
 //
 // Everything is drawn from Toolcraft (`toolcraft.tsx`), so a control learned in
 // one place is the same control everywhere: label on the left, value on the
 // right, track full width underneath.
+//
+// The panel's order is Toolcraft's own — canvas, source, type, marks, effect,
+// colour, and export at the foot — not this tool's history. It had tabs once,
+// and a tab is a second place to look for something that was only ever in one
+// place; a group that folds shut with its summary showing does the same job
+// without hiding half the post behind a switch.
 //
 // Two rules the studio keeps for itself. Every graphic arrives **moving** — a
 // mark, a layer, an effect — because this is a studio for motion and a still
@@ -104,6 +110,7 @@ import {
   MenuSep,
   Panel,
   Primary,
+  Range,
   Row,
   STAGE,
   Section,
@@ -156,6 +163,10 @@ const layerName = (l: LayerSpec) =>
  * A number, and the loop plugged into it. The dot says whether it travels; the
  * loop is named, and the fine print appears only when there's something to say
  * that the name doesn't.
+ *
+ * A number that travels is drawn as one two-handle track rather than two
+ * sliders — where it rests and where it goes are the same journey, and reading
+ * them off one track is how you see the size of the trip at a glance.
  */
 function LoopRow({
   control: c,
@@ -176,30 +187,48 @@ function LoopRow({
   detail?: boolean;
   suffix?: string;
 }) {
+  const dot = canMove ? (
+    <button
+      onClick={() => onMotion(motion ? null : applyLoop("drift", c, value))}
+      title={motion ? "Hold this one still" : "Plug a loop into this number"}
+      className={`w-3 shrink-0 text-[9px] ${
+        motion ? "text-foreground" : "text-muted hover:text-foreground"
+      }`}
+    >
+      {motion ? "◉" : "○"}
+    </button>
+  ) : undefined;
+
   return (
     <>
-      <Slider
-        label={c.label}
-        value={value}
-        min={c.min}
-        max={c.max}
-        step={c.step}
-        suffix={suffix}
-        onChange={onChange}
-        right={
-          canMove ? (
-            <button
-              onClick={() => onMotion(motion ? null : applyLoop("drift", c, value))}
-              title={motion ? "Hold this one still" : "Plug a loop into this number"}
-              className={`w-3 shrink-0 text-[9px] ${
-                motion ? "text-foreground" : "text-muted hover:text-foreground"
-              }`}
-            >
-              {motion ? "◉" : "○"}
-            </button>
-          ) : undefined
-        }
-      />
+      {motion ? (
+        <Range
+          label={c.label}
+          from={value}
+          to={motion.to}
+          min={c.min}
+          max={c.max}
+          step={c.step}
+          suffix={suffix}
+          cross
+          right={dot}
+          onChange={(v, to) => {
+            if (v !== value) onChange(v);
+            if (to !== motion.to) onMotion({ ...motion, to });
+          }}
+        />
+      ) : (
+        <Slider
+          label={c.label}
+          value={value}
+          min={c.min}
+          max={c.max}
+          step={c.step}
+          suffix={suffix}
+          onChange={onChange}
+          right={dot}
+        />
+      )}
       {motion && detail && (
         <div className={`border-l ${HAIR} pl-2 ml-1 space-y-2`}>
           <Row label="loop">
@@ -215,14 +244,6 @@ function LoopRow({
               }}
             />
           </Row>
-          <Slider
-            label="to"
-            value={motion.to}
-            min={c.min}
-            max={c.max}
-            step={c.step}
-            onChange={(to) => onMotion({ ...motion, to })}
-          />
           {loopOf(motion) === "custom" && (
             <Row label="wave">
               <Select
@@ -271,8 +292,7 @@ export default function PostLab() {
   const [strip, setStrip] = useState(true);
   const [tracks, setTracks] = useState(false);
   const [zoom, setZoom] = useState(1);
-  /* Which half of the post the panel is showing, and what's over the stage. */
-  const [panel, setPanel] = useState<"type" | "graphics">("type");
+  /* What's over the stage, when something needs the room. */
   const [drawer, setDrawer] = useState<"recipes" | "generate" | "spec" | null>(null);
 
   const stageRef = useRef<HTMLDivElement>(null);
@@ -532,38 +552,61 @@ export default function PostLab() {
     patchLayer({ inks: whole ? undefined : next } as Partial<LayerSpec>);
   };
 
+  /* Changing what a layer draws keeps it moving: the new thing arrives with a
+     loop plugged into its first number, the same bargain a new layer, a new
+     mark and a new effect make. */
   const setShaderType = (type: ShaderType) =>
     patchSlide({
-      layers: slide.layers.map((l, i) =>
-        i === layerIndex
-          ? {
-              ...defaultLayer(type),
-              opacity: l.opacity,
-              blend: l.blend,
-              offsetX: l.offsetX,
-              offsetY: l.offsetY,
-              rotation: l.rotation,
-              ...(l.ink ? { ink: l.ink } : {}),
-            }
-          : l,
-      ),
+      layers: slide.layers.map((l, i) => {
+        if (i !== layerIndex) return l;
+        const born = {
+          ...defaultLayer(type),
+          opacity: l.opacity,
+          blend: l.blend,
+          offsetX: l.offsetX,
+          offsetY: l.offsetY,
+          rotation: l.rotation,
+          ...(l.ink ? { ink: l.ink } : {}),
+        } as LayerSpec;
+        const drawn = shaderDef(type);
+        const c =
+          drawn.kind === "generative"
+            ? drawn.controls.find((k) => k.key !== "speed")
+            : undefined;
+        if (c) {
+          const m = applyLoop("drift", c, Number(born[c.key] ?? c.def));
+          if (m) born.motion = { [c.key]: m };
+        }
+        return born;
+      }),
     });
 
-  const reroll = (l: LayerSpec): LayerSpec =>
-    ({
-      ...defaultLayer("dithering"),
+  /* A rolled look arrives moving and looping, like everything else here: the
+     roll is confined to the club's own renderer, which is the half of the tool
+     that comes back to its first frame, and one of its numbers is put on a
+     loop straight away. */
+  const reroll = (l: LayerSpec): LayerSpec => {
+    const out = {
+      ...defaultLayer("forms"),
       opacity: l.opacity,
       blend: l.blend,
       offsetX: l.offsetX,
       offsetY: l.offsetY,
       rotation: l.rotation,
-      ...randomShader(),
+      ...randomShader("forms"),
       ...(l.ink ? { ink: l.ink } : {}),
       ...(l.inks ? { inks: l.inks } : {}),
       ...(l.mixMode ? { mixMode: l.mixMode } : {}),
       ...(l.mixScale !== undefined ? { mixScale: l.mixScale } : {}),
       ...(l.mixSpeed !== undefined ? { mixSpeed: l.mixSpeed } : {}),
-    }) as LayerSpec;
+    } as LayerSpec;
+    const c = shaderDef("forms").controls.find((k) => k.key === "warp");
+    if (c) {
+      const m = applyLoop("drift", c, Number(out[c.key] ?? c.def));
+      if (m) out.motion = { [c.key]: m };
+    }
+    return out;
+  };
 
   const randomizeLayer = () =>
     patchSlide({
@@ -587,7 +630,6 @@ export default function PostLab() {
     }
     patchSlide({ layers: [...slide.layers, born] });
     setActiveLayer(slide.layers.length);
-    setPanel("graphics");
   };
 
   const removeLayer = () => {
@@ -1106,16 +1148,15 @@ export default function PostLab() {
           )}
         </div>
 
-        {/* Top right: one panel, two halves. */}
+        {/* Top right: one panel, one column. */}
         <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
           <Panel
-            title={`Slide ${String(activeIndex + 1).padStart(2, "0")} of ${String(
-              spec.slides.length,
-            ).padStart(2, "0")}`}
+            title="the Posts Studio"
             onReset={() => patchSlide(defaultSlide({ title: slide.title }))}
             right={
               <span className="text-[10px] text-muted tabular-nums pr-1">
-                {FORMATS[spec.format].label}
+                {String(activeIndex + 1).padStart(2, "0")}/
+                {String(spec.slides.length).padStart(2, "0")} · {FORMATS[spec.format].label}
               </span>
             }
             footer={
@@ -1137,914 +1178,974 @@ export default function PostLab() {
               </div>
             }
           >
-            <div className={`p-2 border-b ${HAIR} sticky top-0 bg-background z-10`}>
-              <Segmented
-                value={panel}
-                options={[
-                  { value: "type" as const, label: "type", title: "The words, and how they're set" },
-                  {
-                    value: "graphics" as const,
-                    label: "graphics",
-                    title: "The sheet, its marks, and the layers behind them",
-                  },
-                ]}
-                onChange={setPanel}
+            {/* Toolcraft's own sequence, top to bottom, and the tool's too:
+                what the post is, what it's printed on, the words, the marks on
+                them, the graphic behind them, and colour last. Export sits at
+                the foot of the panel, where a tool's way out belongs. There are
+                no tabs — one column, read downwards. */}
+            <Section
+              title="canvas"
+              summary={`${FORMATS[spec.format].label} · ${spec.duration}s`}
+            >
+              <Stack label="aspect ratio">
+                <Select
+                  value={spec.format}
+                  options={(Object.keys(FORMATS) as (keyof typeof FORMATS)[]).map((f) => ({
+                    value: f,
+                    label: `${FORMATS[f].label} — ${FORMATS[f].hint}`,
+                  }))}
+                  onChange={(format) =>
+                    setSpec({ ...spec, format: format as PostSpec["format"] })
+                  }
+                />
+              </Stack>
+              <Cols>
+                <Stack label="canvas width">
+                  <span
+                    className={`h-8 border ${HAIR} px-2 flex items-center text-[11px] tabular-nums text-muted`}
+                  >
+                    {FORMATS[spec.format].w}
+                  </span>
+                </Stack>
+                <Stack label="canvas height">
+                  <span
+                    className={`h-8 border ${HAIR} px-2 flex items-center text-[11px] tabular-nums text-muted`}
+                  >
+                    {FORMATS[spec.format].h}
+                  </span>
+                </Stack>
+              </Cols>
+              <Stack label="resolution scale">
+                <Segmented
+                  value={quality}
+                  options={[
+                    { value: "mid" as const, label: "1×" },
+                    { value: "high" as const, label: "2×" },
+                    { value: "max" as const, label: "4K" },
+                  ]}
+                  onChange={setQuality}
+                />
+              </Stack>
+              <p className="text-[10px] text-muted tabular-nums">
+                exports at {outW}×{outH}
+              </p>
+              <Slider
+                label="the loop"
+                value={spec.duration}
+                min={2}
+                max={15}
+                step={1}
+                suffix="s"
+                onChange={(duration) => setSpec({ ...spec, duration })}
+                help="How long the post runs before it comes back to its first frame"
               />
-            </div>
+              <Buttons>
+                <Btn onClick={() => setDrawer("recipes")} wide title="A whole post to start from">
+                  Recipes…
+                </Btn>
+                <Btn onClick={addSlide} wide title="Another slide, from this one">
+                  + slide
+                </Btn>
+              </Buttons>
+            </Section>
 
-            {panel === "type" && (
-              <>
-                <Section title="words" summary={plainTitle(slide.title).slice(0, 24)}>
-                  <Cols>
-                    <Stack label="kicker">
-                      <Text
-                        value={slide.kicker}
-                        placeholder="top left"
-                        onChange={(kicker) => patchSlide({ kicker })}
-                      />
-                    </Stack>
-                    <Stack label="oval">
-                      <Text
-                        value={slide.tag ?? ""}
-                        placeholder="08/26"
-                        onChange={(tag) => patchSlide({ tag: tag || undefined })}
-                      />
-                    </Stack>
-                  </Cols>
-                  <Stack label="headline">
-                    <Text
-                      value={slide.title}
-                      rows={3}
-                      placeholder="*a run in asterisks* flips to the other voice"
-                      onChange={(title) => patchSlide({ title })}
+            <Section
+              title="source"
+              summary={GROUND_NAMES[slide.background ?? ""] ?? slide.theme}
+              note="What the post is printed on. A ground is paper, not colour — almost nothing in this register sits on pure white."
+            >
+              <Stack label="theme">
+                <Segmented
+                  value={slide.theme}
+                  options={[
+                    { value: "light" as const, label: "light" },
+                    { value: "dark" as const, label: "dark" },
+                  ]}
+                  onChange={(theme) => patchSlide({ theme })}
+                />
+              </Stack>
+              <Stack label="ground">
+                <Dots
+                  colors={GROUNDS.map((g) => g.hex)}
+                  labels={GROUND_NAMES}
+                  value={slide.background ?? ""}
+                  options={[{ value: "", label: "theme" }]}
+                  onChange={(v) => patchSlide({ background: v === "" ? undefined : v })}
+                />
+              </Stack>
+              <ColorRow
+                label="or any hex"
+                value={slide.background ?? slideTones(slide).bg}
+                onChange={(background) => patchSlide({ background })}
+                onClear={
+                  slide.background ? () => patchSlide({ background: undefined }) : undefined
+                }
+              />
+              <Slider
+                label="veil"
+                value={slide.veil}
+                min={0}
+                max={0.9}
+                step={0.05}
+                display={slide.veil === 0 ? "none" : undefined}
+                onChange={(veil) => patchSlide({ veil })}
+                help="A wash of the ground over the graphic, so the words can be read"
+              />
+              <Block title="the ruling" open={(slide.grid ?? 0) >= 2}>
+                <p className="text-[10px] text-muted leading-relaxed">
+                  The hairline grid the club&apos;s sheets are drawn on: square
+                  cells, cut equally top and bottom.
+                </p>
+                <Slider
+                  label="columns"
+                  value={slide.grid ?? 0}
+                  min={0}
+                  max={16}
+                  step={1}
+                  display={(slide.grid ?? 0) < 2 ? "off" : undefined}
+                  onChange={(grid) => patchSlide({ grid: grid < 2 ? undefined : grid })}
+                />
+                {(slide.grid ?? 0) >= 2 && (
+                  <>
+                    <Slider
+                      label="presence"
+                      value={slide.gridAlpha ?? 0.16}
+                      min={0.04}
+                      max={0.6}
+                      step={0.02}
+                      onChange={(gridAlpha) => patchSlide({ gridAlpha })}
                     />
-                  </Stack>
-                  <Stack label="under it">
-                    <Text
-                      value={slide.body}
-                      rows={2}
-                      placeholder="a supporting sentence"
-                      onChange={(body) => patchSlide({ body })}
+                    <Toggle
+                      label="over the type"
+                      on={!!slide.gridTop}
+                      onChange={() =>
+                        patchSlide({ gridTop: slide.gridTop ? undefined : true })
+                      }
+                      help="The sheet's lines cross the words — a technical drawing rather than a caption"
                     />
-                  </Stack>
-                  <Cols>
-                    <Stack label="note">
-                      <Text
-                        value={slide.note ?? ""}
-                        placeholder="top right"
-                        onChange={(note) => patchSlide({ note: note || undefined })}
-                      />
-                    </Stack>
-                    <Stack label="footer">
-                      <Text
-                        value={slide.footer}
-                        placeholder="bottom left"
-                        onChange={(footer) => patchSlide({ footer })}
-                      />
-                    </Stack>
-                  </Cols>
-                  <p className="text-[10px] text-muted leading-relaxed">
-                    {slide.note
-                      ? "The note has the top-right corner, so the circled mark stands down while it's there."
-                      : "Wrap a run in *asterisks* to flip it to the other voice — italic in a roman headline, roman in an italic one."}
-                  </p>
-                </Section>
+                  </>
+                )}
+              </Block>
+            </Section>
 
-                <Section
-                  title="setting"
-                  summary={`${slide.titleFont} · ${slide.titleSize} · ${slide.align}`}
-                >
-                  <Cols>
-                    <Stack label="typeface">
-                      <Select
-                        value={slide.titleFont}
-                        options={[
-                          { value: "serif", label: "serif — Lora" },
-                          { value: "sans", label: "sans — Archivo" },
-                          { value: "gothic", label: "gothic — Pirata" },
-                        ]}
-                        onChange={(titleFont) =>
-                          patchSlide({ titleFont: titleFont as SlideSpec["titleFont"] })
-                        }
-                      />
-                    </Stack>
-                    <Stack label="the letter">
-                      <Text
-                        value={slide.letter}
-                        placeholder="M"
-                        onChange={(letter) => patchSlide({ letter: letter.slice(0, 1) })}
-                      />
-                    </Stack>
-                  </Cols>
-                  <Stack label="size">
-                    <Segmented
-                      value={slide.titleSize}
-                      options={[
-                        { value: "s" as const, label: "S" },
-                        { value: "m" as const, label: "M" },
-                        { value: "l" as const, label: "L" },
-                        { value: "fit" as const, label: "fit" },
-                      ]}
-                      onChange={(titleSize) => patchSlide({ titleSize })}
-                    />
-                  </Stack>
-                  <Slider
-                    label="weight"
-                    value={slide.titleWeight ?? defaultWeight}
-                    min={100}
-                    max={900}
-                    step={100}
-                    onChange={(titleWeight) => patchSlide({ titleWeight })}
+            <Section title="type" summary={plainTitle(slide.title).slice(0, 24)}>
+              <Cols>
+                <Stack label="kicker">
+                  <Text
+                    value={slide.kicker}
+                    placeholder="top left"
+                    onChange={(kicker) => patchSlide({ kicker })}
                   />
-                  <Slider
-                    label="margin"
-                    value={slide.margin ?? 96}
-                    min={24}
-                    max={240}
-                    step={4}
-                    onChange={(margin) => patchSlide({ margin })}
-                    help="The frame's breathing room, in design units at 1080 wide"
+                </Stack>
+                <Stack label="oval">
+                  <Text
+                    value={slide.tag ?? ""}
+                    placeholder="08/26"
+                    onChange={(tag) => patchSlide({ tag: tag || undefined })}
                   />
-                  <Stack label="align">
-                    <Segmented
-                      value={slide.align}
+                </Stack>
+              </Cols>
+              <Stack label="headline">
+                <Text
+                  value={slide.title}
+                  rows={3}
+                  placeholder="*a run in asterisks* flips to the other voice"
+                  onChange={(title) => patchSlide({ title })}
+                />
+              </Stack>
+              <Stack label="under it">
+                <Text
+                  value={slide.body}
+                  rows={2}
+                  placeholder="a supporting sentence"
+                  onChange={(body) => patchSlide({ body })}
+                />
+              </Stack>
+              <Cols>
+                <Stack label="note">
+                  <Text
+                    value={slide.note ?? ""}
+                    placeholder="top right"
+                    onChange={(note) => patchSlide({ note: note || undefined })}
+                  />
+                </Stack>
+                <Stack label="footer">
+                  <Text
+                    value={slide.footer}
+                    placeholder="bottom left"
+                    onChange={(footer) => patchSlide({ footer })}
+                  />
+                </Stack>
+              </Cols>
+              <p className="text-[10px] text-muted leading-relaxed">
+                {slide.note
+                  ? "The note has the top-right corner, so the circled mark stands down while it's there."
+                  : "Wrap a run in *asterisks* to flip it to the other voice — italic in a roman headline, roman in an italic one."}
+              </p>
+              <Block
+                title={`setting — ${slide.titleFont} · ${slide.titleSize} · ${slide.align}`}
+                open={false}
+              >
+                <Cols>
+                  <Stack label="typeface">
+                    <Select
+                      value={slide.titleFont}
                       options={[
-                        { value: "left" as const, label: "left" },
-                        { value: "center" as const, label: "center" },
+                        { value: "serif", label: "serif — Lora" },
+                        { value: "sans", label: "sans — Archivo" },
+                        { value: "gothic", label: "gothic — Pirata" },
                       ]}
-                      onChange={(align) => patchSlide({ align })}
-                    />
-                  </Stack>
-                  <Stack label="anchor">
-                    <Segmented
-                      value={slide.anchor ?? "middle"}
-                      options={[
-                        { value: "top" as const, label: "top" },
-                        { value: "middle" as const, label: "middle" },
-                        { value: "bottom" as const, label: "bottom" },
-                      ]}
-                      onChange={(anchor) =>
-                        patchSlide({ anchor: anchor === "middle" ? undefined : anchor })
+                      onChange={(titleFont) =>
+                        patchSlide({ titleFont: titleFont as SlideSpec["titleFont"] })
                       }
                     />
                   </Stack>
-                  <Cols>
-                    <Toggle
-                      label="italic"
-                      on={slide.italic}
-                      onChange={() => patchSlide({ italic: !slide.italic })}
+                  <Stack label="the letter">
+                    <Text
+                      value={slide.letter}
+                      placeholder="M"
+                      onChange={(letter) => patchSlide({ letter: letter.slice(0, 1) })}
                     />
+                  </Stack>
+                </Cols>
+                <Stack label="size">
+                  <Segmented
+                    value={slide.titleSize}
+                    options={[
+                      { value: "s" as const, label: "S" },
+                      { value: "m" as const, label: "M" },
+                      { value: "l" as const, label: "L" },
+                      { value: "fit" as const, label: "fit" },
+                    ]}
+                    onChange={(titleSize) => patchSlide({ titleSize })}
+                  />
+                </Stack>
+                <Slider
+                  label="weight"
+                  value={slide.titleWeight ?? defaultWeight}
+                  min={100}
+                  max={900}
+                  step={100}
+                  onChange={(titleWeight) => patchSlide({ titleWeight })}
+                />
+                <Slider
+                  label="margin"
+                  value={slide.margin ?? 96}
+                  min={24}
+                  max={240}
+                  step={4}
+                  onChange={(margin) => patchSlide({ margin })}
+                  help="The frame's breathing room, in design units at 1080 wide"
+                />
+                <Stack label="align">
+                  <Segmented
+                    value={slide.align}
+                    options={[
+                      { value: "left" as const, label: "left" },
+                      { value: "center" as const, label: "center" },
+                    ]}
+                    onChange={(align) => patchSlide({ align })}
+                  />
+                </Stack>
+                <Stack label="anchor">
+                  <Segmented
+                    value={slide.anchor ?? "middle"}
+                    options={[
+                      { value: "top" as const, label: "top" },
+                      { value: "middle" as const, label: "middle" },
+                      { value: "bottom" as const, label: "bottom" },
+                    ]}
+                    onChange={(anchor) =>
+                      patchSlide({ anchor: anchor === "middle" ? undefined : anchor })
+                    }
+                  />
+                </Stack>
+                <Cols>
+                  <Toggle
+                    label="italic"
+                    on={slide.italic}
+                    onChange={() => patchSlide({ italic: !slide.italic })}
+                  />
+                  <Toggle
+                    label="boxed"
+                    on={slide.boxed}
+                    onChange={() => patchSlide({ boxed: !slide.boxed })}
+                  />
+                  <Toggle
+                    label="plate"
+                    on={slide.plate}
+                    onChange={() => patchSlide({ plate: !slide.plate })}
+                  />
+                  <Toggle
+                    label="orbit ring"
+                    on={slide.ring}
+                    onChange={() => patchSlide({ ring: !slide.ring })}
+                  />
+                  <Toggle
+                    label="all type"
+                    on={slide.text}
+                    onChange={() => patchSlide({ text: !slide.text })}
+                    help="Off leaves the sheet and its marks alone — a slide with no words at all"
+                  />
+                </Cols>
+              </Block>
+              <Block
+                title={`on the slide — ${parts.length} of ${SLIDE_PARTS.length}`}
+                open={false}
+              >
+                <p className="text-[10px] text-muted leading-relaxed">
+                  Switching a part off keeps its words, so switching it back on
+                  brings them with it.
+                </p>
+                <Cols>
+                  {SLIDE_PARTS.map((part) => (
                     <Toggle
-                      label="boxed"
-                      on={slide.boxed}
-                      onChange={() => patchSlide({ boxed: !slide.boxed })}
+                      key={part}
+                      label={part}
+                      on={partOn(slide, part)}
+                      onChange={() => togglePart(part)}
                     />
-                    <Toggle
-                      label="plate"
-                      on={slide.plate}
-                      onChange={() => patchSlide({ plate: !slide.plate })}
+                  ))}
+                </Cols>
+                <Row label="the mark">
+                  <Select
+                    value={slide.mark ?? "auto"}
+                    options={[
+                      { value: "auto", label: "auto — page on a carousel" },
+                      { value: "letter", label: "the letter" },
+                      { value: "page", label: "the page number" },
+                      { value: "none", label: "nothing" },
+                    ]}
+                    onChange={(mark) => patchSlide({ mark: mark as SlideSpec["mark"] })}
+                  />
+                </Row>
+              </Block>
+              <Block
+                title={`the counter — ${
+                  slide.count ? `${slide.count.from} → ${slide.count.to}` : "off"
+                }`}
+                open={!!slide.count}
+              >
+                <p className="text-[10px] text-muted leading-relaxed">
+                  A number that counts over the loop. Write # wherever it should
+                  appear — “#” with “days to go” under it is a countdown.
+                </p>
+                <Toggle
+                  label="counting"
+                  on={!!slide.count}
+                  onChange={() =>
+                    patchSlide({ count: slide.count ? undefined : { from: 12, to: 0, pad: 2 } })
+                  }
+                />
+                {slide.count && (
+                  <>
+                    <Slider
+                      label="from"
+                      value={slide.count.from}
+                      min={0}
+                      max={999}
+                      step={1}
+                      onChange={(from) => patchSlide({ count: { ...slide.count!, from } })}
                     />
-                    <Toggle
-                      label="orbit ring"
-                      on={slide.ring}
-                      onChange={() => patchSlide({ ring: !slide.ring })}
+                    <Slider
+                      label="to"
+                      value={slide.count.to}
+                      min={0}
+                      max={999}
+                      step={1}
+                      onChange={(to) => patchSlide({ count: { ...slide.count!, to } })}
                     />
-                    <Toggle
-                      label="all type"
-                      on={slide.text}
-                      onChange={() => patchSlide({ text: !slide.text })}
-                      help="Off leaves the sheet and its marks alone — a slide with no words at all"
+                    <Slider
+                      label="digits"
+                      value={slide.count.pad ?? 0}
+                      min={0}
+                      max={4}
+                      step={1}
+                      display={slide.count.pad ? undefined : "as written"}
+                      onChange={(pad) =>
+                        patchSlide({ count: { ...slide.count!, pad: pad || undefined } })
+                      }
+                      help="Padding holds the same room for every value, so the headline doesn't breathe as a digit drops"
                     />
-                  </Cols>
-                </Section>
+                    <p className="text-[10px] text-muted leading-relaxed">
+                      {Math.abs(slide.count.to - slide.count.from) + 1} values over{" "}
+                      {spec.duration}s.
+                    </p>
+                  </>
+                )}
+              </Block>
+              <Block
+                title={`the club's screen — ${
+                  slide.titlePixel || slide.metaPixel ? "on" : "off"
+                }`}
+                open={false}
+              >
+                <p className="text-[10px] text-muted leading-relaxed">
+                  Every glyph thresholded into hard ink-or-nothing blocks at
+                  this cell size.
+                </p>
+                <Slider
+                  label="headline"
+                  value={slide.titlePixel}
+                  min={0}
+                  max={24}
+                  step={1}
+                  suffix="px"
+                  display={slide.titlePixel ? undefined : "off"}
+                  onChange={(titlePixel) => patchSlide({ titlePixel })}
+                />
+                <Slider
+                  label="everything else"
+                  value={slide.metaPixel}
+                  min={0}
+                  max={24}
+                  step={1}
+                  suffix="px"
+                  display={slide.metaPixel ? undefined : "off"}
+                  onChange={(metaPixel) => patchSlide({ metaPixel })}
+                />
+              </Block>
+            </Section>
 
-                <Section
-                  title="on the slide"
-                  summary={`${parts.length} of ${SLIDE_PARTS.length}`}
-                  open={false}
-                  note="Switching a part off keeps its words, so switching it back on brings them with it."
-                >
-                  <Cols>
-                    {SLIDE_PARTS.map((part) => (
-                      <Toggle
-                        key={part}
-                        label={part}
-                        on={partOn(slide, part)}
-                        onChange={() => togglePart(part)}
+            <Section
+              title="marks"
+              summary={shapes.length ? shapes.map((s) => s.kind).join(" · ") : "none"}
+              open={shapes.length > 0}
+              note="The club's motifs as objects, over the words or under them. Each one arrives with a loop already plugged in."
+            >
+              {shapes.map((shape, i) => {
+                const repeat = Math.round(shape.repeat ?? 1);
+                const named = shapeLoopOf(shape);
+                const deformed =
+                  repeat > 1 ||
+                  SHAPE_DEFORMERS.some(
+                    (c) =>
+                      (shape as unknown as Record<string, number | undefined>)[c.key] !==
+                      undefined,
+                  );
+                return (
+                  <Block
+                    key={i}
+                    title={`${shape.kind}${repeat > 1 ? ` ×${repeat}` : ""}${
+                      shape.under ? " · under" : ""
+                    }`}
+                    onUp={i > 0 ? () => moveShape(i, -1) : undefined}
+                    onDown={i < shapes.length - 1 ? () => moveShape(i, 1) : undefined}
+                    onRemove={() => removeShape(i)}
+                    open={i === shapes.length - 1}
+                  >
+                    <Cols>
+                      <Stack label="mark">
+                        <Select
+                          value={shape.kind}
+                          options={SHAPE_KINDS.map((k) => ({ value: k, label: k }))}
+                          onChange={(kind) => patchShape(i, { kind: kind as ShapeKind })}
+                        />
+                      </Stack>
+                      <Stack label="loop">
+                        <Select
+                          value={named}
+                          options={[
+                            { value: "", label: "still" },
+                            ...SHAPE_LOOPS.map((l) => ({ value: l.id, label: l.name })),
+                            ...(named === "custom"
+                              ? [{ value: "custom", label: "custom" }]
+                              : []),
+                          ]}
+                          onChange={(id) => {
+                            if (!id) return patchShape(i, { motion: undefined });
+                            const l = shapeLoopDef(id);
+                            if (l) patchShape(i, { motion: l.motion(shape) });
+                          }}
+                        />
+                      </Stack>
+                    </Cols>
+                    <XYPad
+                      x={shape.x}
+                      y={shape.y}
+                      onChange={(x, y) => patchShape(i, { x, y })}
+                    />
+                    {SHAPE_CONTROLS.filter((c) => c.key !== "x" && c.key !== "y").map((c) => (
+                      <LoopRow
+                        key={c.key}
+                        control={c}
+                        value={Number(
+                          (shape as unknown as Record<string, number>)[c.key] ?? c.def,
+                        )}
+                        motion={shape.motion?.[c.key]}
+                        canMove
+                        detail={named === "" || named === "custom"}
+                        onChange={(v) => patchShape(i, { [c.key]: v } as Partial<ShapeSpec>)}
+                        onMotion={(m) => setShapeMotion(i, c.key, m)}
                       />
                     ))}
-                  </Cols>
-                  <Row label="the mark">
+                    <Stack label="ink">
+                      <Dots
+                        colors={slide.palette ?? PALETTE}
+                        value={shape.ink ?? ""}
+                        options={[{ value: "", label: "theme" }]}
+                        onChange={(v) => patchShape(i, { ink: v || undefined })}
+                      />
+                    </Stack>
+                    <Toggle
+                      label="under the words"
+                      on={!!shape.under}
+                      onChange={() =>
+                        patchShape(i, { under: shape.under ? undefined : true })
+                      }
+                    />
+                    <Block title="deformers" open={deformed}>
+                      <Row label="laid out">
+                        <Select
+                          value={shape.along ?? "x"}
+                          options={[
+                            { value: "x", label: "in a row" },
+                            { value: "y", label: "in a column" },
+                            { value: "arc", label: "along an arc" },
+                            { value: "ring", label: "around a ring" },
+                          ]}
+                          onChange={(along) =>
+                            patchShape(i, {
+                              along:
+                                along === "x" ? undefined : (along as ShapeSpec["along"]),
+                            })
+                          }
+                        />
+                      </Row>
+                      {SHAPE_DEFORMERS.map((c) => (
+                        <LoopRow
+                          key={c.key}
+                          control={c}
+                          value={Number(
+                            (shape as unknown as Record<string, number>)[c.key] ?? c.def,
+                          )}
+                          motion={shape.motion?.[c.key]}
+                          canMove
+                          detail={named === "" || named === "custom"}
+                          onChange={(v) =>
+                            patchShape(i, {
+                              [c.key]: v === c.def ? undefined : v,
+                            } as Partial<ShapeSpec>)
+                          }
+                          onMotion={(m) => setShapeMotion(i, c.key, m)}
+                        />
+                      ))}
+                      {!!shape.jitter && (
+                        <Btn
+                          onClick={() => patchShape(i, { seed: rollSeed() })}
+                          title="The scatter is fixed, so it never crawls — this rolls a different one"
+                        >
+                          Rescatter
+                        </Btn>
+                      )}
+                    </Block>
+                  </Block>
+                );
+              })}
+              <Stack label={`add a mark — ${shapes.length}/${MAX_SHAPES}`}>
+                <div className="flex flex-wrap gap-1">
+                  {SHAPE_KINDS.map((k) => (
+                    <Btn
+                      key={k}
+                      onClick={() => addShape(k)}
+                      disabled={shapes.length >= MAX_SHAPES}
+                      title={`Add a ${k} — it arrives moving`}
+                    >
+                      + {k}
+                    </Btn>
+                  ))}
+                </div>
+              </Stack>
+            </Section>
+
+            <Section
+              title="effect"
+              summary={`${layerName(layer)}${
+                (layer.filters ?? []).length ? ` → ${(layer.filters ?? []).length}` : ""
+              }`}
+            >
+              {slide.layers.length > 1 && (
+                <Row label="which">
+                  <Select
+                    value={String(layerIndex)}
+                    options={slide.layers
+                      .map((l, i) => ({
+                        value: String(i),
+                        label: `${String(i + 1).padStart(2, "0")} — ${layerName(l)}${
+                          l.mute ? " (off)" : ""
+                        }`,
+                      }))
+                      .reverse()}
+                    onChange={(i) => setActiveLayer(Number(i))}
+                  />
+                  <IconBtn
+                    onClick={() => patchLayer({ mute: layer.mute ? undefined : true })}
+                    title={layer.mute ? "Switch this layer on" : "Switch this layer off"}
+                    on={!layer.mute}
+                  >
+                    ◉
+                  </IconBtn>
+                  <IconBtn
+                    onClick={() => setSolo(solo === layerIndex ? null : layerIndex)}
+                    title="Show this layer on its own"
+                    on={solo === layerIndex}
+                  >
+                    ◆
+                  </IconBtn>
+                </Row>
+              )}
+              <Stack label="draws">
+                <Select
+                  value={layer.type}
+                  options={SHADERS.map((s) => ({
+                    value: s.type,
+                    label: s.label,
+                    group: FAMILY_NAMES[s.family ?? "pixelated"],
+                  }))}
+                  onChange={(t) => setShaderType(t as ShaderType)}
+                />
+              </Stack>
+              <Cols>
+                <Stack label="blend">
+                  <Select
+                    value={layer.blend}
+                    options={BLENDS.map((b) => ({ value: b, label: b }))}
+                    onChange={(blend) => patchLayer({ blend: blend as LayerSpec["blend"] })}
+                  />
+                </Stack>
+                <Stack label="…">
+                  <Buttons>
+                    <Btn onClick={randomizeLayer} wide title="A new form, same place">
+                      Roll
+                    </Btn>
+                    <Btn
+                      onClick={addLayer}
+                      disabled={slide.layers.length >= MAX_LAYERS}
+                      title="Add a layer, already moving"
+                    >
+                      +
+                    </Btn>
+                  </Buttons>
+                </Stack>
+              </Cols>
+              <Slider
+                label="opacity"
+                value={layer.opacity}
+                min={0.05}
+                max={1}
+                step={0.05}
+                onChange={(opacity) => patchLayer({ opacity })}
+              />
+              {(def.choices ?? [])
+                .filter((c) => {
+                  if (c.key === "word")
+                    return layer.pattern === "letter" || layer.pattern2 === "letter";
+                  if (c.key === "mix") return (layer.pattern2 ?? "none") !== "none";
+                  return true;
+                })
+                .map((c) => (
+                  <Row key={c.key} label={c.label}>
                     <Select
-                      value={slide.mark ?? "auto"}
-                      options={[
-                        { value: "auto", label: "auto — page on a carousel" },
-                        { value: "letter", label: "the letter" },
-                        { value: "page", label: "the page number" },
-                        { value: "none", label: "nothing" },
-                      ]}
-                      onChange={(mark) => patchSlide({ mark: mark as SlideSpec["mark"] })}
+                      value={String(layer[c.key] ?? c.def)}
+                      options={c.values.map((v) => ({ value: v, label: v }))}
+                      onChange={(v) => patchLayer({ [c.key]: v })}
                     />
                   </Row>
-                </Section>
-
-                <Section
-                  title="the counter"
-                  summary={slide.count ? `${slide.count.from} → ${slide.count.to}` : "off"}
-                  open={!!slide.count}
-                  note="A number that counts over the loop. Write # wherever it should appear — “#” with “days to go” under it is a countdown."
-                >
-                  <Toggle
-                    label="counting"
-                    on={!!slide.count}
-                    onChange={() =>
-                      patchSlide({ count: slide.count ? undefined : { from: 12, to: 0, pad: 2 } })
-                    }
-                  />
-                  {slide.count && (
-                    <>
-                      <Slider
-                        label="from"
-                        value={slide.count.from}
-                        min={0}
-                        max={999}
-                        step={1}
-                        onChange={(from) => patchSlide({ count: { ...slide.count!, from } })}
-                      />
-                      <Slider
-                        label="to"
-                        value={slide.count.to}
-                        min={0}
-                        max={999}
-                        step={1}
-                        onChange={(to) => patchSlide({ count: { ...slide.count!, to } })}
-                      />
-                      <Slider
-                        label="digits"
-                        value={slide.count.pad ?? 0}
-                        min={0}
-                        max={4}
-                        step={1}
-                        display={slide.count.pad ? undefined : "as written"}
-                        onChange={(pad) =>
-                          patchSlide({ count: { ...slide.count!, pad: pad || undefined } })
-                        }
-                        help="Padding holds the same room for every value, so the headline doesn't breathe as a digit drops"
-                      />
-                      <p className="text-[10px] text-muted leading-relaxed">
-                        {Math.abs(slide.count.to - slide.count.from) + 1} values over{" "}
-                        {spec.duration}s.
-                      </p>
-                    </>
+                ))}
+              {wantsPhoto && (
+                <div className="space-y-2">
+                  {layer.src ? (
+                    <Buttons>
+                      <Btn onClick={() => patchLayer({ src: undefined } as Partial<LayerSpec>)} wide>
+                        Remove the picture
+                      </Btn>
+                    </Buttons>
+                  ) : (
+                    <Dropzone onFile={(f) => pickPhoto(f)} />
                   )}
-                </Section>
-
-                <Section
-                  title="the club's screen, on the type"
-                  summary={slide.titlePixel || slide.metaPixel ? "on" : "off"}
-                  open={false}
-                  note="Every glyph thresholded into hard ink-or-nothing blocks at this cell size."
-                >
-                  <Slider
-                    label="headline"
-                    value={slide.titlePixel}
-                    min={0}
-                    max={24}
-                    step={1}
-                    suffix="px"
-                    display={slide.titlePixel ? undefined : "off"}
-                    onChange={(titlePixel) => patchSlide({ titlePixel })}
-                  />
-                  <Slider
-                    label="everything else"
-                    value={slide.metaPixel}
-                    min={0}
-                    max={24}
-                    step={1}
-                    suffix="px"
-                    display={slide.metaPixel ? undefined : "off"}
-                    onChange={(metaPixel) => patchSlide({ metaPixel })}
-                  />
-                </Section>
-              </>
-            )}
-
-            {panel === "graphics" && (
-              <>
-                <Section
-                  title="the sheet"
-                  summary={GROUND_NAMES[slide.background ?? ""] ?? slide.theme}
-                  note="What the post is printed on. A ground is paper, not colour — almost nothing in this register sits on pure white."
-                >
-                  <Stack label="theme">
+                  <Row label="fill">
                     <Segmented
-                      value={slide.theme}
+                      value={layer.fit === "contain" ? "contain" : "cover"}
                       options={[
-                        { value: "light" as const, label: "light" },
-                        { value: "dark" as const, label: "dark" },
+                        { value: "cover" as const, label: "cover" },
+                        { value: "contain" as const, label: "contain" },
                       ]}
-                      onChange={(theme) => patchSlide({ theme })}
-                    />
-                  </Stack>
-                  <Stack label="ground">
-                    <Dots
-                      colors={GROUNDS.map((g) => g.hex)}
-                      labels={GROUND_NAMES}
-                      value={slide.background ?? ""}
-                      options={[{ value: "", label: "theme" }]}
-                      onChange={(v) => patchSlide({ background: v === "" ? undefined : v })}
-                    />
-                  </Stack>
-                  <ColorRow
-                    label="or any hex"
-                    value={slide.background ?? slideTones(slide).bg}
-                    onChange={(background) => patchSlide({ background })}
-                    onClear={
-                      slide.background ? () => patchSlide({ background: undefined }) : undefined
-                    }
-                  />
-                  <Slider
-                    label="veil"
-                    value={slide.veil}
-                    min={0}
-                    max={0.9}
-                    step={0.05}
-                    display={slide.veil === 0 ? "none" : undefined}
-                    onChange={(veil) => patchSlide({ veil })}
-                    help="A wash of the ground over the graphic, so the words can be read"
-                  />
-                </Section>
-
-                <Section
-                  title="the ruling"
-                  summary={(slide.grid ?? 0) >= 2 ? `${slide.grid} columns` : "off"}
-                  note="The hairline grid the club's sheets are drawn on: square cells, cut equally top and bottom."
-                >
-                  <Slider
-                    label="columns"
-                    value={slide.grid ?? 0}
-                    min={0}
-                    max={16}
-                    step={1}
-                    display={(slide.grid ?? 0) < 2 ? "off" : undefined}
-                    onChange={(grid) => patchSlide({ grid: grid < 2 ? undefined : grid })}
-                  />
-                  {(slide.grid ?? 0) >= 2 && (
-                    <>
-                      <Slider
-                        label="presence"
-                        value={slide.gridAlpha ?? 0.16}
-                        min={0.04}
-                        max={0.6}
-                        step={0.02}
-                        onChange={(gridAlpha) => patchSlide({ gridAlpha })}
-                      />
-                      <Toggle
-                        label="over the type"
-                        on={!!slide.gridTop}
-                        onChange={() =>
-                          patchSlide({ gridTop: slide.gridTop ? undefined : true })
-                        }
-                        help="The sheet's lines cross the words — a technical drawing rather than a caption"
-                      />
-                    </>
-                  )}
-                </Section>
-
-                <Section
-                  title="marks"
-                  summary={shapes.length ? shapes.map((s) => s.kind).join(" · ") : "none"}
-                  open={shapes.length > 0}
-                  note="The club's motifs as objects, over the words or under them. Each one arrives with a loop already plugged in."
-                >
-                  {shapes.map((shape, i) => {
-                    const repeat = Math.round(shape.repeat ?? 1);
-                    const named = shapeLoopOf(shape);
-                    const deformed =
-                      repeat > 1 ||
-                      SHAPE_DEFORMERS.some(
-                        (c) =>
-                          (shape as unknown as Record<string, number | undefined>)[c.key] !==
-                          undefined,
-                      );
-                    return (
-                      <Block
-                        key={i}
-                        title={`${shape.kind}${repeat > 1 ? ` ×${repeat}` : ""}${
-                          shape.under ? " · under" : ""
-                        }`}
-                        onUp={i > 0 ? () => moveShape(i, -1) : undefined}
-                        onDown={i < shapes.length - 1 ? () => moveShape(i, 1) : undefined}
-                        onRemove={() => removeShape(i)}
-                        open={i === shapes.length - 1}
-                      >
-                        <Cols>
-                          <Stack label="mark">
-                            <Select
-                              value={shape.kind}
-                              options={SHAPE_KINDS.map((k) => ({ value: k, label: k }))}
-                              onChange={(kind) => patchShape(i, { kind: kind as ShapeKind })}
-                            />
-                          </Stack>
-                          <Stack label="loop">
-                            <Select
-                              value={named}
-                              options={[
-                                { value: "", label: "still" },
-                                ...SHAPE_LOOPS.map((l) => ({ value: l.id, label: l.name })),
-                                ...(named === "custom"
-                                  ? [{ value: "custom", label: "custom" }]
-                                  : []),
-                              ]}
-                              onChange={(id) => {
-                                if (!id) return patchShape(i, { motion: undefined });
-                                const l = shapeLoopDef(id);
-                                if (l) patchShape(i, { motion: l.motion(shape) });
-                              }}
-                            />
-                          </Stack>
-                        </Cols>
-                        <XYPad
-                          x={shape.x}
-                          y={shape.y}
-                          onChange={(x, y) => patchShape(i, { x, y })}
-                        />
-                        {SHAPE_CONTROLS.filter((c) => c.key !== "x" && c.key !== "y").map((c) => (
-                          <LoopRow
-                            key={c.key}
-                            control={c}
-                            value={Number(
-                              (shape as unknown as Record<string, number>)[c.key] ?? c.def,
-                            )}
-                            motion={shape.motion?.[c.key]}
-                            canMove
-                            detail={named === "" || named === "custom"}
-                            onChange={(v) => patchShape(i, { [c.key]: v } as Partial<ShapeSpec>)}
-                            onMotion={(m) => setShapeMotion(i, c.key, m)}
-                          />
-                        ))}
-                        <Stack label="ink">
-                          <Dots
-                            colors={slide.palette ?? PALETTE}
-                            value={shape.ink ?? ""}
-                            options={[{ value: "", label: "theme" }]}
-                            onChange={(v) => patchShape(i, { ink: v || undefined })}
-                          />
-                        </Stack>
-                        <Toggle
-                          label="under the words"
-                          on={!!shape.under}
-                          onChange={() =>
-                            patchShape(i, { under: shape.under ? undefined : true })
-                          }
-                        />
-                        <Block title="deformers" open={deformed}>
-                          <Row label="laid out">
-                            <Select
-                              value={shape.along ?? "x"}
-                              options={[
-                                { value: "x", label: "in a row" },
-                                { value: "y", label: "in a column" },
-                                { value: "arc", label: "along an arc" },
-                                { value: "ring", label: "around a ring" },
-                              ]}
-                              onChange={(along) =>
-                                patchShape(i, {
-                                  along:
-                                    along === "x" ? undefined : (along as ShapeSpec["along"]),
-                                })
-                              }
-                            />
-                          </Row>
-                          {SHAPE_DEFORMERS.map((c) => (
-                            <LoopRow
-                              key={c.key}
-                              control={c}
-                              value={Number(
-                                (shape as unknown as Record<string, number>)[c.key] ?? c.def,
-                              )}
-                              motion={shape.motion?.[c.key]}
-                              canMove
-                              detail={named === "" || named === "custom"}
-                              onChange={(v) =>
-                                patchShape(i, {
-                                  [c.key]: v === c.def ? undefined : v,
-                                } as Partial<ShapeSpec>)
-                              }
-                              onMotion={(m) => setShapeMotion(i, c.key, m)}
-                            />
-                          ))}
-                          {!!shape.jitter && (
-                            <Btn
-                              onClick={() => patchShape(i, { seed: rollSeed() })}
-                              title="The scatter is fixed, so it never crawls — this rolls a different one"
-                            >
-                              Rescatter
-                            </Btn>
-                          )}
-                        </Block>
-                      </Block>
-                    );
-                  })}
-                  <Stack label={`add a mark — ${shapes.length}/${MAX_SHAPES}`}>
-                    <div className="flex flex-wrap gap-1">
-                      {SHAPE_KINDS.map((k) => (
-                        <Btn
-                          key={k}
-                          onClick={() => addShape(k)}
-                          disabled={shapes.length >= MAX_SHAPES}
-                          title={`Add a ${k} — it arrives moving`}
-                        >
-                          + {k}
-                        </Btn>
-                      ))}
-                    </div>
-                  </Stack>
-                </Section>
-
-                <Section
-                  title={`layer ${String(layerIndex + 1).padStart(2, "0")} of ${
-                    slide.layers.length
-                  }`}
-                  summary={layerName(layer)}
-                >
-                  {slide.layers.length > 1 && (
-                    <Row label="which">
-                      <Select
-                        value={String(layerIndex)}
-                        options={slide.layers
-                          .map((l, i) => ({
-                            value: String(i),
-                            label: `${String(i + 1).padStart(2, "0")} — ${layerName(l)}${
-                              l.mute ? " (off)" : ""
-                            }`,
-                          }))
-                          .reverse()}
-                        onChange={(i) => setActiveLayer(Number(i))}
-                      />
-                      <IconBtn
-                        onClick={() => patchLayer({ mute: layer.mute ? undefined : true })}
-                        title={layer.mute ? "Switch this layer on" : "Switch this layer off"}
-                        on={!layer.mute}
-                      >
-                        ◉
-                      </IconBtn>
-                      <IconBtn
-                        onClick={() => setSolo(solo === layerIndex ? null : layerIndex)}
-                        title="Show this layer on its own"
-                        on={solo === layerIndex}
-                      >
-                        ◆
-                      </IconBtn>
-                    </Row>
-                  )}
-                  <Stack label="draws">
-                    <Select
-                      value={layer.type}
-                      options={SHADERS.map((s) => ({
-                        value: s.type,
-                        label: s.label,
-                        group: FAMILY_NAMES[s.family ?? "pixelated"],
-                      }))}
-                      onChange={(t) => setShaderType(t as ShaderType)}
-                    />
-                  </Stack>
-                  <Cols>
-                    <Stack label="blend">
-                      <Select
-                        value={layer.blend}
-                        options={BLENDS.map((b) => ({ value: b, label: b }))}
-                        onChange={(blend) => patchLayer({ blend: blend as LayerSpec["blend"] })}
-                      />
-                    </Stack>
-                    <Stack label="…">
-                      <Buttons>
-                        <Btn onClick={randomizeLayer} wide title="A new form, same place">
-                          Roll
-                        </Btn>
-                        <Btn
-                          onClick={addLayer}
-                          disabled={slide.layers.length >= MAX_LAYERS}
-                          title="Add a layer, already moving"
-                        >
-                          +
-                        </Btn>
-                      </Buttons>
-                    </Stack>
-                  </Cols>
-                  <Slider
-                    label="opacity"
-                    value={layer.opacity}
-                    min={0.05}
-                    max={1}
-                    step={0.05}
-                    onChange={(opacity) => patchLayer({ opacity })}
-                  />
-                  <Stack label="ink">
-                    <Dots
-                      colors={slide.palette ?? PALETTE}
-                      value={typeof layer.ink === "string" ? layer.ink : ""}
-                      options={[
-                        { value: "", label: "theme" },
-                        ...(layer.type === "forms" ? [{ value: "mix", label: "mix" }] : []),
-                      ]}
-                      onChange={(v) =>
-                        patchLayer({ ink: v === "" ? undefined : v } as Partial<LayerSpec>)
+                      onChange={(fit) =>
+                        patchLayer({
+                          fit: fit === "contain" ? "contain" : undefined,
+                        } as Partial<LayerSpec>)
                       }
                     />
-                  </Stack>
-                  {layer.ink === "mix" && (
-                    <div className={`border-l ${HAIR} pl-2 ml-1 space-y-2`}>
-                      <Stack label={`which of them — ${mixInks.length}`}>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {(slide.palette ?? PALETTE).map((hex) => {
-                            const on = mixInks.includes(hex);
-                            return (
-                              <button
-                                key={hex}
-                                onClick={() => toggleMixInk(hex)}
-                                title={`${hex} — ${on ? "click to drop" : "click to use"}`}
-                                style={{ background: hex }}
-                                className={`size-6 rounded-full border transition-all ${
-                                  on
-                                    ? "border-foreground scale-110"
-                                    : `${HAIR} opacity-25 hover:opacity-60`
-                                }`}
-                              />
-                            );
-                          })}
-                        </div>
-                      </Stack>
-                      <Row label="spread">
-                        <Select
-                          value={layer.mixMode ?? "blocks"}
-                          options={MIX_MODES.map((m) => ({ value: m, label: MIX_MODE_HINTS[m] }))}
-                          onChange={(mixMode) =>
-                            patchLayer({ mixMode } as unknown as Partial<LayerSpec>)
-                          }
-                        />
-                      </Row>
-                      <Slider
-                        label="patch"
-                        value={layer.mixScale ?? 3}
-                        min={1}
-                        max={12}
-                        step={1}
-                        onChange={(mixScale) => patchLayer({ mixScale } as Partial<LayerSpec>)}
-                      />
-                      <Slider
-                        label="drift"
-                        value={layer.mixSpeed ?? 1}
-                        min={0}
-                        max={3}
-                        step={0.1}
-                        display={(layer.mixSpeed ?? 1) === 0 ? "still" : undefined}
-                        onChange={(mixSpeed) => patchLayer({ mixSpeed } as Partial<LayerSpec>)}
-                      />
-                      <Btn onClick={() => patchSlide({ colorSeed: rollSeed() })}>
-                        Rearrange the colours
-                      </Btn>
-                    </div>
-                  )}
-                  {(def.choices ?? [])
-                    .filter((c) => {
-                      if (c.key === "word")
-                        return layer.pattern === "letter" || layer.pattern2 === "letter";
-                      if (c.key === "mix") return (layer.pattern2 ?? "none") !== "none";
-                      return true;
-                    })
-                    .map((c) => (
-                      <Row key={c.key} label={c.label}>
-                        <Select
-                          value={String(layer[c.key] ?? c.def)}
-                          options={c.values.map((v) => ({ value: v, label: v }))}
-                          onChange={(v) => patchLayer({ [c.key]: v })}
-                        />
-                      </Row>
-                    ))}
-                  {wantsPhoto && (
-                    <div className="space-y-2">
-                      {layer.src ? (
-                        <Buttons>
-                          <Btn onClick={() => patchLayer({ src: undefined } as Partial<LayerSpec>)} wide>
-                            Remove the picture
-                          </Btn>
-                        </Buttons>
-                      ) : (
-                        <Dropzone onFile={(f) => pickPhoto(f)} />
-                      )}
-                      <Row label="fill">
-                        <Segmented
-                          value={layer.fit === "contain" ? "contain" : "cover"}
-                          options={[
-                            { value: "cover" as const, label: "cover" },
-                            { value: "contain" as const, label: "contain" },
-                          ]}
-                          onChange={(fit) =>
-                            patchLayer({
-                              fit: fit === "contain" ? "contain" : undefined,
-                            } as Partial<LayerSpec>)
-                          }
-                        />
-                      </Row>
-                      <p className="text-[10px] text-muted leading-relaxed">
-                        {!layer.src
-                          ? "The photo becomes a grayscale source like any other form: sampled at the cell size, thresholded, and inked."
-                          : photoUrl(layer.src)
-                            ? layer.src.startsWith("local:")
-                              ? "This picture lives in this browser only, so a shared link won't carry it."
-                              : "A path on this site, so this one travels in the link."
-                            : "That picture isn't on this device. Choose the file again."}
-                      </p>
-                    </div>
-                  )}
-                  {def.controls
-                    .filter((c) => c.key !== "exposure" || wantsPhoto)
-                    .map((c) => (
-                      <LoopRow
-                        key={c.key}
-                        control={c}
-                        value={Number(layer[c.key] ?? c.def)}
-                        motion={layer.motion?.[c.key]}
-                        canMove={canMove}
-                        onChange={(v) => patchLayer({ [c.key]: v })}
-                        onMotion={(m) => setMotion(c.key, m)}
-                      />
-                    ))}
-                  {def.controls.length === 0 && (
-                    <p className="text-[10px] text-muted leading-relaxed">
-                      Nothing to set: this layer draws nothing at all, which is what a sheet
-                      wants behind its words.
-                    </p>
-                  )}
-                </Section>
-
-                <Section
-                  title="effects"
-                  summary={
-                    (layer.filters ?? []).length
-                      ? (layer.filters ?? [])
-                          .map((f) => (f.mute ? `(${f.type})` : String(f.type)))
-                          .join(" → ")
-                      : "none"
-                  }
-                  open={(layer.filters ?? []).length > 0}
-                  note="What happens to this layer after it's drawn, top to bottom. Each one arrives with a number already travelling."
-                >
-                  {(layer.filters ?? []).map((f, i) => {
-                    const fd = filterDef(String(f.type));
-                    if (!fd) return null;
-                    return (
-                      <Block
-                        key={i}
-                        title={fd.label}
-                        on={!f.mute}
-                        onToggle={() => patchFilter(i, { mute: f.mute ? undefined : true })}
-                        onUp={i > 0 ? () => moveFilter(i, -1) : undefined}
-                        onDown={
-                          i < (layer.filters ?? []).length - 1
-                            ? () => moveFilter(i, 1)
-                            : undefined
-                        }
-                        onRemove={() => removeFilter(i)}
-                      >
-                        {(fd.choices ?? []).map((c) => (
-                          <Row key={c.key} label={c.label}>
-                            <Select
-                              value={String(f[c.key] ?? c.def)}
-                              options={c.values.map((v) => ({ value: v, label: v }))}
-                              onChange={(v) => patchFilter(i, { [c.key]: v })}
-                            />
-                          </Row>
-                        ))}
-                        {fd.controls.map((c) => (
-                          <LoopRow
-                            key={c.key}
-                            control={c}
-                            value={Number(f[c.key] ?? c.def)}
-                            motion={f.motion?.[c.key]}
-                            canMove
-                            onChange={(v) => patchFilter(i, { [c.key]: v })}
-                            onMotion={(m) => setFilterMotion(i, c.key, m)}
-                          />
-                        ))}
-                        <p className="text-[10px] text-muted leading-relaxed">{fd.hint}</p>
-                      </Block>
-                    );
-                  })}
-                  <Stack label="add an effect">
-                    <div className="flex flex-wrap gap-1">
-                      {FILTERS.filter(
-                        (f) => !(layer.filters ?? []).some((x) => x.type === f.type),
-                      ).map((f) => (
-                        <Btn key={f.type} onClick={() => addFilter(f.type)} title={f.hint}>
-                          + {f.label}
-                        </Btn>
-                      ))}
-                    </div>
-                  </Stack>
-                </Section>
-
-                <Section title="where the layer sits" open={false}>
-                  <XYPad
-                    label="Offset"
-                    x={layer.offsetX}
-                    y={layer.offsetY}
-                    onChange={(offsetX, offsetY) => patchLayer({ offsetX, offsetY })}
-                  />
-                  {animatable(layer.type)
-                    .filter(
-                      (c) =>
-                        !def.controls.some((d) => d.key === c.key) &&
-                        c.key !== "offsetX" &&
-                        c.key !== "offsetY",
-                    )
-                    .map((c) => (
-                      <LoopRow
-                        key={c.key}
-                        control={c}
-                        value={Number(layer[c.key] ?? c.def)}
-                        motion={layer.motion?.[c.key]}
-                        canMove={canMove}
-                        onChange={(v) => patchLayer({ [c.key]: v })}
-                        onMotion={(m) => setMotion(c.key, m)}
-                      />
-                    ))}
-                  <Btn
-                    onClick={() => patchLayer({ offsetX: 0, offsetY: 0, rotation: 0, scale: 1 })}
-                  >
-                    Reset the transform
-                  </Btn>
+                  </Row>
                   <p className="text-[10px] text-muted leading-relaxed">
-                    {canMove
-                      ? "Drag the post to move this layer, scroll to scale, shift-drag to turn. The ○ beside a number plugs a loop into it."
-                      : "Travelling numbers are a dithered-forms thing: the WebGL shader takes its numbers once, not every frame."}
+                    {!layer.src
+                      ? "The photo becomes a grayscale source like any other form: sampled at the cell size, thresholded, and inked."
+                      : photoUrl(layer.src)
+                        ? layer.src.startsWith("local:")
+                          ? "This picture lives in this browser only, so a shared link won't carry it."
+                          : "A path on this site, so this one travels in the link."
+                        : "That picture isn't on this device. Choose the file again."}
                   </p>
-                </Section>
-
-                <Section
-                  title="the palette"
-                  summary={slide.palette ? `${slide.palette.length} by hand` : "the club's"}
-                  open={false}
-                >
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {(slide.palette ?? PALETTE).map((hex, i) => (
-                      <span key={i} className="relative shrink-0">
-                        <label
-                          className={`block size-6 rounded-full border ${HAIR} cursor-pointer`}
-                          style={{ background: hex }}
-                          title={`${hex} — click to change`}
-                        >
-                          <input
-                            type="color"
-                            value={hex}
-                            onChange={(e) => {
-                              const next = [...(slide.palette ?? PALETTE)];
-                              next[i] = e.target.value;
-                              patchSlide({ palette: next });
-                            }}
-                            className="sr-only"
+                </div>
+              )}
+              {def.controls
+                .filter((c) => c.key !== "exposure" || wantsPhoto)
+                .map((c) => (
+                  <LoopRow
+                    key={c.key}
+                    control={c}
+                    value={Number(layer[c.key] ?? c.def)}
+                    motion={layer.motion?.[c.key]}
+                    canMove={canMove}
+                    onChange={(v) => patchLayer({ [c.key]: v })}
+                    onMotion={(m) => setMotion(c.key, m)}
+                  />
+                ))}
+              {def.controls.length === 0 && (
+                <p className="text-[10px] text-muted leading-relaxed">
+                  Nothing to set: this layer draws nothing at all, which is what a sheet
+                  wants behind its words.
+                </p>
+              )}
+              <Block
+                title={`filters — ${
+                  (layer.filters ?? []).length
+                    ? (layer.filters ?? [])
+                        .map((f) => (f.mute ? `(${f.type})` : String(f.type)))
+                        .join(" → ")
+                    : "none"
+                }`}
+                open={(layer.filters ?? []).length > 0}
+              >
+                <p className="text-[10px] text-muted leading-relaxed">
+                  What happens to this layer after it&apos;s drawn, top to bottom.
+                  Each one arrives with a number already travelling.
+                </p>
+                {(layer.filters ?? []).map((f, i) => {
+                  const fd = filterDef(String(f.type));
+                  if (!fd) return null;
+                  return (
+                    <Block
+                      key={i}
+                      title={fd.label}
+                      on={!f.mute}
+                      onToggle={() => patchFilter(i, { mute: f.mute ? undefined : true })}
+                      onUp={i > 0 ? () => moveFilter(i, -1) : undefined}
+                      onDown={
+                        i < (layer.filters ?? []).length - 1
+                          ? () => moveFilter(i, 1)
+                          : undefined
+                      }
+                      onRemove={() => removeFilter(i)}
+                    >
+                      {(fd.choices ?? []).map((c) => (
+                        <Row key={c.key} label={c.label}>
+                          <Select
+                            value={String(f[c.key] ?? c.def)}
+                            options={c.values.map((v) => ({ value: v, label: v }))}
+                            onChange={(v) => patchFilter(i, { [c.key]: v })}
                           />
-                        </label>
-                        {(slide.palette ?? PALETTE).length > 2 && (
+                        </Row>
+                      ))}
+                      {fd.controls.map((c) => (
+                        <LoopRow
+                          key={c.key}
+                          control={c}
+                          value={Number(f[c.key] ?? c.def)}
+                          motion={f.motion?.[c.key]}
+                          canMove
+                          onChange={(v) => patchFilter(i, { [c.key]: v })}
+                          onMotion={(m) => setFilterMotion(i, c.key, m)}
+                        />
+                      ))}
+                      <p className="text-[10px] text-muted leading-relaxed">{fd.hint}</p>
+                    </Block>
+                  );
+                })}
+                <Stack label="add an effect">
+                  <div className="flex flex-wrap gap-1">
+                    {FILTERS.filter(
+                      (f) => !(layer.filters ?? []).some((x) => x.type === f.type),
+                    ).map((f) => (
+                      <Btn key={f.type} onClick={() => addFilter(f.type)} title={f.hint}>
+                        + {f.label}
+                      </Btn>
+                    ))}
+                  </div>
+                </Stack>
+              </Block>
+              <Block title="where it sits" open={false}>
+                <XYPad
+                  label="Offset"
+                  x={layer.offsetX}
+                  y={layer.offsetY}
+                  onChange={(offsetX, offsetY) => patchLayer({ offsetX, offsetY })}
+                />
+                {animatable(layer.type)
+                  .filter(
+                    (c) =>
+                      !def.controls.some((d) => d.key === c.key) &&
+                      c.key !== "offsetX" &&
+                      c.key !== "offsetY",
+                  )
+                  .map((c) => (
+                    <LoopRow
+                      key={c.key}
+                      control={c}
+                      value={Number(layer[c.key] ?? c.def)}
+                      motion={layer.motion?.[c.key]}
+                      canMove={canMove}
+                      onChange={(v) => patchLayer({ [c.key]: v })}
+                      onMotion={(m) => setMotion(c.key, m)}
+                    />
+                  ))}
+                <Btn
+                  onClick={() => patchLayer({ offsetX: 0, offsetY: 0, rotation: 0, scale: 1 })}
+                >
+                  Reset the transform
+                </Btn>
+                <p className="text-[10px] text-muted leading-relaxed">
+                  {canMove
+                    ? "Drag the post to move this layer, scroll to scale, shift-drag to turn. The ○ beside a number plugs a loop into it."
+                    : "Travelling numbers are a dithered-forms thing: the WebGL shader takes its numbers once, not every frame."}
+                </p>
+              </Block>
+            </Section>
+
+            <Section
+              title="colour"
+              summary={
+                layer.ink === "mix"
+                  ? `mix of ${mixInks.length}`
+                  : typeof layer.ink === "string"
+                    ? String(layer.ink)
+                    : slide.palette
+                      ? `${slide.palette.length} by hand`
+                      : "the theme"
+              }
+            >
+              <Stack label="ink">
+                <Dots
+                  colors={slide.palette ?? PALETTE}
+                  value={typeof layer.ink === "string" ? layer.ink : ""}
+                  options={[
+                    { value: "", label: "theme" },
+                    ...(layer.type === "forms" ? [{ value: "mix", label: "mix" }] : []),
+                  ]}
+                  onChange={(v) =>
+                    patchLayer({ ink: v === "" ? undefined : v } as Partial<LayerSpec>)
+                  }
+                />
+              </Stack>
+              {layer.ink === "mix" && (
+                <div className={`border-l ${HAIR} pl-2 ml-1 space-y-2`}>
+                  <Stack label={`which of them — ${mixInks.length}`}>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {(slide.palette ?? PALETTE).map((hex) => {
+                        const on = mixInks.includes(hex);
+                        return (
                           <button
-                            onClick={() =>
+                            key={hex}
+                            onClick={() => toggleMixInk(hex)}
+                            title={`${hex} — ${on ? "click to drop" : "click to use"}`}
+                            style={{ background: hex }}
+                            className={`size-6 rounded-full border transition-all ${
+                              on
+                                ? "border-foreground scale-110"
+                                : `${HAIR} opacity-25 hover:opacity-60`
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </Stack>
+                  <Row label="spread">
+                    <Select
+                      value={layer.mixMode ?? "blocks"}
+                      options={MIX_MODES.map((m) => ({ value: m, label: MIX_MODE_HINTS[m] }))}
+                      onChange={(mixMode) =>
+                        patchLayer({ mixMode } as unknown as Partial<LayerSpec>)
+                      }
+                    />
+                  </Row>
+                  <Slider
+                    label="patch"
+                    value={layer.mixScale ?? 3}
+                    min={1}
+                    max={12}
+                    step={1}
+                    onChange={(mixScale) => patchLayer({ mixScale } as Partial<LayerSpec>)}
+                  />
+                  <Slider
+                    label="drift"
+                    value={layer.mixSpeed ?? 1}
+                    min={0}
+                    max={3}
+                    step={0.1}
+                    display={(layer.mixSpeed ?? 1) === 0 ? "still" : undefined}
+                    onChange={(mixSpeed) => patchLayer({ mixSpeed } as Partial<LayerSpec>)}
+                  />
+                  <Btn onClick={() => patchSlide({ colorSeed: rollSeed() })}>
+                    Rearrange the colours
+                  </Btn>
+                </div>
+              )}
+              <Block
+                title={`the palette — ${
+                  slide.palette ? `${slide.palette.length} by hand` : "the club's"
+                }`}
+                open={false}
+              >
+                {/* The colours as a two-column list of rows rather than a row of
+                    dots: a palette you edit wants its hexes visible, and this is
+                    the kit's own colour row doing it. */}
+                <Cols>
+                  {(slide.palette ?? PALETTE).map((hex, i) => (
+                    <ColorRow
+                      key={i}
+                      label={String(i + 1).padStart(2, "0")}
+                      value={hex}
+                      onChange={(next) => {
+                        const list = [...(slide.palette ?? PALETTE)];
+                        list[i] = next;
+                        patchSlide({ palette: list });
+                      }}
+                      onRemove={
+                        (slide.palette ?? PALETTE).length > 2
+                          ? () =>
                               patchSlide({
                                 palette: (slide.palette ?? [...PALETTE]).filter(
                                   (_, j) => j !== i,
                                 ),
                               })
-                            }
-                            title="Remove this colour"
-                            className={`absolute -top-1 -right-1 size-3.5 leading-none text-[8px] rounded-full border ${HAIR} bg-background text-muted hover:text-foreground`}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                    <IconBtn
-                      onClick={() => {
-                        const cur = slide.palette ?? [...PALETTE];
-                        patchSlide({ palette: [...cur, PALETTE[cur.length % PALETTE.length]] });
-                      }}
-                      title="Add a colour"
-                      bare
-                    >
-                      +
-                    </IconBtn>
-                    {slide.palette && (
-                      <Btn onClick={() => patchSlide({ palette: undefined })}>Reset</Btn>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-muted leading-relaxed">
-                    {slide.palette
-                      ? "This post no longer follows the club palette."
-                      : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}
-                  </p>
-                </Section>
-              </>
-            )}
+                          : undefined
+                      }
+                    />
+                  ))}
+                </Cols>
+                <Buttons>
+                  <Btn
+                    onClick={() => {
+                      const cur = slide.palette ?? [...PALETTE];
+                      patchSlide({ palette: [...cur, PALETTE[cur.length % PALETTE.length]] });
+                    }}
+                    wide
+                  >
+                    + a colour
+                  </Btn>
+                  {slide.palette && (
+                    <Btn onClick={() => patchSlide({ palette: undefined })} wide>
+                      Back to the club&apos;s
+                    </Btn>
+                  )}
+                </Buttons>
+                <p className="text-[10px] text-muted leading-relaxed">
+                  {slide.palette
+                    ? "This post no longer follows the club palette."
+                    : "The club palette. Change it in one place and every post that hasn't been hand-coloured follows."}
+                </p>
+              </Block>
+            </Section>
           </Panel>
         </div>
 

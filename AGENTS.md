@@ -142,12 +142,22 @@ name instead of by arithmetic and still show "custom" for a hand-written spec.
 Every number on a layer *and* on a shape takes one, which is what makes motion
 plug-and-play here.
 
-**Nothing is added still.** A mark, a layer and an effect all arrive with a
-loop already plugged in — `addShape`, `addLayer` and `addFilter` each attach one
-— because this is a studio for motion and a still thing is the exception. An
-effect's numbers travel like any other: `resolveFilter` hands the chain
-already-resolved values, so an effect still never reads the clock itself and
-still can't be the reason a loop stops closing.
+**Nothing is added still, and nothing shipped is still.** A mark, a layer, an
+effect and a layer switched to draw something else all arrive with a loop
+already plugged in — `addShape`, `addLayer`, `addFilter`, `setShaderType` and
+`reroll` each attach one — because this is a studio for motion and a still
+thing is the exception. `randomSlide` gives every rolled layer a travelling
+number, and **every recipe that draws a graphic moves it**; the recipes that
+don't move are the pure sheets, which carry a `none` layer and draw no graphic
+at all. An effect's numbers travel like any other: `resolveFilter` hands the
+chain already-resolved values, so an effect still never reads the clock itself
+and still can't be the reason a loop stops closing.
+
+That rule is also why nothing in the tool *offers* the WebGL dithering or the
+clean shaders any more — they animate but they don't close their loop, so a
+recipe or a roll would be handing over a post with a seam in it. They stay
+selectable under `draws`, because links from months ago name them and the spec
+is backwards-compatible; just don't reach for one when writing a recipe.
 
 `SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
 bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
@@ -199,11 +209,16 @@ never be the reason a loop stops closing. Keep it that way.
   the menus (what you *do*), top right is one panel (what you *set*), bottom
   left the filmstrip, bottom centre the toolbar: undo, zoom, transport, guides,
   the loop.
-  - **One panel, two halves.** `type` — the words, how they're set, what's on
-    the slide, the counter, the club's screen over the type — and `graphics` —
-    the sheet, its ruling, its marks, the layer, its effects, where it sits, the
-    palette. A post is words on a picture, so every control belongs to one or
-    the other. Inside, `Section`s fold and show a summary when closed.
+  - **One panel, one column, in Toolcraft's order:** `canvas` (the format, the
+    resolution, the loop) · `source` (the sheet and its ruling) · `type` (the
+    words, and their setting, parts, counter and screen as folded `Block`s) ·
+    `marks` · `effect` (the layer, its filters, where it sits) · `colour` (the
+    layer's ink and the palette) — and **export in the footer**, where a tool's
+    way out belongs. Read downwards; a `Section` folds and shows a summary when
+    closed, and a `Block` carries its summary in its own title.
+    It had tabs once, and a tab is a second place to look for something that
+    only ever lived in one place. Put a new control where its subject already
+    is rather than adding another place to look.
   - **Big grids of pictures go over the stage**: `Drawer` holds the recipe
     shelf, the rolled looks and the paste-a-spec box. Moments, not places.
   - `Tracks.tsx` is the loop in tracks — transport, ruler, a lane per travelling
@@ -222,9 +237,14 @@ never be the reason a loop stops closing. Keep it that way.
   - `Slider` — label left, value right, **track full width underneath**; never a
     slider squeezed between two labels. `Num` inside it drags as well as types
   - `Toggle` (a pill), `Segmented` (2-4 choices), `Select` (past four),
-    `Cols` (two controls on one line), `Range` (two handles, one track)
-  - `Dots` (colour as circles), `ColorRow` (swatch + hex + auto),
-    `XYPad` (two numbers that are one place), `Dropzone`
+    `Cols` (two controls on one line)
+  - `Range` — two handles on one track. A number that travels is drawn with it
+    rather than as two sliders: where it rests and where it goes are one
+    journey, and `cross` lets the handles pass each other so a number can
+    travel downwards
+  - `Dots` (colour as circles), `ColorRow` (swatch + hex + auto + remove — a
+    palette is a two-column list of these), `XYPad` (two numbers that are one
+    place), `Dropzone`
   - `Block` — one thing in a stack: switch, name, reorder, remove, numbers
   - `Menu` / `MenuItem` / `MenuRow` — the things you do
   - `Toolbar`, `Drawer`, `Help`, `Primary`

@@ -1395,9 +1395,10 @@ export function randomSlide(rand: () => number = Math.random): SlideStyle {
       }
     }
 
-    /* Half of them get a number that travels. Never `speed`, which also
-       sets how fast the colours move. */
-    if (rand() < 0.5) {
+    /* Every one of them gets a number that travels — a still graphic is not
+       something this studio makes, so a roll never produces one. Never
+       `speed`, which also sets how fast the colours move. */
+    {
       const movable = shaderDef("forms").controls.filter(
         (c) => c.key !== "speed" && (c.key !== "exposure" || usesPhoto(layer)),
       );
@@ -2105,6 +2106,10 @@ export const PRESETS: Preset[] = [
               speed: 0.25,
               offsetY: 0.42,
               scale: 0.7,
+              /* Nothing in this studio sits still: the blob swells and comes
+                 back over the loop, so the card is a piece of motion even
+                 when the words don't move. */
+              motion: { warp: { to: 0.55, wave: "sin", cycles: 1, phase: 0 } },
             },
           ],
         }),
@@ -2176,7 +2181,14 @@ export const PRESETS: Preset[] = [
               twist: 26,
               motion: { rotation: { to: 180, wave: "sin", cycles: 1, phase: 0 } },
             },
-            { ...defaultShape("circle"), size: 0.52, weight: 2, under: true, opacity: 0.5 },
+            {
+              ...defaultShape("circle"),
+              size: 0.52,
+              weight: 2,
+              under: true,
+              opacity: 0.5,
+              motion: { size: { to: 0.58, wave: "sin", cycles: 1, phase: 0 } },
+            },
           ],
         }),
       ],
@@ -2291,8 +2303,25 @@ export const PRESETS: Preset[] = [
           theme: "dark",
           letter: "",
           mark: "none",
-          veil: 0.3,
-          layers: [{ ...defaultLayer("dithering"), shape: "sphere", speed: 0.5 }],
+          /* A reel is read in a second, so the words get a plate rather than
+             being asked to survive whatever the tunnel does behind them —
+             the same answer the Type and Interference recipes give. */
+          plate: true,
+          veil: 0.25,
+          /* Dithered forms rather than the WebGL dithering: this post is a
+             reel, so it has to loop, and only the club's own renderer
+             promises that. */
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "tunnel",
+              density: 4,
+              pixel: 8,
+              warp: 0.3,
+              speed: 0.4,
+              motion: { density: { to: 8, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
         }),
       ],
     },
@@ -2311,13 +2340,21 @@ export const PRESETS: Preset[] = [
           plate: true,
           veil: 0,
           layers: [
-            { ...defaultLayer("forms"), pattern: "letter", word: "M", warp: 0.35 },
             {
-              ...defaultLayer("dithering"),
-              shape: "simplex",
-              size: 2,
+              ...defaultLayer("forms"),
+              pattern: "letter",
+              word: "M",
+              warp: 0.35,
+              motion: { warp: { to: 0.75, wave: "sin", cycles: 1, phase: 0 } },
+            },
+            {
+              ...defaultLayer("forms"),
+              pattern: "noise",
+              density: 14,
+              pixel: 3,
               blend: "multiply",
               opacity: 0.5,
+              motion: { warp: { to: 0.5, wave: "sin", cycles: 2, phase: 0.5 } },
             },
           ],
         }),
@@ -2350,6 +2387,9 @@ export const PRESETS: Preset[] = [
               density: 10,
               warp: 0.1,
               pixel: 5,
+              /* The interference is the point, so the thing that travels is
+                 the density the two forms disagree about. */
+              motion: { density: { to: 16, wave: "sin", cycles: 1, phase: 0 } },
             },
           ],
         }),
@@ -2390,6 +2430,7 @@ export const PRESETS: Preset[] = [
               mixMode: "source",
               mixScale: 6,
               mixSpeed: 0.5,
+              motion: { warp: { to: 0.45, wave: "sin", cycles: 1, phase: 0 } },
             },
           ],
         }),

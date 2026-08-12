@@ -438,6 +438,8 @@ export function Range({
   step,
   onChange,
   suffix = "",
+  cross = false,
+  right,
 }: {
   label: string;
   from: number;
@@ -447,23 +449,33 @@ export function Range({
   step: number;
   onChange: (from: number, to: number) => void;
   suffix?: string;
+  /** Let the handles pass each other, because the pair is a journey and not a
+      span: a number that travels downwards has its destination below where it
+      rests, and clamping the handles apart would make that unsayable. */
+  cross?: boolean;
+  /** Anything that belongs after the two numbers. */
+  right?: ReactNode;
 }) {
   const pct = (v: number) => ((v - min) / (max - min)) * 100;
+  const show = (v: number) => (step < 1 ? v.toFixed(2) : String(Math.round(v)));
+  const lo = Math.min(from, to);
+  const hi = Math.max(from, to);
   return (
     <div className="space-y-1">
-      <div className="flex items-center text-[11px]">
+      <div className="flex items-center gap-1.5 text-[11px]">
         <span className="truncate">{label}</span>
         <span className="ml-auto text-muted tabular-nums">
-          {step < 1 ? from.toFixed(2) : Math.round(from)}
-          {suffix} – {step < 1 ? to.toFixed(2) : Math.round(to)}
+          {show(from)}
+          {suffix} {cross ? "→" : "–"} {show(to)}
           {suffix}
         </span>
+        {right}
       </div>
       <div className="relative h-4">
         <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-line/40" />
         <span
           className="absolute top-1/2 -translate-y-1/2 h-px bg-foreground"
-          style={{ left: `${pct(from)}%`, right: `${100 - pct(to)}%` }}
+          style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
         />
         {/* Two ranges stacked: the one you grab is whichever handle is nearer,
             which is what makes a two-handle track feel like one control. */}
@@ -474,7 +486,10 @@ export function Range({
           step={step}
           value={from}
           aria-label={`${label} from`}
-          onChange={(e) => onChange(Math.min(Number(e.target.value), to), to)}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            onChange(cross ? v : Math.min(v, to), to);
+          }}
           className="absolute inset-0 w-full appearance-none bg-transparent accent-foreground"
         />
         <input
@@ -484,7 +499,10 @@ export function Range({
           step={step}
           value={to}
           aria-label={`${label} to`}
-          onChange={(e) => onChange(from, Math.max(Number(e.target.value), from))}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            onChange(from, cross ? v : Math.max(v, from));
+          }}
           className="absolute inset-0 w-full appearance-none bg-transparent accent-foreground"
         />
       </div>
@@ -659,17 +677,25 @@ export function ColorRow({
   value,
   onChange,
   onClear,
+  onRemove,
 }: {
   label?: string;
   value: string;
   onChange: (hex: string) => void;
   /** Back to the theme's own, when there is such a thing. */
   onClear?: () => void;
+  /** Take this colour out of the list it belongs to. */
+  onRemove?: () => void;
 }) {
   return (
     <Stack label={label}>
       <div className={`flex items-center gap-0 border ${HAIR} h-8`}>
-        <label className="size-8 shrink-0 cursor-pointer" style={{ background: value }}>
+        {/* Its own right-hand rule, so a white swatch still reads as a swatch
+            and not as a gap in the row. */}
+        <label
+          className={`size-8 shrink-0 cursor-pointer border-r ${HAIR}`}
+          style={{ background: value }}
+        >
           <input
             type="color"
             value={value}
@@ -680,7 +706,7 @@ export function ColorRow({
         <input
           value={value}
           onChange={(e) => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && onChange(e.target.value)}
-          className={`flex-1 min-w-0 h-full bg-transparent px-2 text-[11px] tabular-nums border-l ${HAIR} focus:outline-none`}
+          className="flex-1 min-w-0 h-full bg-transparent px-2 text-[11px] tabular-nums focus:outline-none"
         />
         {onClear && (
           <button
@@ -689,6 +715,15 @@ export function ColorRow({
             className={`h-full px-2 text-[10px] text-muted hover:text-foreground border-l ${HAIR}`}
           >
             auto
+          </button>
+        )}
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            title="Take this colour out"
+            className={`h-full px-2 text-[10px] text-muted hover:text-foreground border-l ${HAIR}`}
+          >
+            ×
           </button>
         )}
       </div>

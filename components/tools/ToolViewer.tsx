@@ -1,7 +1,10 @@
 "use client";
 
-// One tool, open: its questions on the right, what it makes in the middle, and
-// the way out at the top.
+// One tool, open — and open the same way the studio is: the stage is the whole
+// window and it is black, the tool's questions float in a panel on the right,
+// the transport floats under the post, and the way out is at the foot of the
+// panel. A tool is a smaller door into the same building, so it cannot be a
+// different-looking room.
 //
 // The way out matters as much as the tool. Everything here builds a PostSpec,
 // so "open in the studio" hands over the finished post rather than starting
@@ -30,37 +33,31 @@ import {
   Buttons,
   Dots,
   HAIR,
+  IconBtn,
+  Panel,
   Primary,
   Row,
+  STAGE,
   Section,
   Segmented,
+  Sep,
   Slider,
   Stack,
   Text as TextField,
   Toggle,
+  Toolbar,
 } from "@/components/postlab/toolcraft";
 
 const GROUND_NAMES = Object.fromEntries(GROUNDS.map((g) => [g.hex, g.label]));
 
 const useTime = () => useSyncExternalStore(clock.subscribe, clock.get, clock.server);
 
-/* The whole transport a tool needs: is it running, and where is it. Anything
-   more belongs in the studio, which has a timeline. */
-function Transport({
-  duration,
-  playing,
-  onPlay,
-}: {
-  duration: number;
-  playing: boolean;
-  onPlay: (p: boolean) => void;
-}) {
+/* The playhead readout, and the only thing in here that re-renders with the
+   clock — the canvases subscribe to it themselves. */
+function Playhead({ duration, onScrub }: { duration: number; onScrub: () => void }) {
   const time = useTime();
   return (
-    <div className={`border-t ${HAIR} px-4 py-2 flex items-center gap-3 text-[11px] shrink-0`}>
-      <button onClick={() => onPlay(!playing)} className="w-4 text-center hover:text-muted">
-        {playing ? "❙❙" : "▶"}
-      </button>
+    <>
       <input
         type="range"
         min={0}
@@ -69,15 +66,16 @@ function Transport({
         value={time}
         aria-label="Playhead"
         onChange={(e) => {
-          onPlay(false);
+          /* Taking hold of the playhead is taking hold of the post. */
+          onScrub();
           clock.set(Number(e.target.value));
         }}
-        className="flex-1 accent-foreground"
+        className="w-32 sm:w-48 accent-foreground"
       />
-      <span className="text-muted tabular-nums w-24 text-right">
-        {time.toFixed(2)} / {duration.toFixed(2)}s
+      <span className="text-muted tabular-nums w-20 text-right">
+        {time.toFixed(2)}/{duration.toFixed(0)}s
       </span>
-    </div>
+    </>
   );
 }
 
@@ -193,7 +191,7 @@ export default function ToolViewer({ id }: { id: string }) {
             type="date"
             value={String(params[f.key] ?? "")}
             onChange={(e) => set(f.key, e.target.value)}
-            className={`w-full h-7 border ${HAIR} bg-transparent px-2 text-[11px] focus:outline-none focus:border-foreground`}
+            className={`w-full h-8 border ${HAIR} bg-transparent px-2 text-[11px] focus:outline-none focus:border-foreground`}
           />
         );
       case "number":
@@ -257,129 +255,172 @@ export default function ToolViewer({ id }: { id: string }) {
   };
 
   return (
-    <div className="min-h-dvh md:h-dvh flex flex-col">
-      <header className="border-b border-line px-4 py-2.5 flex items-center justify-between gap-4 text-sm shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+    <div className={`min-h-dvh md:h-dvh flex flex-col ${STAGE}`}>
+      <div className="relative flex-1 min-h-0 flex flex-col md:block">
+        <div
+          ref={stageRef}
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden"
+        >
+          <div
+            className="relative overflow-hidden shrink-0"
+            style={{ width: stageSize.w, height: stageSize.h }}
+          >
+            <Stage
+              spec={spec}
+              index={active}
+              fonts={fonts}
+              shaderBoxRef={shaderBoxRef}
+              overlayRef={overlayRef}
+            />
+          </div>
+        </div>
+
+        {/* Top left: which tool this is, and the way back to the wall. */}
+        <div className="md:absolute md:top-3 md:left-3 z-20 flex items-center gap-1.5 p-2 md:p-0 overflow-x-auto">
           <Link
             href="/tools"
             title="every tool"
-            className="inline-flex items-center justify-center rounded-full border border-line size-8 text-xs hover:bg-foreground hover:text-background transition-colors"
+            className={`bg-background border ${HAIR} size-8 shrink-0 inline-grid place-items-center text-[11px] hover:bg-foreground hover:text-background transition-colors`}
           >
             ←
           </Link>
-          <span className="font-serif italic text-lg truncate">{tool.name}</span>
-          <span className="text-xs text-muted hidden lg:inline truncate">{tool.about}</span>
-        </div>
-        <div className="flex items-center gap-4 text-xs shrink-0">
-          {flash && <span className="text-muted hidden sm:inline">{flash}</span>}
-          {job && (
-            <span className="tabular-nums">
-              {job.label} — {Math.round(job.frac * 100)}%
+          <span
+            className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center gap-2 shrink-0`}
+          >
+            <span className="font-serif italic text-[13px]">{tool.name}</span>
+            <span className="text-[10px] text-muted hidden xl:inline">{tool.about}</span>
+          </span>
+          <Link
+            href={studioLink()}
+            className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center text-[11px] shrink-0 hover:bg-foreground/5`}
+          >
+            open in the studio →
+          </Link>
+          {(flash || job) && (
+            <span
+              className={`bg-background border ${HAIR} h-8 px-2.5 flex items-center text-[11px] shrink-0 tabular-nums`}
+            >
+              {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
             </span>
           )}
-          <Btn onClick={savePng} on disabled={!!job}>
-            ⤓ Export PNG
-          </Btn>
-          <Link href={studioLink()} className="underline underline-offset-4">
-            open in the studio
-          </Link>
         </div>
-      </header>
 
-      <div className="flex flex-col md:flex-row flex-1 min-h-0">
-        <div className="md:flex-1 flex flex-col min-w-0">
-          <div
-            ref={stageRef}
-            className="h-[52vh] md:h-auto md:flex-1 flex items-center justify-center min-h-0"
+        {/* Top right: the tool's questions, and its way out at the foot. */}
+        <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
+          <Panel
+            title={tool.name}
+            right={
+              <span className="text-[10px] text-muted tabular-nums pr-1">
+                {FORMATS[spec.format].label}
+              </span>
+            }
+            footer={
+              <div className="space-y-1.5">
+                <Primary onClick={savePng} disabled={!!job}>
+                  ⤓ Export PNG
+                </Primary>
+                <Buttons>
+                  <Btn onClick={saveVideo} disabled={!!job} wide>
+                    Video
+                  </Btn>
+                  <Btn onClick={saveGif} disabled={!!job} wide>
+                    GIF
+                  </Btn>
+                  <Btn onClick={copyLink} wide>
+                    Link
+                  </Btn>
+                </Buttons>
+              </div>
+            }
           >
-            <div
-              className="relative border border-line overflow-hidden"
-              style={{ width: stageSize.w, height: stageSize.h }}
-            >
-              <Stage
-                spec={spec}
-                index={active}
-                fonts={fonts}
-                shaderBoxRef={shaderBoxRef}
-                overlayRef={overlayRef}
-              />
-            </div>
-          </div>
+            <Section title="the tool">
+              {tool.fields.map((f) =>
+                f.kind === "switch" || f.kind === "number" ? (
+                  <div key={f.key}>{control(f)}</div>
+                ) : f.kind === "text" || f.kind === "lines" ? (
+                  <Stack key={f.key} label={f.label}>
+                    {control(f)}
+                  </Stack>
+                ) : (
+                  <Row key={f.key} label={f.label}>
+                    {control(f)}
+                  </Row>
+                ),
+              )}
+            </Section>
 
-          {/* A tool that makes more than one slide says so by showing them. */}
-          {spec.slides.length > 1 && (
-            <div className="border-t border-line px-4 py-3 flex gap-2 overflow-x-auto shrink-0">
+            <Section title="out" summary={`${outW}×${outH}`}>
+              <Stack label="resolution scale">
+                <Segmented
+                  value={quality}
+                  options={[
+                    { value: "mid" as const, label: "1×" },
+                    { value: "high" as const, label: "2×" },
+                    { value: "max" as const, label: "4K" },
+                  ]}
+                  onChange={setQuality}
+                />
+              </Stack>
+              <p className="text-[10px] text-muted tabular-nums">
+                exports at {outW}×{outH}
+              </p>
+              {spec.slides.length > 1 && (
+                <Btn onClick={saveAllPngs} disabled={!!job} wide>
+                  PNG — all {spec.slides.length}
+                </Btn>
+              )}
+              <p className="text-[10px] text-muted leading-relaxed">
+                Everything you changed is in the address bar, so the Link button
+                hands over this tool exactly as it is now. The studio link at the
+                top hands over the finished post instead — same post, every
+                control.
+              </p>
+            </Section>
+          </Panel>
+        </div>
+
+        {/* Bottom left: the slides, when a tool makes more than one. */}
+        {spec.slides.length > 1 && (
+          <div className="md:absolute md:left-3 md:bottom-3 z-20 p-2 md:p-0 max-w-full">
+            <div
+              className={`bg-background border ${HAIR} p-1.5 flex items-end gap-1.5 overflow-x-auto`}
+            >
               {spec.slides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setIndex(i)}
-                  className={`w-[68px] shrink-0 border transition-colors ${
-                    i === active ? "border-foreground" : "border-line hover:border-foreground/50"
+                  className={`shrink-0 border transition-colors ${
+                    i === active ? "border-foreground" : `${HAIR} hover:border-foreground/50`
                   }`}
                 >
-                  <Poster spec={spec} index={i} fonts={fonts} width={120} />
+                  <Poster spec={spec} index={i} fonts={fonts} width={64} live />
                 </button>
               ))}
             </div>
-          )}
+          </div>
+        )}
 
-          <Transport duration={spec.duration} playing={playing} onPlay={setPlaying} />
+        {/* Bottom centre: the whole transport a tool needs. Anything more
+            belongs in the studio, which has a timeline. */}
+        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex justify-center">
+          <Toolbar>
+            <IconBtn
+              onClick={() => {
+                setPlaying(false);
+                clock.set(0);
+              }}
+              title="Back to the top of the loop"
+              bare
+            >
+              ⏮
+            </IconBtn>
+            <IconBtn onClick={() => setPlaying(!playing)} title="Play / pause" bare>
+              {playing ? "❙❙" : "▶"}
+            </IconBtn>
+            <Sep />
+            <Playhead duration={spec.duration} onScrub={() => setPlaying(false)} />
+          </Toolbar>
         </div>
-
-        <aside className="w-full md:w-[360px] shrink-0 border-t md:border-t-0 md:border-l border-line md:overflow-y-auto">
-          <Section title="the tool">
-            {tool.fields.map((f) =>
-              f.kind === "switch" || f.kind === "number" ? (
-                <div key={f.key}>{control(f)}</div>
-              ) : f.kind === "text" || f.kind === "lines" ? (
-                <Stack key={f.key} label={f.label}>
-                  {control(f)}
-                </Stack>
-              ) : (
-                <Row key={f.key} label={f.label}>
-                  {control(f)}
-                </Row>
-              ),
-            )}
-          </Section>
-
-          <Section title="out">
-            <Segmented
-              value={quality}
-              options={[
-                { value: "mid" as const, label: "mid" },
-                { value: "high" as const, label: "high" },
-                { value: "max" as const, label: "4K" },
-              ]}
-              onChange={setQuality}
-            />
-            <p className="text-xs text-muted tabular-nums">
-              {outW}×{outH}
-            </p>
-            <Buttons>
-              <Btn onClick={savePng} on disabled={!!job} wide>
-                PNG
-              </Btn>
-              {spec.slides.length > 1 && (
-                <Btn onClick={saveAllPngs} disabled={!!job}>
-                  PNG × {spec.slides.length}
-                </Btn>
-              )}
-              <Btn onClick={saveVideo} disabled={!!job}>
-                Video — {spec.duration}s
-              </Btn>
-              <Btn onClick={saveGif} disabled={!!job} wide>
-                GIF
-              </Btn>
-            </Buttons>
-            <Primary onClick={copyLink}>Copy this tool&apos;s link</Primary>
-            <p className="text-xs text-muted leading-relaxed">
-              Everything you changed is in the address bar, so this link opens the
-              tool exactly as it is now. The studio link at the top hands over the
-              finished post instead — same post, every control.
-            </p>
-          </Section>
-        </aside>
       </div>
     </div>
   );
