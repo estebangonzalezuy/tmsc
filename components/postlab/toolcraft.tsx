@@ -131,6 +131,7 @@ export function IconBtn({
   on = false,
   disabled = false,
   bare = false,
+  small = false,
 }: {
   onClick: () => void;
   children: ReactNode;
@@ -138,7 +139,10 @@ export function IconBtn({
   on?: boolean;
   disabled?: boolean;
   bare?: boolean;
+  /** For a row of them beside a name that needs the room more than they do. */
+  small?: boolean;
 }) {
+  const size = small ? "size-6 text-[11px]" : "size-8 text-[13px]";
   return (
     <button
       onClick={onClick}
@@ -147,12 +151,12 @@ export function IconBtn({
       aria-label={title}
       className={
         bare
-          ? `size-8 shrink-0 grid place-items-center rounded-[var(--tc-r-sm)] text-[13px] transition-colors disabled:opacity-30 ${
+          ? `${size} shrink-0 grid place-items-center rounded-[var(--tc-r-sm)] transition-colors disabled:opacity-30 ${
               on
                 ? `${INK} bg-[color:var(--tc-field-on)]`
                 : `${INK3} hover:text-[color:var(--tc-ink)] hover:bg-[color:var(--tc-field)]`
             }`
-          : `tc-field ${on ? "tc-field-on" : ""} size-8 shrink-0 grid place-items-center text-[13px]`
+          : `tc-field ${on ? "tc-field-on" : ""} ${size} shrink-0 grid place-items-center`
       }
     >
       {children}
@@ -560,7 +564,7 @@ export function Toggle({
         style={{ background: on ? "var(--tc-live)" : "var(--tc-track)" }}
       >
         <span
-          className="absolute top-[2px] size-[14px] rounded-full bg-white transition-all"
+          className="absolute top-[2px] size-[14px] rounded-full bg-[color:var(--tc-glass-solid)] transition-all"
           style={{ left: on ? 14 : 2 }}
         />
       </button>
@@ -792,7 +796,7 @@ export function Dots({
           style={{ background: hex }}
           className={`size-[26px] shrink-0 rounded-full transition-transform ${
             value === hex
-              ? "ring-2 ring-white ring-offset-2 ring-offset-[color:var(--tc-glass-solid)]"
+              ? "ring-2 ring-[color:var(--tc-sel)] ring-offset-2 ring-offset-[color:var(--tc-glass-solid)]"
               : "border border-[color:var(--tc-edge)] hover:scale-110"
           }`}
         />
@@ -849,7 +853,7 @@ export function XYPad({
         <span className="absolute left-0 right-0 top-1/2 h-px bg-[color:var(--tc-rule)]" />
         <span className="absolute top-0 bottom-0 left-1/2 w-px bg-[color:var(--tc-rule)]" />
         <span
-          className="absolute size-[10px] rounded-full bg-white -translate-x-1/2 -translate-y-1/2"
+          className="absolute size-[10px] rounded-full bg-[color:var(--tc-sel)] -translate-x-1/2 -translate-y-1/2"
           style={{ left: `${pct(x)}%`, top: `${pct(y)}%` }}
         />
       </div>
@@ -939,6 +943,63 @@ export function Thumb({
 }
 
 /* ------------------------------------------------------------------ stack */
+
+/**
+ * One row of a list you *pick from* — a layer, a slide, a take. Where `Block`
+ * holds a thing's controls, `ListRow` only says which thing it is: a switch, a
+ * name, a quiet second line, and whatever buttons belong to it. Selection is
+ * the whole row, because in a stack of six the name is not the target.
+ */
+export function ListRow({
+  name,
+  meta,
+  selected = false,
+  on = true,
+  onSelect,
+  onToggle,
+  right,
+  children,
+}: {
+  name: string;
+  /** The quiet line under the name — what it draws, how many frames. */
+  meta?: string;
+  selected?: boolean;
+  on?: boolean;
+  onSelect: () => void;
+  onToggle?: () => void;
+  /** Buttons that belong to this row: solo, reorder, remove. */
+  right?: ReactNode;
+  /** A thumbnail, drawn at the head of the row. */
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-1.5 pl-1.5 pr-1 h-12 rounded-[var(--tc-r)] border transition-colors ${
+        selected
+          ? "border-[color:var(--tc-edge-on)] bg-[color:var(--tc-field-on)]"
+          : "border-transparent hover:bg-[color:var(--tc-field)]"
+      }`}
+    >
+      {onToggle && (
+        <button
+          onClick={onToggle}
+          title={on ? "Hide this one" : "Show this one"}
+          className={`w-4 shrink-0 text-[10px] ${on ? INK : INK3}`}
+        >
+          {on ? "◉" : "○"}
+        </button>
+      )}
+      {children}
+      <button onClick={onSelect} className="flex-1 min-w-0 text-left overflow-hidden">
+        <span className={`block text-[12.5px] truncate ${on ? INK : `${INK3} line-through`}`}>
+          {name}
+        </span>
+        {meta && <span className={`block text-[10.5px] truncate ${INK3}`}>{meta}</span>}
+      </button>
+      <span className="flex items-center shrink-0">{right}</span>
+    </div>
+  );
+}
 
 /** One thing in a stack: a switch, a name, reorder, remove, its numbers. */
 export function Block({

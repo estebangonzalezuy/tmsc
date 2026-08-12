@@ -267,7 +267,7 @@ export default function ToolViewer({ id }: { id: string }) {
           className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
         >
           <div
-            className="relative overflow-hidden shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+            className="relative overflow-hidden shrink-0"
             style={{ width: stageSize.w, height: stageSize.h }}
           >
             <Stage
@@ -285,7 +285,7 @@ export default function ToolViewer({ id }: { id: string }) {
           <Link
             href="/tools"
             title="every tool"
-            className="tc-float rounded-[var(--tc-r)] size-9 shrink-0 inline-grid place-items-center text-[13px] hover:bg-white/10 transition-colors"
+            className="tc-float rounded-[var(--tc-r)] size-9 shrink-0 inline-grid place-items-center text-[13px] hover:bg-[color:var(--tc-field-hi)] transition-colors"
           >
             ←
           </Link>
@@ -299,7 +299,7 @@ export default function ToolViewer({ id }: { id: string }) {
           </span>
           <Link
             href={studioLink()}
-            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 hover:bg-white/10"
+            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 hover:bg-[color:var(--tc-field-hi)]"
           >
             open in the studio →
           </Link>
@@ -396,8 +396,8 @@ export default function ToolViewer({ id }: { id: string }) {
                   onClick={() => setIndex(i)}
                   className={`shrink-0 border transition-colors ${
                     i === active
-                      ? "border-white"
-                      : "border-[color:var(--tc-edge)] hover:border-white/40"
+                      ? "border-[color:var(--tc-sel)]"
+                      : "border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)]"
                   }`}
                 >
                   <Poster spec={spec} index={i} fonts={fonts} width={64} live />

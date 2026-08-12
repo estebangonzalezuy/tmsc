@@ -141,7 +141,7 @@ export default function Tracks({
                 onClick={() => onSelectLayer(i)}
                 className={`w-full h-6 flex items-center gap-2 px-3 text-left truncate transition-colors ${
                   i === layerIndex
-                    ? "bg-white text-[#0b0c0e]"
+                    ? "bg-[color:var(--tc-sel)] text-[color:var(--tc-glass-solid)]"
                     : "text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)]"
                 }`}
               >
@@ -212,7 +212,7 @@ export default function Tracks({
               <div
                 onClick={() => onSelectLayer(i)}
                 className={`h-6 border-b border-[color:var(--tc-rule)] ${
-                  i === layerIndex ? "bg-white/5" : ""
+                  i === layerIndex ? "bg-[color:var(--tc-field)]" : ""
                 }`}
               >
                 {/* A layer with nothing travelling still occupies the loop —
@@ -261,7 +261,7 @@ export default function Tracks({
         </div>
         <div
           ref={headRef}
-          className="absolute top-0 bottom-0 w-px bg-white pointer-events-none"
+          className="absolute top-0 bottom-0 w-px bg-[color:var(--tc-sel)] pointer-events-none"
           style={{ left: 0 }}
         />
       </div>

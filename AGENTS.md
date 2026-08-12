@@ -209,8 +209,14 @@ never be the reason a loop stops closing. Keep it that way.
   the menus (what you *do*), top right is one panel (what you *set*), bottom
   left the filmstrip, bottom centre the toolbar: undo, zoom, transport, guides,
   the loop.
-  - **One panel, one column, in Toolcraft's order:** `canvas` (the format, the
-    resolution, the loop) · `source` (the sheet and its ruling) · `type` (the
+  - **The layers panel is top left** — one row a layer with a live thumbnail of
+    what that layer alone draws, front of the post at the top, and pick / hide /
+    solo / reorder / delete on the row you pressed. It was a dropdown inside the
+    effect group once, which is the one place a stack cannot live: you can't see
+    the order of a thing you have to open a menu to read.
+  - **The inspector is top right, one column, in Toolcraft's order:** `canvas`
+    (the format, the resolution, the loop) · `source` (the sheet, its media and
+    its ruling) · `type` (the
     words, and their setting, parts, counter and screen as folded `Block`s) ·
     `marks` · `effect` (the layer, its filters, where it sits) · `colour` (the
     layer's ink and the palette) — and **export in the footer**, where a tool's
@@ -228,16 +234,19 @@ never be the reason a loop stops closing. Keep it that way.
     thumbnail follows the playhead rather than holding frame zero, because a
     post in this studio moves.
 - **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of it is
-  built from — a *reproduction* of toolcraft.sh rather than an interpretation of
-  it: dark glass panels floating over a full-bleed canvas, the same metrics, the
-  same control shapes, the same order. It gets one thing exactly right: a tool is
+  built from — toolcraft.sh's *shapes* in the club's own colours: panels
+  floating over a full-bleed canvas, the same metrics and control shapes and
+  order, drawn in white with near-black ink and hairline rules on the club's
+  black stage. The reference was copied exactly first and then dressed, which is
+  why the dressing was one CSS block. It gets one thing exactly right: a tool is
   a canvas with chrome floating over it. Every colour, radius and height is a
   token in `app/globals.css` under `.toolcraft`, and nothing in the component
-  file hardcodes one — dressing the studio in the club's own black and white
-  later is that block and nothing else. **The rules suspended inside the chrome
-  stay inside it**: rounded corners, a shadow, a translucent surface and one blue
-  switch are allowed here, and the posts and the public site keep every rule they
-  always had. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
+  file hardcodes one — putting the instrument back in the reference's own dark
+  glass is that block and nothing else, and the dark values are kept in a comment
+  beside it. **The two rules suspended inside the chrome stay inside it**:
+  rounded corners and a translucent surface. Everything else is the club's —
+  white ground, near-black ink, 1px hairlines, no shadows, and green, the site's
+  own focus colour, as the only colour, on a switch that is on. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
   same everywhere:
   - `Panel` — a floating card: title, reset, fold, a scrolling body, and a
     footer holding the one button you press at the end

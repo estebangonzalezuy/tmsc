@@ -6,17 +6,22 @@ studio *does*; this covers what it *looks like*.
 
 ## The decision
 
-The chrome is a faithful reproduction of **toolcraft.sh** — dark glass panels
-floating over a full-bleed canvas, rounded corners, a pill toolbar at the
-bottom. Not "inspired by": the same metrics, the same control shapes, the same
-order.
+The chrome takes its **shapes** from toolcraft.sh — panels floating over a
+full-bleed canvas, rounded corners, a full-width track under its label, a pill
+switch, a pill toolbar, the order of the groups — and its **colour** from the
+club: white panels, near-black ink, hairline rules, on the club's own black
+stage. Not "inspired by" on the geometry: the same metrics, the same control
+shapes, the same order. Copied exactly first, then dressed in the club's
+palette, which is why the second step was one CSS block.
 
 That is a deliberate exception to the club's design rules, and it is scoped
 precisely:
 
-- **The chrome breaks the rules on purpose.** Rounded corners, a shadow, a
-  translucent surface and a blue switch are all things `AGENTS.md` forbids.
-  They are allowed here and nowhere else.
+- **The chrome breaks two rules on purpose.** Rounded corners and a
+  translucent surface are things `AGENTS.md` forbids. They are allowed here and
+  nowhere else. The rest of the club's rules it keeps: white ground, near-black
+  ink, 1px hairlines, no shadows, no gradients, and green — the site's own focus
+  colour — as the only colour, on a switch that is on.
 - **The posts never do.** Everything inside the canvas — the sheet, the type,
   the marks, the palette — obeys the club's rules exactly as before. The
   studio is a room; the post is the work. A room may be someone else's shape.
@@ -49,22 +54,29 @@ Every value lives once, in `app/globals.css` under `.toolcraft`. Nothing in
 
 | Token | Value | What it dresses |
 | --- | --- | --- |
-| `--tc-glass` | `rgba(18 20 24 / .66)` | Panel, toolbar, drawer surface |
-| `--tc-blur` | `28px` | The `backdrop-filter` behind them |
-| `--tc-edge` | `rgba(255 255 255 / .10)` | Every 1px border |
-| `--tc-rule` | `rgba(255 255 255 / .07)` | Dividers between groups |
-| `--tc-ink` | `rgba(255 255 255 / .95)` | Values, titles |
-| `--tc-ink-2` | `rgba(255 255 255 / .72)` | Labels |
-| `--tc-ink-3` | `rgba(255 255 255 / .45)` | Group headings, hints, icons |
-| `--tc-field` | `rgba(255 255 255 / .06)` | Selects, buttons, pads |
-| `--tc-field-on` | `rgba(255 255 255 / .14)` | Chosen segment, primary button |
-| `--tc-track` | `rgba(255 255 255 / .14)` | Slider track, unfilled |
-| `--tc-live` | `#3b82f6` | A switch that is on — the one colour |
+| `--tc-glass` | `rgba(255 255 255 / .94)` | Panel, toolbar, drawer surface |
+| `--tc-blur` | `20px` | The `backdrop-filter` behind them |
+| `--tc-frame` | `var(--line)` | A floating thing's own edge — the club's hairline |
+| `--tc-edge` | `rgba(13 13 13 / .18)` | Borders inside it |
+| `--tc-rule` | `rgba(13 13 13 / .12)` | Dividers between groups |
+| `--tc-ink` | `var(--foreground)` | Values, titles |
+| `--tc-ink-2` | `#2f2f2f` | Labels |
+| `--tc-ink-3` | `var(--muted)` | Group headings, hints, icons |
+| `--tc-field` | `rgba(13 13 13 / .035)` | Selects, buttons, pads |
+| `--tc-field-on` | `rgba(13 13 13 / .10)` | Chosen segment, primary button |
+| `--tc-track` | `rgba(13 13 13 / .16)` | Slider track, unfilled |
+| `--tc-fill` / `--tc-thumb` | `var(--foreground)` | Travelled track, handle |
+| `--tc-sel` | `var(--foreground)` | Selected: a swatch's ring, a chosen row |
+| `--tc-live` | `var(--accent-green)` | A switch that is on — the one colour |
+| `--tc-focus` | `var(--accent-green)` | The focus ring, as on the site |
 | `--tc-r` | `10px` | Control radius |
 | `--tc-r-lg` | `12px` | Panel radius |
 | `--tc-r-pill` | `14px` | Toolbar radius |
 | `--tc-h` | `34px` | Control height |
-| `--tc-shadow` | `0 8px 32px rgba(0 0 0 / .35)` | Under anything that floats |
+| `--tc-shadow` | `none` | The club has no shadows; black separates white |
+
+The dark-glass values are kept in a comment beside the first of these, so the
+instrument can be put back in the reference's own colours in one edit.
 
 Type is the browser UI stack at 12.5px for labels and 13px for fields —
 **not** Archivo. The chrome is instrument furniture; the club's typefaces
@@ -75,12 +87,13 @@ set in Lora is a post you cannot see.
 
 ```
 ┌──────────────────────────────────────────────┬───────────────┐
-│                                              │  the Posts …  │  ← panel: title,
-│                                              ├───────────────┤    ⋯ menu, reset,
-│                                              │  CANVAS     ⌃ │    fold
-│              the canvas, full bleed          │  aspect ratio │
-│              (it continues under             │  ▾ 4:5        │
-│               the panel)                     │  …            │
+┌─────────────┬────────────────────────────────┬───────────────┐
+│ layers  2/4 │                                │  the Posts …  │  ← inspector:
+│ ◉ 02 rings  │                                ├───────────────┤    title, ⋯,
+│ ◉ 01 plain  │                                │  CANVAS     ⌃ │    reset, fold
+│ + layer     │      the canvas, full bleed    │  aspect ratio │
+└─────────────┤      (it continues under       │  ▾ 4:5        │
+│              │       both panels)             │  …            │
 │                                              ├───────────────┤
 │                                              │  SOURCE     ⌃ │
 │  ┌────────┐                                  │  …            │
@@ -89,8 +102,14 @@ set in Lora is a post you cannot see.
 └───────────────────╰──────────────────╯───────┴───────────────┘
 ```
 
-- **Panel** — top right, 16px inset, 320px wide, floor to ceiling. Header:
-  title, `⋯`, reset, fold. Body scrolls. Footer holds the export.
+- **The inspector** — top right, 16px inset, 320px wide, floor to ceiling.
+  Header: title, `⋯`, reset, fold. Body scrolls. Footer holds the export.
+- **The layers panel** — top left, 300px, one `ListRow` a layer with a live
+  thumbnail of what that layer alone draws, front of the post at the top. It
+  was a dropdown inside the effect group, which is the one place a stack cannot
+  live: you can't see the order of a thing you have to open a menu to read.
+  Picking, hiding, soloing, reordering and deleting are all here, and they act
+  on **the row you pressed** rather than on the layer being edited.
 - **The `⋯` menu** is where the old menu bar went. toolcraft has no menu bar,
   so neither do we: everything that was under Post / Slide / Layer / View / Go
   is one menu hanging off the panel header.

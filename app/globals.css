@@ -138,26 +138,44 @@ body {
    See docs/THE-STUDIO-CHROME.md for why the club's rules are suspended
    inside the chrome and nowhere else. */
 .toolcraft {
-  --tc-glass: rgba(18, 20, 24, 0.66);
-  --tc-glass-solid: #14161a;
-  --tc-blur: 28px;
-  --tc-edge: rgba(255, 255, 255, 0.1);
-  --tc-edge-on: rgba(255, 255, 255, 0.22);
-  --tc-rule: rgba(255, 255, 255, 0.07);
-  --tc-ink: rgba(255, 255, 255, 0.95);
-  --tc-ink-2: rgba(255, 255, 255, 0.72);
-  --tc-ink-3: rgba(255, 255, 255, 0.45);
-  --tc-field: rgba(255, 255, 255, 0.06);
-  --tc-field-hi: rgba(255, 255, 255, 0.1);
-  --tc-field-on: rgba(255, 255, 255, 0.14);
-  --tc-track: rgba(255, 255, 255, 0.14);
-  --tc-live: #3b82f6;
+  /* The club's white, on the club's own black. This is the swap the reference
+     was copied in order to make: the *shapes* are toolcraft's — the floating
+     panel, the full-width track under its label, the pill switch, the order —
+     and the colour is tMSC's. Dark glass is one line away (the dark values are
+     kept beside each of these) if the instrument ever wants it back. */
+  --tc-glass: rgba(255, 255, 255, 0.94); /* dark: rgba(18, 20, 24, 0.66) */
+  --tc-glass-solid: var(--background);
+  --tc-blur: 20px;
+  /* A panel's own edge is the club's hairline at full strength; everything
+     inside it is that same ink, quieter, so one colour makes every rule. */
+  --tc-frame: var(--line);
+  --tc-edge: rgba(13, 13, 13, 0.18);
+  --tc-edge-on: var(--line);
+  --tc-rule: rgba(13, 13, 13, 0.12);
+  --tc-ink: var(--foreground);
+  --tc-ink-2: #2f2f2f;
+  --tc-ink-3: var(--muted);
+  --tc-field: rgba(13, 13, 13, 0.035);
+  --tc-field-hi: rgba(13, 13, 13, 0.07);
+  --tc-field-on: rgba(13, 13, 13, 0.1);
+  --tc-track: rgba(13, 13, 13, 0.16);
+  /* What a slider has travelled, and what a handle is made of. */
+  --tc-fill: var(--foreground);
+  --tc-thumb: var(--foreground);
+  /* Selected: the club's ink, not a tint. */
+  --tc-sel: var(--foreground);
+  --tc-focus: var(--accent-green);
+  /* A switch that is on. The club's green, which is the same green the focus
+     ring uses — the one colour that doesn't answer a pointer. */
+  --tc-live: var(--accent-green);
   --tc-r: 10px;
   --tc-r-sm: 6px;
   --tc-r-lg: 12px;
   --tc-r-pill: 14px;
   --tc-h: 34px;
-  --tc-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  /* No shadow: a white panel on the club's black separates itself, and the
+     club doesn't have shadows. */
+  --tc-shadow: none;
   /* Instrument furniture, not the club's typefaces: a post set in Lora
      sitting inside a panel also set in Lora is a post you cannot see. */
   font-family:
@@ -171,7 +189,7 @@ body {
   background: var(--tc-glass);
   backdrop-filter: blur(var(--tc-blur)) saturate(140%);
   -webkit-backdrop-filter: blur(var(--tc-blur)) saturate(140%);
-  border: 1px solid var(--tc-edge);
+  border: 1px solid var(--tc-frame);
   box-shadow: var(--tc-shadow);
 }
 
@@ -223,21 +241,21 @@ body {
   height: 11px;
   margin-top: -4px;
   border-radius: 3px;
-  background: #fff;
+  background: var(--tc-thumb);
   border: none;
 }
 .tc-range::-moz-range-thumb {
   width: 11px;
   height: 11px;
   border-radius: 3px;
-  background: #fff;
+  background: var(--tc-thumb);
   border: none;
 }
 .tc-range:focus-visible {
   outline: none;
 }
 .tc-range:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tc-focus) 45%, transparent);
 }
 
 /* The filled part of a track, drawn behind the input rather than by it, so a
@@ -247,26 +265,26 @@ body {
   top: 50%;
   height: 3px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--tc-fill);
   transform: translateY(-50%);
   pointer-events: none;
 }
 
 .toolcraft :focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid var(--tc-focus);
   outline-offset: 1px;
 }
 
 /* The panel's body scrolls a lot; the reference's scrollbar is a hairline. */
 .tc-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: var(--tc-track) transparent;
 }
 .tc-scroll::-webkit-scrollbar {
   width: 8px;
 }
 .tc-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--tc-track);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;

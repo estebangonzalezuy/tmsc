@@ -106,6 +106,7 @@ import {
   HAIR,
   IconBtn,
   Label,
+  ListRow,
   Menu,
   MenuItem,
   MenuRow,
@@ -710,20 +711,27 @@ export default function PostLab() {
     setActiveLayer(slide.layers.length);
   };
 
-  const removeLayer = () => {
+  /* By index, because the layers panel acts on the row you pressed rather than
+     on the one being edited — the two are usually the same and occasionally
+     aren't, and a stack where the buttons act on something else is a stack you
+     can't trust. */
+  const removeLayerAt = (index: number) => {
     if (slide.layers.length <= 1) return;
-    patchSlide({ layers: slide.layers.filter((_, i) => i !== layerIndex) });
-    setActiveLayer(Math.max(0, layerIndex - 1));
+    patchSlide({ layers: slide.layers.filter((_, i) => i !== index) });
+    setActiveLayer(Math.max(0, Math.min(index, slide.layers.length - 2)));
   };
 
-  const moveLayer = (dir: -1 | 1) => {
-    const j = layerIndex + dir;
+  const moveLayerAt = (index: number, dir: -1 | 1) => {
+    const j = index + dir;
     if (j < 0 || j >= slide.layers.length) return;
     const layers = [...slide.layers];
-    [layers[layerIndex], layers[j]] = [layers[j], layers[layerIndex]];
+    [layers[index], layers[j]] = [layers[j], layers[index]];
     patchSlide({ layers });
     setActiveLayer(j);
   };
+
+  const removeLayer = () => removeLayerAt(layerIndex);
+  const moveLayer = (dir: -1 | 1) => moveLayerAt(layerIndex, dir);
 
   /* ------------------------------------------------------------- styles */
 
@@ -974,11 +982,11 @@ export default function PostLab() {
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pl-[324px] md:pr-[352px]"
         >
           <div
             ref={frameRef}
-            className="relative overflow-hidden cursor-move touch-none shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+            className="relative overflow-hidden cursor-move touch-none shrink-0"
             style={{ width: stageSize.w, height: stageSize.h }}
             onPointerDown={onStagePointerDown}
             onPointerMove={onStagePointerMove}
@@ -1893,35 +1901,14 @@ export default function PostLab() {
                 (layer.filters ?? []).length ? ` → ${(layer.filters ?? []).length}` : ""
               }`}
             >
+              {/* Which layer this group is editing. Picking one, hiding one,
+                  soloing one and reordering them all live in the layers panel
+                  now — the stack is a place, not a dropdown. */}
               {slide.layers.length > 1 && (
-                <Row label="which">
-                  <Select
-                    value={String(layerIndex)}
-                    options={slide.layers
-                      .map((l, i) => ({
-                        value: String(i),
-                        label: `${String(i + 1).padStart(2, "0")} — ${layerName(l)}${
-                          l.mute ? " (off)" : ""
-                        }`,
-                      }))
-                      .reverse()}
-                    onChange={(i) => setActiveLayer(Number(i))}
-                  />
-                  <IconBtn
-                    onClick={() => patchLayer({ mute: layer.mute ? undefined : true })}
-                    title={layer.mute ? "Switch this layer on" : "Switch this layer off"}
-                    on={!layer.mute}
-                  >
-                    ◉
-                  </IconBtn>
-                  <IconBtn
-                    onClick={() => setSolo(solo === layerIndex ? null : layerIndex)}
-                    title="Show this layer on its own"
-                    on={solo === layerIndex}
-                  >
-                    ◆
-                  </IconBtn>
-                </Row>
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
+                  Editing layer {String(layerIndex + 1).padStart(2, "0")} of{" "}
+                  {slide.layers.length}. Pick another in the layers panel.
+                </p>
               )}
               <Stack label="draws">
                 <Select
@@ -2144,7 +2131,7 @@ export default function PostLab() {
                             style={{ background: hex }}
                             className={`size-6 rounded-full border transition-all ${
                               on
-                                ? "border-foreground scale-110"
+                                ? "border-[color:var(--tc-sel)] scale-110"
                                 : `${HAIR} opacity-25 hover:opacity-60`
                             }`}
                           />
@@ -2242,6 +2229,111 @@ export default function PostLab() {
           </Panel>
         </div>
 
+        {/* Top left: the stack, front to back. It was a dropdown inside the
+            effect group, which is the one place a stack can't live: you cannot
+            see the order of a thing you have to open a menu to read. */}
+        <div className="md:absolute md:top-3 md:left-3 z-20 flex p-2 md:p-0">
+          <Panel
+            title="layers"
+            width={300}
+            right={
+              <span className="text-[11px] text-[color:var(--tc-ink-3)] tabular-nums pr-1">
+                {slide.layers.length}/{MAX_LAYERS}
+              </span>
+            }
+            footer={
+              <Buttons>
+                <Btn
+                  onClick={addLayer}
+                  disabled={slide.layers.length >= MAX_LAYERS}
+                  title="A new layer, already moving"
+                  wide
+                >
+                  + layer
+                </Btn>
+                <Btn onClick={() => setDrawer("generate")} title="Roll a look" wide>
+                  Roll a look…
+                </Btn>
+              </Buttons>
+            }
+          >
+            <div className="p-2 space-y-1">
+              {/* Front of the post at the top, the way a stack is drawn
+                  everywhere: the last layer is the one over the others. */}
+              {slide.layers
+                .map((l, i) => ({ l, i }))
+                .reverse()
+                .map(({ l, i }) => (
+                  <ListRow
+                    key={i}
+                    name={`${String(i + 1).padStart(2, "0")} · ${layerName(l)}`}
+                    meta={`${l.blend}${l.opacity < 1 ? ` · ${Math.round(l.opacity * 100)}%` : ""}${
+                      l.motion ? ` · ${Object.keys(l.motion).join(", ")} ↻` : " · still"
+                    }`}
+                    selected={i === layerIndex}
+                    on={!l.mute}
+                    onSelect={() => setActiveLayer(i)}
+                    onToggle={() =>
+                      patchLayerAt(i, { mute: l.mute ? undefined : true } as Partial<LayerSpec>)
+                    }
+                    right={
+                      <>
+                        <IconBtn
+                          onClick={() => setSolo(solo === i ? null : i)}
+                          title="Show this layer on its own"
+                          on={solo === i}
+                          bare
+                          small
+                        >
+                          ◆
+                        </IconBtn>
+                        <IconBtn
+                          onClick={() => moveLayerAt(i, 1)}
+                          title="Bring forward"
+                          disabled={i >= slide.layers.length - 1}
+                          bare
+                          small
+                        >
+                          ↑
+                        </IconBtn>
+                        <IconBtn
+                          onClick={() => moveLayerAt(i, -1)}
+                          title="Send back"
+                          disabled={i <= 0}
+                          bare
+                          small
+                        >
+                          ↓
+                        </IconBtn>
+                        <IconBtn
+                          onClick={() => removeLayerAt(i)}
+                          title="Delete this layer"
+                          disabled={slide.layers.length <= 1}
+                          bare
+                          small
+                        >
+                          ×
+                        </IconBtn>
+                      </>
+                    }
+                  >
+                    {/* What the layer actually draws, on its own — the fastest
+                        way to know which one you're looking at. */}
+                    <span className="size-8 shrink-0 overflow-hidden rounded-[var(--tc-r-sm)] border border-[color:var(--tc-edge)]">
+                      <Poster
+                        spec={{ ...spec, slides: [{ ...slide, layers: [l], text: false, veil: 0 }] }}
+                        index={0}
+                        fonts={null}
+                        width={32}
+                        live
+                      />
+                    </span>
+                  </ListRow>
+                ))}
+            </div>
+          </Panel>
+        </div>
+
         {/* Bottom left: the slides, as pictures. */}
         {strip && spec.slides.length > 0 && (
           <div className="md:absolute md:left-3 md:bottom-3 z-20 p-2 md:p-0 max-w-full">
@@ -2255,8 +2347,8 @@ export default function PostLab() {
                   title={plainTitle(sl.title) || sl.kicker || "—"}
                   className={`shrink-0 border transition-colors ${
                     i === activeIndex
-                      ? "border-white"
-                      : "border-[color:var(--tc-edge)] hover:border-white/40"
+                      ? "border-[color:var(--tc-sel)]"
+                      : "border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)]"
                   }`}
                 >
                   <Poster spec={spec} index={i} fonts={fonts} width={64} live />
@@ -2336,7 +2428,7 @@ export default function PostLab() {
 
         {/* The loop, when you ask for it. */}
         {tracks && (
-          <div className="md:absolute md:bottom-[68px] md:left-3 md:right-[352px] z-20 p-2 md:p-0">
+          <div className="md:absolute md:bottom-[68px] md:left-[324px] md:right-[352px] z-20 p-2 md:p-0">
             <div className="tc-float rounded-[var(--tc-r-lg)] overflow-hidden">
               <Tracks
                 slide={slide}
@@ -2362,7 +2454,7 @@ export default function PostLab() {
                   key={p.name}
                   onClick={() => loadPreset(i)}
                   title={p.about}
-                  className={"rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-white/50 transition-colors text-left overflow-hidden"}
+                  className={"rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)] transition-colors text-left overflow-hidden"}
                 >
                   <Poster
                     spec={normalizeSpec(structuredClone(p.spec))}
@@ -2396,7 +2488,7 @@ export default function PostLab() {
                     setDrawer(null);
                   }}
                   title="Use this one"
-                  className={"block rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-white/50 transition-colors overflow-hidden"}
+                  className={"block rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)] transition-colors overflow-hidden"}
                 >
                   <Poster
                     spec={{
