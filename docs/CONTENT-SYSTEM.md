@@ -8,11 +8,36 @@ The loop, in one line: **the library of what's been published feeds the
 angles → an angle becomes a draft → the draft gets a visual → it gets
 scheduled → posting writes it back into the library.**
 
+## Start here: the box on the Desk
+
+Everything below is the machinery. The everyday way in is one text field at
+the top of [the Desk](https://themotionsocialclub.vercel.app/desk), and it has
+two speeds:
+
+| | what it does | cost | where it lands |
+|---|---|---|---|
+| **Make it** | Sets your words as a sheet and opens [the Note](https://themotionsocialclub.vercel.app/tools/note) with them already in. Never leaves the browser. | instant, nothing | the Post Lab, right now |
+| **Ask the club** | Hands the same words to the runner, which writes the angle and the LinkedIn draft, art-directs the visual, and files the row. | about a minute, one model call | a Pipeline row at `Generated`, with the Post link |
+
+Use **Make it** when you already know what you want to say — it is the whole
+distance from a sentence to an exported PNG. Use **Ask the club** when you want
+the club to do the writing.
+
+Both file the thought in the Journal, so nothing typed is lost and the library
+stays whole. **Ask the club** is the `capture` job, which is the Journal path
+with the typing moved to the site: it creates the row already at `Make post`
+and runs the journal job in the same pass.
+
+Typing straight into the tMSC Journal in Notion still works exactly as it
+always did, and `pull` still copies from the handwritten 📔 Journal. The box is
+a second door into one corridor, not a second corridor.
+
 ## The pieces
 
 | Piece | Where | Notes |
 |---|---|---|
-| the Desk | <https://themotionsocialclub.vercel.app/desk> | Starts the runs. Five buttons and a live view — the phone-friendly front of the whole system. |
+| the Desk | <https://themotionsocialclub.vercel.app/desk> | The box you write into, the buttons that start the runs, and a live view — the phone-friendly front of the whole system. |
+| the Tools | <https://themotionsocialclub.vercel.app/tools> | Small tools, one thing each. **the Note** is where the Desk's "Make it" lands. No AI, no waiting, no Notion. |
 | the Posts Studio | <https://themotionsocialclub.vercel.app/postlab> | Where posts, carousels and reels are made: ruled sheets, editorial type, dithered graphics. PNG / MP4 / GIF export. |
 | the Studio | <https://themotionsocialclub.vercel.app/studio> | Edits site copy in `content/site.json`, publishes to `main`. |
 | 📔 Journal (Esteban's own) | Notion · page `2f41c0b2f62f8095ac8feb182c9d9997` | Written by hand, one sub-page per day. Not part of the club — the `pull` job reads it. Needs the tMSC integration added to it. |
@@ -47,6 +72,14 @@ Angle → Chosen → Drafted → Ready → Generated → Scheduled → Posted
 `Ready` is the trigger word: it means "make me a visual". Everything else
 moves when a human decides it moves.
 
+**In practice you only walk four of these.** `Angle → Chosen → Generated →
+Posted` is the lived path: "Finish what I chose" takes a `Chosen` row to a
+draft *and* a Post link in one run, and the box skips straight to `Generated`.
+`Drafted`, `Ready` and `Scheduled` stay legal — the `drafts` and `visuals` jobs
+still read them — but they are the slow road, there for when you want to read
+the draft before the visual is designed from it. Don't feel you're skipping
+steps; the staged path is the exception now, not the default.
+
 ## Capture → post, without touching a keyboard properly
 
 The Journal is the front door for days that start with a thought rather
@@ -79,6 +112,18 @@ text the run can read — for nothing.
 
 Any session can run these on demand — just ask. The Desk runs them with a
 button; nothing runs on its own.
+
+**Capture a thought.** What "Ask the club" on the Desk runs. Takes the text
+typed into the box, files it in the tMSC Journal already at `Make post`, and
+then runs the journal job below in the same pass — so one press goes from a
+sentence to a finished Pipeline row. It owns no writing of its own: everything
+that turns a thought into a post lives in the journal job, and a second path
+through the model would be a second voice to keep in tune. The box's **Put
+these words on the visual** checkbox becomes the row's **Text on visual**.
+
+The text travels to the runner in the environment, never on the command line —
+it is arbitrary text from a browser, and interpolated into a shell command one
+apostrophe would be enough to turn it into something else.
 
 **Pull the journal.** Reads the sub-pages of the handwritten 📔 Journal and
 copies anything not already here into the tMSC Journal: the first words as
@@ -182,6 +227,8 @@ and quieter.
 
 | Button on the Desk | Job | Model calls |
 |---|---|---|
+| The box → Ask the club | `capture` — what you typed → a finished post | 1, plus 1 with text on the visual |
+| The box → Make it | none — the browser builds the sheet itself | none |
 | Get my journal | `pull` — new entries from the handwritten Journal, as `Captured` | none |
 | Make the journal posts | `journal` — every `Make post` capture → a finished post | 1 per entry |
 | Give me three angles | `angles` — aimed at the month's objective | 1 |
@@ -213,8 +260,13 @@ rather edit both together than wait between them.
 
 ### Starting a run without opening GitHub
 
-**the Desk** (`/desk`) is the front door: four buttons, a live view of
-what's running, and nothing else. It works on a phone.
+**the Desk** (`/desk`) is the front door: a box to write into, a couple of
+buttons, a live view of what's running, and the housekeeping folded away under
+*The other four*. It works on a phone.
+
+The box's **Make it** needs no token at all — it never touches the network — so
+the Desk is useful on a device you have never set up. Everything else waits for
+the token below.
 
 It holds no secret. Like the Studio, you paste a GitHub fine-grained token
 once (repository access limited to this repo, *Actions: read and write*)
@@ -229,6 +281,7 @@ the free plan the Desk is the answer. If you ever upgrade:
 - URL `https://api.github.com/repos/estebangonzalezuy/tmsc/dispatches`
 - Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`
 - Body: `{"event_type":"content-cycle","client_payload":{"job":"journal"}}`
+- Or, for the box's job: `{"event_type":"content-cycle","client_payload":{"job":"capture","text":"…","on_image":"true"}}`
 
 Nothing happens on its own — which is the point. The Desk is the only
 trigger, so the system is never quietly halfway through something.
@@ -324,9 +377,10 @@ weekly routine back instead of Actions.
 
 ## Working from anywhere
 
-- **Phone / tablet** — Notion app for the pipeline, the Posts Studio for the
-  visual, the Studio for site copy. All three are mobile-friendly, and
-  nothing else is needed.
+- **Phone / tablet** — the Desk's box for a thought (hold the mic key and talk;
+  the words land as text either way), the Notion app for the pipeline, the
+  Posts Studio for the visual, the Studio for site copy. All mobile-friendly,
+  and nothing else is needed.
 - **Any Claude chat with the Notion connector** — say *"read
   docs/CONTENT-SYSTEM.md in the tmsc repo and run the angle job"* (or the
   draft job, or the visual job). Everything it needs is in this file.

@@ -110,6 +110,47 @@ function daysUntil(iso: string, now: Date): number {
   return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
 }
 
+/* Break a thought into headline lines.
+
+   The renderer will size a headline to fill the frame but it will never add a
+   break of its own — where the lines fall is the writer's decision, and a
+   headline that re-flowed as it grew would wreck the one thing the sheet is
+   for. That promise holds for someone typing into the studio with the post in
+   front of them. It can't hold for a sentence dictated into a box on the Desk,
+   which arrives with no breaks at all and would otherwise be set as one long
+   line shrunk to nothing.
+
+   So the tool places them, the way a setter does by eye: pick the number of
+   lines from the length, then divide the words as evenly as possible between
+   them, rather than filling each line to the brim and leaving a short one at
+   the bottom. Typed breaks always win — the moment someone has placed one, the
+   decision is theirs again. */
+function balance(text: string, per: number): string {
+  const clean = text.trim();
+  if (!clean || clean.includes("\n")) return clean;
+  const words = clean.split(/\s+/);
+  const lines = Math.max(1, Math.round(clean.length / per));
+  if (lines === 1 || words.length === 1) return clean;
+
+  /* Aim every line at the same length instead of the maximum one, which is
+     what stops the last line being an orphan. */
+  const target = Math.ceil(clean.length / lines);
+  const out: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const grown = line ? `${line} ${word}` : word;
+    /* The last line takes whatever is left, so the count can't creep up. */
+    if (line && grown.length > target && out.length < lines - 1) {
+      out.push(line);
+      line = word;
+    } else {
+      line = grown;
+    }
+  }
+  if (line) out.push(line);
+  return out.join("\n");
+}
+
 const dayMonth = (iso: string) => {
   const d = new Date(`${iso}T00:00:00`);
   if (Number.isNaN(d.getTime())) return "";
@@ -119,6 +160,68 @@ const dayMonth = (iso: string) => {
 /* --------------------------------------------------------------- the tools */
 
 export const TOOLS: ToolDef[] = [
+  {
+    id: "note",
+    name: "the Note",
+    about: "A thought, set as a sheet — the shortest way from a sentence to a post.",
+    fields: [
+      {
+        key: "line",
+        label: "the thought",
+        kind: "text",
+        rows: 5,
+        placeholder: "what you'd say if someone asked",
+      },
+      { key: "label", label: "top left", kind: "text", placeholder: "a note" },
+      {
+        key: "voice",
+        label: "voice",
+        kind: "choice",
+        values: [
+          { value: "serif", label: "editorial" },
+          { value: "sans", label: "plain" },
+        ],
+      },
+      GROUND_FIELD,
+      FORMAT_FIELD,
+    ],
+    defaults: {
+      line: "The work nobody sees\nis the work *everybody* sees.",
+      label: "a note",
+      voice: "serif",
+      ground: PAPER,
+      format: "portrait",
+    },
+    /* The one tool that takes a thought of any length, which is why the
+       headline is set to "fit": two sentences and twenty words have to arrive
+       looking deliberate, and only the fit search can promise that. The voice
+       carries the alignment with it — an editorial sheet is centred and a
+       plain one is ranged left — because that pairing is a decision the club
+       has already made, and a tool that asked would be a template. */
+    build: (p) => {
+      const serif = str(p, "voice") !== "sans";
+      const label = str(p, "label").trim();
+      /* A centred serif headline carries a shorter line than a ranged-left
+         sans one before it stops looking like a headline. */
+      const line = balance(str(p, "line"), serif ? 26 : 30);
+      return post(fmt(p), 6, [
+        sheet({
+          kicker: label,
+          title: line || "…",
+          titleFont: serif ? "serif" : "sans",
+          titleSize: "fit",
+          titleWeight: serif ? undefined : 500,
+          align: serif ? "center" : "left",
+          margin: 132,
+          footer: "@themotionsocialclub",
+          background: ground(p, PAPER),
+          grid: 7,
+          gridAlpha: 0.1,
+          off: label ? ["body", "mark"] : ["kicker", "body", "mark"],
+        }),
+      ]);
+    },
+  },
   {
     id: "countdown",
     name: "the Countdown",

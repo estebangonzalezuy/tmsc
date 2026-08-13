@@ -1,8 +1,19 @@
 "use client";
 
-// the Desk — the club's control panel for the content cycle. Buttons that
-// start the GitHub Actions jobs, and a live view of what's running, so the
-// whole loop can be driven from a phone without opening GitHub.
+// the Desk — the club's control panel for the content cycle. A box to write a
+// thought into, buttons that start the GitHub Actions jobs, and a live view of
+// what's running, so the whole loop can be driven from a phone without opening
+// GitHub.
+//
+// The box is the front of it, and it has two speeds. "Make it" never leaves the
+// browser: the words become a sheet and the Note tool opens with them already
+// in, which is the whole distance from a sentence to a post when you already
+// know what you want to say. "Ask the club" hands the same words to the runner,
+// which writes the angle and the draft and art-directs the visual, and lands a
+// Pipeline row about a minute later. One box, because a second place to type a
+// thought is how you end up with thoughts in two places.
+//
+// Only the second one needs a token, so the box renders before the setup does.
 //
 // Zero-config like the Studio, and for the same reason: the token lives in
 // the browser's localStorage and every call goes straight to api.github.com
@@ -10,7 +21,10 @@
 // secret, and the deployed app keeps needing no environment at all.
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { pillars } from "@/lib/data";
+import { encodeParams, startingParams, toolDef } from "@/lib/tools";
 
 const GH_REPO = "estebangonzalezuy/tmsc";
 const WORKFLOW = "content-cycle.yml";
@@ -33,26 +47,30 @@ type Job = {
   cost: string;
   /** Where the result shows up — the run finishes in Notion, not here. */
   lands: { href: string; name: string };
+  /** Folded away under "More". Six buttons of equal weight is what made this
+      read as a machine to operate rather than a place to think, and four of
+      them are housekeeping you run once a week at most. */
+  quiet?: boolean;
 };
+
+/* Where the box's own run lands. It isn't in the list below because it isn't
+   a button — it's what the box does. */
+const CAPTURE_LANDS = { href: NOTION.pipeline, name: "the Pipeline" };
 
 /* The six things worth a button. Nothing runs on a schedule, so these are
    the whole system's trigger surface — the rest of the jobs exist only on
-   the command line. */
+   the command line.
+
+   The two at the top are decisions: what to write next, and finish what I
+   picked. Everything under them is housekeeping, and housekeeping printed at
+   the same size as a decision is what makes a page of buttons hard to read. */
 const JOBS: Job[] = [
   {
-    id: "pull",
-    label: "Get my journal",
+    id: "now",
+    label: "Finish what I chose",
     blurb:
-      "Copies anything new from the Journal in Notion into the club's, as Captured. Nothing is posted: you tick “Make post” on the ones worth saying out loud.",
-    cost: "no model calls",
-    lands: { href: NOTION.journal, name: "the Journal" },
-  },
-  {
-    id: "journal",
-    label: "Make the journal posts",
-    blurb:
-      "Every Journal entry marked “Make post” becomes a finished post — draft, visual and all.",
-    cost: "one call per entry",
+      "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
+    cost: "one call per row, two with text",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {
@@ -64,28 +82,40 @@ const JOBS: Job[] = [
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
   {
-    id: "now",
-    label: "Finish what I chose",
-    blurb:
-      "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
-    cost: "one call per row, two with text",
-    lands: { href: NOTION.pipeline, name: "the Pipeline" },
-  },
-  {
-    id: "review",
-    label: "How is the month going",
-    blurb:
-      "Reads this month's objective against what actually got published and says where it stands, what's working, and what to do next.",
-    cost: "one call",
-    lands: { href: NOTION.objectives, name: "the Objectives" },
-  },
-  {
     id: "queue",
+    quiet: true,
     label: "Catch up",
     blurb:
       "Runs the whole queue once: journal, drafts, visuals, and files anything posted into the library.",
     cost: "nothing if the queue is empty",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
+  },
+  {
+    id: "pull",
+    quiet: true,
+    label: "Get my journal",
+    blurb:
+      "Copies anything new from the Journal in Notion into the club's, as Captured. Nothing is posted: you tick “Make post” on the ones worth saying out loud.",
+    cost: "no model calls",
+    lands: { href: NOTION.journal, name: "the Journal" },
+  },
+  {
+    id: "journal",
+    quiet: true,
+    label: "Make the journal posts",
+    blurb:
+      "Every Journal entry marked “Make post” becomes a finished post — draft, visual and all.",
+    cost: "one call per entry",
+    lands: { href: NOTION.pipeline, name: "the Pipeline" },
+  },
+  {
+    id: "review",
+    quiet: true,
+    label: "How is the month going",
+    blurb:
+      "Reads this month's objective against what actually got published and says where it stands, what's working, and what to do next.",
+    cost: "one call",
+    lands: { href: NOTION.objectives, name: "the Objectives" },
   },
 ];
 
@@ -159,6 +189,7 @@ const ago = (iso: string) => {
 };
 
 export default function RunsPanel() {
+  const router = useRouter();
   const token = useSyncExternalStore(
     tokenStore.subscribe,
     tokenStore.get,
@@ -173,7 +204,16 @@ export default function RunsPanel() {
   const [flash, setFlash] = useState("");
   /* The job you last started, so the page can point at where its result
      lands the moment it lands there. */
-  const [started, setStarted] = useState<Job | null>(null);
+  const [started, setStarted] = useState<{ label: string; lands: Job["lands"] } | null>(
+    null,
+  );
+
+  /* The box. */
+  const [thought, setThought] = useState("");
+  const [onImage, setOnImage] = useState(true);
+  const [more, setMore] = useState(false);
+  /* The job's own floor, so the button stops you rather than the run does. */
+  const enough = thought.trim().length >= 10;
 
   /** Refreshes the list; answers whether anything is still in flight. */
   const loadRuns = useCallback(async (t: string) => {
@@ -243,32 +283,75 @@ export default function RunsPanel() {
     }
   }
 
+  /** Starts a run. Every input is a string: GitHub coerces them to the types
+      the workflow declares, and a boolean sent as one is the same request. */
+  async function dispatch(inputs: Record<string, string>) {
+    if (!token) return false;
+    /* GitHub returns a 500 on dispatch every so often for no reason of
+       ours — the same request succeeds a moment later. Retry rather than
+       handing that back as if the setup were broken. */
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(
+        `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+        {
+          method: "POST",
+          headers: { ...ghHeaders(token), "Content-Type": "application/json" },
+          body: JSON.stringify({ ref: "main", inputs }),
+        },
+      );
+      if (res.ok || res.status < 500) break;
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
+    if (!res || !res.ok) throw new Error(explain(res?.status));
+    /* The run takes a moment to appear in the list. */
+    setTimeout(() => token && loadRuns(token), 3000);
+    return true;
+  }
+
   async function start(job: Job) {
     if (!token) return;
     setBusy(job.id);
     setFlash("");
     setStarted(null);
     try {
-      /* GitHub returns a 500 on dispatch every so often for no reason of
-         ours — the same request succeeds a moment later. Retry rather than
-         handing that back as if the setup were broken. */
-      let res: Response | null = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        res = await fetch(
-          `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches`,
-          {
-            method: "POST",
-            headers: { ...ghHeaders(token), "Content-Type": "application/json" },
-            body: JSON.stringify({ ref: "main", inputs: { job: job.id } }),
-          },
-        );
-        if (res.ok || res.status < 500) break;
-        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-      }
-      if (!res || !res.ok) throw new Error(explain(res?.status));
+      await dispatch({ job: job.id });
       setStarted(job);
-      /* The run takes a moment to appear in the list. */
-      setTimeout(() => loadRuns(token), 3000);
+    } catch (err) {
+      setFlash(err instanceof Error ? err.message : "Couldn't start it.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  /* The fast half of the box, and the reason it can sit above the setup: this
+     never touches the network. The words go into the Note tool through the
+     same encoder the tool reads them back with, so the handoff can't drift
+     out of step with the field it fills. */
+  function makeIt() {
+    const tool = toolDef("note");
+    if (!tool) return;
+    const params = { ...startingParams(tool), line: thought.trim() };
+    router.push(`/tools/note#p=${encodeParams(tool, params)}`);
+  }
+
+  /* The slow half. Same words, handed to the runner, which writes the angle
+     and the draft and art-directs the visual before filing the row. */
+  async function askTheClub() {
+    if (!token || !enough) return;
+    setBusy("capture");
+    setFlash("");
+    setStarted(null);
+    try {
+      await dispatch({
+        job: "capture",
+        text: thought.trim(),
+        on_image: onImage ? "true" : "false",
+      });
+      setStarted({ label: "Your thought", lands: CAPTURE_LANDS });
+      /* Only once it's safely away: a failed dispatch that ate what you wrote
+         would be the worst thing this page could do. */
+      setThought("");
     } catch (err) {
       setFlash(err instanceof Error ? err.message : "Couldn't start it.");
     } finally {
@@ -303,128 +386,207 @@ export default function RunsPanel() {
         </div>
       </header>
 
-      {!token ? (
-        <section className="mx-auto w-full max-w-lg px-5 py-12">
-          <h1 className="font-serif italic text-2xl">One-time setup</h1>
-          <p className="mt-4 text-sm text-muted leading-relaxed">
-            Paste a GitHub token. It is kept in this browser only — nothing is
-            stored on the server, exactly like the Studio.
-          </p>
-          <ol className="mt-6 space-y-2 text-sm text-muted list-decimal pl-5 leading-relaxed">
-            <li>
-              GitHub → Settings → Developer settings → Personal access tokens →
-              Fine-grained tokens → Generate new token
+      <main className="mx-auto w-full max-w-2xl px-5 py-8 flex-1">
+        {/* What the club is for, on the same screen as the box you type into.
+            It reads from content/site.json like every other piece of copy, so
+            editing the pillars in the Studio edits them here too. */}
+        <ul className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted">
+          {pillars.map((p) => (
+            <li key={p.name}>
+              <span className="tabular-nums opacity-60">{p.number}</span>{" "}
+              {p.name}
             </li>
-            <li>
-              Repository access: only <strong>{GH_REPO}</strong>
-            </li>
-            <li>
-              Permissions → Repository → <strong>Actions: Read and write</strong>
-            </li>
-          </ol>
-          <input
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            type="password"
-            placeholder="github_pat_…"
-            className="mt-6 w-full border border-line px-3 py-2 text-sm bg-background"
+          ))}
+        </ul>
+
+        {/* The box. */}
+        <section className="mt-4 border border-line">
+          <textarea
+            value={thought}
+            onChange={(e) => setThought(e.target.value)}
+            rows={5}
+            placeholder="What's on your mind? Type it, or hold the mic key and say it."
+            className="w-full bg-background px-5 py-4 text-base leading-relaxed resize-y focus:outline-none"
           />
-          {tokenError && <p className="mt-2 text-sm">{tokenError}</p>}
-          <button
-            onClick={saveToken}
-            disabled={checking}
-            className="mt-4 w-full border border-line px-4 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
-          >
-            {checking ? "Checking…" : "Save"}
-          </button>
-        </section>
-      ) : (
-        <main className="mx-auto w-full max-w-2xl px-5 py-8 flex-1">
-          <div className="grid gap-px bg-line border border-line">
-            {JOBS.map((job) => (
+          <div className="border-t border-line px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+            <label className="flex items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                checked={onImage}
+                onChange={(e) => setOnImage(e.target.checked)}
+                className="accent-foreground"
+              />
+              Put these words on the visual
+            </label>
+            <div className="flex items-center gap-2">
               <button
-                key={job.id}
-                onClick={() => start(job)}
-                disabled={busy !== null}
-                className="bg-background text-left px-5 py-5 hover:bg-foreground hover:text-background transition-colors disabled:opacity-40 group"
+                onClick={makeIt}
+                disabled={!enough}
+                title="Straight into the Note tool — no waiting, nothing spent"
+                className="border border-line px-4 py-2 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
               >
-                <span className="flex items-baseline justify-between gap-4">
-                  <span className="text-base">{job.label}</span>
-                  <span className="text-xs opacity-60 shrink-0">
-                    {busy === job.id ? "starting…" : job.cost}
-                  </span>
-                </span>
-                <span className="mt-1 block text-sm opacity-60 leading-relaxed">
-                  {job.blurb}
-                </span>
+                Make it
               </button>
-            ))}
-          </div>
-
-          {started && (
-            <div className="mt-px border border-line border-t-0 px-5 py-4 flex items-center justify-between gap-4 text-sm">
-              <span>
-                {working
-                  ? `${started.label} — running, about a minute.`
-                  : `${started.label} — done.`}
-              </span>
-              <a
-                href={started.lands.href}
-                target="_blank"
-                rel="noreferrer"
-                className="underline underline-offset-4 shrink-0"
+              <button
+                onClick={askTheClub}
+                disabled={!enough || !token || busy !== null}
+                title={
+                  token
+                    ? "The club writes the angle, the draft and the visual"
+                    : "Needs the one-time setup below"
+                }
+                className="border border-line bg-foreground text-background px-4 py-2 text-sm hover:opacity-80 transition-opacity disabled:opacity-40"
               >
-                Open {started.lands.name} →
-              </a>
+                {busy === "capture" ? "Sending…" : "Ask the club"}
+              </button>
             </div>
-          )}
+          </div>
+        </section>
+        <p className="mt-2 text-xs text-muted leading-relaxed">
+          <strong className="font-normal text-foreground">Make it</strong> sets
+          your words as a sheet right now, in this browser.{" "}
+          <strong className="font-normal text-foreground">Ask the club</strong>{" "}
+          hands them to the runner, which writes the angle and the draft, designs
+          the visual, and files it all in the Pipeline — about a minute.
+        </p>
 
-          {flash && <p className="mt-4 text-sm">{flash}</p>}
+        {started && (
+          <div className="mt-4 border border-line px-5 py-4 flex items-center justify-between gap-4 text-sm">
+            <span>
+              {working
+                ? `${started.label} — running, about a minute.`
+                : `${started.label} — done.`}
+            </span>
+            <a
+              href={started.lands.href}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 shrink-0"
+            >
+              Open {started.lands.name} →
+            </a>
+          </div>
+        )}
 
-          <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
-            Recent runs
-          </h2>
-          <ul className="mt-4 border-t border-line">
-            {runs.length === 0 && (
-              <li className="py-4 text-sm text-muted">Nothing yet.</li>
-            )}
-            {runs.map((r) => {
-              const s = runState(r);
-              return (
-                <li
-                  key={r.id}
-                  className="border-b border-line py-3 flex items-center justify-between gap-4 text-sm"
+        {flash && <p className="mt-4 text-sm">{flash}</p>}
+
+        {!token ? (
+          <section className="mt-10 border-t border-line pt-8">
+            <h2 className="font-serif italic text-xl">One-time setup</h2>
+            <p className="mt-4 text-sm text-muted leading-relaxed">
+              Paste a GitHub token to unlock the jobs — the box above already
+              works without one. It is kept in this browser only; nothing is
+              stored on the server, exactly like the Studio.
+            </p>
+            <ol className="mt-6 space-y-2 text-sm text-muted list-decimal pl-5 leading-relaxed">
+              <li>
+                GitHub → Settings → Developer settings → Personal access tokens →
+                Fine-grained tokens → Generate new token
+              </li>
+              <li>
+                Repository access: only <strong>{GH_REPO}</strong>
+              </li>
+              <li>
+                Permissions → Repository →{" "}
+                <strong>Actions: Read and write</strong>
+              </li>
+            </ol>
+            <input
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              type="password"
+              placeholder="github_pat_…"
+              className="mt-6 w-full border border-line px-3 py-2 text-sm bg-background"
+            />
+            {tokenError && <p className="mt-2 text-sm">{tokenError}</p>}
+            <button
+              onClick={saveToken}
+              disabled={checking}
+              className="mt-4 w-full border border-line px-4 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
+            >
+              {checking ? "Checking…" : "Save"}
+            </button>
+          </section>
+        ) : (
+          <>
+            <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+              Or run a job
+            </h2>
+            <div className="mt-4 grid gap-px bg-line border border-line">
+              {JOBS.filter((job) => more || !job.quiet).map((job) => (
+                <button
+                  key={job.id}
+                  onClick={() => start(job)}
+                  disabled={busy !== null}
+                  className="bg-background text-left px-5 py-5 hover:bg-foreground hover:text-background transition-colors disabled:opacity-40 group"
                 >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <span
-                      aria-hidden
-                      className={`size-2 rounded-full shrink-0 ${
-                        s.done
-                          ? s.bad
-                            ? "bg-foreground"
-                            : "border border-line"
-                          : "bg-foreground animate-pulse"
-                      }`}
-                    />
-                    <span className="truncate">{s.text}</span>
+                  <span className="flex items-baseline justify-between gap-4">
+                    <span className="text-base">{job.label}</span>
+                    <span className="text-xs opacity-60 shrink-0">
+                      {busy === job.id ? "starting…" : job.cost}
+                    </span>
                   </span>
-                  <span className="flex items-center gap-4 shrink-0 text-muted text-xs">
-                    <span>{ago(r.created_at)}</span>
-                    <a
-                      href={r.html_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline underline-offset-4"
-                    >
-                      log
-                    </a>
+                  <span className="mt-1 block text-sm opacity-60 leading-relaxed">
+                    {job.blurb}
                   </span>
-                </li>
-              );
-            })}
-          </ul>
+                </button>
+              ))}
+            </div>
+            {!more && (
+              <button
+                onClick={() => setMore(true)}
+                className="mt-3 text-xs text-muted underline underline-offset-4"
+              >
+                The other {JOBS.filter((j) => j.quiet).length} →
+              </button>
+            )}
 
-          {/* Two maps side by side on a desk, stacked on a phone. */}
+            <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
+              Recent runs
+            </h2>
+            <ul className="mt-4 border-t border-line">
+              {runs.length === 0 && (
+                <li className="py-4 text-sm text-muted">Nothing yet.</li>
+              )}
+              {runs.map((r) => {
+                const s = runState(r);
+                return (
+                  <li
+                    key={r.id}
+                    className="border-b border-line py-3 flex items-center justify-between gap-4 text-sm"
+                  >
+                    <span className="flex items-center gap-3 min-w-0">
+                      <span
+                        aria-hidden
+                        className={`size-2 rounded-full shrink-0 ${
+                          s.done
+                            ? s.bad
+                              ? "bg-foreground"
+                              : "border border-line"
+                            : "bg-foreground animate-pulse"
+                        }`}
+                      />
+                      <span className="truncate">{s.text}</span>
+                    </span>
+                    <span className="flex items-center gap-4 shrink-0 text-muted text-xs">
+                      <span>{ago(r.created_at)}</span>
+                      <a
+                        href={r.html_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-4"
+                      >
+                        log
+                      </a>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        {/* Two maps side by side on a desk, stacked on a phone. */}
           <div className="mt-10 grid gap-8 md:grid-cols-2">
             <section>
               <h2 className="text-xs uppercase tracking-widest text-muted underline underline-offset-4">
@@ -458,6 +620,7 @@ export default function RunsPanel() {
               </h2>
               <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
                 {[
+                  ["/tools", "the Tools", "one thing each, no waiting"],
                   ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
                   ["/studio", "the Studio", "the site's own words"],
                   ["/hub", "the Hub", "everything tMSC, in one list"],
@@ -476,18 +639,20 @@ export default function RunsPanel() {
             </section>
           </div>
 
-          <p className="mt-10 text-xs text-muted leading-relaxed">
-            Nothing runs on a schedule — these buttons are the only trigger.
-            Results land in Notion, not here. A run takes about a minute.
-          </p>
+        <p className="mt-10 text-xs text-muted leading-relaxed">
+          Nothing runs on a schedule — the box and these buttons are the only
+          trigger. Anything that costs a model call lands in Notion, not here. A
+          run takes about a minute.
+        </p>
+        {token && (
           <button
             onClick={forget}
             className="mt-4 text-xs text-muted underline underline-offset-4"
           >
             Forget the token on this device
           </button>
-        </main>
-      )}
+        )}
+      </main>
     </div>
   );
 }

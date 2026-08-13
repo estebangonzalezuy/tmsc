@@ -31,6 +31,7 @@ on:
         options:
           [
             now,
+            capture,
             pull,
             journal,
             queue,
@@ -43,6 +44,14 @@ on:
             objectives,
             all,
           ]
+      text:
+        description: The thought, for the `capture` job
+        type: string
+        required: false
+      on_image:
+        description: Put those words on the visual
+        type: boolean
+        default: true
       dry_run:
         description: Read-only — print what it would do
         type: boolean
@@ -75,6 +84,12 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           SITE_ORIGIN: https://themotionsocialclub.vercel.app
+          # Whatever was typed into the box on the Desk. It arrives in the
+          # environment and never in the run line below: it is arbitrary text
+          # from a browser, and interpolated into a shell command one apostrophe
+          # would be enough to turn it into something else.
+          CAPTURE_TEXT: ${{ inputs.text || github.event.client_payload.text }}
+          CAPTURE_ON_IMAGE: ${{ inputs.on_image || github.event.client_payload.on_image }}
         run: |
           node index.mjs ${{ inputs.job || github.event.client_payload.job || 'now' }} \
             ${{ inputs.dry_run && '--dry-run' || '' }}

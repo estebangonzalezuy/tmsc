@@ -16,6 +16,7 @@ from Actions → Run workflow, or from the CLI below.
 
 | Job | What it does | Model calls |
 |---|---|---|
+| `capture` | a thought typed into the box on the Desk → a finished post | 1, 2 with text |
 | `now` | every `Chosen` row → draft + Post link | 1 per row, 2 with text |
 | `pull` | new entries from the handwritten Journal → the club's, as `Captured` | none |
 | `journal` | every `Make post` capture → a finished post | 1 per entry |
@@ -68,8 +69,13 @@ cd scripts/content-cycle && npm ci
 export NOTION_TOKEN=secret_… ANTHROPIC_API_KEY=sk-ant-…
 node index.mjs queue --dry-run
 node index.mjs angles          # one job
+node index.mjs capture --text="a thought" --on-image
 node index.mjs all
 ```
+
+`capture` also reads `CAPTURE_TEXT` / `CAPTURE_ON_IMAGE`, which is how the
+workflow passes it: the text comes from a browser, and text from a browser has
+no business being interpolated into a shell line.
 
 Optional env: `SITE_ORIGIN` (default the Vercel URL — point it at
 `http://localhost:3124` to generate links against a dev server),

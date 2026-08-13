@@ -41,10 +41,18 @@ browser). Therefore:
   404 in production. Do not add secrets or env-var requirements: the Studio
   is deliberately zero-config (GitHub token pasted in the browser).
 - `app/desk/` + `components/runs/RunsPanel.tsx` — the Desk, the owner's
-  control panel for the content cycle (starts the GitHub Actions jobs,
-  shows what's running). Same zero-config contract as the Studio: the
-  token is pasted in the browser and every call goes straight to
-  api.github.com. Never move it server-side.
+  control panel for the content cycle (the box you write a thought into,
+  starts the GitHub Actions jobs, shows what's running). Same zero-config
+  contract as the Studio: the token is pasted in the browser and every call
+  goes straight to api.github.com. Never move it server-side — and that is
+  also why the Desk *writes* to the club's data but never reads it back.
+  Notion's API refuses browser requests, so a page that listed the Pipeline
+  would need a Notion token on Vercel, which is the one thing this
+  architecture is built to avoid. **Write on the site, read in Notion.**
+  The box has two speeds and only one of them needs the token: "Make it"
+  hands the words to `/tools/note` through `encodeParams` and never touches
+  the network, so it renders above the setup and works on a device that has
+  never been set up; "Ask the club" dispatches the `capture` job.
 - `lib/data.ts` — typed re-exports of the JSON for server components.
 
 ## Design rules
@@ -360,10 +368,19 @@ Four things extend the dithering vocabulary rather than sitting beside it:
 
 ## the Tools (`/tools`)
 
-The everyday front door to the studio: small tools, one thing each. A
+The everyday front door to the studio: small tools, one thing each. A note, a
 countdown, a quote card, a monthly round-up, a number, a practice card, a
 pixel note. `/tools` is the wall (every tool showing what it makes, rendered
 live), `/tools/<id>` is the tool.
+
+**the Note leads** because it is the one that takes a thought of any length and
+nothing else, which makes it the landing place for the box on the Desk. It is
+also the only tool that breaks its own lines: `fitSize` in `overlay.ts` will
+size a headline to fill a frame but never add a break, because where the lines
+fall belongs to whoever typed them — a promise that holds in the studio and
+can't hold for a sentence dictated into a box, which arrives with no breaks at
+all. So `balance()` places them, evenly rather than greedily, and stands aside
+the moment the writer types one.
 
 **A tool is not a template.** It is one function — `build(params) → PostSpec`
 in `lib/tools.ts` — so it asks the four questions that actually differ between

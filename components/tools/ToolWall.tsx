@@ -84,10 +84,16 @@ export default function ToolWall() {
             </Link>
             );
           })}
-          {/* An odd number of tools would let the line colour show through the
-              empty cell, so the last one is filled deliberately. */}
-          {TOOLS.length % 3 !== 0 && <span className="hidden lg:block bg-background" />}
-          {TOOLS.length % 2 !== 0 && <span className="hidden sm:block lg:hidden bg-background" />}
+          {/* A part-full last row would let the line colour show through every
+              cell the tools don't reach, so they are all filled deliberately —
+              two of them at three columns when the count is one past a row,
+              which is what a seventh tool does. */}
+          {Array.from({ length: (3 - (TOOLS.length % 3)) % 3 }, (_, i) => (
+            <span key={`lg${i}`} className="hidden lg:block bg-background" />
+          ))}
+          {Array.from({ length: (2 - (TOOLS.length % 2)) % 2 }, (_, i) => (
+            <span key={`sm${i}`} className="hidden sm:block lg:hidden bg-background" />
+          ))}
         </div>
       </main>
     </div>

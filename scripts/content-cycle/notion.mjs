@@ -186,6 +186,7 @@ export const put = {
   url: (u) => ({ url: u || null }),
   date: (start) => ({ date: start ? { start } : null }),
   relation: (ids) => ({ relation: (ids ?? []).filter(Boolean).map((id) => ({ id })) }),
+  checkbox: (on) => ({ checkbox: !!on }),
 };
 
 /* ------------------------------------------------------------- reading --- */

@@ -6,6 +6,7 @@
 // statuses ask for, and stops.
 //
 //   node index.mjs now          every `Chosen` row → draft + visual, one pass
+//   node index.mjs capture --text="…"   a thought typed on the site → a post
 //   node index.mjs pull         new entries from the handwritten journal
 //   node index.mjs journal      every "Make post" capture → a finished post
 //   node index.mjs review       how the month is going against its objective
@@ -58,6 +59,20 @@ const ANGLE_BACKLOG = 6;
 const args = process.argv.slice(2);
 const DRY = args.includes("--dry-run");
 const jobs = args.filter((a) => !a.startsWith("--"));
+
+/* What someone typed into the box on the Desk, on its way to becoming a post.
+   It arrives in the environment rather than on the command line because it is
+   arbitrary text from a browser: interpolated into a shell line it would be a
+   script injection, and quoting it correctly for every apostrophe and newline
+   someone might write is not a thing to get right twice. `--text=` is here for
+   running the job by hand. */
+const CAPTURE =
+  process.env.CAPTURE_TEXT ??
+  args.find((a) => a.startsWith("--text="))?.slice("--text=".length) ??
+  "";
+const CAPTURE_ON_IMAGE = /^(1|true|yes|on)$/i.test(
+  process.env.CAPTURE_ON_IMAGE ?? (args.includes("--on-image") ? "1" : ""),
+);
 
 const notes = [];
 const say = (line) => {
@@ -416,6 +431,57 @@ async function jobPull() {
   );
 }
 
+/* ------------------------------------------------------------ capture --- */
+
+/* The other door into the Journal: text typed into the box on the Desk rather
+   than into Notion. It files the thought as an ordinary capture and then runs
+   the journal job in the same pass, so one press goes from a sentence to a
+   finished Pipeline row — the whole point of typing it on the site instead.
+
+   It deliberately owns no writing of its own. Everything that makes a post out
+   of a thought already lives in `jobJournal`, and a second path through the
+   model would be a second voice to keep in tune. */
+async function jobCapture() {
+  const text = CAPTURE.trim();
+  if (text.length < 10) {
+    say("capture: nothing written — type a thought in the box first");
+    return;
+  }
+
+  /* The row has to read as something in a list of rows, and a whole paragraph
+     doesn't. The opening words are what identify a thought, the same way they
+     do for an entry pulled out of the handwritten journal. */
+  const flat = text.replace(/\s+/g, " ").trim();
+  const opening = flat.slice(0, 70).trim();
+  /* Only trail off when there is actually more of it. */
+  const shown = opening + (flat.length > opening.length ? "…" : "");
+
+  if (DRY) {
+    say(`capture: would file "${shown}"${CAPTURE_ON_IMAGE ? " (text on visual)" : ""}`);
+    return;
+  }
+
+  await notion.createPage(
+    DB.journal,
+    {
+      Name: put.title(opening),
+      Entry: put.text(text.slice(0, 1800)),
+      /* Straight to "Make post": someone typed this into a box whose button
+         says make me a post. `pull` files as "Captured" because a script found
+         those entries and nobody asked for them. */
+      Status: put.select("Make post"),
+      Date: put.date(today()),
+      "Text on visual": put.checkbox(CAPTURE_ON_IMAGE),
+    },
+    paragraphs(text),
+  );
+  say(`capture: filed "${shown}"`);
+
+  /* Same run, same minute. Anything else already waiting in the Journal gets
+     finished too, which is the behaviour you'd want anyway. */
+  await jobJournal();
+}
+
 async function jobJournal() {
   const rows = await notion.byStatus(DB.journal, "Make post");
   if (!rows.length) return;
@@ -655,6 +721,7 @@ async function jobObjectives() {
 /* ---------------------------------------------------------------- run --- */
 
 const ALL = {
+  capture: jobCapture,
   pull: jobPull,
   angles: jobAngles,
   drafts: jobDrafts,
