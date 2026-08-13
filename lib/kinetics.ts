@@ -345,6 +345,115 @@ export function colorsOf(spec: KineticSpec): { ground: string; inks: string[] } 
 export const inkFor = (inks: string[], key: number) =>
   inks[Math.abs(Math.round(key)) % inks.length];
 
+/* ------------------------------------------------------------ recipes --- */
+
+/* Starting points, one a scene. A recipe sets the look and deliberately never
+   touches the words: it is "put my sentence in this", not "here is a poster
+   about something else". Everything a recipe doesn't say falls back to the
+   scene's own defaults, so adding a control never breaks one. */
+export type Recipe = {
+  id: string;
+  name: string;
+  note: string;
+  scene: SceneId;
+  palette: string;
+  duration?: number;
+  weight?: number;
+  font?: KineticSpec["font"];
+  timing?: Partial<Timing>;
+  params?: Params;
+};
+
+export const RECIPES: Recipe[] = [
+  {
+    id: "thrown",
+    name: "thrown",
+    note: "A headline that lands a letter at a time.",
+    scene: "stagger",
+    palette: "meaning",
+    weight: 800,
+    timing: { intro: "elastic", introDir: "out", outro: "expo", outroDir: "in", delay: 0.3 },
+    params: { rise: 220, zoom: 0.6, rowShift: 110, perLetter: true },
+  },
+  {
+    id: "engraved",
+    name: "engraved",
+    note: "Cut out of a field of rings, fraying at the edge.",
+    scene: "strokes",
+    palette: "shine",
+    duration: 8,
+    weight: 900,
+    params: { rings: 72, inside: 1.2, outside: 0.55, reach: 0.5, spin: 1, colour: false },
+  },
+  {
+    id: "woven",
+    name: "woven",
+    note: "The words rebuilt out of smaller letters, sliding.",
+    scene: "mosaic",
+    palette: "smlxl",
+    duration: 8,
+    weight: 800,
+    params: { cols: 11, alphabet: "SMLX", slide: 2, stretch: 1.5, ghost: true },
+  },
+  {
+    id: "dome",
+    name: "dome",
+    note: "One line repeated on rings until it becomes weather.",
+    scene: "arcs",
+    palette: "press",
+    duration: 10,
+    weight: 400,
+    params: { rings: 24, size: 16, centreY: 1.2, turns: 1, mono: true, alternate: true },
+  },
+  {
+    id: "wash",
+    name: "wash",
+    note: "Soft colour, and scattered words that find each other.",
+    scene: "field",
+    palette: "love",
+    duration: 8,
+    weight: 600,
+    timing: { intro: "cubic", introDir: "out", delay: 0.45, introLen: 0.4, pause: 0.3, outroLen: 0.3 },
+    params: { bars: 7, rows: 2, blur: 46, paper: 34, drift: 1, word: 44 },
+  },
+  {
+    id: "poster",
+    name: "poster",
+    note: "A fixed headline over weather that never stops.",
+    scene: "bleed",
+    palette: "torino",
+    duration: 8,
+    weight: 900,
+    params: { blobs: 5, size: 0.75, blur: 34, flow: 1, mode: "difference", smear: 12 },
+  },
+  {
+    id: "press",
+    name: "press",
+    note: "Screened into coloured dots, one grid an ink.",
+    scene: "halftone",
+    palette: "press",
+    duration: 6,
+    weight: 900,
+    params: { cell: 26, inks: 4, swell: 1.5, spin: 1, wobble: 0.35 },
+  },
+];
+
+/** A recipe over the piece you already have — the words survive. */
+export function applyRecipe(spec: KineticSpec, r: Recipe): KineticSpec {
+  return {
+    ...spec,
+    scene: r.scene,
+    palette: r.palette,
+    ground: undefined,
+    inks: undefined,
+    duration: r.duration ?? spec.duration,
+    weight: r.weight ?? spec.weight,
+    font: r.font ?? spec.font,
+    timing: { ...defaultTiming(), ...(r.timing ?? {}) },
+    params: { ...(r.params ?? {}) },
+  };
+}
+
 /* ------------------------------------------------------------- travel --- */
 
 /* Fill in whatever a spec doesn't say, against the active scene's controls, so

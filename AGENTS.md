@@ -403,8 +403,27 @@ trustworthy:
 
 Weights and distances inside a scene are **shares of something the scene
 already has**, not pixels — `strokes` measures its stroke weight against the
-gap between rings, `mosaic` sets each glyph to its own cell. That is what lets
-one slider keep meaning the same thing when the count above it moves.
+gap between rings, `mosaic` sets each glyph to its own cell, `soften` takes its
+radius as a share of the frame. That is what lets one slider keep meaning the
+same thing when the count above it moves, and in a 4K export.
+
+Two things there to reuse rather than rewrite:
+
+- **`soften(frame, blur, paint)`** — blur at a controllable radius for about
+  the cost of not blurring. The field is painted into a canvas an eighth the
+  size, blurred *there*, and only then blown up: a 150px radius over a 4K frame
+  is a convolution nobody can afford at 30fps, and the same radius an eighth
+  the size is 1/64th of the work and identical once stretched. The small canvas
+  is padded because a blur samples past its own edges and would otherwise fade
+  the field out at the frame's border.
+- **`grain`** draws a repeating tile, not a cell at a time. The first version
+  filled the frame pixel by pixel — invisible in a preview, half a minute added
+  to a video export. Eight fields, stepped a whole number of times over the
+  loop, so it flickers like film and still lands back on field zero.
+
+`RECIPES` in `lib/kinetics.ts` are the starting points, one a scene.
+`applyRecipe` deliberately never touches the words: a recipe is "put my
+sentence in this", not a poster about something else.
 
 ## the Tools (`/tools`)
 

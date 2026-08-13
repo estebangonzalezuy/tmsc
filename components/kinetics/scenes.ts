@@ -62,6 +62,82 @@ const clear = (f: Frame) => {
   f.ctx.fillRect(0, 0, f.w, f.h);
 };
 
+/* Two scratch canvases, reused for every soft field in the studio. Allocating
+   them a frame is the kind of thing that looks free and shows up as a stutter
+   every few seconds when the collector catches up. */
+const pads: HTMLCanvasElement[] = [];
+const padAt = (i: number, w: number, h: number) => {
+  if (!pads[i]) pads[i] = document.createElement("canvas");
+  const c = pads[i];
+  c.width = w;
+  c.height = h;
+  return c.getContext("2d")!;
+};
+
+/** What `soften` drew, so a scene can lay it down a second time without
+    painting the field twice. */
+export type Soft = { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number };
+
+/**
+ * A blurred field, at a controllable radius, for about the cost of not
+ * blurring it.
+ *
+ * The field is painted into a small canvas, blurred *there*, and only then
+ * blown up. Blurring before the upscale is the whole trick: a 150px radius
+ * over a 4K frame is a per-pixel convolution nobody can afford at 30fps, and
+ * the same radius over a canvas an eighth the size is 1/64th of the work and
+ * looks identical once it is stretched back out.
+ *
+ * The radius is a share of the frame rather than a pixel count, so `blur: 40`
+ * is the same softness in a thumbnail, on the stage, and in a 4K export.
+ *
+ * The small canvas is padded, because a blur samples past its own edges and
+ * would otherwise fade the field to nothing at the frame's border — a vignette
+ * nobody asked for, strongest exactly where the setting is highest.
+ */
+function soften(
+  f: Frame,
+  blur: number,
+  paintField: (c: CanvasRenderingContext2D, w: number, h: number) => void,
+): Soft {
+  const b = Math.max(0, Math.min(100, blur));
+  /* Full resolution when nothing is asked for; an eighth once something is,
+     which is as coarse as this can go before the bands themselves start
+     stepping. */
+  const q = b <= 0 ? 1 : 0.125;
+  const sw = Math.max(8, Math.round(f.w * q));
+  const sh = Math.max(8, Math.round(f.h * q));
+  /* Radius in the small canvas's own units. The curve is deliberately not
+     linear: the useful half of this control is the first third. */
+  const radius = Math.pow(b / 100, 1.35) * 0.34 * Math.min(sw, sh);
+  const pad = Math.ceil(radius * 2.2);
+
+  const a = padAt(0, sw + pad * 2, sh + pad * 2);
+  a.clearRect(0, 0, a.canvas.width, a.canvas.height);
+  a.save();
+  a.translate(pad, pad);
+  paintField(a, sw, sh);
+  a.restore();
+
+  let src = a.canvas;
+  if (radius > 0.4) {
+    const bb = padAt(1, a.canvas.width, a.canvas.height);
+    bb.clearRect(0, 0, bb.canvas.width, bb.canvas.height);
+    bb.filter = `blur(${radius}px)`;
+    bb.drawImage(a.canvas, 0, 0);
+    bb.filter = "none";
+    src = bb.canvas;
+  }
+
+  const { ctx } = f;
+  ctx.save();
+  ctx.imageSmoothingEnabled = b > 0;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(src, pad, pad, sw, sh, 0, 0, f.w, f.h);
+  ctx.restore();
+  return { canvas: src, sx: pad, sy: pad, sw, sh };
+}
+
 /* A scene that wants the words as a field asks for this rather than drawing
    them, and every one of them samples it the same way. */
 const mask = (f: Frame): Mask => maskOf(f.spec, f.w, f.h);
@@ -113,7 +189,7 @@ const stagger: SceneDef = {
 
         ctx.save();
         ctx.globalAlpha = fade ? pr : Math.min(1, pr * 3);
-        ctx.translate(g.cx + off * (1 - pr) * 0 + off, g.cy);
+        ctx.translate(g.cx + off, g.cy);
         const sc = lerp(zoom, 1, pr);
         ctx.scale(sc, sc);
         ctx.rotate(spin * (1 - pr));
@@ -401,7 +477,8 @@ const field: SceneDef = {
   controls: [
     { key: "bars", label: "bands", kind: "num", min: 2, max: 16, step: 1, def: 7 },
     { key: "rows", label: "rows", kind: "num", min: 1, max: 4, step: 1, def: 2 },
-    { key: "soft", label: "softness", kind: "num", min: 2, max: 40, step: 1, def: 16 },
+    { key: "blur", label: "blur", kind: "num", min: 0, max: 100, step: 1, def: 42, hint: "At 0 the bands are hard blocks. Past about 60 they melt into each other." },
+    { key: "paper", label: "paper", kind: "num", min: 0, max: 100, step: 1, def: 30, hint: "How far the ground reaches in from the edges." },
     { key: "drift", label: "drift", kind: "num", min: -3, max: 3, step: 1, def: 1 },
     { key: "inset", label: "inset", kind: "num", min: 0, max: 0.3, step: 0.01, def: 0.08 },
     { key: "word", label: "word size", kind: "num", min: 8, max: 120, step: 1, def: 46 },
@@ -413,52 +490,60 @@ const field: SceneDef = {
     const { ctx, spec, p, w, h, inks, s } = f;
     const bars = Math.round(num(spec.params, "bars", 7));
     const rows = Math.round(num(spec.params, "rows", 2));
-    const soft = Math.round(num(spec.params, "soft", 16));
+    const blur = num(spec.params, "blur", 42);
+    const paper = num(spec.params, "paper", 30);
     const drift = Math.round(num(spec.params, "drift", 1));
     const inset = num(spec.params, "inset", 0.08);
 
-    /* The field, drawn small and blown up with smoothing on — a better blur
-       than any filter, and free.
-     *
-       The cells are drawn several pixels across rather than one. At one pixel
-       a bar the upscale interpolates straight from each colour to the next and
-       the whole thing comes out a rainbow; with a few pixels of flat colour in
-       the middle, each band keeps its own colour and only the edges melt,
-       which is the look this is after. */
-    const q = 6;
-    const small = document.createElement("canvas");
-    small.width = Math.max(2, bars) * q;
-    small.height = Math.max(1, rows) * q;
-    const sc = small.getContext("2d")!;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < bars; c++) {
-        /* Shifting by whole bars over the loop keeps the field travelling and
-           still puts it back where it began. */
-        const shifted = (((c + Math.round(p * drift * bars)) % bars) + bars) % bars;
-        sc.fillStyle = inkFor(inks, shifted * 3 + r * 5);
-        sc.fillRect(c * q, r * q, q, q);
+    /* The bands, painted into whatever resolution the blur asks for and blown
+       up from there. Drawn in the small canvas's own coordinates, so the same
+       code is a wall of hard blocks at blur 0 and a wash at 100. */
+    const soft = soften(f, blur, (sc, sw, sh) => {
+      const bw = sw / bars;
+      const bh = sh / rows;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < bars; c++) {
+          /* Shifting by whole bars over the loop keeps the field travelling
+             and still puts it back where it began. */
+          const shifted = (((c + Math.round(p * drift * bars)) % bars) + bars) % bars;
+          sc.fillStyle = inkFor(inks, shifted * 3 + r * 5);
+          /* A hair of overlap: at low resolutions a rounding gap between two
+             cells shows up as a hairline of ground straight through the
+             field. */
+          sc.fillRect(c * bw, r * bh, bw + 1, bh + 1);
+        }
       }
+    });
+
+    /* The field again, inset and half strength — the doubling is what gives it
+       the sense of a second sheet laid over the first. */
+    if (inset > 0) {
+      const ix = w * inset;
+      const iy = h * inset;
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(
+        soft.canvas, soft.sx, soft.sy, soft.sw, soft.sh,
+        ix, iy, w - ix * 2, h - iy * 2,
+      );
+      ctx.restore();
     }
-    const ix = w * inset;
-    const iy = h * inset;
-    ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    /* Two passes at different scales: one wide and soft, one tighter, which
-       reads much closer to a real gaussian than a single stretch does. */
-    ctx.globalAlpha = 1;
-    ctx.drawImage(small, -ix, -iy, w + ix * 2, h + iy * 2);
-    ctx.globalAlpha = 0.55;
-    ctx.drawImage(small, ix, iy, w - ix * 2, h - iy * 2);
-    ctx.restore();
+
     /* A wash of the ground at the edges, so the field sits on paper rather
-       than running off it. `soft` decides how far in the paper reaches. */
-    const inner = Math.min(w, h) * (1 - soft / 60);
-    const vign = ctx.createRadialGradient(w / 2, h / 2, inner * 0.5, w / 2, h / 2, Math.max(w, h) * 0.8);
-    vign.addColorStop(0, "rgba(0,0,0,0)");
-    vign.addColorStop(1, f.ground);
-    ctx.fillStyle = vign;
-    ctx.fillRect(0, 0, w, h);
+       than running off it. */
+    if (paper > 0) {
+      const vign = ctx.createRadialGradient(
+        w / 2, h / 2,
+        Math.min(w, h) * lerp(0.75, 0.05, paper / 100),
+        w / 2, h / 2,
+        Math.max(w, h) * 0.8,
+      );
+      vign.addColorStop(0, "rgba(0,0,0,0)");
+      vign.addColorStop(1, f.ground);
+      ctx.fillStyle = vign;
+      ctx.fillRect(0, 0, w, h);
+    }
 
     /* The words. */
     const words = (spec.caps ? spec.text.toUpperCase() : spec.text).split(/\s+/).filter(Boolean);
@@ -516,6 +601,7 @@ const bleed: SceneDef = {
   controls: [
     { key: "blobs", label: "blobs", kind: "num", min: 2, max: 12, step: 1, def: 5 },
     { key: "size", label: "blob size", kind: "num", min: 0.2, max: 1.4, step: 0.05, def: 0.7 },
+    { key: "blur", label: "blur", kind: "num", min: 0, max: 100, step: 1, def: 30, hint: "At 0 the blobs keep their own edges. High, the whole field becomes weather." },
     { key: "flow", label: "flow", kind: "num", min: -3, max: 3, step: 1, def: 1 },
     {
       key: "mode",
@@ -538,25 +624,31 @@ const bleed: SceneDef = {
     const { ctx, spec, p, w, h, inks, s } = f;
     const blobs = Math.round(num(spec.params, "blobs", 5));
     const size = num(spec.params, "size", 0.7);
+    const blur = num(spec.params, "blur", 30);
     const flow = Math.round(num(spec.params, "flow", 1));
     const mode = par(spec.params, "mode", "difference");
     const smear = num(spec.params, "smear", 10) * s;
     const steps = Math.round(num(spec.params, "steps", 6));
 
     /* The field. Each blob walks a whole number of laps round its own small
-       circle, which is the cheapest motion that is guaranteed periodic. */
-    for (let i = 0; i < blobs; i++) {
-      const a = p * TAU * flow + (i / blobs) * TAU;
-      const rx = lerp(0.14, 0.86, rnd(i * 17 + 1)) * w + Math.cos(a) * w * 0.18;
-      const ry = lerp(0.14, 0.86, rnd(i * 29 + 7)) * h + Math.sin(a) * h * 0.14;
-      const rr = Math.max(w, h) * size * lerp(0.35, 0.8, rnd(i * 53 + 11));
-      const g = ctx.createRadialGradient(rx, ry, 0, rx, ry, rr);
-      const ink = inkFor(inks, i * 3 + 1);
-      g.addColorStop(0, ink);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, w, h);
-    }
+       circle, which is the cheapest motion that is guaranteed periodic — and
+       the whole thing is painted at the resolution the blur asks for, so a
+       high setting costs less than a low one rather than more. */
+    soften(f, blur, (sc, sw, sh) => {
+      sc.fillStyle = f.ground;
+      sc.fillRect(0, 0, sw, sh);
+      for (let i = 0; i < blobs; i++) {
+        const a = p * TAU * flow + (i / blobs) * TAU;
+        const rx = lerp(0.14, 0.86, rnd(i * 17 + 1)) * sw + Math.cos(a) * sw * 0.18;
+        const ry = lerp(0.14, 0.86, rnd(i * 29 + 7)) * sh + Math.sin(a) * sh * 0.14;
+        const rr = Math.max(sw, sh) * size * lerp(0.35, 0.8, rnd(i * 53 + 11));
+        const g = sc.createRadialGradient(rx, ry, 0, rx, ry, rr);
+        g.addColorStop(0, inkFor(inks, i * 3 + 1));
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        sc.fillStyle = g;
+        sc.fillRect(0, 0, sw, sh);
+      }
+    });
 
     /* The words, composited against it. */
     const lay = layout(ctx, spec, w, h);
@@ -654,23 +746,48 @@ const halftone: SceneDef = {
 
 /* ---------------------------------------------------------------- grain --- */
 
-/* Laid over everything at the end, and seeded off the frame rather than
-   Math.random, so two exports of the same piece are identical. It is the one
-   thing in the studio that is allowed to touch every pixel. */
+/* Laid over everything at the end, seeded off the frame rather than
+   Math.random so two exports of the same piece are identical.
+ *
+   It is drawn as a repeating tile rather than a pixel at a time. The first
+   version filled the frame cell by cell, which is around three hundred and
+   sixty thousand fills a frame — invisible in a preview and about half a
+   minute added to a video export. A tile is built once per field and then the
+   whole frame is one fillRect.
+ *
+   There are eight fields and the loop steps through them a whole number of
+   times, so the grain flickers the way film does and still lands back on
+   field zero at the end. */
+const GRAIN_FIELDS = 8;
+const grainTiles = new Map<string, HTMLCanvasElement>();
+
 export function grain(f: Frame, amount: number) {
   if (amount <= 0.001) return;
   const { ctx, w, h, p } = f;
-  const step = Math.max(2, Math.round(2 * f.s));
-  const seed = Math.round(p * 60);
+  const step = Math.max(1, Math.round(f.s));
+  const field = Math.floor(p * GRAIN_FIELDS * 3) % GRAIN_FIELDS;
+  const key = `${step}:${field}`;
+  let tile = grainTiles.get(key);
+  if (!tile) {
+    const cells = 96;
+    tile = document.createElement("canvas");
+    tile.width = tile.height = cells * step;
+    const tc = tile.getContext("2d")!;
+    tc.fillStyle = "#000";
+    for (let y = 0; y < cells; y++) {
+      for (let x = 0; x < cells; x++) {
+        if (rnd(x * 0.7 + y * 1.3 + field * 31.7) > 0.5) continue;
+        tc.fillRect(x * step, y * step, step, step);
+      }
+    }
+    grainTiles.set(key, tile);
+  }
+  const pat = ctx.createPattern(tile, "repeat");
+  if (!pat) return;
   ctx.save();
   ctx.globalAlpha = Math.min(0.4, amount);
-  ctx.fillStyle = "#000";
-  for (let y = 0; y < h; y += step) {
-    for (let x = 0; x < w; x += step) {
-      if (rnd(x * 0.7 + y * 1.3 + seed * 31.7) > 0.5) continue;
-      ctx.fillRect(x, y, step, step);
-    }
-  }
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, w, h);
   ctx.restore();
 }
 

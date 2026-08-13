@@ -48,6 +48,8 @@ import {
   FORMATS,
   normalize,
   ORIGINS,
+  RECIPES,
+  applyRecipe,
   PALETTES,
   paletteOf,
   type Ctrl,
@@ -135,20 +137,28 @@ export default function Kinetics() {
   /* The fonts have to be in before anything is measured — a mask built in the
      fallback face is the wrong shape, and it is cached, so it would be the
      wrong shape until something else invalidated it. */
+  const readHash = useCallback(() => {
+    const encoded = window.location.hash.match(/spec=([^&]+)/)?.[1];
+    const decoded = encoded ? decodeSpec(encoded) : null;
+    if (!decoded) return;
+    setSpec(normalize(decoded, sceneOf(decoded.scene ?? "stagger").controls));
+  }, []);
+
   useEffect(() => {
     loadFonts().then((f) => {
       adoptFonts(f);
       forgetMask();
       setFonts(f);
-      const encoded = window.location.hash.match(/spec=([^&]+)/)?.[1];
-      const decoded = encoded ? decodeSpec(encoded) : null;
-      if (decoded?.scene) {
-        setSpec(normalize(decoded, sceneOf(decoded.scene).controls));
-      } else if (decoded) {
-        setSpec(normalize(decoded, sceneOf("stagger").controls));
-      }
+      readHash();
     });
-  }, []);
+    /* A link pasted into a tab that is already open has to land, and it
+       wouldn't if the hash were only read at mount — the address changes and
+       nothing happens, which looks like a broken link rather than a studio
+       that wasn't listening. Our own `replaceState` doesn't fire this, so
+       there is no loop to worry about. */
+    window.addEventListener("hashchange", readHash);
+    return () => window.removeEventListener("hashchange", readHash);
+  }, [readHash]);
 
   /* The link stays current, so a piece is always one copy away from being
      shareable — and reopenable exactly as it is now. */
@@ -164,6 +174,27 @@ export default function Kinetics() {
     setFlash(msg);
     setTimeout(() => setFlash(""), 2600);
   }, []);
+
+  /* Space plays, the arrows step a frame. Ignored while a field has focus, or
+     typing a headline with a space in it would start and stop the loop. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        setPlaying((v) => !v);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        setPlaying(false);
+        const step = (e.shiftKey ? 10 : 1) / 30;
+        const d = Math.max(0.001, spec.duration);
+        clock.set(((clock.get() + (e.key === "ArrowRight" ? step : -step)) % d + d) % d);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [spec.duration]);
 
   const set = <K extends keyof KineticSpec>(key: K, value: KineticSpec[K]) =>
     setSpec((s) => normalize({ ...s, [key]: value }, sceneOf(s.scene).controls));
@@ -347,6 +378,23 @@ export default function Kinetics() {
               <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
                 {scene.about}
               </p>
+              {/* Somewhere to start. A recipe never touches the words — it is
+                  "put my sentence in this", not a poster about something
+                  else. */}
+              <Stack label="start from">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {RECIPES.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => setSpec((s) => normalize(applyRecipe(s, r), sceneOf(r.scene).controls))}
+                      title={r.note}
+                      className="tc-field h-[var(--tc-h)] px-2 text-[12.5px] truncate hover:bg-[color:var(--tc-field-hi)] transition-colors"
+                    >
+                      {r.name}
+                    </button>
+                  ))}
+                </div>
+              </Stack>
             </Section>
 
             <Section title="words">
