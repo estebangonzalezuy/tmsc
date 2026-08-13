@@ -425,6 +425,26 @@ Two things there to reuse rather than rewrite:
 `applyRecipe` deliberately never touches the words: a recipe is "put my
 sentence in this", not a poster about something else.
 
+**Blotter** (`blotter` + `blot`) is a *mode*, not an effect: it overrules the
+palette to one ink on paper, because there is no such thing as a two-colour
+blotter. The whole effect is blur then crushed contrast — blurring turns every
+edge into a gradient and the crush snaps it back to a hard edge, so a shape's
+own edge returns almost where it was while two shapes that were merely *near*
+each other blur into a shared grey, land above the line, and become one mass.
+Both halves are CSS filter functions, so it costs about one extra draw. Fine
+type genuinely bleaches away at a high spread — that is what ink does, not a
+bug; keep `blot` low when the type is small.
+
+**The Posts Studio's effects run here unforked** — `applyFilters` from
+`components/postlab/filters.ts`, over the finished frame, in `paint`. They take
+no time as an input so they can never open a seam. One thing has to be put back
+afterwards: over there a filter runs on a *layer* drawn on a transparent canvas
+and composited onto the ground later, so `pixelate` clearing the cells it
+didn't ink is how the ground shows through. Here there is one opaque frame, so
+the same clear punches holes through the piece — `paint` lays the ground back
+in with `destination-over` rather than forking the filters to know about this
+studio.
+
 ## the Tools (`/tools`)
 
 The everyday front door to the studio: small tools, one thing each. A note, a

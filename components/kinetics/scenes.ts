@@ -15,10 +15,12 @@
 // inside a word. That second family is the reason this studio exists, and the
 // reason the mask in `type.ts` is the most important object here.
 
+import { applyFilters } from "@/components/postlab/filters";
 import {
   colorsOf,
   ease,
   FORMATS,
+  PAPER,
   inkFor,
   num,
   bool,
@@ -791,14 +793,62 @@ export function grain(f: Frame, amount: number) {
   ctx.restore();
 }
 
+/* -------------------------------------------------------------- blotter --- */
+
+/**
+ * The whole piece reprinted as one ink on paper.
+ *
+ * Blur, then crush the contrast. That pair is the entire effect and it is
+ * worth understanding why it reads as ink rather than as a blurred picture:
+ * blurring makes every edge a gradient, and crushing the contrast snaps that
+ * gradient back to a hard edge at whatever level sits at the halfway point. A
+ * shape's own edge comes back almost where it was — but two shapes that were
+ * merely *near* each other blur into a shared grey that lands above the line
+ * and snaps into one solid mass. Things touch, necks form between them, small
+ * gaps fill in. That is what ink does on paper that drinks it.
+ *
+ * Both halves are CSS filter functions, so the browser does it on the GPU in
+ * one pass and it costs about as much as drawing the frame again.
+ *
+ * The scratch sheet is filled with paper before the frame goes down, because a
+ * blur samples past the edges and would otherwise find nothing there — the
+ * crush would turn that into a white border around every piece.
+ */
+function blot(f: Frame, amount: number) {
+  const a = Math.max(0, Math.min(100, amount));
+  if (a <= 0) return;
+  const { ctx, w, h } = f;
+  const radius = (a / 100) * 0.022 * Math.min(w, h);
+  const pad = Math.ceil(radius * 3) + 2;
+
+  const src = padAt(2, w + pad * 2, h + pad * 2);
+  src.fillStyle = PAPER;
+  src.fillRect(0, 0, src.canvas.width, src.canvas.height);
+  src.drawImage(ctx.canvas, pad, pad);
+
+  ctx.save();
+  /* Grayscale first: the mode is one ink, and a stray colour would come
+     through the crush as a different shape than its own luminance. */
+  ctx.filter = `grayscale(1) blur(${radius}px) contrast(${6 + a * 0.6})`;
+  ctx.drawImage(src.canvas, pad, pad, w, h, 0, 0, w, h);
+  ctx.restore();
+}
+
 /* ---------------------------------------------------------------------- */
 
 export const SCENES: SceneDef[] = [stagger, strokes, mosaic, arcs, field, bleed, halftone];
 
 export const sceneOf = (id: string) => SCENES.find((s) => s.id === id) ?? SCENES[0];
 
-/** Draw a whole frame: the scene, then the grain. The only entry point the
-    stage, the poster and the exporter use, so none of them can disagree. */
+/**
+ * Draw a whole frame. The only entry point the stage and the exporter use, so
+ * they cannot disagree about what the piece looks like.
+ *
+ * The order is the order of a print job: the scene is drawn, the ink is
+ * allowed to spread if this is a blotter, the effects run over the finished
+ * sheet, and the grain goes on last because it belongs to the paper rather
+ * than to anything printed on it.
+ */
 export function paint(
   ctx: CanvasRenderingContext2D,
   spec: KineticSpec,
@@ -820,5 +870,29 @@ export function paint(
   ctx.save();
   sceneOf(spec.scene).draw(f);
   ctx.restore();
+
+  if (spec.blotter) blot(f, spec.blot ?? 40);
+
+  /* The Posts Studio's own chain, unchanged and unforked — one screen, one
+     posterize, one set of levels for both studios. They are handed no time,
+     so they can sit on top of any of this without touching the loop.
+
+     One thing has to be put back afterwards. Over there a filter runs on a
+     *layer*, drawn on a transparent canvas and composited onto the slide's
+     ground later — so `pixelate` clearing every cell it didn't ink is exactly
+     right: those cells are how the ground shows through. Here there is one
+     opaque frame and no ground underneath, so the same clear punches holes
+     straight through the piece. Laying the ground back in behind whatever the
+     chain left transparent restores the model the filters were written for,
+     rather than forking them to know about this studio. */
+  if (spec.filters?.length) {
+    applyFilters(ctx, w, h, spec.filters, spec.blotter ? "light" : "dark", inks[0]);
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-over";
+    ctx.fillStyle = ground;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+
   grain(f, spec.grain);
 }

@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { clock } from "@/components/postlab/clock";
 import { loadFonts, type Fonts } from "@/components/postlab/overlay";
 import {
+  Block,
   Btn,
   Buttons,
   Dots,
@@ -47,6 +48,9 @@ import {
   encodeSpec,
   FORMATS,
   normalize,
+  FILTERS,
+  defaultFilter,
+  filterDef,
   ORIGINS,
   RECIPES,
   applyRecipe,
@@ -54,6 +58,7 @@ import {
   paletteOf,
   type Ctrl,
   type Dir,
+  type FilterSpec,
   type Ease,
   type KineticSpec,
   type Origin,
@@ -195,6 +200,24 @@ export default function Kinetics() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [spec.duration]);
+
+  /* The effect chain, and the two things you do to it. A muted effect stays in
+     the chain rather than being deleted, so you can take one out and see what
+     it was doing — the same contract the Posts Studio's stack makes. */
+  const fx: FilterSpec[] = spec.filters ?? [];
+  const patchFx = (i: number, patch: Partial<FilterSpec>) =>
+    setSpec((s) => ({
+      ...s,
+      filters: (s.filters ?? []).map((f, j) => (j === i ? { ...f, ...patch } : f)),
+    }));
+  const moveFx = (i: number, dir: -1 | 1) =>
+    setSpec((s) => {
+      const list = [...(s.filters ?? [])];
+      const j = i + dir;
+      if (j < 0 || j >= list.length) return s;
+      [list[i], list[j]] = [list[j], list[i]];
+      return { ...s, filters: list };
+    });
 
   const set = <K extends keyof KineticSpec>(key: K, value: KineticSpec[K]) =>
     setSpec((s) => normalize({ ...s, [key]: value }, sceneOf(s.scene).controls));
@@ -540,35 +563,64 @@ export default function Kinetics() {
               />
             </Section>
 
-            <Section title="colour" summary={paletteOf(spec.palette).name}>
-              <Stack>
-                <Select
-                  value={spec.palette}
-                  options={PALETTES.map((p) => ({ value: p.id, label: p.name }))}
-                  onChange={(v) =>
-                    setSpec((s) => ({ ...s, palette: v, ground: undefined, inks: undefined }))
-                  }
+            <Section
+              title="colour"
+              summary={spec.blotter ? "blotter" : paletteOf(spec.palette).name}
+            >
+              {/* A mode, not an effect: it overrules the palette, because
+                  there is no such thing as a two-colour blotter. */}
+              <Toggle
+                label="blotter ink"
+                on={!!spec.blotter}
+                onChange={() => set("blotter", !spec.blotter)}
+                help="Prints the whole piece as one black ink on white paper, bleeding into itself the way ink does on stock that drinks it."
+              />
+              {spec.blotter && (
+                <Slider
+                  label="bleed"
+                  value={spec.blot ?? 40}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onChange={(v) => set("blot", v)}
+                  help="How far the ink spreads. Low keeps the shapes; high lets anything near anything else run together into one mass."
                 />
-              </Stack>
-              <Row label="ground">
-                {/* Deduped: two palettes share a ground, and the same swatch
-                    twice is a duplicate key and a control that looks broken. */}
-                <Dots
-                  colors={[...new Set(PALETTES.map((p) => p.ground))]}
-                  value={ground}
-                  onChange={(v) => set("ground", v)}
-                />
-              </Row>
-              <div className="flex flex-wrap gap-1.5">
-                {inks.map((ink) => (
-                  <span
-                    key={ink}
-                    title={ink}
-                    className="size-[22px] rounded-full border border-[color:var(--tc-edge)]"
-                    style={{ background: ink }}
+              )}
+              {!spec.blotter && (
+                <Stack>
+                  <Select
+                    value={spec.palette}
+                    options={PALETTES.map((p) => ({ value: p.id, label: p.name }))}
+                    onChange={(v) =>
+                      setSpec((s) => ({ ...s, palette: v, ground: undefined, inks: undefined }))
+                    }
                   />
-                ))}
-              </div>
+                </Stack>
+              )}
+              {!spec.blotter && (
+                <Row label="ground">
+                  {/* Deduped: two palettes share a ground, and the same swatch
+                      twice is a duplicate key and a control that looks
+                      broken. */}
+                  <Dots
+                    colors={[...new Set(PALETTES.map((p) => p.ground))]}
+                    value={ground}
+                    onChange={(v) => set("ground", v)}
+                  />
+                </Row>
+              )}
+              {!spec.blotter && (
+                <div className="flex flex-wrap gap-1.5">
+                  {inks.map((ink) => (
+                    <span
+                      key={ink}
+                      title={ink}
+                      className="size-[22px] rounded-full border border-[color:var(--tc-edge)]"
+                      style={{ background: ink }}
+                    />
+                  ))}
+                </div>
+              )}
               <Slider
                 label="grain"
                 value={spec.grain}
@@ -582,6 +634,67 @@ export default function Kinetics() {
 
             <Section title={scene.name} summary={`${scene.controls.length} controls`}>
               {scene.controls.map(control)}
+            </Section>
+
+            {/* The Posts Studio's own effects, unforked, running over the
+                finished frame. They take no time as an input, so one can sit
+                on top of any scene without touching the loop. */}
+            <Section
+              title="effects"
+              summary={fx.length ? `${fx.filter((x) => !x.mute).length} on` : "none"}
+            >
+              <Stack>
+                <Select
+                  value=""
+                  options={[
+                    { value: "", label: "add an effect…" },
+                    ...FILTERS.map((d) => ({ value: d.type, label: d.label, title: d.hint })),
+                  ]}
+                  onChange={(v) => v && setSpec((s) => ({ ...s, filters: [...(s.filters ?? []), defaultFilter(v)] }))}
+                />
+              </Stack>
+              {fx.map((flt, i) => {
+                const def = filterDef(flt.type);
+                return (
+                  <Block
+                    key={`${flt.type}-${i}`}
+                    title={def?.label ?? flt.type}
+                    on={!flt.mute}
+                    onToggle={() => patchFx(i, { mute: !flt.mute })}
+                    onUp={i > 0 ? () => moveFx(i, -1) : undefined}
+                    onDown={i < fx.length - 1 ? () => moveFx(i, 1) : undefined}
+                    onRemove={() => setSpec((s) => ({ ...s, filters: fx.filter((_, j) => j !== i) }))}
+                  >
+                    {def?.choices?.map((c) => (
+                      <Row key={c.key} label={c.label}>
+                        <Select
+                          value={String(flt[c.key] ?? c.def)}
+                          options={c.values.map((v) => ({ value: v, label: v }))}
+                          onChange={(v) => patchFx(i, { [c.key]: v })}
+                        />
+                      </Row>
+                    ))}
+                    {def?.controls.map((c) => (
+                      <Slider
+                        key={c.key}
+                        label={c.label}
+                        value={Number(flt[c.key] ?? c.def)}
+                        min={c.min}
+                        max={c.max}
+                        step={c.step}
+                        onChange={(v) => patchFx(i, { [c.key]: v })}
+                      />
+                    ))}
+                  </Block>
+                );
+              })}
+              {!fx.length && (
+                <p className="text-[11px] text-[color:var(--tc-ink-3)] leading-relaxed">
+                  The club&apos;s screen, posterize, levels, grain, mono and
+                  invert — the same chain the Posts Studio runs, over whatever
+                  the scene drew.
+                </p>
+              )}
             </Section>
 
             <Section title="out" summary={`${outW * scale}×${outH * scale}`}>

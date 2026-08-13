@@ -23,10 +23,17 @@
 // 2. **Nothing shipped is still.** There is no static scene here — a still
 //    frame is a scene paused, not a scene without motion.
 
-import { FORMATS, type PostFormat } from "./postlab";
+import {
+  FILTERS,
+  FORMATS,
+  defaultFilter,
+  filterDef,
+  type FilterSpec,
+  type PostFormat,
+} from "./postlab";
 
-export { FORMATS };
-export type { PostFormat };
+export { FILTERS, FORMATS, defaultFilter, filterDef };
+export type { FilterSpec, PostFormat };
 
 export const KINETIC_VERSION = 1;
 
@@ -311,6 +318,18 @@ export type KineticSpec = {
   timing: Timing;
   grain: number;
   params: Params;
+  /* Printed rather than lit: the whole piece reprinted as one ink on paper,
+     with the shapes bleeding into each other the way ink does on stock that
+     drinks it. It is a mode, not a filter, because it overrides the colour —
+     there is no such thing as a two-colour blotter. */
+  blotter?: boolean;
+  /** How far the ink spreads, 0-100. Absent means the default. */
+  blot?: number;
+  /** The Posts Studio's own effects, run over the finished frame in order.
+      They take no time as an input — not even the grain — so an effect can
+      never be the reason a loop stops closing. Absent means none, which is
+      what every link written before this existed expects. */
+  filters?: FilterSpec[];
 };
 
 export const defaultSpec = (): KineticSpec => ({
@@ -330,8 +349,14 @@ export const defaultSpec = (): KineticSpec => ({
   params: {},
 });
 
-/** The spec's colours, whether they came from a palette or a hand override. */
+export const PAPER = "#ffffff";
+export const INK = "#101010";
+
+/** The spec's colours, whether they came from a palette or a hand override.
+    Blotter overrules both: it is one ink on paper by definition, and a scene
+    that kept reaching for a second colour would be drawing a second plate. */
 export function colorsOf(spec: KineticSpec): { ground: string; inks: string[] } {
+  if (spec.blotter) return { ground: PAPER, inks: [INK] };
   const p = paletteOf(spec.palette);
   return {
     ground: spec.ground ?? p.ground,
