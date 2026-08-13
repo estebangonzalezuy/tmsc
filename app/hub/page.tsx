@@ -23,6 +23,7 @@ const groups: { title: string; note: string; rows: Row[] }[] = [
       { href: "/desk", name: "the Desk", what: "start a run, see what's going" },
       { href: "/tools", name: "the Tools", what: "a post from four questions" },
       { href: "/postlab", name: "the Posts Studio", what: "every control, when a tool isn't enough" },
+      { href: "/kinetics", name: "the Kinetics", what: "when the words are the picture, and all of it moves" },
       { href: "/studio", name: "the Studio", what: "the site's own words" },
       { href: "/curate", name: "the Curator", what: "a video in, style frames out" },
     ],

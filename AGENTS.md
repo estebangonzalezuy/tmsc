@@ -366,6 +366,46 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   palette, which is the deliberate cost of the picker. Generated posts
   never set it, and never set `ink` unless colour was asked for.
 
+## the Kinetics (`/kinetics`)
+
+The club's second studio, and a different argument from the first one. The
+Posts Studio treats type as a layer *over* a graphic. Here **the type is the
+graphic** — there is no background layer in any scene, because the words are
+the picture. It is not a mode of the other studio and does not share its spec.
+
+- `lib/kinetics.ts` — the **KineticSpec**, the easing library, `presence` /
+  `queue` (the stagger model), the palettes, and base64url encode/decode. The
+  spec travels in the URL exactly as a PostSpec does.
+- `components/kinetics/type.ts` — the two things every scene needs: the
+  **layout** (where each line and each letter sits) and the **mask** (the same
+  words drawn white-on-black offscreen, with a sampler). The mask is the
+  important one: half the scenes never draw a letter at all, they draw a field
+  and ask the mask whether each point is inside a word. It is cached per size
+  because `getImageData` is the only genuinely expensive call here.
+- `components/kinetics/scenes.ts` — the seven renderers. A scene is
+  `(frame) => void` plus the controls it declares, so **adding one is one entry
+  in `SCENES` and no UI work** — the panel is generated from the controls, the
+  same bargain the Tools make with the wall.
+- `Kinetics.tsx` (the studio, Toolcraft chrome), `Stage.tsx` (subscribes to the
+  shared `clock`, never re-renders), `exports.ts` (PNG + webm).
+
+Two rules carried over from the Posts Studio, and they are why an export is
+trustworthy:
+
+- **The loop is a contract.** Every scene is a function of `p` (0-1 through the
+  loop) and lands on the same frame at 1 as at 0. Rotations are whole turns,
+  scrolls are whole cells, and a stagger's intro/pause/outro are *shares of the
+  loop* renormalized to sum to 1 — which is why moving any timing slider can
+  never open a seam. Nothing reads the wall clock.
+- **A recording is a function of the frame number.** `recordVideo` drives
+  `captureStream(0)` by hand, drawing frame i of n at `p = i/n` (never
+  `i/(n-1)`, or the last frame repeats the first). Two exports are identical.
+
+Weights and distances inside a scene are **shares of something the scene
+already has**, not pixels — `strokes` measures its stroke weight against the
+gap between rings, `mosaic` sets each glyph to its own cell. That is what lets
+one slider keep meaning the same thing when the count above it moves.
+
 ## the Tools (`/tools`)
 
 The everyday front door to the studio: small tools, one thing each. A note, a

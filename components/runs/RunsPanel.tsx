@@ -622,6 +622,7 @@ export default function RunsPanel() {
                 {[
                   ["/tools", "the Tools", "one thing each, no waiting"],
                   ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
+                  ["/kinetics", "the Kinetics", "type that moves, seven ways"],
                   ["/studio", "the Studio", "the site's own words"],
                   ["/hub", "the Hub", "everything tMSC, in one list"],
                 ].map(([href, name, what]) => (
