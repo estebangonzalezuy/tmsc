@@ -7,7 +7,7 @@ import { accentHoverText } from "@/components/Motifs";
 export default function PostList({ posts }: { posts: Post[] }) {
   const { site } = useContent();
   return (
-    <ul className="divide-y divide-line/30 border-y border-line/30">
+    <ul className="card row-divide px-6">
       {posts.map((p) => (
         <li key={`${p.date}-${p.title}`}>
           <a
@@ -22,7 +22,7 @@ export default function PostList({ posts }: { posts: Post[] }) {
             <span className="group-hover:underline underline-offset-4">
               {p.title}
             </span>
-            <span className="text-xs text-muted border border-line/40 rounded-full px-2.5 py-0.5">
+            <span className="text-xs text-muted pill">
               {p.type}
             </span>
           </a>

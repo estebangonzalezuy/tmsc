@@ -38,14 +38,14 @@ export default function DirectoryPage() {
         </p>
       </section>
 
-      <section className="border-t border-line grid grid-cols-2 md:grid-cols-4 gap-px bg-line">
+      <section className="px-5 md:px-6 grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { value: String(manifest.total), label: "entries indexed" },
           { value: String(collections.length), label: "collections" },
           { value: "5", label: "shelves" },
           { value: "0", label: "opinions offered" },
         ].map((s) => (
-          <div key={s.label} className="bg-background px-5 md:px-6 py-10">
+          <div key={s.label} className="card px-5 md:px-6 py-10">
             <p className="font-serif text-3xl md:text-4xl">{s.value}</p>
             <p className="mt-2 text-xs text-muted">{s.label}</p>
           </div>
@@ -58,15 +58,15 @@ export default function DirectoryPage() {
         return (
           <section
             key={shelf.id}
-            className="border-t border-line px-5 md:px-6 py-20 md:py-24"
+            className="px-5 md:px-6 py-20 md:py-24"
           >
             <SectionHeading label={shelf.name} title={<em>{shelf.note}</em>} />
-            <div className="mt-12 grid gap-px bg-line border border-line md:grid-cols-2">
+            <div className="mt-12 grid gap-3 md:grid-cols-2">
               {shelved.map((c) => (
                 <Link
                   key={c.id}
                   href={`/directory/${c.id}`}
-                  className={`group bg-background p-8 ${accentHover(c.id)} transition-colors`}
+                  className={`group card card-lift p-8 ${accentHover(c.id)}`}
                 >
                   <div className="flex items-baseline justify-between gap-4">
                     <CircleLetter>{c.letter}</CircleLetter>
@@ -87,11 +87,6 @@ export default function DirectoryPage() {
                   )}
                 </Link>
               ))}
-              {/* The gap-px grid shows the line colour through any cell the
-                  shelf doesn't fill, so an odd count needs a blank one. */}
-              {shelved.length % 2 === 1 && (
-                <div className="hidden md:block bg-background" aria-hidden />
-              )}
             </div>
           </section>
         );
@@ -100,7 +95,7 @@ export default function DirectoryPage() {
       {!hidden.has("directoryNote") && (
         <section
           {...studioSection("directoryNote", "Directory: how it's kept")}
-          className="border-t border-line px-5 md:px-6 py-20 md:py-24"
+          className="px-5 md:px-6 py-20 md:py-24"
         >
           <SectionHeading
             label="How it's kept"

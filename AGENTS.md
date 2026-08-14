@@ -90,12 +90,26 @@ browser). Therefore:
   emphasis) via `next/font`, both loaded with their real italics — the studio
   mixes roman and italic inside one headline, and a browser-slanted roman
   gives that away immediately. No other fonts.
-- **Motifs:** outlined circles, circled letters, orbital rings, boxed
-  headlines, underlined labels — the components in `Motifs.tsx`. Don't
-  introduce new decorative elements (shadows, gradients, rounded cards,
-  icons) — extend the existing motif language instead.
-- 1px `border-line` borders separate sections; `gap-px bg-line` grids make
-  hairline tables.
+- **Motifs:** circled letters, orbital rings, the letter marquee, the
+  `Boxed` pill, underlined section kickers — the components in `Motifs.tsx`.
+  Don't introduce new decorative elements (gradients, icon sets); extend the
+  existing motif language instead.
+- **Modules float; nothing is drawn.** The site used to be ruled with 1px
+  near-black borders and `gap-px bg-line` hairline tables. It isn't any
+  more. A block of content is a `.card`: the white `--surface` on the warm
+  `--background`, `--radius` corners, `--shadow` to seat it. A grid is real
+  `gap-3` between real cards, never a hairline table, and a section is
+  separated by its own padding, not a rule. Add `.card-lift` when the whole
+  card is a link.
+  - `.pill` for a tag, count or filter chip; `.inset` for a block nested
+    inside a card (a second `.card` in there is white on white and reads as
+    nothing); `.row-divide` for rows inside one card, the only place
+    `--line` still draws.
+  - `--line` is now a whisper, not near-black. If something needs to be
+    told apart, give it a surface, not a border.
+  - The header is a floating sticky capsule, the footer a card. Full-bleed
+    rows that used to run edge to edge need the `px-5 md:px-6` gutter now
+    that they are cards.
 
 ## the Posts Studio (`/postlab`)
 
@@ -576,9 +590,8 @@ profile: they're appended to every system prompt for recency.
    in `PreviewClient.tsx`, nav in SiteHeader/SiteFooter (with a `navId` so
    the owner can hide the link), and a wrapper under `app/(site)/`.
 
-Note the `gap-px bg-line` grids show the line colour through any cell a
-section doesn't fill, so an odd number of cards needs a blank
-`bg-background` filler (see `DirectoryPage`).
+Grids are real gaps between cards, so an odd number of cards just leaves a
+gap — no filler cell needed (the old `gap-px bg-line` tables did need one).
 
 ## Verify before pushing
 

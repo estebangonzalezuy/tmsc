@@ -42,11 +42,11 @@ export default function SiteFooter() {
   return (
     <footer
       {...studioSection("site", "Site & links")}
-      className="border-t border-line"
+      className="px-4 md:px-6 pb-4"
     >
-      <div className="px-5 md:px-6 py-12 grid gap-10 md:grid-cols-3">
+      <div className="card px-6 md:px-10 py-12 grid gap-10 md:grid-cols-3">
         <div>
-          <p className="underline underline-offset-4">{site.name}</p>
+          <p>{site.name}</p>
           <p className="mt-4 max-w-xs text-sm text-muted leading-relaxed">
             {site.description}
           </p>
@@ -114,7 +114,7 @@ export default function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-line px-5 md:px-6 py-4 flex items-center justify-between text-xs text-muted">
+      <div className="px-6 md:px-10 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-muted">
         <span>
           {site.name} © {new Date().getFullYear()}
         </span>

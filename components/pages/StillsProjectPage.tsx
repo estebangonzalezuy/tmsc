@@ -80,7 +80,7 @@ export default function StillsProjectPage({
               <Link
                 key={tag}
                 href={`/stills?tag=${encodeURIComponent(tag)}`}
-                className="border border-line rounded-full px-3 py-1 text-xs accent-hover transition-colors"
+                className="card rounded-full px-3 py-1 text-xs accent-hover transition-colors"
               >
                 {tag}
               </Link>
@@ -93,8 +93,8 @@ export default function StillsProjectPage({
           what was skipped as what was taken, and this is the only place that
           shows it. */}
       {project.duration > 0 && (
-        <section className="border-t border-line px-5 md:px-6 py-8">
-          <div className="relative h-8 border-b border-line">
+        <section className="px-5 md:px-6 py-8">
+          <div className="relative h-8">
             {project.frames.map((frame, i) => (
               <button
                 key={frame.id}
@@ -113,8 +113,8 @@ export default function StillsProjectPage({
         </section>
       )}
 
-      <section className="border-t border-line">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-line">
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {project.frames.map((frame, i) => (
             <button
               key={frame.id}

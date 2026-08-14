@@ -104,9 +104,9 @@ export default function HomePage() {
             fundamentals over tools, practice over tutorials, people over
             algorithms.
           </p>
-          <dl className="grid grid-cols-2 gap-px bg-line border border-line">
+          <dl className="grid grid-cols-2 gap-3">
             {stats.map((s) => (
-              <div key={s.label} className="bg-background p-6">
+              <div key={s.label} className="card p-6">
                 <dt className="text-xs text-muted">{s.label}</dt>
                 <dd className="mt-2 font-serif text-3xl">{s.value}</dd>
               </div>
@@ -120,7 +120,7 @@ export default function HomePage() {
       {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
-        className="border-t border-line px-5 md:px-6 py-20 text-center"
+        className="px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
           {quotes[0]}
@@ -132,7 +132,7 @@ export default function HomePage() {
       {!hidden.has("archive") && (
       <section
         {...studioSection("archive", "Newsletter archive")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHeading
@@ -160,7 +160,7 @@ export default function HomePage() {
       {!hidden.has("practiceFiles") && (
       <section
         {...studioSection("practiceFiles", "Practice Files")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <SectionHeading
           label="the Practice File"
@@ -176,9 +176,9 @@ export default function HomePage() {
           finished, because the work no one sees is the work that shapes your
           skill.
         </p>
-        <div className="mt-12 grid gap-px bg-line border border-line sm:grid-cols-2 md:grid-cols-3">
+        <div className="mt-12 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           {practiceFiles.map((f) => (
-            <article key={f.number} className="bg-background p-8">
+            <article key={f.number} className="card p-8">
               <p className="text-xs text-muted">{f.number}</p>
               <h3 className="mt-3 font-serif text-2xl">{f.name}</h3>
               <p className="mt-2 text-sm text-muted">{f.note}</p>
@@ -191,16 +191,14 @@ export default function HomePage() {
       {/* Learn + Resources preview */}
       {(showLearn || showResources) && (
       <section
-        className={`border-t border-line grid ${
+        className={`px-5 md:px-6 py-12 grid gap-3 ${
           showLearn && showResources ? "md:grid-cols-2" : ""
         }`}
       >
         {showLearn && (
         <div
           {...studioSection("learningPaths", "Learning paths")}
-          className={`px-5 md:px-6 py-24 border-line ${
-            showResources ? "md:border-r" : ""
-          }`}
+          className="card px-8 py-12"
         >
           <SectionHeading
             label="Learn"
@@ -235,9 +233,7 @@ export default function HomePage() {
         {showResources && (
         <div
           {...studioSection("resources", "Resources")}
-          className={`px-5 md:px-6 py-24 border-line ${
-            showLearn ? "border-t md:border-t-0" : ""
-          }`}
+          className="card px-8 py-12"
         >
           <SectionHeading
             label="Resources"
@@ -276,7 +272,7 @@ export default function HomePage() {
       {!hidden.has("offerings") && (
       <section
         {...studioSection("offerings", "Offerings")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <SectionHeading
           label="Offerings"
@@ -286,10 +282,10 @@ export default function HomePage() {
             </>
           }
         />
-        <div className="mt-12 grid gap-px bg-line border border-line sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {offerings.map((o) => (
-            <article key={o.name} className="bg-background p-8 flex flex-col">
-              <p className="text-xs text-muted border border-line/40 rounded-full self-start px-2.5 py-0.5">
+            <article key={o.name} className="card p-8 flex flex-col">
+              <p className="text-xs text-muted pill self-start">
                 {o.status}
               </p>
               <h3 className="mt-4 font-serif text-2xl">{o.name}</h3>

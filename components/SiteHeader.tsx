@@ -31,13 +31,15 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
+    /* The bar floats over the page as its own capsule instead of being ruled
+       off from it, and sticks so it stays reachable down a long index. */
     <header
       {...studioSection("nav", "Navigation")}
-      className="relative z-20 border-b border-line"
+      className="sticky top-0 z-20 px-4 md:px-6 pt-4 pb-2"
     >
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center justify-between px-6 py-4 text-sm">
-        <Link href="/" className="underline underline-offset-4">
+      <nav className="hidden md:flex items-center justify-between gap-6 card rounded-full px-6 py-3 text-sm backdrop-blur">
+        <Link href="/" className="shrink-0">
           {site.name}
         </Link>
         <div className="flex items-center gap-6">
@@ -55,22 +57,22 @@ export default function SiteHeader() {
           href={site.subscribe}
           target="_blank"
           rel="noreferrer"
-          className="border border-line rounded-full px-4 py-1.5 accent-hover transition-colors"
+          className="shrink-0 rounded-full px-4 py-1.5 bg-foreground text-background accent-hover transition-colors"
         >
           Join the club
         </a>
       </nav>
 
       {/* Mobile nav */}
-      <nav className="md:hidden flex items-center justify-between px-5 py-4 text-sm">
-        <Link
-          href="/"
-          onClick={() => setOpen(false)}
-          className="underline underline-offset-4"
-        >
+      <nav className="md:hidden flex items-center justify-between card rounded-full px-5 py-3 text-sm">
+        <Link href="/" onClick={() => setOpen(false)}>
           {site.short}
         </Link>
-        <button onClick={() => setOpen(true)} aria-label="Open menu">
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          className="pill"
+        >
           Menu
         </button>
       </nav>

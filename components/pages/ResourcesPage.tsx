@@ -28,7 +28,7 @@ export default function ResourcesPage() {
       {!hidden.has("resources") && (
       <section
         {...studioSection("resources", "Resources")}
-        className="border-t border-line grid md:grid-cols-3"
+        className="px-5 md:px-6 grid gap-3 md:grid-cols-3"
       >
         {resources.map((r, i) => (
           <a
@@ -36,9 +36,7 @@ export default function ResourcesPage() {
             href={r.href}
             target="_blank"
             rel="noreferrer"
-            className={`group px-5 md:px-6 py-16 border-line ${accentHover(r.name)} transition-colors ${
-              i > 0 ? "border-t md:border-t-0 md:border-l" : ""
-            }`}
+            className={`group card card-lift px-8 py-14 ${accentHover(r.name)}`}
           >
             <CircleLetter>{String(i + 1)}</CircleLetter>
             <h2 className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">
@@ -58,7 +56,7 @@ export default function ResourcesPage() {
       {!hidden.has("worksheets") && (
       <section
         {...studioSection("worksheets", "Worksheets")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <SectionHeading
           label="Worksheets"
@@ -72,14 +70,14 @@ export default function ResourcesPage() {
           Shared over the years with newsletter subscribers. Each one a small
           tool to think with, not another thing to watch.
         </p>
-        <ul className="mt-12 grid gap-px bg-line border border-line sm:grid-cols-2">
+        <ul className="mt-12 grid gap-3 sm:grid-cols-2">
           {worksheets.map((w) => (
-            <li key={w.name} className="bg-background">
+            <li key={w.name}>
               <a
                 href={w.href || site.substack}
                 target="_blank"
                 rel="noreferrer"
-                className={`group flex items-baseline gap-4 p-6 ${accentHover(w.name)} transition-colors`}
+                className={`group flex items-baseline gap-4 card card-lift p-6 ${accentHover(w.name)}`}
               >
                 <span className="text-xs text-muted accent-hover-sub">→</span>
                 <span className="text-sm group-hover:underline underline-offset-4">
@@ -107,7 +105,7 @@ export default function ResourcesPage() {
       {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
-        className="border-t border-line px-5 md:px-6 py-20 text-center"
+        className="px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
           {quotes[2] ?? quotes[0]}

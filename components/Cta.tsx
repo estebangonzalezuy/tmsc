@@ -8,7 +8,7 @@ export default function Cta({ title }: { title?: React.ReactNode }) {
   return (
     <section
       {...studioSection("site", "Site & links")}
-      className="border-t border-line px-5 md:px-6 py-24 md:py-32 text-center"
+      className="px-5 md:px-6 py-24 md:py-32 text-center"
     >
       <p className="text-sm underline underline-offset-4">{site.name}</p>
       <h2 className="mt-6 font-serif text-4xl md:text-6xl leading-tight max-w-3xl mx-auto">

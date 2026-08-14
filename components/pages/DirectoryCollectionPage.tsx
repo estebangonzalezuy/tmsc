@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import type { DirectoryCollection, DirectoryEntry } from "@/lib/directory";
-import { CircleLetter } from "@/components/Motifs";
+import { CircleLetter, accentHover } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 // How many values of a facet to show before folding the rest away. Cities run
@@ -125,7 +125,7 @@ export default function DirectoryCollectionPage({
         </div>
       </section>
 
-      <section className="border-t border-line px-5 md:px-6 py-6">
+      <section className="px-5 md:px-6 py-6">
         <label className="block">
           <span className="sr-only">Search {collection.name}</span>
           <input
@@ -133,25 +133,27 @@ export default function DirectoryCollectionPage({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${collection.count} entries…`}
-            className="w-full border border-line bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="w-full card rounded-full px-5 py-3 text-sm placeholder:text-muted focus:outline-none"
           />
         </label>
       </section>
 
       {collection.facets.length > 0 && (
-        <section className="border-t border-line px-5 md:px-6 py-6 space-y-5">
-          {collection.facets.map((facet) => (
-            <FacetRow
-              key={facet.key}
-              facet={facet}
-              active={active[facet.key] ?? []}
-              onToggle={toggle}
-            />
-          ))}
+        <section className="px-5 md:px-6 pb-6">
+          <div className="card px-6 py-6 space-y-5">
+            {collection.facets.map((facet) => (
+              <FacetRow
+                key={facet.key}
+                facet={facet}
+                active={active[facet.key] ?? []}
+                onToggle={toggle}
+              />
+            ))}
+          </div>
         </section>
       )}
 
-      <section className="border-t border-line px-5 md:px-6 py-4 flex items-baseline justify-between gap-4 text-sm">
+      <section className="px-5 md:px-6 py-4 flex items-baseline justify-between gap-4 text-sm">
         <p>
           <span className="font-serif text-xl">{results.length}</span>{" "}
           <span className="text-muted">
@@ -169,13 +171,13 @@ export default function DirectoryCollectionPage({
         )}
       </section>
 
-      <section className="border-t border-line">
+      <section className="px-5 md:px-6 pb-8">
         {results.length === 0 ? (
-          <p className="px-5 md:px-6 py-24 text-sm text-muted">
+          <p className="card px-6 py-16 text-sm text-muted">
             Nothing matches that. Try fewer filters.
           </p>
         ) : (
-          <ul className="divide-y divide-line/30">
+          <ul className="card row-divide px-6">
             {results.map((entry) => (
               <Row key={entry.id} entry={entry} action={collection.action} />
             ))}
@@ -222,10 +224,10 @@ function FacetRow({
               key={v.value}
               onClick={() => onToggle(facet.key, v.value)}
               aria-pressed={on}
-              className={`border border-line rounded-full px-3 py-1 text-xs transition-colors ${
+              className={`rounded-full px-3 py-1 text-xs transition-colors ${
                 on
                   ? "bg-foreground text-background"
-                  : "accent-hover"
+                  : `card ${accentHover(v.value)}`
               }`}
             >
               {v.value}{" "}

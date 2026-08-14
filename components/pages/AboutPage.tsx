@@ -41,7 +41,7 @@ export default function AboutPage() {
       {!hidden.has("threads") && (
       <section
         {...studioSection("threads", "Recurring threads")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <SectionHeading
           label="Recurring threads"
@@ -51,7 +51,7 @@ export default function AboutPage() {
             </>
           }
         />
-        <ul className="mt-12 divide-y divide-line/30 border-y border-line/30">
+        <ul className="mt-12 card row-divide px-6">
           {threads.map((t, i) => (
             <li
               key={t.name}
@@ -73,7 +73,7 @@ export default function AboutPage() {
       {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
-        className="border-t border-line px-5 md:px-6 py-20 text-center"
+        className="px-5 md:px-6 py-20 text-center"
       >
         <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
           {quotes[1] ?? quotes[0]}

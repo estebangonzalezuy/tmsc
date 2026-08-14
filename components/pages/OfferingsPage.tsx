@@ -28,14 +28,14 @@ export default function OfferingsPage() {
       {!hidden.has("offerings") && (
       <section
         {...studioSection("offerings", "Offerings")}
-        className="border-t border-line"
+        className="px-5 md:px-6 grid gap-3"
       >
         {offerings.map((o) => (
           <article
             key={o.name}
-            className="grid gap-6 border-b border-line px-5 md:px-6 py-14 md:grid-cols-[8rem_1fr_auto] md:items-start"
+            className="card grid gap-6 px-8 py-10 md:grid-cols-[8rem_1fr_auto] md:items-start"
           >
-            <p className="text-xs text-muted border border-line/40 rounded-full self-start justify-self-start px-2.5 py-0.5">
+            <p className="text-xs text-muted pill self-start justify-self-start">
               {o.status}
             </p>
             <div>

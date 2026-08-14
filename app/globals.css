@@ -1,17 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  /* The ground the modules float on, and the modules themselves. White on
+     white can't float, so the page steps back to a warm off-white and the
+     cards keep the white — that separation is what replaces the hairline
+     grid the site used to be drawn with. */
+  --background: #f3f1ec;
+  --surface: #ffffff;
   --foreground: #0d0d0d;
   --muted: #6b6b6b;
-  --line: #0d0d0d;
+  /* Was near-black, which is what made every edge a drawn line. Now a
+     whisper, for the few dividers that still earn their place. */
+  --line: #e4e1d9;
+
+  --radius: 1.25rem;
+  --radius-sm: 0.75rem;
+  /* Two shadows, close together: a contact shadow to seat the card and a
+     wide soft one to lift it. Both near-black at low alpha so they read as
+     shade on the warm ground rather than as gray. */
+  --shadow:
+    0 1px 2px rgba(13, 13, 13, 0.04), 0 10px 26px -14px rgba(13, 13, 13, 0.12);
+  --shadow-lift:
+    0 2px 6px rgba(13, 13, 13, 0.05), 0 22px 46px -18px rgba(13, 13, 13, 0.2);
 
   /* The club's accents, the same values the Post Lab paints its posts with
-     (PALETTE in lib/postlab.ts). The page stays black and white; these are
-     for hovers and small marks only, so the colour appears where someone
-     is pointing rather than as a scheme. Keep the two in step by hand:
-     the palette is a design decision, not an import, and the Post Lab
-     needs its list at module scope for the exporter. */
+     (PALETTE in lib/postlab.ts). Nothing is coloured until it is hovered or
+     focused, so colour only ever answers a pointer. Keep the two lists in
+     step by hand: the palette is a design decision, not an import, and the
+     Post Lab needs its copy at module scope for the exporter. */
   --accent: #3d3deb; /* indigo, every interactive state */
   --accent-warm: #ee4b2b; /* orange red, small marks */
   --accent-soft: #adb4f5; /* periwinkle, washes behind hovers */
@@ -21,6 +37,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-line: var(--line);
@@ -94,6 +111,70 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-archivo), sans-serif;
+}
+
+/* ---------- floating modules ----------
+
+   The site used to be drawn: 1px near-black borders around everything and
+   `gap-px bg-line` grids whose "lines" were the ground showing through the
+   cracks. Modules now sit on the ground as their own surfaces instead, so
+   a grid is real gaps between real cards rather than a hairline table.
+   .card is the surface; .card-lift adds the hover rise. Keep them off
+   anything already filled by .accent-hover on its own. */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-sm {
+  border-radius: var(--radius-sm);
+}
+
+.card-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s,
+    color 0.2s;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* A pill: the small tag/count/filter control both references lean on.
+   Filled rather than outlined, so it reads as a chip on the surface. */
+.pill {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  border-radius: 9999px;
+  padding: 0.15rem 0.65rem;
+}
+.accent-hover:hover .pill {
+  background: color-mix(in srgb, var(--hover-type) 18%, transparent);
+}
+
+/* A block nested inside a card: white on white reads as nothing, so it
+   takes a faint tint of the foreground rather than a second surface. */
+.inset {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* The rare divider that survives: inside a card, between rows. */
+.row-divide > * + * {
+  border-top: 1px solid var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift:hover {
+    transform: none;
+  }
+  .animate-marquee,
+  .animate-orbit,
+  .animate-orbit-reverse {
+    animation: none;
+  }
 }
 
 /* Shifts by exactly one run of the band; LetterMarquee sets the share.

@@ -85,7 +85,7 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border border-line px-4 py-1.5 text-sm transition-colors ${
+      className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
         active
           ? "bg-foreground text-background"
           : "accent-hover"
@@ -108,7 +108,7 @@ function Row({
   return (
     <div
       className={`grid gap-4 p-5 md:grid-cols-[9rem_1fr] md:items-center md:p-6 ${
-        last ? "" : "border-b border-line/30"
+        last ? "" : "border-b border-line"
       }`}
     >
       <p className="text-sm text-muted">{label}</p>
@@ -181,9 +181,9 @@ export default function PracticePage() {
       {!hidden.has("practiceExercises") && (
         <section
           {...studioSection("practiceExercises", "Practice exercises")}
-          className="border-t border-line px-5 md:px-6 py-16 md:py-24"
+          className="px-5 md:px-6 py-16 md:py-24"
         >
-          <div className="border border-line">
+          <div className="card px-6 py-2">
             <Row label="I have">
               {times.map((t) => (
                 <Chip
@@ -241,21 +241,21 @@ export default function PracticePage() {
           )}
 
           {exercise && (
-            <article className="mt-10 border border-line">
-              <div className="grid gap-px bg-line sm:grid-cols-3">
-                <p className="bg-background px-6 py-4 text-sm">
+            <article className="mt-10 card p-8">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <p className="inset px-5 py-3 text-sm">
                   {exercise.tool}
                 </p>
-                <p className="bg-background px-6 py-4 text-sm">
+                <p className="inset px-5 py-3 text-sm">
                   ≈ {exercise.minutes} min
                 </p>
-                <p className="bg-background px-6 py-4 text-sm text-muted">
+                <p className="inset px-5 py-3 text-sm text-muted">
                   {stageOf(exercise.stage)?.name ?? exercise.stage} ·{" "}
                   {exercise.track}
                 </p>
               </div>
 
-              <div className="border-t border-line p-6 md:p-12">
+              <div className="p-6 md:p-12">
                 <h2 className="font-serif text-3xl md:text-5xl leading-tight max-w-2xl">
                   {exercise.title}
                 </h2>
@@ -266,7 +266,7 @@ export default function PracticePage() {
                     <p className="text-sm underline underline-offset-4">
                       The brief
                     </p>
-                    <ol className="mt-6 divide-y divide-line/30 border-y border-line/30">
+                    <ol className="mt-6 inset row-divide px-5">
                       {steps.map((s, i) => (
                         <li key={i} className="flex items-start gap-4 py-4">
                           <CircleLetter size="size-7 shrink-0 text-xs">
@@ -314,14 +314,14 @@ export default function PracticePage() {
                 </div>
               </div>
 
-              <div className="border-t border-line flex items-center justify-between gap-4 px-6 py-4">
+              <div className="flex items-center justify-between gap-4 px-6 py-4">
                 <p className="text-sm text-muted">
                   {(seen % list.length) + 1} of {list.length} that fit
                 </p>
                 <button
                   type="button"
                   onClick={() => setReroll({ key, count: seen + 1 })}
-                  className="rounded-full border border-line px-4 py-1.5 text-sm accent-hover transition-colors"
+                  className="card rounded-full px-4 py-1.5 text-sm accent-hover transition-colors"
                 >
                   Give me another →
                 </button>
@@ -334,7 +334,7 @@ export default function PracticePage() {
       {!stagesHidden && (
         <section
           {...studioSection("practiceStages", "Practice stages")}
-          className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+          className="px-5 md:px-6 py-24 md:py-32"
         >
           <SectionHeading
             label="The path"
@@ -348,9 +348,9 @@ export default function PracticePage() {
             Nobody starts at the timeline. Pick the stage you&apos;re actually
             in. The picker above will only hand you exercises from there.
           </p>
-          <ul className="mt-12 grid gap-px bg-line border border-line md:grid-cols-2">
+          <ul className="mt-12 grid gap-3 md:grid-cols-2">
             {practiceStages.map((s) => (
-              <li key={s.number} className="bg-background">
+              <li key={s.number} className="card p-8">
                 <button
                   type="button"
                   onClick={() => {
@@ -380,7 +380,7 @@ export default function PracticePage() {
       {!hidden.has("practiceRules") && practiceRules.length > 0 && (
         <section
           {...studioSection("practiceRules", "How to practice")}
-          className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+          className="px-5 md:px-6 py-24 md:py-32"
         >
           <SectionHeading
             label="How to practice"
@@ -390,7 +390,7 @@ export default function PracticePage() {
               </>
             }
           />
-          <ul className="mt-12 divide-y divide-line/30 border-y border-line/30">
+          <ul className="mt-12 card row-divide px-6">
             {practiceRules.map((r, i) => (
               <li key={i} className="flex items-start gap-6 py-6">
                 <span className="text-xs text-muted w-8 shrink-0 pt-1">

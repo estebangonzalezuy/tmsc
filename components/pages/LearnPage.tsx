@@ -35,18 +35,18 @@ export default function LearnPage() {
       {!hidden.has("learningPaths") && (
       <section
         {...studioSection("learningPaths", "Learning paths")}
-        className="border-t border-line px-5 md:px-6 py-24"
+        className="px-5 md:px-6 py-24"
       >
-        <div className="grid gap-px bg-line border border-line md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2">
           {learningPaths.map((p) => (
             <a
               key={p.name}
               href={p.href}
               target="_blank"
               rel="noreferrer"
-              className={`group bg-background p-8 ${accentHover(p.name)} transition-colors`}
+              className={`group card card-lift p-8 ${accentHover(p.name)}`}
             >
-              <p className="text-xs text-muted accent-hover-sub border border-line/40 rounded-full inline-block px-2.5 py-0.5">
+              <p className="text-xs text-muted accent-hover-sub pill inline-block">
                 {p.tag}
               </p>
               <h2 className="mt-4 font-serif text-2xl group-hover:underline underline-offset-4">
@@ -64,7 +64,7 @@ export default function LearnPage() {
       {!hidden.has("practiceFiles") && (
       <section
         {...studioSection("practiceFiles", "Practice Files")}
-        className="border-t border-line px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 py-24 md:py-32"
       >
         <SectionHeading
           label="the Practice File"
@@ -78,7 +78,7 @@ export default function LearnPage() {
           The club&apos;s creative gym: one bounded exercise per file, built
           around a single fundamental. Pick one, give it a week, finish it.
         </p>
-        <ul className="mt-12 divide-y divide-line/30 border-y border-line/30">
+        <ul className="mt-12 card row-divide px-6">
           {practiceFiles.map((f) => (
             <li
               key={f.number}

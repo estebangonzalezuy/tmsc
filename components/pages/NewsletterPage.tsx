@@ -40,9 +40,9 @@ export default function NewsletterPage() {
           </a>
         </div>
         {!hidden.has("stats") && (
-        <dl className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-px bg-line border border-line">
+        <dl className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3">
           {stats.map((s) => (
-            <div key={s.label} className="bg-background p-6">
+            <div key={s.label} className="card p-6">
               <dt className="text-xs text-muted">{s.label}</dt>
               <dd className="mt-2 font-serif text-3xl">{s.value}</dd>
             </div>
@@ -56,7 +56,7 @@ export default function NewsletterPage() {
         <section
           key={y.year}
           {...studioSection("archive", "Newsletter archive")}
-          className="border-t border-line px-5 md:px-6 py-16"
+          className="px-5 md:px-6 py-16"
         >
           <h2 className="font-serif text-3xl md:text-5xl">{y.year}</h2>
           <div className="mt-8">

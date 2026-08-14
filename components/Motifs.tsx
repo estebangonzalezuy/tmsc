@@ -18,7 +18,7 @@ export function CircleLetter({
        ground, so a letter that followed a hovering card's colour would turn
        white on white and vanish. */
     <span
-      className={`inline-flex items-center justify-center rounded-full border border-line bg-background text-foreground text-sm ${size} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-surface text-foreground text-sm shadow-[0_1px_3px_rgba(13,13,13,0.10)] ${size} ${className}`}
     >
       {children}
     </span>
@@ -120,7 +120,9 @@ export function LetterMarquee({ text }: { text: string }) {
   const style = { "--marquee-shift": `-${100 / copies}%` } as CSSProperties;
 
   return (
-    <div className="overflow-hidden border-y border-line py-4">
+    /* The band keeps its full bleed but loses the rules above and below;
+       the circles now read against the ground on their own. */
+    <div className="overflow-hidden py-6">
       <div className="flex w-max animate-marquee" style={style}>
         {Array.from({ length: copies }, (_, i) => run(i))}
       </div>
@@ -143,7 +145,7 @@ export function OrbitRing({
   const orbitStyle = { "--orbit-duration": duration } as CSSProperties;
   return (
     <div
-      className={`absolute rounded-full border border-foreground/25 ${className}`}
+      className={`absolute rounded-full border border-foreground/15 ${className}`}
       style={{ width: size, height: size }}
       aria-hidden
     >
@@ -181,7 +183,11 @@ export function Boxed({
   className?: string;
 }) {
   return (
-    <span className={`inline-block border border-line px-4 py-2 ${className}`}>
+    /* Was an outlined box; now a small floating surface, so the motif
+       survives the redesign as a pill rather than a drawn rectangle. */
+    <span
+      className={`inline-block card rounded-full px-6 py-3 ${className}`}
+    >
       {children}
     </span>
   );
