@@ -20,6 +20,8 @@ type Content = {
   resources: Item[];
   directory: Item;
   stills: Item;
+  links: Item;
+  linkIndex: Item[];
   worksheets: Item[];
   offerings: Item[];
   archive: { year: string; posts: Item[] }[];
@@ -36,11 +38,12 @@ type ListKey =
   | "worksheets"
   | "offerings"
   | "practiceStages"
-  | "practiceExercises";
+  | "practiceExercises"
+  | "linkIndex";
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory" | "stills";
+type ObjectKey = "site" | "directory" | "stills" | "links";
 
 /* ---------- section schema ---------- */
 
@@ -234,6 +237,30 @@ const sections: Section[] = [
       { key: "label", label: "Label" },
       { key: "intro", label: "Intro", kind: "textarea" },
       { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "links",
+    title: "the Links",
+    note: "Intro copy for the links page",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "linkIndex",
+    title: "The links",
+    note: "Every link on /links. Rows sharing a group are listed together, in this order",
+    kind: "list",
+    itemName: "link",
+    fields: [
+      { key: "group", label: "Group" },
+      { key: "name", label: "Name" },
+      { key: "blurb", label: "Blurb", kind: "textarea" },
+      { key: "href", label: "Link (a full URL, or a path like /directory)" },
     ],
   },
   {
@@ -583,6 +610,7 @@ const navItems = [
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
+  { id: "links", label: "Links", section: "links" },
 ];
 
 function NavEditor({
@@ -727,6 +755,7 @@ const pageTabs = [
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },
+  { id: "links", label: "Links" },
 ];
 
 export default function StudioEditor() {

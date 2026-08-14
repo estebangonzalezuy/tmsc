@@ -967,6 +967,85 @@
     "You don't need more tutorials. You need more practice.",
     "Check the time available you have in your week."
   ],
+  "links": {
+    "label": "Links",
+    "intro": "Every link the club hands out, gathered on one page. The newsletter, the databases, the guides, the profiles — one place to check, one place to send.",
+    "note": "Kept by hand in the Studio. If a link is worth sharing anywhere else, it belongs here first."
+  },
+  "linkIndex": [
+    {
+      "group": "The club",
+      "name": "the Directory",
+      "blurb": "744 motion design resources, filterable, across twelve collections.",
+      "href": "/directory"
+    },
+    {
+      "group": "The club",
+      "name": "Resources",
+      "blurb": "The curated shortlist: the Library, the resource list, the channels.",
+      "href": "/resources"
+    },
+    {
+      "group": "The club",
+      "name": "the Practice",
+      "blurb": "Exercises to pull at random when you don't know what to make today.",
+      "href": "/practice"
+    },
+    {
+      "group": "The club",
+      "name": "The newsletter archive",
+      "blurb": "Every letter the club has sent, since day one.",
+      "href": "/newsletter"
+    },
+    {
+      "group": "The club",
+      "name": "About the club",
+      "blurb": "What tMSC is, who it is for, and why it exists.",
+      "href": "/about"
+    },
+    {
+      "group": "Databases",
+      "name": "the Library",
+      "blurb": "The club's living database of worksheets, references, and saved pieces.",
+      "href": "https://notion.so/26f1c0b2f62f807a93ddc155f296624f"
+    },
+    {
+      "group": "Databases",
+      "name": "List of Motion Resources",
+      "blurb": "The most-shared list of the club: everything you need to start today.",
+      "href": "https://notion.so/2471c0b2f62f800b8aa6d8f5e2499c0c"
+    },
+    {
+      "group": "Databases",
+      "name": "YouTube Channels",
+      "blurb": "45+ channels to learn motion, curated and organized.",
+      "href": "https://notion.so/25a1c0b2f62f80f782f2ebac83d0aa6c"
+    },
+    {
+      "group": "Guides",
+      "name": "Guide on starting in Motion Design",
+      "blurb": "The club's answer to the most-asked question in the inbox.",
+      "href": "https://notion.so/a04bb411837b460ca3e78f80c785e17e"
+    },
+    {
+      "group": "Guides",
+      "name": "the tMSC Journey",
+      "blurb": "A self-paced route through the club's exercises and worksheets.",
+      "href": "https://notion.so/f8ec6b72c388454a8a79c743a4916c32"
+    },
+    {
+      "group": "Guides",
+      "name": "Introduction to (mostly 2D) Motion Design",
+      "blurb": "What motion design is, what it isn't, and the ideas that carry across every tool.",
+      "href": "https://notion.so/1c1acf8e534a4a0499ce67d96cf012bd"
+    },
+    {
+      "group": "Work",
+      "name": "Esteban González",
+      "blurb": "The motion and design work behind the club.",
+      "href": "https://estebangonzalez.co"
+    }
+  ],
   "hidden": [
     "nav:learn",
     "nav:offerings",

@@ -42,6 +42,12 @@ export type Offering = {
   href: string;
   cta: string;
 };
+export type LinkEntry = {
+  group: string;
+  name: string;
+  blurb: string;
+  href: string;
+};
 export type Post = {
   date: string;
   title: string;
@@ -63,5 +69,6 @@ export const learningPaths: LearningPath[] = content.learningPaths;
 export const resources: Resource[] = content.resources;
 export const worksheets: Worksheet[] = content.worksheets;
 export const offerings: Offering[] = content.offerings;
+export const linkIndex: LinkEntry[] = content.linkIndex;
 export const archive: ArchiveYear[] = content.archive;
 export const quotes: string[] = content.quotes;
