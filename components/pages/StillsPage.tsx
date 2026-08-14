@@ -25,17 +25,19 @@ import type { WallData, WallFrame, WallProject } from "@/lib/stills-shared";
 
 // the Stills — the wall, in two views.
 //
-// **Projects** is what it opens on, because the curation is the point: a film
-// chosen, gone through frame by frame, and shown as four stills spread across
-// its length so the card says what the whole thing looks like rather than what
-// one second of it does.
+// **Stills** is what it opens on: every kept frame from every project,
+// shuffled, so somebody arriving sees the work rather than a list of films.
 //
-// **Stills** is the other half of the same idea — every kept frame from every
-// project, shuffled, so the wall reads as a wall and not as a list of films.
-// The shuffle is seeded and the seed rides in the URL: prerendered pages can't
+// The shuffle is seeded and the seed rides in the URL. Prerendered pages can't
 // use Math.random without the server and the browser disagreeing, and a wall
-// that reorders itself on every render is unusable. A seed also makes a
-// particular shuffle a link somebody can send.
+// that reorders itself on every render is unusable — so a cold landing uses a
+// fixed seed, which is shuffled to look at and identical on both sides, while
+// the tab and Shuffle roll a new one. A seed also makes a particular shuffle a
+// link somebody can send.
+//
+// **Projects** is the other half: a film chosen, gone through frame by frame,
+// shown as four stills spread across its length so the card says what the
+// whole thing looks like rather than what one second of it does.
 //
 // The wall index arrives as a prop: the route derives it from projects.json at
 // build time (lib/stills), so the client gets every frame it needs to filter
@@ -127,7 +129,7 @@ function StillsWall({ wall }: { wall: WallData }) {
       });
   }, [wall, query, activeTags, activeProject]);
 
-  const view = params.get("view") === "stills" ? "stills" : "projects";
+  const view = params.get("view") === "projects" ? "projects" : "stills";
   const seed = params.get("seed") ?? "";
 
   /* Projects that still have a frame after filtering, in the wall's own order
@@ -151,7 +153,7 @@ function StillsWall({ wall }: { wall: WallData }) {
   /* The shuffled order, and the frames in it. Shuffling the results rather
      than the whole wall keeps a filtered view filtered. */
   const shuffled = useMemo(
-    () => (seed ? seededShuffle(results, hashSeed(seed)) : results),
+    () => seededShuffle(results, hashSeed(seed || "the-stills")),
     [results, seed],
   );
 
@@ -170,6 +172,7 @@ function StillsWall({ wall }: { wall: WallData }) {
           credit: project.credit,
           year: project.year,
           source: project.source,
+          link: project.link,
         };
       }),
     [wall, shuffled],
@@ -213,29 +216,27 @@ function StillsWall({ wall }: { wall: WallData }) {
                   fresh one, which is a click rather than a render, so the
                   hydration stays honest. */}
               <Tab
-                on={view === "projects"}
+                on={view === "stills"}
                 onClick={() =>
                   setParams((next) => {
                     next.delete("view");
+                    next.set("seed", Math.random().toString(36).slice(2, 8));
+                  })
+                }
+              >
+                Stills <Count on={view === "stills"}>{results.length}</Count>
+              </Tab>
+              <Tab
+                on={view === "projects"}
+                onClick={() =>
+                  setParams((next) => {
+                    next.set("view", "projects");
                     next.delete("seed");
                   })
                 }
               >
                 Projects{" "}
                 <Count on={view === "projects"}>{grouped.length}</Count>
-              </Tab>
-              <Tab
-                on={view === "stills"}
-                onClick={() =>
-                  setParams((next) => {
-                    next.set("view", "stills");
-                    if (!next.get("seed")) {
-                      next.set("seed", Math.random().toString(36).slice(2, 8));
-                    }
-                  })
-                }
-              >
-                Stills <Count on={view === "stills"}>{results.length}</Count>
               </Tab>
             </div>
 
@@ -325,9 +326,9 @@ function StillsWall({ wall }: { wall: WallData }) {
           )}
 
 
-          <section>
+          <section className="mx-auto max-w-[1600px] px-5 md:px-6 pb-10">
             {results.length === 0 ? (
-              <p className="px-5 md:px-6 py-24 text-sm text-muted">
+              <p className="py-24 text-sm text-muted">
                 Nothing matches that. Try fewer tags.
               </p>
             ) : view === "projects" ? (

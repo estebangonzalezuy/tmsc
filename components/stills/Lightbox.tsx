@@ -24,6 +24,8 @@ export type LightboxItem = {
   credit: string;
   year: string;
   source: StillsSource;
+  /** The studio's page for the work, when there is one. */
+  link?: string;
 };
 
 export default function Lightbox({
@@ -127,6 +129,16 @@ export default function Lightbox({
                   →
                 </button>
               </span>
+            )}
+            {item.link && (
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4 hover:opacity-60 transition-opacity"
+              >
+                The project →
+              </a>
             )}
             {hasSource(item.source) ? (
               <a

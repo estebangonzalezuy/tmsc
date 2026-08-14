@@ -73,6 +73,11 @@ export type Project = {
   duration: number;
   width: number;
   height: number;
+  /** Where the work itself lives — the studio's page for the film, a Behance
+   *  or Vimeo project, wherever it is written up. Distinct from `source`,
+   *  which is the video a frame can be checked against: one is the credit,
+   *  the other is the evidence. */
+  link?: string;
   /** Frame id used as the project's cover. Falls back to the first frame. */
   cover?: string;
   /** @deprecated see ScrubStrip. */
@@ -111,6 +116,7 @@ export type WallProject = {
   credit: string;
   year: string;
   source: StillsSource;
+  link?: string;
   frameCount: number;
 };
 
@@ -223,6 +229,7 @@ export function buildWall(data: StillsData): WallData {
     credit: p.credit,
     year: p.year,
     source: p.source,
+    ...(p.link ? { link: p.link } : {}),
     frameCount: p.frames.length,
   }));
 

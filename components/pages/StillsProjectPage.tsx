@@ -34,13 +34,14 @@ export default function StillsProjectPage({
     credit: project.credit,
     year: project.year,
     source: project.source,
+    link: project.link,
   }));
 
   const handPicked = project.frames.filter((f) => f.origin === "hand").length;
 
   return (
     <>
-      <section className="px-5 md:px-6 pt-16 pb-12 md:pt-20">
+      <section className="mx-auto max-w-[1600px] px-5 md:px-6 pt-16 pb-12 md:pt-20">
         <p className="text-sm">
           <Link href="/stills" className="underline underline-offset-4">
             the Stills
@@ -69,6 +70,16 @@ export default function StillsProjectPage({
               Watch the source →
             </a>
           )}
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4 accent-hover-text transition-colors"
+            >
+              The project →
+            </a>
+          )}
           <span className="text-muted">
             {project.frames.length} frames from {timecode(project.duration)}
             {handPicked > 0 && `, ${handPicked} picked by hand`}
@@ -93,27 +104,44 @@ export default function StillsProjectPage({
           what was skipped as what was taken, and this is the only place that
           shows it. */}
       {project.duration > 0 && (
-        <section className="px-5 md:px-6 py-8">
-          <div className="relative h-8">
+        <section className="mx-auto max-w-[1600px] px-5 md:px-6 pb-4">
+          <div className="relative h-5">
+            {/* The film, end to end. Without it the marks were ticks in space
+                with nothing to be positioned against. */}
+            <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-line" />
             {project.frames.map((frame, i) => (
               <button
                 key={frame.id}
                 onClick={() => setOpenIndex(i)}
                 aria-label={`Frame at ${timecode(frame.t)}`}
-                title={timecode(frame.t)}
-                className="absolute bottom-0 w-px h-4 bg-foreground hover:h-8 transition-all"
+                className="group absolute top-1/2 -translate-x-1/2 -translate-y-1/2 p-1"
                 style={{ left: `${(frame.t / project.duration) * 100}%` }}
-              />
+              >
+                <span className="block h-3.5 w-1 rounded-full bg-foreground transition-colors group-hover:bg-accent" />
+                {/* The frame it points at, so the timeline is browsable and
+                    not just an indication that something is there. */}
+                <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-36 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                  <img
+                    src={frameSrc(assetBase, project.id, frame, "thumb")}
+                    alt=""
+                    loading="lazy"
+                    className="card card-sm block aspect-video w-full object-cover"
+                  />
+                  <span className="mt-1 block text-center text-[11px] tabular-nums text-muted">
+                    {timecode(frame.t)}
+                  </span>
+                </span>
+              </button>
             ))}
           </div>
-          <div className="mt-2 flex justify-between text-xs text-muted">
+          <div className="mt-2 flex justify-between text-xs tabular-nums text-muted">
             <span>0:00</span>
             <span>{timecode(project.duration)}</span>
           </div>
         </section>
       )}
 
-      <section>
+      <section className="mx-auto max-w-[1600px] px-5 md:px-6 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {project.frames.map((frame, i) => (
             <button

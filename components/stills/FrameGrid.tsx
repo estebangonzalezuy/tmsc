@@ -127,6 +127,28 @@ export function withUrl(source: StillsSource, url: string): StillsSource {
   return { ...source, url, platform, ...(videoId ? { videoId } : {}) };
 }
 
+/** The studio's own page for the film. `source` is where a frame can be
+ *  checked; this is where the work is credited and written up, and they are
+ *  usually not the same address. */
+export function LinkField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label="Project link — the studio's page for this work">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://oddfellows.tv/…"
+        className={inputClass}
+      />
+    </Field>
+  );
+}
+
 export default function FrameGrid({
   frames,
   cover,

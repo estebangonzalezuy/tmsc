@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import FrameGrid, {
+  LinkField,
   ProjectFields,
   SourceField,
 } from "@/components/stills/FrameGrid";
@@ -455,6 +456,11 @@ export default function ProjectEditor({
           <SourceField
             source={draft.source}
             onChange={(source) => setDraft((c) => (c ? { ...c, source } : c))}
+          />
+
+          <LinkField
+            value={draft.link ?? ""}
+            onChange={(link) => setDraft((c) => (c ? { ...c, link } : c))}
           />
 
           <FrameGrid
