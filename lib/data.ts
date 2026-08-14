@@ -42,12 +42,7 @@ export type Offering = {
   href: string;
   cta: string;
 };
-export type LinkEntry = {
-  group: string;
-  name: string;
-  blurb: string;
-  href: string;
-};
+export type LinkEntry = { group: string; name: string; href: string };
 export type Post = {
   date: string;
   title: string;

@@ -2,25 +2,22 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, accentHover } from "@/components/Motifs";
+import { accentHover } from "@/components/Motifs";
 
-type Entry = { group: string; name: string; blurb: string; href: string };
+// A link-in-bio page, built to the shape of one: a narrow centred column,
+// the mark, the handle, a row of round social buttons, then nothing but
+// full-width buttons you can hit with a thumb. No copy — every line on this
+// page is somewhere to go.
+//
+// The shape is borrowed; the language is the club's own. A button here is a
+// `.card` floating on the warm ground with `.card-lift` under a pointer,
+// which is what the rest of the site is made of now, and colour still only
+// ever answers a pointer.
 
-// One row's right-hand label: where the link actually goes. A host for
-// anything off-site, the path for a page of this site — the point of an index
-// is knowing where you're being sent before you press it.
-function destination(href: string): string {
-  if (href.startsWith("mailto:")) return href.slice(7);
-  if (href.startsWith("/")) return href;
-  try {
-    return new URL(href).host.replace(/^www\./, "");
-  } catch {
-    return href;
-  }
-}
+type Entry = { group: string; name: string; href: string };
 
-// Groups in the order the owner listed them, not alphabetically: the order of
-// the rows in the Studio is the order of the page.
+// Groups in the order they were listed, not alphabetically: the order of the
+// rows in the Studio is the order of the page.
 function groupEntries(entries: Entry[]): { name: string; entries: Entry[] }[] {
   const groups: { name: string; entries: Entry[] }[] = [];
   for (const entry of entries) {
@@ -35,159 +32,87 @@ function groupEntries(entries: Entry[]): { name: string; entries: Entry[] }[] {
   return groups;
 }
 
-function Row({ entry }: { entry: Entry }) {
-  const internal = entry.href.startsWith("/");
-  const inner = (
-    <>
-      <span className="min-w-0">
-        <span className="text-sm group-hover:underline underline-offset-4">
-          {entry.name}
-        </span>
-        {entry.blurb && (
-          <span className="mt-1 block max-w-md text-xs text-muted accent-hover-sub leading-relaxed">
-            {entry.blurb}
-          </span>
-        )}
-      </span>
-      <span className="shrink-0 text-xs text-muted accent-hover-sub">
-        {destination(entry.href)} →
-      </span>
-    </>
-  );
-  // Narrow screens put the destination under the blurb rather than beside it:
-  // side by side, a long host squeezes the name into three words a line.
-  const className = `group flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 card card-lift px-6 py-5 ${accentHover(
+function Button({ entry }: { entry: Entry }) {
+  const className = `block w-full card card-lift px-6 py-4 text-sm ${accentHover(
     entry.name,
   )}`;
-
-  return (
-    <li>
-      {internal ? (
-        <Link href={entry.href} className={className}>
-          {inner}
-        </Link>
-      ) : (
-        <a
-          href={entry.href}
-          target="_blank"
-          rel="noreferrer"
-          className={className}
-        >
-          {inner}
-        </a>
-      )}
-    </li>
+  return entry.href.startsWith("/") ? (
+    <Link href={entry.href} className={className}>
+      {entry.name}
+    </Link>
+  ) : (
+    <a href={entry.href} target="_blank" rel="noreferrer" className={className}>
+      {entry.name}
+    </a>
   );
 }
 
-function Group({
-  number,
-  name,
-  entries,
+// The club has no icon set and doesn't want one, so a social button carries
+// its own two letters inside the circle the site already uses everywhere.
+// Written out rather than reaching for CircleLetter: that one pins its type
+// to near-black so a mark survives a card hovering around it, and this one
+// is the thing being hovered.
+function Social({
+  mark,
+  label,
+  href,
 }: {
-  number: number;
-  name: string;
-  entries: Entry[];
+  mark: string;
+  label: string;
+  href: string;
 }) {
   return (
-    <div className="px-5 md:px-6 py-12 md:py-16">
-      <div className="flex items-center gap-4">
-        <CircleLetter>{String(number).padStart(2, "0")}</CircleLetter>
-        <h2 className="text-sm underline underline-offset-4">{name}</h2>
-      </div>
-      <ul className="mt-8 grid gap-3">
-        {entries.map((entry) => (
-          <Row key={entry.name + entry.href} entry={entry} />
-        ))}
-      </ul>
-    </div>
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={label}
+      className={`inline-flex size-11 items-center justify-center rounded-full bg-surface text-xs shadow-[0_1px_3px_rgba(13,13,13,0.10)] card-lift ${accentHover(
+        label,
+      )}`}
+    >
+      {mark}
+    </a>
   );
 }
 
 export default function LinksPage() {
   const content = useContent();
-  const { site, links, linkIndex } = content;
+  const { site, linkIndex } = content;
   const hidden = hiddenSet(content);
-
-  // The profiles are read off `site` rather than listed again, so this page
-  // can never disagree with the footer about where the club lives.
-  const elsewhere: Entry[] = [
-    {
-      group: "Elsewhere",
-      name: "The newsletter",
-      blurb: "Human & Motion, on Substack. Free, every letter.",
-      href: site.substack,
-    },
-    {
-      group: "Elsewhere",
-      name: "Join the club",
-      blurb: "Subscribe and get the next one in your inbox.",
-      href: site.subscribe,
-    },
-    {
-      group: "Elsewhere",
-      name: "Instagram",
-      blurb: "The club's posts, frames, and daily motion.",
-      href: site.instagram,
-    },
-    {
-      group: "Elsewhere",
-      name: "LinkedIn",
-      blurb: "Where the longer conversations happen.",
-      href: site.linkedin,
-    },
-    {
-      group: "Elsewhere",
-      name: "Email",
-      blurb: "Write to the club directly.",
-      href: `mailto:${site.email}`,
-    },
-  ];
-
-  const groups = hidden.has("linkIndex") ? [] : groupEntries(linkIndex);
+  const groups = hidden.has("linkIndex")
+    ? []
+    : groupEntries(linkIndex as Entry[]);
 
   return (
-    <>
-      <section
-        {...studioSection("links", "the Links")}
-        className="px-5 md:px-6 py-24 md:py-32"
-      >
-        <p className="text-sm underline underline-offset-4">{links.label}</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          Everything the club hands out, <em>on one page</em>.
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          {links.intro}
-        </p>
-      </section>
+    <div className="mx-auto w-full max-w-[520px] px-5 py-16 text-center">
+      <span className="inline-flex size-24 items-center justify-center rounded-full bg-surface font-serif italic text-xl shadow-[0_1px_3px_rgba(13,13,13,0.10)]">
+        tMSC
+      </span>
+      <p className="mt-6 text-base">{site.name}</p>
+      <p className="mt-1 text-sm text-muted">themotionsocial.club</p>
 
-      <div {...studioSection("site", "Site & links")}>
-        <Group number={1} name="Elsewhere" entries={elsewhere} />
+      <div className="mt-6 flex items-center justify-center gap-3">
+        <Social mark="SS" label="Substack" href={site.substack} />
+        <Social mark="IG" label="Instagram" href={site.instagram} />
+        <Social mark="in" label="LinkedIn" href={site.linkedin} />
+        <Social mark="@" label="Email" href={`mailto:${site.email}`} />
       </div>
 
-      {groups.length > 0 && (
-        <div {...studioSection("linkIndex", "The links")}>
-          {groups.map((group, i) => (
-            <Group
-              key={group.name}
-              number={i + 2}
-              name={group.name}
-              entries={group.entries}
-            />
-          ))}
-        </div>
-      )}
-
-      {links.note && (
-        <section
-          {...studioSection("links", "the Links")}
-          className="px-5 md:px-6 py-12"
-        >
-          <p className="max-w-md text-xs text-muted leading-relaxed">
-            {links.note}
-          </p>
-        </section>
-      )}
-    </>
+      <div {...studioSection("linkIndex", "the Links")} className="mt-12">
+        {groups.map((group) => (
+          <section key={group.name} className="mt-10 first:mt-0">
+            <p className="text-[11px] uppercase tracking-widest text-muted">
+              {group.name}
+            </p>
+            <div className="mt-4 grid gap-3">
+              {group.entries.map((entry) => (
+                <Button key={entry.name + entry.href} entry={entry} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
   );
 }

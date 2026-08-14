@@ -16,7 +16,6 @@ const allMenuLinks = [
   { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
   { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
   { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },
-  { label: "Links", href: "/links", section: "links", navId: "links" },
 ];
 
 export default function SiteHeader() {
