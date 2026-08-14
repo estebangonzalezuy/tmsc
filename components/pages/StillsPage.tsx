@@ -200,14 +200,14 @@ function StillsWall({ wall }: { wall: WallData }) {
         </p>
       </section>
 
-      <section className="border-t border-line grid grid-cols-2 md:grid-cols-4 gap-px bg-line">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { value: String(wall.frameCount), label: "frames on the wall" },
           { value: String(wall.projectCount), label: "projects" },
           { value: String(wall.tags.length), label: "tags" },
           { value: "0", label: "boards to build yourself" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-background px-5 md:px-6 py-10">
+          <div key={stat.label} className="card px-5 md:px-6 py-10">
             <p className="font-serif text-3xl md:text-4xl">{stat.value}</p>
             <p className="mt-2 text-xs text-muted">{stat.label}</p>
           </div>
@@ -215,7 +215,7 @@ function StillsWall({ wall }: { wall: WallData }) {
       </section>
 
       {wall.frameCount === 0 ? (
-        <section className="border-t border-line px-5 md:px-6 py-24">
+        <section className="px-5 md:px-6 py-24">
           <p className="max-w-md text-sm text-muted leading-relaxed">
             The wall is empty. The first project goes up as soon as it&apos;s
             been through the frames one by one. This is a curation, so
@@ -224,7 +224,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         </section>
       ) : (
         <>
-          <section className="border-t border-line px-5 md:px-6 py-6">
+          <section className="px-5 md:px-6 py-6">
             <label className="block">
               <span className="sr-only">Search the Stills</span>
               <input
@@ -237,13 +237,13 @@ function StillsWall({ wall }: { wall: WallData }) {
                   })
                 }
                 placeholder={`Search ${wall.frameCount} frames by project, studio or tag…`}
-                className="w-full border border-line bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-foreground"
+                className="w-full card rounded-full px-5 py-3 text-sm placeholder:text-muted focus:outline-none"
               />
             </label>
           </section>
 
           {wall.tags.length > 0 && (
-            <section className="border-t border-line px-5 md:px-6 py-6">
+            <section className="px-5 md:px-6 py-6">
               <div className="grid md:grid-cols-[7rem_1fr] gap-2 md:gap-4 items-baseline">
                 <p className="text-xs text-muted">Tags</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -254,7 +254,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                         key={tag.value}
                         onClick={() => toggleTag(tag.value)}
                         aria-pressed={on}
-                        className={`border border-line rounded-full px-3 py-1 text-xs transition-colors ${
+                        className={`rounded-full px-3 py-1 text-xs transition-colors ${
                           on
                             ? "bg-foreground text-background"
                             : "accent-hover"
@@ -280,7 +280,7 @@ function StillsWall({ wall }: { wall: WallData }) {
             </section>
           )}
 
-          <section className="border-t border-line px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
+          <section className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
             <div className="flex items-center gap-1.5">
               {/* Landing on Stills without a seed gives the deterministic
                   order the server prerendered. Arriving by the tab rolls a
@@ -343,24 +343,24 @@ function StillsWall({ wall }: { wall: WallData }) {
             </div>
           </section>
 
-          <section className="border-t border-line">
+          <section>
             {results.length === 0 ? (
               <p className="px-5 md:px-6 py-24 text-sm text-muted">
                 Nothing matches that. Try fewer tags.
               </p>
             ) : view === "projects" ? (
-              <div className="grid md:grid-cols-2 gap-px bg-line">
+              <div className="grid md:grid-cols-2 gap-3">
                 {grouped.map(({ project, frames, shown }) => (
                   <Link
                     key={project.id}
                     href={`/stills/${project.id}`}
-                    className={`group block bg-background p-5 md:p-6 transition-colors ${accentHover(project.id)}`}
+                    className={`group block card card-lift p-5 md:p-6 ${accentHover(project.id)}`}
                   >
-                    <div className="grid grid-cols-4 gap-px bg-line">
+                    <div className="grid grid-cols-4 gap-3">
                       {shown.map((frame) => (
                         <span
                           key={frame.id}
-                          className="relative block aspect-video overflow-hidden bg-background"
+                          className="relative block aspect-video overflow-hidden bg-surface card-sm"
                         >
                           <img
                             src={frameSrc(
@@ -401,14 +401,14 @@ function StillsWall({ wall }: { wall: WallData }) {
                 <GridFillers count={grouped.length} cols={[1, 2, 2]} />
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-line">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {shuffled.map(({ frame }, i) => {
                   const project = wall.projects[frame.p];
                   return (
                     <button
                       key={`${project.id}-${frame.id}`}
                       onClick={() => setOpenIndex(i)}
-                      className="group relative block aspect-video bg-background overflow-hidden text-left"
+                      className="group relative block aspect-video bg-surface card-sm overflow-hidden text-left"
                     >
                       <img
                         src={frameSrc(wall.assetBase, project.id, frame, "thumb")}
@@ -441,7 +441,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         </>
       )}
 
-      <section className="border-t border-line px-5 md:px-6 py-10">
+      <section className="px-5 md:px-6 py-10">
         <p className="max-w-xl text-xs text-muted leading-relaxed">
           {stills.note}
         </p>
@@ -481,7 +481,7 @@ function Tab({
     <button
       onClick={onClick}
       aria-pressed={on}
-      className={`border border-line rounded-full px-4 py-1.5 text-sm transition-colors ${
+      className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
         on ? "bg-foreground text-background" : "accent-hover"
       }`}
     >

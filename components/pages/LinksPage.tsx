@@ -56,12 +56,12 @@ function Row({ entry }: { entry: Entry }) {
   );
   // Narrow screens put the destination under the blurb rather than beside it:
   // side by side, a long host squeezes the name into three words a line.
-  const className = `group flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 px-5 md:px-6 py-5 ${accentHover(
+  const className = `group flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 card card-lift px-6 py-5 ${accentHover(
     entry.name,
-  )} transition-colors`;
+  )}`;
 
   return (
-    <li className="bg-background">
+    <li>
       {internal ? (
         <Link href={entry.href} className={className}>
           {inner}
@@ -90,12 +90,12 @@ function Group({
   entries: Entry[];
 }) {
   return (
-    <div className="border-t border-line px-5 md:px-6 py-12 md:py-16">
+    <div className="px-5 md:px-6 py-12 md:py-16">
       <div className="flex items-center gap-4">
         <CircleLetter>{String(number).padStart(2, "0")}</CircleLetter>
         <h2 className="text-sm underline underline-offset-4">{name}</h2>
       </div>
-      <ul className="mt-8 grid gap-px bg-line border border-line">
+      <ul className="mt-8 grid gap-3">
         {entries.map((entry) => (
           <Row key={entry.name + entry.href} entry={entry} />
         ))}
@@ -181,7 +181,7 @@ export default function LinksPage() {
       {links.note && (
         <section
           {...studioSection("links", "the Links")}
-          className="border-t border-line px-5 md:px-6 py-12"
+          className="px-5 md:px-6 py-12"
         >
           <p className="max-w-md text-xs text-muted leading-relaxed">
             {links.note}
