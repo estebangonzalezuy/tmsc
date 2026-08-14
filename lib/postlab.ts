@@ -34,9 +34,9 @@ export type Theme = "light" | "dark";
  * a clean layer can be put through the pixelate filter and come out in the
  * club's pixels, which is the point of splitting the two in the first
  * place. Drawing and screening stopped being the same decision. */
-export type ShaderFamily = "plain" | "pixelated" | "clean";
+export type ShaderFamily = "plain" | "pixelated" | "clean" | "kinetic";
 
-export type ShaderType = "none" | "dithering" | "forms" | CleanType;
+export type ShaderType = "none" | "dithering" | "forms" | "kinetics" | CleanType;
 
 /* ------------------------------------------------------------------ waves */
 
@@ -1176,6 +1176,39 @@ const cleanDefs: ShaderDef[] = CLEAN.map((s) => ({
   choices: s.choices,
 }));
 
+/* the Kinetics, borrowed whole.
+ *
+ * The other studio's argument is that the words *are* the picture; this is
+ * that argument available as one layer of a post, drawn by the same renderer
+ * from the slide's own headline. Seven scenes behind one `scene` choice, and
+ * one `density` dial that means "more of it" whichever scene is showing —
+ * the full control set lives in the Kinetics, which is where it belongs.
+ *
+ * It counts as `generative` because that is exactly what it is: canvas 2D, a
+ * pure function of the frame, periodic in the post's duration. So the exporter
+ * draws it directly and a reel with one in it still closes its loop. */
+const kineticsLayer: ShaderDef = {
+  type: "kinetics",
+  label: "kinetic type",
+  animated: true,
+  kind: "generative",
+  family: "kinetic",
+  controls: [
+    { key: "density", label: "density", min: 0, max: 1, step: 0.02, def: 0.45 },
+    { key: "kblot", label: "blotter", min: 0, max: 100, step: 1, def: 0 },
+    { key: "kweight", label: "weight", min: 100, max: 900, step: 100, def: 800 },
+  ],
+  choices: [
+    {
+      key: "scene",
+      label: "scene",
+      values: ["stagger", "strokes", "mosaic", "arcs", "field", "bleed", "halftone"],
+      def: "stagger",
+    },
+    { key: "kface", label: "face", values: ["sans", "serif", "gothic"], def: "sans" },
+  ],
+};
+
 export const SHADERS: ShaderDef[] = [
   {
     type: "none",
@@ -1187,6 +1220,7 @@ export const SHADERS: ShaderDef[] = [
   },
   paperDithering,
   ditheredForms,
+  kineticsLayer,
   ...cleanDefs,
 ];
 
@@ -1363,7 +1397,60 @@ const STACK_BLENDS: BlendMode[] = [
  * Only the club's own renderer is rolled. That is what makes a sheet of
  * these cheap to draw, and it is also the half of the tool that loops.
  */
+/* A look rolled out of the Kinetics rather than out of the forms renderer.
+ *
+ * It is a single layer on purpose: a kinetic layer paints its own ground,
+ * because the words are the picture and a picture has to sit on something.
+ * Stacking two of them would just hide the first.
+ *
+ * This is also the one roll allowed to touch the type, and the exception is
+ * narrower than it looks. The rule is that a roll decides what the graphic is
+ * and never whether the owner's words can be read — but here the graphic *is*
+ * the words. Leaving the typographic layer switched on wouldn't be a
+ * readability decision, it would print the headline twice. The footer stays,
+ * because a handle in the corner is not the headline. */
+function randomKinetic(rand: () => number): SlideStyle {
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
+  const scenes =
+    shaderDef("kinetics").choices?.find((c) => c.key === "scene")?.values ?? ["stagger"];
+
+  const layer = { ...defaultLayer("kinetics") } as LayerSpec;
+  layer.scene = pick(scenes);
+  layer.density = Math.round(rand() * 100) / 100;
+  layer.kface = pick(["sans", "serif", "gothic"]);
+  layer.kweight = pick([400, 700, 800, 900]);
+  /* A blotter now and then. It is the one thing here that changes what the
+     piece is made of rather than how much of it there is, so it wants to turn
+     up sometimes and not most times. Kept below the spread that eats fine
+     type. */
+  layer.kblot = rand() < 0.3 ? 8 + Math.floor(rand() * 34) : 0;
+
+  /* No travelling number is plugged in, and this is the one roll where that
+     isn't an oversight: a Kinetics scene is a function of the playhead by
+     construction. It arrives moving because there is no version of it that
+     stands still. */
+  return {
+    layers: [layer],
+    theme: rand() < 0.45 ? "dark" : "light",
+    colorSeed: Math.floor(rand() * 9999) + 1,
+    off: ["kicker", "title", "body", "mark", "rules"],
+    /* The veil exists to hold type up off a busy graphic. Here it would only
+       fog the thing it was meant to help. */
+    veil: 0,
+  };
+}
+
+/**
+ * A look from nothing.
+ *
+ * It rolls across both families that *close their loop* — the club's own forms
+ * renderer and the Kinetics. The WebGL dithering and the clean shaders are
+ * deliberately not in here: they animate, but they walk through noise that
+ * never repeats, and a roll that handed back a post with a seam in it would be
+ * worse than a roll with a narrower vocabulary.
+ */
 export function randomSlide(rand: () => number = Math.random): SlideStyle {
+  if (rand() < 0.4) return randomKinetic(rand);
   const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
   const count = 1 + Math.floor(rand() * 3);
   const coloured = rand() < 0.45;

@@ -20,9 +20,12 @@ import {
   tones,
   type FilterSpec,
   type LayerSpec,
+  type PostFormat,
   type ShaderSpec,
   type Theme,
 } from "@/lib/postlab";
+import { drawKineticLayer } from "@/components/kinetics/asLayer";
+import type { SceneId } from "@/lib/kinetics";
 import { photo } from "./photos";
 import { clip, frameAt } from "./clips";
 import { applyFilters } from "./filters";
@@ -165,7 +168,28 @@ export function drawGenerative(
     mixScale?: number;
     mixSpeed?: number;
   },
+  /** The post's format, which the Kinetics needs to measure design units. */
+  format?: PostFormat,
+  /* The slide's headline, for the one layer type whose subject is the words.
+     Passed in rather than read from anywhere, because a layer has no idea
+     which slide it is on. */
+  words = "",
 ) {
+  if (spec.type === "kinetics") {
+    drawKineticLayer(ctx, String(spec.scene ?? "stagger") as SceneId, t, w, h, {
+      words,
+      format: format ?? "portrait",
+      duration,
+      theme,
+      density: num(spec.density, 0.45),
+      blot: num(spec.kblot, 0),
+      face: String(spec.kface ?? "sans") as "sans" | "serif" | "gothic",
+      weight: num(spec.kweight, 800),
+      ink: color?.ink,
+      palette: color?.ink === "mix" ? (color.inks ?? color.palette) : undefined,
+    });
+    return;
+  }
   const { ink } = tones(theme);
   const u = w / 1080;
   const D = Math.max(2, duration);

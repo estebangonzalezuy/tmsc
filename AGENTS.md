@@ -354,6 +354,25 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   one door — the `media` block in `source` takes a picture, a film or a GIF and
   puts the layer on `photo` itself, because a file *is* the choice of what to
   draw.
+**the Kinetics is one of the layer types.** `type: "kinetics"` draws a scene
+from the other studio — `components/kinetics/asLayer.ts` builds a KineticSpec
+out of the slide it is on and hands it to the same renderer, so there is no
+second implementation of a scene and no second answer to what one looks like.
+It counts as `generative` because that is what it is: canvas 2D, a pure
+function of the frame, periodic in the post's duration — so the exporter draws
+it directly and a reel with one in it still loops. Its words are the slide's
+headline rather than its own, because a layer carrying a second copy of the
+sentence is a second place to edit it. One `density` dial maps onto whichever
+control each scene leads with; the full set lives in the Kinetics.
+
+**The roll is a button, top left, and it rolls both families that close their
+loop** — the forms renderer and the Kinetics. The WebGL dithering and the clean
+shaders stay out of it for the reason above: they animate but they never come
+back, and a rolled look with a seam in it is worse than a shorter list. A
+Kinetics roll is the one roll allowed to touch the type, and only to switch the
+headline off — the layer is already drawing it, so leaving it on would print it
+twice rather than make a readability decision.
+
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
   `varyStyle`, plus `randomSlide` for a look rolled from nothing (the
   generate sheet). A roll decides the graphic only: it never touches

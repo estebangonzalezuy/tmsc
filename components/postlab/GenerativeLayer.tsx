@@ -8,7 +8,7 @@
 // the preview scrubbable and every layer agree on the same frame.
 
 import { useEffect, useRef } from "react";
-import type { ShaderSpec, Theme } from "@/lib/postlab";
+import type { PostFormat, ShaderSpec, Theme } from "@/lib/postlab";
 import { drawGenerative } from "./generative";
 import { loadPhoto } from "./photos";
 import { clock } from "./clock";
@@ -26,6 +26,8 @@ export default function GenerativeLayer({
   mixMode = "",
   mixScale = 0,
   mixSpeed = -1,
+  format = "portrait",
+  words = "",
 }: {
   shader: ShaderSpec;
   theme: Theme;
@@ -45,6 +47,10 @@ export default function GenerativeLayer({
   /** 0 and -1 stand in for "not set", so the renderer keeps its defaults. */
   mixScale?: number;
   mixSpeed?: number;
+  /** Both only read by the kinetic layer, whose subject is the slide's own
+      headline — primitives again, so the effect below doesn't restart. */
+  format?: PostFormat;
+  words?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -64,7 +70,7 @@ export default function GenerativeLayer({
     let unwatch = () => {};
     const draw = (t: number) => {
       if (!stopped)
-        drawGenerative(ctx, shader, theme, t, duration, width, height, color);
+        drawGenerative(ctx, shader, theme, t, duration, width, height, color, format, words);
     };
     /* Subscribed rather than re-rendered: the playhead moves sixty times a
        second and this canvas is the only thing that has to notice. A photo
@@ -82,6 +88,8 @@ export default function GenerativeLayer({
   }, [
     shader,
     theme,
+    format,
+    words,
     width,
     height,
     duration,

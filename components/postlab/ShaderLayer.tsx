@@ -18,6 +18,7 @@ import {
   shaderDef,
   tones,
   type LayerSpec,
+  type PostFormat,
   type ShaderSpec,
   type Theme,
 } from "@/lib/postlab";
@@ -38,12 +39,18 @@ export default function ShaderLayer({
   height,
   duration,
   color,
+  format = "portrait",
+  words = "",
 }: {
   shader: ShaderSpec;
   theme: Theme;
   width: number;
   height: number;
   duration: number;
+  /** Only the kinetic layer reads these — its subject is the slide's own
+      headline, and it measures its type against the format. */
+  format?: PostFormat;
+  words?: string;
   color?: {
     ink?: string;
     seed: number;
@@ -69,6 +76,8 @@ export default function ShaderLayer({
         mixMode={color?.mixMode ?? ""}
         mixScale={color?.mixScale ?? 0}
         mixSpeed={color?.mixSpeed ?? -1}
+        format={format}
+        words={words}
       />
     );
   }

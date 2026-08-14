@@ -151,6 +151,7 @@ const GROUND_NAMES = Object.fromEntries(GROUNDS.map((g) => [g.hex, g.label]));
 const FAMILY_NAMES: Record<string, string> = {
   plain: "nothing",
   pixelated: "the club's pixels",
+  kinetic: "the Kinetics",
   clean: "clean shaders",
 };
 
@@ -2232,7 +2233,28 @@ export default function PostLab() {
         {/* Top left: the stack, front to back. It was a dropdown inside the
             effect group, which is the one place a stack can't live: you cannot
             see the order of a thing you have to open a menu to read. */}
-        <div className="md:absolute md:top-3 md:left-3 z-20 flex p-2 md:p-0">
+        <div className="md:absolute md:top-3 md:left-3 z-20 flex flex-col gap-2 p-2 md:p-0">
+          {/* The roll, promoted out of the menu it was buried in. It is the
+              first thing anyone does with a studio they have just opened —
+              "show me what this makes" — so it is a button standing where you
+              can see it, not a line inside ⋯. */}
+          <div className="tc-float rounded-[var(--tc-r-pill)] h-10 px-1.5 flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => roll(12)}
+              title="Twelve looks from nothing — every family that closes its loop"
+              className="h-8 px-3 rounded-[var(--tc-r-pill)] text-[12.5px] font-medium hover:bg-[color:var(--tc-field-hi)] transition-colors"
+            >
+              ⚄ Roll a look
+            </button>
+            <span className="w-px h-4 bg-[color:var(--tc-edge)]" />
+            <button
+              onClick={randomizeSlide}
+              title="Re-roll this post's own layers, keeping its words"
+              className="h-8 px-2.5 rounded-[var(--tc-r-pill)] text-[12.5px] text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)] hover:bg-[color:var(--tc-field-hi)] transition-colors"
+            >
+              again
+            </button>
+          </div>
           <Panel
             title="layers"
             width={300}
@@ -2251,8 +2273,12 @@ export default function PostLab() {
                 >
                   + layer
                 </Btn>
-                <Btn onClick={() => setDrawer("generate")} title="Roll a look" wide>
-                  Roll a look…
+                <Btn
+                  onClick={randomizeSlide}
+                  title="Re-roll this post's own layers, keeping its words"
+                  wide
+                >
+                  Re-roll
                 </Btn>
               </Buttons>
             }
@@ -2506,9 +2532,15 @@ export default function PostLab() {
               ))}
             </div>
             <p className="text-[10px] text-muted leading-relaxed pt-3 max-w-xl">
-              One to three dithered layers, every form, mix, fold, screen and colour in play,
-              and at least one number travelling. A roll decides the graphic only — never the
-              veil or the type, because whether the words can be read is your call.
+              Two families, and they are the two that close their loop: one to three
+              dithered layers with every form, mix, fold, screen and colour in play and at
+              least one number travelling, or a single scene from the Kinetics set on this
+              slide&apos;s own headline. The WebGL dithering and the clean shaders are left
+              out on purpose — they animate, but they don&apos;t come back to where they
+              started, and a rolled look with a seam in it is worse than a shorter list.
+              A roll decides the graphic and leaves the veil and the type where you left
+              them; the one exception is a Kinetics roll, which switches the headline off
+              because it is already drawing it.
             </p>
           </Drawer>
         )}

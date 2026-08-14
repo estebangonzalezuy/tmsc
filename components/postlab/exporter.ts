@@ -86,7 +86,7 @@ function drawLayers(
         mixMode: layer.mixMode,
         mixScale: layer.mixScale,
         mixSpeed: layer.mixSpeed,
-      });
+      }, spec.format, slide.title);
       ctx.drawImage(off, 0, 0);
       return;
     }

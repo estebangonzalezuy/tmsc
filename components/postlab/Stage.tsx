@@ -77,6 +77,8 @@ export default function Stage({
                 width={w}
                 height={h}
                 duration={spec.duration}
+                format={spec.format}
+                words={slide.title}
                 color={{
                   ink: l.ink,
                   seed: slide.colorSeed,
