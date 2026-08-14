@@ -189,29 +189,11 @@ function StillsWall({ wall }: { wall: WallData }) {
     <>
       <section
         {...studioSection("stills", "the Stills")}
-        className="px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 pt-12 md:pt-16 pb-7 text-center"
       >
-        <p className="text-sm underline underline-offset-4">{stills.label}</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
+        <h1 className="mx-auto max-w-3xl font-serif text-4xl md:text-6xl leading-tight">
           The frame is where the <em>decisions</em> are.
         </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          {stills.intro}
-        </p>
-      </section>
-
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { value: String(wall.frameCount), label: "frames on the wall" },
-          { value: String(wall.projectCount), label: "projects" },
-          { value: String(wall.tags.length), label: "tags" },
-          { value: "0", label: "boards to build yourself" },
-        ].map((stat) => (
-          <div key={stat.label} className="card px-5 md:px-6 py-10">
-            <p className="font-serif text-3xl md:text-4xl">{stat.value}</p>
-            <p className="mt-2 text-xs text-muted">{stat.label}</p>
-          </div>
-        ))}
       </section>
 
       {wall.frameCount === 0 ? (
@@ -224,8 +206,40 @@ function StillsWall({ wall }: { wall: WallData }) {
         </section>
       ) : (
         <>
-          <section className="px-5 md:px-6 py-6">
-            <label className="block">
+          <section className="px-5 md:px-6 pb-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm">
+            <div className="flex items-center gap-1.5">
+              {/* Landing on Stills without a seed gives the deterministic
+                  order the server prerendered. Arriving by the tab rolls a
+                  fresh one, which is a click rather than a render, so the
+                  hydration stays honest. */}
+              <Tab
+                on={view === "projects"}
+                onClick={() =>
+                  setParams((next) => {
+                    next.delete("view");
+                    next.delete("seed");
+                  })
+                }
+              >
+                Projects{" "}
+                <Count on={view === "projects"}>{grouped.length}</Count>
+              </Tab>
+              <Tab
+                on={view === "stills"}
+                onClick={() =>
+                  setParams((next) => {
+                    next.set("view", "stills");
+                    if (!next.get("seed")) {
+                      next.set("seed", Math.random().toString(36).slice(2, 8));
+                    }
+                  })
+                }
+              >
+                Stills <Count on={view === "stills"}>{results.length}</Count>
+              </Tab>
+            </div>
+
+            <label className="block w-full max-w-xs">
               <span className="sr-only">Search the Stills</span>
               <input
                 type="search"
@@ -236,11 +250,41 @@ function StillsWall({ wall }: { wall: WallData }) {
                     else next.delete("q");
                   })
                 }
-                placeholder={`Search ${wall.frameCount} frames by project, studio or tag…`}
-                className="w-full card rounded-full px-5 py-3 text-sm placeholder:text-muted focus:outline-none"
+                placeholder="Search project, studio or tag…"
+                className="w-full card rounded-full px-4 py-2 text-sm placeholder:text-muted focus:outline-none"
               />
             </label>
+
+            <div className="flex items-center gap-5">
+              {view === "stills" && results.length > 1 && (
+                <button
+                  onClick={() =>
+                    setParams((next) =>
+                      next.set("seed", Math.random().toString(36).slice(2, 8)),
+                    )
+                  }
+                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
+                >
+                  Shuffle
+                </button>
+              )}
+              {filtering && (
+                <button
+                  onClick={() =>
+                    setParams((next) => {
+                      next.delete("q");
+                      next.delete("tag");
+                      next.delete("project");
+                    })
+                  }
+                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </section>
+
 
           {wall.tags.length > 0 && (
             <section className="px-5 md:px-6 py-6">
@@ -280,68 +324,6 @@ function StillsWall({ wall }: { wall: WallData }) {
             </section>
           )}
 
-          <section className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm">
-            <div className="flex items-center gap-1.5">
-              {/* Landing on Stills without a seed gives the deterministic
-                  order the server prerendered. Arriving by the tab rolls a
-                  fresh one, which is a click rather than a render, so the
-                  hydration stays honest. */}
-              <Tab
-                on={view === "projects"}
-                onClick={() =>
-                  setParams((next) => {
-                    next.delete("view");
-                    next.delete("seed");
-                  })
-                }
-              >
-                Projects{" "}
-                <Count on={view === "projects"}>{grouped.length}</Count>
-              </Tab>
-              <Tab
-                on={view === "stills"}
-                onClick={() =>
-                  setParams((next) => {
-                    next.set("view", "stills");
-                    if (!next.get("seed")) {
-                      next.set("seed", Math.random().toString(36).slice(2, 8));
-                    }
-                  })
-                }
-              >
-                Stills <Count on={view === "stills"}>{results.length}</Count>
-              </Tab>
-            </div>
-
-            <div className="flex items-center gap-5">
-              {view === "stills" && results.length > 1 && (
-                <button
-                  onClick={() =>
-                    setParams((next) =>
-                      next.set("seed", Math.random().toString(36).slice(2, 8)),
-                    )
-                  }
-                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
-                >
-                  Shuffle
-                </button>
-              )}
-              {filtering && (
-                <button
-                  onClick={() =>
-                    setParams((next) => {
-                      next.delete("q");
-                      next.delete("tag");
-                      next.delete("project");
-                    })
-                  }
-                  className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
-                >
-                  Clear filters
-                </button>
-              )}
-            </div>
-          </section>
 
           <section>
             {results.length === 0 ? (
