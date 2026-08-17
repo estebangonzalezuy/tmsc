@@ -985,11 +985,6 @@
     },
     {
       "group": "The site",
-      "name": "Resources",
-      "href": "/resources"
-    },
-    {
-      "group": "The site",
       "name": "the Directory",
       "href": "/directory"
     },

@@ -2,7 +2,12 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { Boxed, CircleLetter, SectionHeading } from "@/components/Motifs";
+import {
+  Boxed,
+  CircleLetter,
+  SectionHeading,
+  accentHover,
+} from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 // The three questions the picker asks. Times are ceilings: an exercise shows
@@ -119,7 +124,8 @@ function Row({
 
 export default function PracticePage() {
   const content = useContent();
-  const { practiceExercises, practiceStages, practiceRules } = content;
+  const { site, practiceExercises, practiceStages, practiceRules, worksheets } =
+    content;
   const hidden = hiddenSet(content);
   const stagesHidden = hidden.has("practiceStages");
 
@@ -405,6 +411,59 @@ export default function PracticePage() {
               One session a week is a practice. Zero sessions is a plan.
             </Boxed>
           </div>
+        </section>
+      )}
+
+      {/* The worksheets moved here when Resources came down: they are things
+          you fill in while practising, not a list of places to read. */}
+      {!hidden.has("worksheets") && worksheets.length > 0 && (
+        <section
+          {...studioSection("worksheets", "Worksheets")}
+          className="px-5 md:px-6 py-24 md:py-32"
+        >
+          <SectionHeading
+            label="Worksheets"
+            title={
+              <>
+                Made to be <em>printed, filled, and finished</em>.
+              </>
+            }
+          />
+          <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
+            Shared over the years with newsletter subscribers. Each one a small
+            tool to think with, not another thing to watch.
+          </p>
+          <ul className="mt-12 grid gap-3 sm:grid-cols-2">
+            {worksheets.map((w) => (
+              <li key={w.name}>
+                <a
+                  href={w.href || site.substack}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`group flex items-baseline gap-4 card card-lift p-6 ${accentHover(
+                    w.name,
+                  )}`}
+                >
+                  <span className="text-xs text-muted accent-hover-sub">→</span>
+                  <span className="text-sm group-hover:underline underline-offset-4">
+                    {w.name}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-8 text-sm text-muted">
+            Worksheets are shared through the{" "}
+            <a
+              href={site.substack}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-4"
+            >
+              newsletter
+            </a>
+            .
+          </p>
         </section>
       )}
 

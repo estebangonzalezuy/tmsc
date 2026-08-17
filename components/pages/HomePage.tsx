@@ -19,7 +19,6 @@ export default function HomePage() {
     stats,
     practiceFiles,
     learningPaths,
-    resources,
     offerings,
     archive,
     quotes,
@@ -27,7 +26,6 @@ export default function HomePage() {
   const hidden = hiddenSet(content);
   const latestPosts = archive.flatMap((y) => y.posts).slice(0, 5);
   const showLearn = !hidden.has("learningPaths");
-  const showResources = !hidden.has("resources");
 
   return (
     <>
@@ -188,14 +186,10 @@ export default function HomePage() {
       </section>
       )}
 
-      {/* Learn + Resources preview */}
-      {(showLearn || showResources) && (
-      <section
-        className={`px-5 md:px-6 py-12 grid gap-3 ${
-          showLearn && showResources ? "md:grid-cols-2" : ""
-        }`}
-      >
-        {showLearn && (
+      {/* Learn preview. Resources used to sit beside it; the Directory
+          covers that ground now, so Learn has the row to itself. */}
+      {showLearn && (
+      <section className="px-5 md:px-6 py-12">
         <div
           {...studioSection("learningPaths", "Learning paths")}
           className="card px-8 py-12"
@@ -229,42 +223,6 @@ export default function HomePage() {
             All learning paths →
           </Link>
         </div>
-        )}
-        {showResources && (
-        <div
-          {...studioSection("resources", "Resources")}
-          className="card px-8 py-12"
-        >
-          <SectionHeading
-            label="Resources"
-            title={
-              <>
-                Curated, so you can spend the time <em>practicing</em>.
-              </>
-            }
-          />
-          <ul className="mt-10 space-y-4 text-sm">
-            {resources.map((r) => (
-              <li key={r.name}>
-                <a
-                  href={r.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`underline underline-offset-4 ${accentHoverText(r.name)} transition-colors`}
-                >
-                  {r.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/resources"
-            className="mt-8 inline-block text-sm underline underline-offset-4 accent-hover-text transition-colors"
-          >
-            All resources →
-          </Link>
-        </div>
-        )}
       </section>
       )}
 

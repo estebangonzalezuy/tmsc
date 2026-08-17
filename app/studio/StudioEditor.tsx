@@ -33,7 +33,6 @@ type ListKey =
   | "threads"
   | "practiceFiles"
   | "learningPaths"
-  | "resources"
   | "worksheets"
   | "offerings"
   | "practiceStages"
@@ -205,18 +204,6 @@ const sections: Section[] = [
     ],
   },
   {
-    id: "resources",
-    title: "Resources",
-    note: "Resources page columns + homepage preview",
-    kind: "list",
-    itemName: "resource",
-    fields: [
-      { key: "name", label: "Name" },
-      { key: "blurb", label: "Blurb", kind: "textarea" },
-      { key: "href", label: "Link" },
-    ],
-  },
-  {
     id: "directory",
     title: "the Directory",
     note: "Intro copy for the Directory — the entries themselves are data, not copy",
@@ -253,7 +240,7 @@ const sections: Section[] = [
   {
     id: "worksheets",
     title: "Worksheets",
-    note: "Resources page list",
+    note: "Practice page list",
     kind: "list",
     itemName: "worksheet",
     fields: [
@@ -591,7 +578,6 @@ function ArchiveEditor({
 const navItems = [
   { id: "about", label: "About", section: "" },
   { id: "newsletter", label: "Newsletter", section: "archive" },
-  { id: "resources", label: "Resources", section: "resources" },
   { id: "directory", label: "the Directory", section: "directory" },
   { id: "stills", label: "the Stills", section: "stills" },
   { id: "learn", label: "Learn", section: "learningPaths" },
@@ -735,7 +721,6 @@ const pageTabs = [
   { id: "home", label: "Home" },
   { id: "about", label: "About" },
   { id: "newsletter", label: "Newsletter" },
-  { id: "resources", label: "Resources" },
   { id: "directory", label: "the Directory" },
   { id: "stills", label: "the Stills" },
   { id: "learn", label: "Learn" },
