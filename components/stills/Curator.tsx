@@ -155,20 +155,22 @@ export default function Curator() {
         ) : (
           <div className="space-y-4">
             <ProjectRow
-              label="Drafts"
-              projects={drafts}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
-            <ProjectRow
               label="On the wall"
+              hint="public"
               projects={published}
               selectedId={selectedId}
               onSelect={setSelectedId}
             />
+            <ProjectRow
+              label="Drafts"
+              hint="saved, not public"
+              projects={drafts}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
             <p className="text-xs text-muted">
-              Pick one to change its words, its tags, its cover, or to cut more
-              frames from the film.
+              Pick one to change its words, its tags, its cover, to cut more
+              frames from the film, or to move it between the two rows.
             </p>
           </div>
         )}
@@ -220,7 +222,8 @@ function TokenField({
       <label className="block text-xs text-muted">
         GitHub token for {GH_REPO}, kept in this browser only. It needs one
         repository permission: <strong>Contents: Read and write</strong>. A
-        token made for the Desk has Actions instead and will fail at Publish.
+        token made for the Desk has Actions instead, and will fail the moment
+        you save anything.
       </label>
       <input
         type="password"
@@ -235,11 +238,15 @@ function TokenField({
 
 function ProjectRow({
   label,
+  hint,
   projects,
   selectedId,
   onSelect,
 }: {
   label: string;
+  /** What the row means for the reader, since "Drafts" only says it to
+   *  somebody who already knows this tool. */
+  hint: string;
   projects: Project[];
   selectedId: string;
   onSelect: (id: string) => void;
@@ -247,7 +254,10 @@ function ProjectRow({
   if (!projects.length) return null;
   return (
     <div className="grid md:grid-cols-[7rem_1fr] gap-2 md:gap-4 items-baseline">
-      <p className="text-xs text-muted">{label}</p>
+      <p className="text-xs">
+        {label}
+        <span className="block text-muted">{hint}</span>
+      </p>
       <div className="flex flex-wrap gap-1.5">
         {projects.map((project) => {
           const on = project.id === selectedId;

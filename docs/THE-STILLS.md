@@ -75,35 +75,68 @@ filter is narrowing one.
 2. **Curate.** Drop what isn't a style frame. Tag it, credit it, link it back,
    pick a cover.
 3. **Find what it missed.** Scrub, mark, cut.
-4. **Publish.** Only published projects reach the wall.
+4. **Save it, and decide whether it is public.** Two separate presses.
 
 Reopening a project from the Projects list runs the same editor over what is
 already in the repo. Attach the film again and steps 3 and 4 work exactly as
 they did the first time; leave it off and everything except cutting still does.
 
+### Saving and being public are two different presses
+
+There is one word this tool must never use, and it used it on its only button:
+**publish**. In the record, `status: "published"` means *on the wall*. In the
+panel, "Publish" meant *write this to the repo* — so pressing Publish on a draft
+correctly saved a draft, which is the exact opposite of what the word says. The
+tickbox that actually decided the wall sat beside it, describing not the current
+state but what the next press would do.
+
+So the panel now says where the project stands and offers the two actions by
+name:
+
+| It says | It means |
+| --- | --- |
+| `Not saved yet` | Cut in this browser. Nothing has been committed. |
+| `Draft` | In the repo, off the wall. Visible only in the Curator. |
+| `On the wall` | Public. |
+| `Unsaved changes` | The panel is ahead of the repo. |
+
+- **Save as a draft** / **Save changes** writes the curation and leaves the wall
+  alone. It is disabled, reading `Saved`, when the panel matches the repo —
+  a press that would do nothing and a control that isn't there read differently,
+  and only one of them answers "did that go through".
+- **Put it on the wall** / **Take it off the wall** flips `status` and writes, in
+  one press. Taking a project off the wall keeps every frame; **Remove from the
+  Stills** is the one that undoes the curation.
+
+"Unsaved changes" is a real comparison, not a flag set by the edit handlers: the
+panel stringifies the record it *would* write and holds it against the one the
+repo returned. That is why `record()` exists — the footer measures against the
+same cleaning step the commit writes, so the two cannot disagree about whether
+there is anything to save.
+
 ### A project stops being new the moment it lands
 
-Publishing binds the panel to the id it published under, and three things
-change at once: the id stops following the title, a second Publish updates the
-record in place instead of appending it, and the panel reads as an editor rather
-than an intake — no rescan, and Remove is on the table.
+The first save binds the panel to the id it wrote under, and three things change
+at once: the id stops following the title, the next save updates the record in
+place instead of appending it, and the panel reads as an editor rather than an
+intake — no rescan, and Remove is on the table.
 
 None of that is tidiness. A published project's id is a URL *and* the directory
 its images live in, so it has to be exactly one thing:
 
 - Let the id keep following the title and renaming between two publishes moves
   the whole asset directory, orphaning every image the record names.
-- Treat "not in projects.json" as "new" and Remove-then-Publish resurrects the
+- Treat "not in projects.json" as "new" and Remove-then-save resurrects the
   project — the panel is still mounted holding the whole draft. That happened,
   and it appended a duplicate under `<id>-2` whose images had mostly been
-  uploaded already under the first id, so the wall filled with 404s. Publishing
-  now refuses when the id the panel is bound to has gone from the repo, and
-  Remove empties the panel on the way out.
+  uploaded already under the first id, so the wall filled with 404s. Saving now
+  refuses when the id the panel is bound to has gone from the repo, and Remove
+  empties the panel on the way out.
 
 The two things `committed` has to get right, for the same reason: it is keyed by
 **full repo path** and not by filename, and the draft sheds its dropped frames
-when it publishes rather than only clearing the drop list — otherwise a second
-publish quietly hands back the stills you had just thrown out.
+when it saves rather than only clearing the drop list — otherwise the next save
+quietly hands back the stills you had just thrown out.
 
 Everything the footer counts is counted in **stills**, not files. Each frame is
 three files, so "43 new files" for fourteen stills reads as a bug rather than as

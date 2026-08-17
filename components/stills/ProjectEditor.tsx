@@ -120,6 +120,10 @@ export default function ProjectEditor({
    *  an asset directory, so it may not follow the title any more, and it must
    *  be updated in place rather than appended again. */
   const [publishedAs, setPublishedAs] = useState("");
+  /** The record as the repo currently holds it, stringified. Comparing the panel
+   *  against it is how the footer can say whether there is anything to save —
+   *  without it, "Save changes" is a button you press hoping. */
+  const [saved, setSaved] = useState(existing ? JSON.stringify(existing) : "");
   const [dropped, setDropped] = useState<string[]>([]);
   const [activeFrame, setActiveFrame] = useState("");
   const [marks, setMarks] = useState<number[]>([]);
@@ -249,7 +253,32 @@ export default function ProjectEditor({
     }
   }, [video, draft, marks]);
 
-  const publish = useCallback(async () => {
+  /** The record as it would be written right now: tags trimmed, dropped frames
+   *  gone, the cover guaranteed to be one of the survivors. The footer measures
+   *  against this and the commit writes it, so the two cannot disagree about
+   *  whether there is anything to save. */
+  const record = useCallback(
+    (status?: Project["status"]): Project | null => {
+      if (!draft) return null;
+      const out: Project = {
+        ...draft,
+        status: status ?? draft.status,
+        tags: draft.tags.map((t) => t.trim()).filter(Boolean),
+        frames: draft.frames.filter((f) => !dropped.includes(f.id)),
+      };
+      if (!out.frames.some((f) => f.id === out.cover)) {
+        out.cover = out.frames[0]?.id;
+      }
+      return out;
+    },
+    [draft, dropped],
+  );
+
+  /** `status` given: put it on the wall, or take it off, and write that.
+   *  Omitted: write the curation and leave the wall alone. Two actions rather
+   *  than a tickbox you had to remember to tick before pressing the one
+   *  button — "Publish" meant *commit*, and read as *make it public*. */
+  const publish = useCallback(async (status?: Project["status"]) => {
     if (!draft) return;
     try {
       setStage({ kind: "working", label: "Reading the projects", done: 0, total: 1 });
@@ -263,25 +292,18 @@ export default function ProjectEditor({
       if (boundId && !fresh.data.projects.some((p) => p.id === boundId)) {
         setStage({
           kind: "error",
-          message: `"${draft.title}" is no longer in the Stills — it was removed after this panel opened. Close it and start again if you want it back; publishing now would resurrect it.`,
+          message: `"${draft.title}" is no longer in the Stills — it was removed after this panel opened. Close it and start again if you want it back; saving now would resurrect it.`,
         });
         return;
       }
 
-      const cleaned: Project = {
-        ...draft,
-        tags: draft.tags.map((t) => t.trim()).filter(Boolean),
-        frames: draft.frames.filter((f) => !dropped.includes(f.id)),
-      };
-      if (!cleaned.frames.length) {
+      const cleaned = record(status);
+      if (!cleaned || !cleaned.frames.length) {
         setStage({
           kind: "error",
           message: "Every frame is dropped. Keep at least one.",
         });
         return;
-      }
-      if (!cleaned.frames.some((f) => f.id === cleaned.cover)) {
-        cleaned.cover = cleaned.frames[0]?.id;
       }
 
       // A never-published project takes the next free name rather than
@@ -329,12 +351,21 @@ export default function ProjectEditor({
           setStage({ kind: "working", label: "Uploading", done, total }),
       });
 
+      // Say what the wall will look like, not what git did. Whether the images
+      // went up is the interesting half of "what did that press do", so it stays
+      // — but "Committed 42 files" never answered the question people ask, which
+      // is whether the thing is public now.
+      const where =
+        cleaned.status === "published"
+          ? "It is on the wall"
+          : "It is a draft — not on the wall";
       setStage({
         kind: "done",
         message: binaries.size
-          ? `Committed ${binaries.size} files. Vercel takes about a minute.`
-          : "Published. Vercel takes about a minute.",
+          ? `${where}, with ${binaries.size} new files. Vercel takes about a minute.`
+          : `${where}. Vercel takes about a minute.`,
       });
+      setSaved(JSON.stringify(cleaned));
       setCommitted((current) => {
         const next = new Set(current);
         for (const path of binaries.keys()) next.add(path);
@@ -351,7 +382,7 @@ export default function ProjectEditor({
     } catch (err) {
       setStage({ kind: "error", message: (err as Error).message });
     }
-  }, [draft, dropped, files, committed, token, boundId, posted, onPublished]);
+  }, [draft, record, files, committed, token, boundId, posted, onPublished]);
 
   const remove = useCallback(async () => {
     if (!draft || !posted) return;
@@ -379,11 +410,12 @@ export default function ProjectEditor({
             ) + "\n",
         },
       });
-      setStage({ kind: "done", message: "Removed." });
+      setStage({ kind: "done", message: "Removed from the Stills entirely." });
       // Nothing may publish out of this panel afterwards, or Remove-then-Publish
       // puts the project straight back.
       setDraft(null);
       setPublishedAs("");
+      setSaved("");
       onPublished();
       onClose?.();
     } catch (err) {
@@ -405,6 +437,13 @@ export default function ProjectEditor({
         );
       }).length
     : 0;
+
+  /* Where the project stands, and whether the panel is ahead of it. Both were
+     invisible before: the only sign of either was an "On the wall" tickbox that
+     described what the *next* press would do, so a project could sit in front of
+     you for a minute without telling you whether it was public. */
+  const online = draft?.status === "published";
+  const dirty = draft ? JSON.stringify(record()) !== saved : false;
 
   return (
     <section className="border border-line p-5 space-y-5">
@@ -485,6 +524,32 @@ export default function ProjectEditor({
 
       {draft && (
         <div className="space-y-5 border-t border-line pt-5">
+          {/* Where it stands, first thing, in words rather than in the state of
+              a tickbox further down the panel. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {/* Filled for the one state that is public, so the difference is
+                visible before the words are read. Not `.pill` in that case: it
+                brings its own translucent ground, which wins over a Tailwind
+                background and leaves white type on near-white. */}
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs ${
+                online ? "bg-foreground text-background" : "pill"
+              }`}
+            >
+              {!posted ? "Not saved yet" : online ? "On the wall" : "Draft"}
+            </span>
+            <span className="text-xs text-muted">
+              {!posted
+                ? "Nothing has left this browser."
+                : online
+                  ? "Anybody with the link to the Stills can see it."
+                  : "Saved, but nobody can see it."}
+            </span>
+            {posted && dirty && (
+              <span className="pill text-xs">Unsaved changes</span>
+            )}
+          </div>
+
           <div className="flex items-baseline justify-between gap-4">
             <p className="text-sm text-muted">
               /stills/{draft.id}
@@ -623,29 +688,17 @@ export default function ProjectEditor({
               <p className="text-xs text-muted">
                 {marks.length} marked{" "}
                 {marks.length === 1 ? "moment has" : "moments have"} not been cut
-                yet — publishing now leaves{" "}
+                yet — saving now leaves{" "}
                 {marks.length === 1 ? "it" : "them"} behind.
               </p>
             )}
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={draft.status === "published"}
-                  onChange={(e) =>
-                    setDraft((c) =>
-                      c
-                        ? {
-                            ...c,
-                            status: e.target.checked ? "published" : "draft",
-                          }
-                        : c,
-                    )
-                  }
-                  className="accent-foreground"
-                />
-                On the wall
-              </label>
+            {/* Two things, named. Saving the curation and putting it in front of
+                people are separate decisions, and the panel used to conflate
+                them: one button called Publish, which committed, next to a
+                tickbox that decided whether the commit was public. Pressing
+                Publish on a draft therefore saved a draft — the right thing, and
+                the exact opposite of what the word says. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
               {pending > 0 && (
                 <span className="text-xs text-muted">
                   {pending} new {pending === 1 ? "still" : "stills"} to upload
@@ -654,19 +707,56 @@ export default function ProjectEditor({
               {posted && (
                 <button
                   onClick={remove}
-                  className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors"
+                  disabled={busy}
+                  className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-40"
                 >
-                  Remove project
+                  Remove from the Stills
                 </button>
               )}
-              <button
-                onClick={publish}
-                disabled={busy || !token}
-                className="ml-auto border border-line px-6 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
-              >
-                {busy ? "Working…" : "Publish"}
-              </button>
+              <div className="ml-auto flex flex-wrap items-center gap-3">
+                {/* Saving without changing the wall. Nothing to save is a
+                    disabled button rather than a hidden one: a press that does
+                    nothing and a control that isn't there read differently. */}
+                {posted && (
+                  <button
+                    onClick={() => publish()}
+                    disabled={busy || !token || !dirty}
+                    className="border border-line px-5 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40 disabled:hover:bg-background disabled:hover:text-foreground"
+                  >
+                    {busy ? "Working…" : dirty ? "Save changes" : "Saved"}
+                  </button>
+                )}
+                {!posted && (
+                  <button
+                    onClick={() => publish("draft")}
+                    disabled={busy || !token}
+                    className="border border-line px-5 py-3 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
+                  >
+                    {busy ? "Working…" : "Save as a draft"}
+                  </button>
+                )}
+                <button
+                  onClick={() => publish(online ? "draft" : "published")}
+                  disabled={busy || !token}
+                  className={`px-6 py-3 text-sm transition-colors disabled:opacity-40 ${
+                    online
+                      ? "border border-line hover:bg-foreground hover:text-background"
+                      : "bg-foreground text-background hover:opacity-80"
+                  }`}
+                >
+                  {busy
+                    ? "Working…"
+                    : online
+                      ? "Take it off the wall"
+                      : "Put it on the wall"}
+                </button>
+              </div>
             </div>
+            <p className="text-xs text-muted">
+              {online
+                ? "Taking it off the wall loses nothing — every frame stays where it is, it just stops being public. Remove is the one that undoes the curation."
+                : "Putting it on the wall is what makes it public. A draft is saved and safe, and visible only here."}
+            </p>
           </div>
         </div>
       )}
