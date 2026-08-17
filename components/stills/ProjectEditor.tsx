@@ -30,6 +30,11 @@ import type { Frame, Project, StillsData } from "@/lib/stills-shared";
 // and attaching the file again is what lets you cut more. Everything after
 // that — dropping, tagging, the cover, publishing — is one path.
 //
+// The prop is the *starting* condition, not the state: a new project becomes an
+// existing one the moment it publishes, which is what `posted` means below. A
+// panel that is still calling itself new after it has put something in the repo
+// is how a project got resurrected and how its images got orphaned.
+//
 // The video never leaves the machine either way. Only the frames that survive
 // curation are committed, which is why a dropped frame leaves nothing behind.
 
@@ -104,10 +109,28 @@ export default function ProjectEditor({
    *  repo paths that 404 until it does — the frames you just published would
    *  blink out. `committed` is what stops them being uploaded twice. */
   const [files, setFiles] = useState<Map<string, Blob>>(new Map());
+  /** What has actually been committed, keyed by **full repo path** and not by
+   *  filename. A new project's id follows its title, so editing the title
+   *  between two publishes moves the whole asset directory — and a set of bare
+   *  filenames would then claim the images were already uploaded and skip them,
+   *  leaving the new directory empty and the wall full of 404s. */
   const [committed, setCommitted] = useState<Set<string>>(new Set());
+  /** The id this editor last published under, once it has published anything.
+   *  A new project stops being new the moment it lands: its id is now a URL and
+   *  an asset directory, so it may not follow the title any more, and it must
+   *  be updated in place rather than appended again. */
+  const [publishedAs, setPublishedAs] = useState("");
   const [dropped, setDropped] = useState<string[]>([]);
   const [activeFrame, setActiveFrame] = useState("");
   const [marks, setMarks] = useState<number[]>([]);
+
+  /** Whether this project is in the repo — opened from it, or put there by this
+   *  panel a moment ago. Everything that treats the panel as an intake rather
+   *  than an editor turns off here: a project that has landed has a fixed id,
+   *  an asset directory, and no business being scanned from scratch again. */
+  const posted = Boolean(existing) || Boolean(publishedAs);
+  /** The id this panel is bound to, when it is bound to one. */
+  const boundId = publishedAs || existing?.id || "";
 
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const urlsRef = useRef<Map<string, string>>(new Map());
@@ -232,6 +255,19 @@ export default function ProjectEditor({
       setStage({ kind: "working", label: "Reading the projects", done: 0, total: 1 });
       const fresh = await readProjects<StillsData>(token);
 
+      // A project this editor already knows, missing from the repo, was removed
+      // — here, in another tab, or by hand. Publishing would put it back, which
+      // is how a deleted curation reappeared "like if it was on backlog": the
+      // panel was still mounted holding the whole draft, and the append branch
+      // below treats absence as "new". Refuse instead, and say why.
+      if (boundId && !fresh.data.projects.some((p) => p.id === boundId)) {
+        setStage({
+          kind: "error",
+          message: `"${draft.title}" is no longer in the Stills — it was removed after this panel opened. Close it and start again if you want it back; publishing now would resurrect it.`,
+        });
+        return;
+      }
+
       const cleaned: Project = {
         ...draft,
         tags: draft.tags.map((t) => t.trim()).filter(Boolean),
@@ -248,10 +284,12 @@ export default function ProjectEditor({
         cleaned.cover = cleaned.frames[0]?.id;
       }
 
-      // A new project takes the next free name rather than overwriting a
-      // curation that happens to share a title. A reopened one keeps its id,
-      // which is its URL and its asset directory.
-      if (!existing && fresh.data.projects.some((p) => p.id === cleaned.id)) {
+      // A never-published project takes the next free name rather than
+      // overwriting a curation that happens to share a title. One this editor is
+      // bound to keeps its id, which is its URL and its asset directory.
+      if (boundId) {
+        cleaned.id = boundId;
+      } else if (fresh.data.projects.some((p) => p.id === cleaned.id)) {
         let n = 2;
         while (fresh.data.projects.some((p) => p.id === `${cleaned.id}-${n}`)) n++;
         cleaned.id = `${cleaned.id}-${n}`;
@@ -268,9 +306,8 @@ export default function ProjectEditor({
       }
       const binaries = new Map<string, Blob>();
       for (const [name, blob] of files) {
-        if (wanted.has(name) && !committed.has(name)) {
-          binaries.set(`public/stills/${cleaned.id}/${name}`, blob);
-        }
+        const path = `public/stills/${cleaned.id}/${name}`;
+        if (wanted.has(name) && !committed.has(path)) binaries.set(path, blob);
       }
 
       const next: StillsData = {
@@ -281,7 +318,7 @@ export default function ProjectEditor({
       };
 
       await commitFiles(token, {
-        message: existing
+        message: posted
           ? `Curate the Stills: ${cleaned.title}`
           : `Add ${cleaned.title} to the Stills`,
         text: {
@@ -300,18 +337,24 @@ export default function ProjectEditor({
       });
       setCommitted((current) => {
         const next = new Set(current);
-        for (const name of binaries.keys()) next.add(name.split("/").pop()!);
+        for (const path of binaries.keys()) next.add(path);
         return next;
       });
+      setPublishedAs(cleaned.id);
+      // The draft becomes what was actually published: the id it landed under,
+      // and without the frames that were dropped. Clearing `dropped` on its own
+      // used to hand every dropped frame back to the grid as kept, so a second
+      // publish quietly re-added the stills you had just thrown out.
+      setDraft(cleaned);
       setDropped([]);
       onPublished();
     } catch (err) {
       setStage({ kind: "error", message: (err as Error).message });
     }
-  }, [draft, dropped, files, committed, token, existing, onPublished]);
+  }, [draft, dropped, files, committed, token, boundId, posted, onPublished]);
 
   const remove = useCallback(async () => {
-    if (!draft || !existing) return;
+    if (!draft || !posted) return;
     if (
       !window.confirm(
         `Remove "${draft.title}" from the Stills? The images stay in the repo — run scripts/stills/prune.mjs to clear them.`,
@@ -337,21 +380,37 @@ export default function ProjectEditor({
         },
       });
       setStage({ kind: "done", message: "Removed." });
+      // Nothing may publish out of this panel afterwards, or Remove-then-Publish
+      // puts the project straight back.
+      setDraft(null);
+      setPublishedAs("");
       onPublished();
       onClose?.();
     } catch (err) {
       setStage({ kind: "error", message: (err as Error).message });
     }
-  }, [draft, existing, token, onPublished, onClose]);
+  }, [draft, posted, token, onPublished, onClose]);
 
   const kept = draft ? draft.frames.filter((f) => !dropped.includes(f.id)) : [];
   const busy = stage.kind === "working";
+
+  /* How many *stills* have yet to be uploaded. Each one is three files — full,
+     mid and thumb — so counting files told you eighteen frames were forty-three
+     things, which reads as a mistake rather than as an explanation. */
+  const pending = draft
+    ? kept.filter((frame) => {
+        const dir = `public/stills/${publishedAs || draft.id}/`;
+        return [frame.file, frame.mid, frame.thumb].some(
+          (name) => name && files.has(name) && !committed.has(dir + name),
+        );
+      }).length
+    : 0;
 
   return (
     <section className="border border-line p-5 space-y-5">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="font-serif text-2xl">
-          {existing ? draft?.title : "Add a project"}
+          {posted ? draft?.title : "Add a project"}
         </h2>
         {onClose && (
           <button
@@ -363,7 +422,7 @@ export default function ProjectEditor({
         )}
       </div>
 
-      {!existing && (
+      {!posted && (
         <p className="max-w-2xl text-sm text-muted leading-relaxed">
           Drop in the video and your browser cuts the frames itself — nothing is
           uploaded, nothing runs on a server. Download the film however you
@@ -374,7 +433,7 @@ export default function ProjectEditor({
       <div className="flex flex-col md:flex-row gap-3 md:items-center">
         <label className="flex-1">
           <span className="sr-only">
-            {existing ? "Attach the video to cut more frames" : "Choose a video file"}
+            {posted ? "Attach the video to cut more frames" : "Choose a video file"}
           </span>
           <input
             type="file"
@@ -386,7 +445,7 @@ export default function ProjectEditor({
             className="w-full border border-line bg-background px-4 py-3 text-sm file:mr-4 file:border file:border-line file:bg-background file:px-3 file:py-1 file:text-sm hover:file:bg-foreground hover:file:text-background file:transition-colors"
           />
         </label>
-        {!existing && (
+        {!posted && (
           <>
             <label className="flex items-center gap-2 text-xs text-muted">
               frames
@@ -410,7 +469,7 @@ export default function ProjectEditor({
         )}
       </div>
 
-      {existing && (
+      {posted && (
         <p className="text-xs text-muted">
           Attach the film again to cut more frames into this project. Everything
           else here can be changed without it.
@@ -441,11 +500,11 @@ export default function ProjectEditor({
               setDraft((c) => {
                 if (!c) return c;
                 const next = { ...c, ...changes };
-                // The id is the URL and the asset directory. For a new project
-                // nothing is uploaded yet so it can still follow the title; for
-                // one already in the repo it is fixed, or the images would be
-                // orphaned from the record that names them.
-                if (!existing && changes.title !== undefined) {
+                // The id is the URL and the asset directory. Until the project
+                // has been published nothing is uploaded, so it can still follow
+                // the title; once it is in the repo it is fixed, or the images
+                // would be orphaned from the record that names them.
+                if (!posted && changes.title !== undefined) {
                   next.id = slugify(changes.title);
                 }
                 return next;
@@ -587,12 +646,12 @@ export default function ProjectEditor({
                 />
                 On the wall
               </label>
-              {files.size > committed.size && (
+              {pending > 0 && (
                 <span className="text-xs text-muted">
-                  {files.size - committed.size} new files to upload
+                  {pending} new {pending === 1 ? "still" : "stills"} to upload
                 </span>
               )}
-              {existing && (
+              {posted && (
                 <button
                   onClick={remove}
                   className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors"
