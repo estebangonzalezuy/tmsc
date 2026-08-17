@@ -374,6 +374,187 @@
         }
       ],
       "link": "https://framerate.tv/watch/a2213467-78e9-4d8a-bf1a-1e4752082c6a"
+    },
+    {
+      "id": "the-sunset-maker",
+      "title": "The Sunset Maker",
+      "credit": "Noodle",
+      "year": "2026",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-08-17",
+      "source": {
+        "url": "https://framerate.tv/watch/bac18f05-f6b3-45dd-a468-6e1a773b782b",
+        "platform": "other"
+      },
+      "duration": 58.05,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00011850",
+      "frames": [
+        {
+          "id": "t00003350",
+          "t": 3.35,
+          "file": "t00003350.webp",
+          "mid": "t00003350.mid.webp",
+          "thumb": "t00003350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00008850",
+          "t": 8.85,
+          "file": "t00008850.webp",
+          "mid": "t00008850.mid.webp",
+          "thumb": "t00008850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00011850",
+          "t": 11.85,
+          "file": "t00011850.webp",
+          "mid": "t00011850.mid.webp",
+          "thumb": "t00011850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00014685",
+          "t": 14.685,
+          "file": "t00014685.webp",
+          "mid": "t00014685.mid.webp",
+          "thumb": "t00014685.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00020004",
+          "t": 20.004,
+          "file": "t00020004.webp",
+          "mid": "t00020004.mid.webp",
+          "thumb": "t00020004.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00020850",
+          "t": 20.85,
+          "file": "t00020850.webp",
+          "mid": "t00020850.mid.webp",
+          "thumb": "t00020850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00021717",
+          "t": 21.717,
+          "file": "t00021717.webp",
+          "mid": "t00021717.mid.webp",
+          "thumb": "t00021717.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00025350",
+          "t": 25.35,
+          "file": "t00025350.webp",
+          "mid": "t00025350.mid.webp",
+          "thumb": "t00025350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00027850",
+          "t": 27.85,
+          "file": "t00027850.webp",
+          "mid": "t00027850.mid.webp",
+          "thumb": "t00027850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00029850",
+          "t": 29.85,
+          "file": "t00029850.webp",
+          "mid": "t00029850.mid.webp",
+          "thumb": "t00029850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00031020",
+          "t": 31.02,
+          "file": "t00031020.webp",
+          "mid": "t00031020.mid.webp",
+          "thumb": "t00031020.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00034350",
+          "t": 34.35,
+          "file": "t00034350.webp",
+          "mid": "t00034350.mid.webp",
+          "thumb": "t00034350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00035833",
+          "t": 35.833,
+          "file": "t00035833.webp",
+          "mid": "t00035833.mid.webp",
+          "thumb": "t00035833.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00038850",
+          "t": 38.85,
+          "file": "t00038850.webp",
+          "mid": "t00038850.mid.webp",
+          "thumb": "t00038850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00040850",
+          "t": 40.85,
+          "file": "t00040850.webp",
+          "mid": "t00040850.mid.webp",
+          "thumb": "t00040850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00042850",
+          "t": 42.85,
+          "file": "t00042850.webp",
+          "mid": "t00042850.mid.webp",
+          "thumb": "t00042850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ],
+      "link": "https://framerate.tv/watch/bac18f05-f6b3-45dd-a468-6e1a773b782b"
     }
   ]
 }
