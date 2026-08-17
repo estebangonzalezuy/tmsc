@@ -382,7 +382,7 @@
       "year": "2026",
       "note": "",
       "tags": [],
-      "status": "draft",
+      "status": "published",
       "addedAt": "2026-08-17",
       "source": {
         "url": "https://framerate.tv/watch/bac18f05-f6b3-45dd-a468-6e1a773b782b",
@@ -509,26 +509,6 @@
           "file": "t00042850.webp",
           "mid": "t00042850.mid.webp",
           "thumb": "t00042850.thumb.webp",
-          "w": 1600,
-          "h": 900,
-          "origin": "auto"
-        },
-        {
-          "id": "t00048350",
-          "t": 48.35,
-          "file": "t00048350.webp",
-          "mid": "t00048350.mid.webp",
-          "thumb": "t00048350.thumb.webp",
-          "w": 1600,
-          "h": 900,
-          "origin": "auto"
-        },
-        {
-          "id": "t00050850",
-          "t": 50.85,
-          "file": "t00050850.webp",
-          "mid": "t00050850.mid.webp",
-          "thumb": "t00050850.thumb.webp",
           "w": 1600,
           "h": 900,
           "origin": "auto"
