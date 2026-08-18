@@ -514,6 +514,186 @@
           "origin": "auto"
         }
       ]
+    },
+    {
+      "id": "framerate-brand-manifesto",
+      "title": "FrameRate Brand Manifesto",
+      "credit": "The Furrow",
+      "year": "2026",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-08-18",
+      "source": {
+        "url": "https://framerate.tv/watch/702ecccb-f78e-4b8f-b73e-d97fa4c2728c",
+        "platform": "other"
+      },
+      "duration": 34.06,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00012850",
+      "frames": [
+        {
+          "id": "t00001350",
+          "t": 1.35,
+          "file": "t00001350.webp",
+          "mid": "t00001350.mid.webp",
+          "thumb": "t00001350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00003850",
+          "t": 3.85,
+          "file": "t00003850.webp",
+          "mid": "t00003850.mid.webp",
+          "thumb": "t00003850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00007304",
+          "t": 7.304,
+          "file": "t00007304.webp",
+          "mid": "t00007304.mid.webp",
+          "thumb": "t00007304.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00009069",
+          "t": 9.069,
+          "file": "t00009069.webp",
+          "mid": "t00009069.mid.webp",
+          "thumb": "t00009069.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00009350",
+          "t": 9.35,
+          "file": "t00009350.webp",
+          "mid": "t00009350.mid.webp",
+          "thumb": "t00009350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00012850",
+          "t": 12.85,
+          "file": "t00012850.webp",
+          "mid": "t00012850.mid.webp",
+          "thumb": "t00012850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00013601",
+          "t": 13.601,
+          "file": "t00013601.webp",
+          "mid": "t00013601.mid.webp",
+          "thumb": "t00013601.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00015439",
+          "t": 15.439,
+          "file": "t00015439.webp",
+          "mid": "t00015439.mid.webp",
+          "thumb": "t00015439.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00017350",
+          "t": 17.35,
+          "file": "t00017350.webp",
+          "mid": "t00017350.mid.webp",
+          "thumb": "t00017350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00019850",
+          "t": 19.85,
+          "file": "t00019850.webp",
+          "mid": "t00019850.mid.webp",
+          "thumb": "t00019850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00020526",
+          "t": 20.526,
+          "file": "t00020526.webp",
+          "mid": "t00020526.mid.webp",
+          "thumb": "t00020526.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00021743",
+          "t": 21.743,
+          "file": "t00021743.webp",
+          "mid": "t00021743.mid.webp",
+          "thumb": "t00021743.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00022850",
+          "t": 22.85,
+          "file": "t00022850.webp",
+          "mid": "t00022850.mid.webp",
+          "thumb": "t00022850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00023948",
+          "t": 23.948,
+          "file": "t00023948.webp",
+          "mid": "t00023948.mid.webp",
+          "thumb": "t00023948.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00024850",
+          "t": 24.85,
+          "file": "t00024850.webp",
+          "mid": "t00024850.mid.webp",
+          "thumb": "t00024850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00027850",
+          "t": 27.85,
+          "file": "t00027850.webp",
+          "mid": "t00027850.mid.webp",
+          "thumb": "t00027850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ]
     }
   ]
 }
