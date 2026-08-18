@@ -217,11 +217,15 @@ const sections: Section[] = [
   {
     id: "stills",
     title: "Stills",
-    note: "Intro copy for the wall — the frames themselves are curated at /curate, not here",
+    note: "The words on the wall — the frames themselves are curated at /curate, not here",
     kind: "object",
     fields: [
       { key: "label", label: "Label" },
-      { key: "intro", label: "Intro", kind: "textarea" },
+      {
+        key: "headline",
+        label: "Headline — *between asterisks* turns italic",
+        kind: "textarea",
+      },
       { key: "note", label: "How it's kept", kind: "textarea" },
     ],
   },

@@ -11,7 +11,7 @@ import { studioSection, useContent } from "@/components/content";
 import Cta from "@/components/Cta";
 import GridFillers from "@/components/stills/GridFillers";
 import Lightbox, { type LightboxItem } from "@/components/stills/Lightbox";
-import { accentHover } from "@/components/Motifs";
+import { accentHover, Emphasize } from "@/components/Motifs";
 import {
   emptyWall,
   frameSrc,
@@ -52,8 +52,10 @@ const CARD_FRAMES = 4;
 
 const fallback = {
   label: "Stills",
-  intro:
-    "Frames pulled out of motion work and kept: the compositions, the palettes, the type, the light. Not a mood board somebody else filled, and not a feed. A wall curated one project at a time.",
+  /* `*...*` is italic — see Emphasize. The headline is the whole hero now, so
+     it has to say what the page is to somebody who has never heard of the
+     club, not just set a tone. */
+  headline: "Style frames from the best projects in *motion design*.",
   note: "Every frame links back to the second it came from, so you can always check a still against the thing that moved.",
 };
 
@@ -195,7 +197,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         className="px-5 md:px-6 pt-12 md:pt-16 pb-7 text-center"
       >
         <h1 className="mx-auto max-w-3xl font-serif text-4xl md:text-6xl leading-tight">
-          The frame is where the <em>decisions</em> are.
+          <Emphasize text={stills.headline || fallback.headline} />
         </h1>
       </section>
 

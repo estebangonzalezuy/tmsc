@@ -212,3 +212,21 @@ export function SectionHeading({
     </div>
   );
 }
+
+/* Roman and italic inside one line is how the club's display type reads, and
+   every headline in `components/pages/` writes that mix as <em> by hand. A
+   headline the owner edits in the Studio can't: it arrives as a plain string,
+   and letting HTML through a content field opens a door nobody wants open. So
+   `*a run like this*` flips to italic — the same markup a slide's title takes
+   in the Posts Studio, rather than a second convention for the same idea. */
+export function Emphasize({ text }: { text: string }) {
+  return (
+    <>
+      {/* A capture group in the pattern puts the wrapped runs on the odd
+          indices, so the split is the parse. */}
+      {text.split(/\*([^*]+)\*/g).map((part, i) =>
+        i % 2 ? <em key={i}>{part}</em> : part,
+      )}
+    </>
+  );
+}
