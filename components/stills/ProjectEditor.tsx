@@ -710,7 +710,7 @@ export default function ProjectEditor({
                   disabled={busy}
                   className="text-xs text-muted underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-40"
                 >
-                  Remove from the Stills
+                  Remove from Stills
                 </button>
               )}
               <div className="ml-auto flex flex-wrap items-center gap-3">

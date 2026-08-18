@@ -6,7 +6,7 @@ import LinksPage from "@/components/pages/LinksPage";
 // header and footer around it.
 
 export const metadata: Metadata = {
-  title: "Links — the Motion Social Club",
+  title: "Links | the Motion Social Club",
   robots: { index: false, follow: false },
 };
 

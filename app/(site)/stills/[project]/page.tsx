@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!project) return {};
   const credit = [project.credit, project.year].filter(Boolean).join(", ");
   return {
-    title: `${project.title} | the Stills | the Motion Social Club`,
+    title: `${project.title} | Stills | the Motion Social Club`,
     description:
       project.note ||
       `${project.frames.length} style frames curated from ${project.title}${credit ? ` (${credit})` : ""}.`,

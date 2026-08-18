@@ -51,7 +51,7 @@ const VISIBLE_TAGS = 18;
 const CARD_FRAMES = 4;
 
 const fallback = {
-  label: "the Stills",
+  label: "Stills",
   intro:
     "Frames pulled out of motion work and kept: the compositions, the palettes, the type, the light. Not a mood board somebody else filled, and not a feed. A wall curated one project at a time.",
   note: "Every frame links back to the second it came from, so you can always check a still against the thing that moved.",
@@ -191,7 +191,7 @@ function StillsWall({ wall }: { wall: WallData }) {
   return (
     <>
       <section
-        {...studioSection("stills", "the Stills")}
+        {...studioSection("stills", "Stills")}
         className="px-5 md:px-6 pt-12 md:pt-16 pb-7 text-center"
       >
         <h1 className="mx-auto max-w-3xl font-serif text-4xl md:text-6xl leading-tight">
@@ -241,7 +241,7 @@ function StillsWall({ wall }: { wall: WallData }) {
             </div>
 
             <label className="block w-full max-w-xs">
-              <span className="sr-only">Search the Stills</span>
+              <span className="sr-only">Search Stills</span>
               <input
                 type="search"
                 value={query}

@@ -216,7 +216,7 @@ const sections: Section[] = [
   },
   {
     id: "stills",
-    title: "the Stills",
+    title: "Stills",
     note: "Intro copy for the wall — the frames themselves are curated at /curate, not here",
     kind: "object",
     fields: [
@@ -579,7 +579,7 @@ const navItems = [
   { id: "about", label: "About", section: "" },
   { id: "newsletter", label: "Newsletter", section: "archive" },
   { id: "directory", label: "the Directory", section: "directory" },
-  { id: "stills", label: "the Stills", section: "stills" },
+  { id: "stills", label: "Stills", section: "stills" },
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
@@ -722,7 +722,7 @@ const pageTabs = [
   { id: "about", label: "About" },
   { id: "newsletter", label: "Newsletter" },
   { id: "directory", label: "the Directory" },
-  { id: "stills", label: "the Stills" },
+  { id: "stills", label: "Stills" },
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },

@@ -193,7 +193,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <p className="text-sm underline underline-offset-4">the Curator</p>
         <nav className="flex items-center gap-5 text-xs text-muted">
           <Link href="/stills" className="hover:text-foreground transition-colors">
-            the Stills
+            Stills
           </Link>
           <Link href="/desk" className="hover:text-foreground transition-colors">
             the Desk
