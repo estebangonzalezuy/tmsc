@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Lora, Pirata_One } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { site } from "@/lib/data";
 
@@ -42,7 +43,10 @@ export default function RootLayout({
       lang="en"
       className={`${archivo.variable} ${lora.variable} ${pirata.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
