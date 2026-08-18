@@ -42,6 +42,15 @@ export type Offering = {
   href: string;
   cta: string;
 };
+export type Sponsorship = { label: string; intro: string; note: string };
+export type SponsorReach = { value: string; label: string; note: string };
+export type SponsorPlacement = {
+  status: string;
+  name: string;
+  reach: string;
+  price: string;
+  blurb: string;
+};
 export type LinkEntry = { group: string; name: string; href: string };
 export type Post = {
   date: string;
@@ -64,6 +73,10 @@ export const learningPaths: LearningPath[] = content.learningPaths;
 export const resources: Resource[] = content.resources;
 export const worksheets: Worksheet[] = content.worksheets;
 export const offerings: Offering[] = content.offerings;
+export const sponsorship: Sponsorship = content.sponsorship;
+export const sponsorReach: SponsorReach[] = content.sponsorReach;
+export const sponsorPlacements: SponsorPlacement[] = content.sponsorPlacements;
+export const sponsorRules: string[] = content.sponsorRules;
 export const linkIndex: LinkEntry[] = content.linkIndex;
 export const archive: ArchiveYear[] = content.archive;
 export const quotes: string[] = content.quotes;

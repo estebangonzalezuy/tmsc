@@ -665,6 +665,78 @@
       "cta": "Follow along"
     }
   ],
+  "sponsorship": {
+    "label": "Sponsorship",
+    "intro": "the Motion Social Club is read every other week by around 6,000 motion designers, and read a good deal more widely than that on LinkedIn. If you make something they would genuinely want — a course, a plugin, a school, a studio with a role open — this is how you reach them.",
+    "note": "The rates are on this page because you shouldn't have to email to find out what something costs. One person writes all of it, from Montevideo, so there is never more than one sponsor in a letter and nothing runs here that the club wouldn't recommend for free."
+  },
+  "sponsorReach": [
+    {
+      "value": "6,000+",
+      "label": "newsletter subscribers",
+      "note": "45% open rate — about 2,700 opens a send"
+    },
+    {
+      "value": "26,000+",
+      "label": "followers on LinkedIn",
+      "note": "a good post lands 80–120K impressions"
+    },
+    {
+      "value": "51",
+      "label": "issues published",
+      "note": "since 2024, the whole archive free to read"
+    },
+    {
+      "value": "7,800+",
+      "label": "followers on Instagram",
+      "note": "not actively maintained — counted honestly"
+    }
+  ],
+  "sponsorPlacements": [
+    {
+      "status": "Open",
+      "name": "The letter",
+      "reach": "~2,700 opens an issue",
+      "price": "€400–900 / month",
+      "blurb": "A block inside the newsletter, two issues a month, written by me in the club's voice and marked as sponsored. It's the only one in the issue — an ad break would be two."
+    },
+    {
+      "status": "Open",
+      "name": "The feed",
+      "reach": "26,000 followers",
+      "price": "€300–800 / post",
+      "blurb": "A post on LinkedIn, which is where the club's writing travels furthest. Bigger reach than the letter, and the least-sold thing the club has."
+    },
+    {
+      "status": "New",
+      "name": "the Directory",
+      "reach": "12 collections, filterable",
+      "price": "€200–600 / month",
+      "blurb": "One collection sponsored end to end — Courses, Tools, Schools. People arrive already filtering by price and level, which makes it the one place on the site where somebody is looking to buy rather than to read."
+    },
+    {
+      "status": "New",
+      "name": "Who's hiring",
+      "reach": "the club's own room of motion designers",
+      "price": "€150–400 / listing",
+      "blurb": "A fixed slot in the letter for a studio with a role open. Sold by position, not by word count, and the club already indexes 393 studios to keep it company."
+    },
+    {
+      "status": "In planning",
+      "name": "The annual report",
+      "reach": "one sponsor, once a year",
+      "price": "€1,500–4,000",
+      "blurb": "What it costs to learn motion, where the work is, and what the industry actually runs — built from the Directory's own numbers. Sold whole to one name rather than cut into banners."
+    }
+  ],
+  "sponsorRules": [
+    "One sponsor per letter. Two would make it an ad break.",
+    "Nothing runs that I haven't opened myself. If I can't try it, the answer is no.",
+    "The words are mine. You get the slot, the link and the facts; how it reads belongs to the club.",
+    "Affiliate links are marked as affiliate links, in the Directory and everywhere else.",
+    "No sponsor decides what goes into an issue, and nothing is pulled because a sponsor disliked it.",
+    "If a placement doesn't work, I'll say so before you renew."
+  ],
   "archive": [
     {
       "year": "2026",

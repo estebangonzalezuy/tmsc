@@ -11,6 +11,7 @@ const allColumns = [
       { label: "About", href: "/about", section: "", navId: "about" },
       { label: "Newsletter", href: "/newsletter", section: "archive", navId: "newsletter" },
       { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },
+      { label: "Sponsorship", href: "/sponsors", section: "sponsorship", navId: "sponsors" },
     ],
   },
   {

@@ -12,6 +12,7 @@ import DirectoryPage from "@/components/pages/DirectoryPage";
 import LearnPage from "@/components/pages/LearnPage";
 import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
+import SponsorsPage from "@/components/pages/SponsorsPage";
 import StillsPage from "@/components/pages/StillsPage";
 import LinksPage from "@/components/pages/LinksPage";
 import type { WallData } from "@/lib/stills-shared";
@@ -24,6 +25,7 @@ const pages: Record<string, React.ComponentType> = {
   learn: LearnPage,
   practice: PracticePage,
   offerings: OfferingsPage,
+  sponsors: SponsorsPage,
   links: LinksPage,
 };
 

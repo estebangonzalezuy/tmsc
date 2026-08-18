@@ -23,6 +23,10 @@ type Content = {
   linkIndex: Item[];
   worksheets: Item[];
   offerings: Item[];
+  sponsorship: Item;
+  sponsorReach: Item[];
+  sponsorPlacements: Item[];
+  sponsorRules: string[];
   archive: { year: string; posts: Item[] }[];
   quotes: string[];
   hidden: string[];
@@ -37,11 +41,13 @@ type ListKey =
   | "offerings"
   | "practiceStages"
   | "practiceExercises"
-  | "linkIndex";
+  | "linkIndex"
+  | "sponsorReach"
+  | "sponsorPlacements";
 
-type StringsKey = "quotes" | "practiceRules";
+type StringsKey = "quotes" | "practiceRules" | "sponsorRules";
 
-type ObjectKey = "site" | "directory" | "stills";
+type ObjectKey = "site" | "directory" | "stills" | "sponsorship";
 
 /* ---------- section schema ---------- */
 
@@ -267,6 +273,50 @@ const sections: Section[] = [
       { key: "href", label: "Link" },
       { key: "cta", label: "Button text" },
     ],
+  },
+  {
+    id: "sponsorship",
+    title: "Sponsorship",
+    note: "The framing copy at the top and bottom of the Sponsorship page",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "How it works", kind: "textarea" },
+    ],
+  },
+  {
+    id: "sponsorReach",
+    title: "Reach",
+    note: "The audience numbers a sponsor is buying",
+    kind: "list",
+    itemName: "number",
+    fields: [
+      { key: "value", label: "Value" },
+      { key: "label", label: "Label" },
+      { key: "note", label: "Note" },
+    ],
+  },
+  {
+    id: "sponsorPlacements",
+    title: "Sponsor placements",
+    note: "The slots on sale, and what each one costs",
+    kind: "list",
+    itemName: "placement",
+    fields: [
+      { key: "status", label: "Status" },
+      { key: "name", label: "Name" },
+      { key: "reach", label: "Reach" },
+      { key: "price", label: "Price" },
+      { key: "blurb", label: "Blurb", kind: "textarea" },
+    ],
+  },
+  {
+    id: "sponsorRules",
+    title: "House rules",
+    note: "What the club won't do, on the Sponsorship page",
+    kind: "strings",
+    itemName: "rule",
   },
   {
     id: "archive",
@@ -583,6 +633,7 @@ const navItems = [
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
+  { id: "sponsors", label: "Sponsorship", section: "sponsorship" },
 ];
 
 function NavEditor({
@@ -726,6 +777,7 @@ const pageTabs = [
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },
+  { id: "sponsors", label: "Sponsorship" },
   { id: "links", label: "Links" },
 ];
 

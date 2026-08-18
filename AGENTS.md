@@ -515,7 +515,7 @@ it already built. **No tool may produce a post the studio can't reopen.**
 
 ## the Directory (`/directory`)
 
-The club's public, filterable index of motion design resources — 744 entries
+The club's public, filterable index of motion design resources — 683 entries
 across twelve collections (channels, courses, studios, tools, books, glossary,
 timeline…). Documented in `docs/THE-DIRECTORY.md`; read that before touching it.
 
@@ -573,6 +573,23 @@ prop.
 
 Everything the site renders goes through `frameSrc`/`scrubSrc` and the
 `assetBase` field, so moving the images off the repo later is that one string.
+
+## Sponsorship (`/sponsors`)
+
+The club's rate card, in public. It exists because sponsorship had one enquiry
+in two years and no surface for a sponsor to land on; the page is that surface.
+
+Same split as everywhere else: **the framing is copy, the inventory is
+counted.** `sponsorship` (intro and house-keeping note), `sponsorReach` (the
+audience numbers), `sponsorPlacements` (the slots and their prices) and
+`sponsorRules` (what the club won't do) live in `content/site.json` and are
+edited in the Studio. The Directory's side of the pitch — entries, collections,
+studios, courses, tools — is read from `content/directory/manifest.json` at
+build time, so it can never disagree with the Directory itself.
+
+The prices are ranges the owner set, not a price list: the page says so, and
+the only call to action is an email. Keep it that way — a form or a booking
+link would need a backend, and the site deliberately has none.
 
 ## The content system
 
