@@ -85,12 +85,29 @@ function StillsWall({ wall }: { wall: WallData }) {
   const activeTags = useMemo(() => params.getAll("tag"), [params]);
   const activeProject = params.get("project") ?? "";
 
+  /* Every filter is a query string, so the wall's state is a link — and the
+     browser's own Back button is therefore the way out of it. That only works
+     if the changes worth undoing leave a history entry.
+     Everything here used to `replace`, which leaves none: switching to Stills
+     and pressing Back didn't go back to Projects, it left the wall altogether
+     and landed you wherever you had come from. So:
+
+       push    — a change to *what you are looking at*: the two views, a tag on
+                 or off, clearing the filters. Back should undo exactly one.
+       replace — a refinement of the same view: a keystroke in the search box,
+                 a re-roll of the shuffle. Stacking one entry per letter typed
+                 would make Back useless instead of useful. */
   const setParams = useCallback(
-    (mutate: (next: URLSearchParams) => void) => {
+    (
+      mutate: (next: URLSearchParams) => void,
+      history: "push" | "replace" = "replace",
+    ) => {
       const next = new URLSearchParams(params.toString());
       mutate(next);
       const qs = next.toString();
-      router.replace(qs ? `?${qs}` : "?", { scroll: false });
+      const to = qs ? `?${qs}` : "?";
+      if (history === "push") router.push(to, { scroll: false });
+      else router.replace(to, { scroll: false });
     },
     [params, router],
   );
@@ -102,7 +119,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         next.delete("tag");
         for (const value of current) if (value !== tag) next.append("tag", value);
         if (!current.includes(tag)) next.append("tag", tag);
-      });
+      }, "push");
     },
     [setParams],
   );
@@ -219,11 +236,17 @@ function StillsWall({ wall }: { wall: WallData }) {
                   hydration stays honest. */}
               <Tab
                 on={view === "stills"}
+                // Pressing the tab you are already on is a re-roll, not a
+                // change of view, so it goes in the history the way Shuffle
+                // does — which is to say not at all.
                 onClick={() =>
-                  setParams((next) => {
-                    next.delete("view");
-                    next.set("seed", Math.random().toString(36).slice(2, 8));
-                  })
+                  setParams(
+                    (next) => {
+                      next.delete("view");
+                      next.set("seed", Math.random().toString(36).slice(2, 8));
+                    },
+                    view === "stills" ? "replace" : "push",
+                  )
                 }
               >
                 Stills <Count on={view === "stills"}>{results.length}</Count>
@@ -231,10 +254,13 @@ function StillsWall({ wall }: { wall: WallData }) {
               <Tab
                 on={view === "projects"}
                 onClick={() =>
-                  setParams((next) => {
-                    next.set("view", "projects");
-                    next.delete("seed");
-                  })
+                  setParams(
+                    (next) => {
+                      next.set("view", "projects");
+                      next.delete("seed");
+                    },
+                    view === "projects" ? "replace" : "push",
+                  )
                 }
               >
                 Projects{" "}
@@ -278,7 +304,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                       next.delete("q");
                       next.delete("tag");
                       next.delete("project");
-                    })
+                    }, "push")
                   }
                   className="text-xs underline underline-offset-4 accent-hover-text transition-colors"
                 >

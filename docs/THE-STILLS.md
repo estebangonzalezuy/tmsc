@@ -69,6 +69,24 @@ Search and tags filter the frames, and both views follow: Projects shows the
 films that still have a matching frame, and says "4 of 12 frames" when a
 filter is narrowing one.
 
+### Back is the way out, so some changes push and some replace
+
+Because the whole state of the wall is a query string, the browser's own Back
+button is how a reader gets out of whatever they just did — and that only works
+if the changes worth undoing leave a history entry. Everything used to
+`replace`, which leaves none: switching to Stills and pressing Back didn't
+return to Projects, it left the wall altogether and landed you wherever you had
+come from. Which, on a phone, is the only way anybody goes back.
+
+So `setParams` takes which one it is:
+
+- **push** — a change to *what you are looking at*: either view tab, a tag on or
+  off, Clear filters. Back undoes exactly one of them.
+- **replace** — a refinement of the same view: a keystroke in the search box, a
+  re-roll of the shuffle, and pressing the tab you are already on, which is a
+  re-roll rather than a change of view. One entry per letter typed would make
+  Back useless instead of useful.
+
 ## The loop
 
 1. **Drop in the film.** The browser cuts a spread of frames from it.
