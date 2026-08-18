@@ -694,6 +694,237 @@
           "origin": "auto"
         }
       ]
+    },
+    {
+      "id": "equilibrium",
+      "title": "Equilibrium",
+      "credit": "Ordinary Folk",
+      "year": "2024",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-08-18",
+      "source": {
+        "url": "",
+        "platform": "other"
+      },
+      "duration": 96.01,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00038350",
+      "frames": [
+        {
+          "id": "t00002023",
+          "t": 2.023,
+          "file": "t00002023.webp",
+          "mid": "t00002023.mid.webp",
+          "thumb": "t00002023.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00004692",
+          "t": 4.692,
+          "file": "t00004692.webp",
+          "mid": "t00004692.mid.webp",
+          "thumb": "t00004692.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00005850",
+          "t": 5.85,
+          "file": "t00005850.webp",
+          "mid": "t00005850.mid.webp",
+          "thumb": "t00005850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00007573",
+          "t": 7.573,
+          "file": "t00007573.webp",
+          "mid": "t00007573.mid.webp",
+          "thumb": "t00007573.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00009554",
+          "t": 9.554,
+          "file": "t00009554.webp",
+          "mid": "t00009554.mid.webp",
+          "thumb": "t00009554.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00011350",
+          "t": 11.35,
+          "file": "t00011350.webp",
+          "mid": "t00011350.mid.webp",
+          "thumb": "t00011350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00012936",
+          "t": 12.936,
+          "file": "t00012936.webp",
+          "mid": "t00012936.mid.webp",
+          "thumb": "t00012936.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00018400",
+          "t": 18.4,
+          "file": "t00018400.webp",
+          "mid": "t00018400.mid.webp",
+          "thumb": "t00018400.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00021350",
+          "t": 21.35,
+          "file": "t00021350.webp",
+          "mid": "t00021350.mid.webp",
+          "thumb": "t00021350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00024176",
+          "t": 24.176,
+          "file": "t00024176.webp",
+          "mid": "t00024176.mid.webp",
+          "thumb": "t00024176.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00030374",
+          "t": 30.374,
+          "file": "t00030374.webp",
+          "mid": "t00030374.mid.webp",
+          "thumb": "t00030374.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00032350",
+          "t": 32.35,
+          "file": "t00032350.webp",
+          "mid": "t00032350.mid.webp",
+          "thumb": "t00032350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00034034",
+          "t": 34.034,
+          "file": "t00034034.webp",
+          "mid": "t00034034.mid.webp",
+          "thumb": "t00034034.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00035420",
+          "t": 35.42,
+          "file": "t00035420.webp",
+          "mid": "t00035420.mid.webp",
+          "thumb": "t00035420.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00038350",
+          "t": 38.35,
+          "file": "t00038350.webp",
+          "mid": "t00038350.mid.webp",
+          "thumb": "t00038350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00048350",
+          "t": 48.35,
+          "file": "t00048350.webp",
+          "mid": "t00048350.mid.webp",
+          "thumb": "t00048350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00058350",
+          "t": 58.35,
+          "file": "t00058350.webp",
+          "mid": "t00058350.mid.webp",
+          "thumb": "t00058350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00069350",
+          "t": 69.35,
+          "file": "t00069350.webp",
+          "mid": "t00069350.mid.webp",
+          "thumb": "t00069350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00079850",
+          "t": 79.85,
+          "file": "t00079850.webp",
+          "mid": "t00079850.mid.webp",
+          "thumb": "t00079850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00086350",
+          "t": 86.35,
+          "file": "t00086350.webp",
+          "mid": "t00086350.mid.webp",
+          "thumb": "t00086350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00091350",
+          "t": 91.35,
+          "file": "t00091350.webp",
+          "mid": "t00091350.mid.webp",
+          "thumb": "t00091350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ],
+      "link": "https://www.ordinaryfolk.co/project/equilibrium"
     }
   ]
 }
