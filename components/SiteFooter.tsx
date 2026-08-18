@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
+import { accentHoverText } from "@/components/Motifs";
 
 const allColumns = [
   {
@@ -21,6 +22,11 @@ const allColumns = [
       { label: "the Stills", href: "/stills", section: "stills", navId: "stills" },
     ],
   },
+];
+
+const typefaces = [
+  { name: "Archivo", href: "https://fonts.google.com/specimen/Archivo" },
+  { name: "Lora", href: "https://fonts.google.com/specimen/Lora" },
 ];
 
 export default function SiteFooter() {
@@ -112,9 +118,27 @@ export default function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="px-6 md:px-10 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-muted">
+      <div className="px-6 md:px-10 py-6 flex flex-wrap gap-x-6 gap-y-2 items-center justify-between text-xs text-muted">
         <span>
           {site.name} © {new Date().getFullYear()}
+        </span>
+        {/* The two faces the site is set in. Pirata One is Post Lab material,
+            not the site's, so it stays out of this. */}
+        <span className="flex flex-wrap items-center gap-x-1.5">
+          Set in
+          {typefaces.map((f, i) => (
+            <span key={f.name} className="flex items-center gap-x-1.5">
+              <a
+                href={f.href}
+                target="_blank"
+                rel="noreferrer"
+                className={`underline underline-offset-4 ${accentHoverText(f.name)}`}
+              >
+                {f.name}
+              </a>
+              {i < typefaces.length - 1 && <span aria-hidden>&amp;</span>}
+            </span>
+          ))}
         </span>
         <span>Made by Esteban González, Montevideo</span>
       </div>
