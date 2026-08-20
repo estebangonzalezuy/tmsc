@@ -1436,12 +1436,31 @@ export function applyStyle(slide: SlideSpec, style: SlideStyle): SlideSpec {
   return { ...slide, ...structuredClone(style) };
 }
 
-/**
- * The same rules with room to move: every number drifts within `amount` of
- * its range, and the colours are rearranged. Every *decision* — which form,
- * how it mixes, what it is inked with — is left alone, because that is what
- * makes the results read as one family rather than as a shuffle.
+/* ------------------------------------------------------------------ the roll */
+
+/* A whole look rolled from nothing.
+ *
+ * For a long time this rolled one thing: one to three layers of the club's own
+ * forms renderer. The reason was the loop — that renderer is periodic in the
+ * post's duration by construction, so a rolled look could never come back with
+ * a seam in it — and the cost was that every sheet of twelve came back as
+ * twelve screens of pixels, long after the studio had grown a sheet, a tile, a
+ * scene and a set of marks. A roll that can only reach a fifth of the tool
+ * isn't a roll, it's a preset.
+ *
+ * The way out is to notice that the rule is two rules, and only one of them is
+ * about the background: **the ground may be still, the post may not.** Ruled
+ * paper doesn't move and never has; what moves on it is a mark. So a register
+ * either draws with something that is a pure function of the frame — the forms
+ * renderer, the Kinetics, the Tiles, each given a travelling number — or draws
+ * no graphic at all and puts the motion on a mark running a named loop.
+ * Nothing rolled has a seam in it, and nothing rolled is still.
+ *
+ * What a roll still never decides is whether the owner's words can be read:
+ * `veil` and the type settings are left exactly where they were. The one
+ * exception is the Kinetics, and it is the same exception as before.
  */
+
 /* Blends worth stacking with. Layers are already transparent, so `normal`
    is the honest default and the rest are there for the times two layers
    should argue with each other. */
@@ -1455,78 +1474,209 @@ const STACK_BLENDS: BlendMode[] = [
   "screen",
 ];
 
-/**
- * A whole look rolled from nothing: one to three dithered-forms layers with
- * every option in play — forms, mixes, folds, screens, colour, travelling
- * parameters, a background.
- *
- * Two rules keep the results usable rather than merely random. Stacked
- * layers get finer as they go up, so a coarse field reads through a fine
- * one instead of two identical grids fighting; and colour is all or
- * nothing on a slide, because one coloured layer under a black-and-white
- * one just looks like a mistake.
- *
- * Only the club's own renderer is rolled. That is what makes a sheet of
- * these cheap to draw, and it is also the half of the tool that loops.
- */
-/* A look rolled out of the Kinetics rather than out of the forms renderer.
- *
- * It is a single layer on purpose: a kinetic layer paints its own ground,
- * because the words are the picture and a picture has to sit on something.
- * Stacking two of them would just hide the first.
- *
- * This is also the one roll allowed to touch the type, and the exception is
- * narrower than it looks. The rule is that a roll decides what the graphic is
- * and never whether the owner's words can be read — but here the graphic *is*
- * the words. Leaving the typographic layer switched on wouldn't be a
- * readability decision, it would print the headline twice. The footer stays,
- * because a handle in the corner is not the headline. */
-function randomKinetic(rand: () => number): SlideStyle {
-  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
-  const scenes =
-    shaderDef("kinetics").choices?.find((c) => c.key === "scene")?.values ?? ["stagger"];
+/** The sheet a rolled look is printed on, decided as one thing. */
+type Paper = {
+  background?: string;
+  theme: Theme;
+  grid: number;
+  gridAlpha?: number;
+  gridTop?: boolean;
+};
 
-  const layer = { ...defaultLayer("kinetics") } as LayerSpec;
-  layer.scene = pick(scenes);
-  layer.density = Math.round(rand() * 100) / 100;
-  layer.kface = pick(["sans", "serif", "gothic"]);
-  layer.kweight = pick([400, 700, 800, 900]);
-  /* A blotter now and then. It is the one thing here that changes what the
-     piece is made of rather than how much of it there is, so it wants to turn
-     up sometimes and not most times. Kept below the spread that eats fine
-     type. */
-  layer.kblot = rand() < 0.3 ? 8 + Math.floor(rand() * 34) : 0;
+/* Every register returns a whole paper, ruling included — even when the answer
+   is "none of it". A roll replaces a look rather than adding to one, and a
+   ruling left behind from the roll before is the clearest way to see that a
+   half-decided style is not a style. */
+function blankPaper(theme: Theme): Paper {
+  return { background: undefined, theme, grid: 0, gridAlpha: undefined, gridTop: undefined };
+}
 
-  /* No travelling number is plugged in, and this is the one roll where that
-     isn't an oversight: a Kinetics scene is a function of the playhead by
-     construction. It arrives moving because there is no version of it that
-     stands still. */
+/* Paper, and usually the club's ruling over it. The grounds are the neutrals
+   from `GROUNDS`, never the palette: a ground is paper, and colour on this
+   site only ever answers a pointer. */
+function randomPaper(rand: () => number): Paper {
+  const ground = GROUNDS[Math.floor(rand() * GROUNDS.length)];
+  const ruled = rand() < 0.65;
   return {
-    layers: [layer],
-    theme: rand() < 0.45 ? "dark" : "light",
-    colorSeed: Math.floor(rand() * 9999) + 1,
-    off: ["kicker", "title", "body", "mark", "rules"],
-    /* The veil exists to hold type up off a busy graphic. Here it would only
-       fog the thing it was meant to help. */
-    veil: 0,
+    background: ground.hex,
+    /* `slideTones` flips the type against whatever ground was chosen, but the
+       layers still read the theme, so it has to agree with the paper. */
+    theme: luminance(ground.hex) < 0.5 ? "dark" : "light",
+    grid: ruled ? 4 + Math.floor(rand() * 11) : 0,
+    gridAlpha: ruled ? Math.round((0.08 + rand() * 0.26) * 100) / 100 : undefined,
+    gridTop: ruled ? rand() < 0.3 : undefined,
+  };
+}
+
+/* Marks on the sheet.
+ *
+ * The deformers are the reason this is worth rolling at all: `repeat` and
+ * `along` turn one mark into a pattern of them without turning it into a
+ * second layer, which is the same bargain the forms renderer makes when it
+ * mixes two patterns before the threshold rather than drawing twice.
+ */
+function randomMarks(
+  rand: () => number,
+  n: number,
+  inks: readonly string[] | null,
+  theme: Theme,
+): ShapeSpec[] {
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
+  const step = (v: number, s: number) => Math.round(v / s) * s;
+  return Array.from({ length: n }, () => {
+    const kind = pick(SHAPE_KINDS);
+    /* A bracket is the club's boxed headline reduced to its corners — it is a
+       frame, and a frame that is neither centred nor nearly frame-sized is
+       just four bent lines somewhere. */
+    const framing = kind === "bracket";
+    const s = defaultShape(kind);
+    if (framing) {
+      s.size = step(0.84 + rand() * 0.14, 0.01);
+    } else {
+      s.x = step(rand() * 1.3 - 0.65, 0.01);
+      s.y = step(rand() * 1.3 - 0.65, 0.01);
+      s.size = step(0.1 + rand() * 0.55, 0.01);
+    }
+    /* 0 fills it. A rule, a cross and an arc have no inside, so `drawMark`
+       strokes them whatever this says. Never 1: weight is design units at 1080
+       wide, so a hairline is a sixth of a pixel in the shelf of rolled looks
+       and the mark that decides the post is invisible in the picture of it. */
+    s.weight = rand() < 0.3 ? 0 : 2 + Math.floor(rand() * 9);
+    s.rotation = rand() < 0.5 ? 0 : Math.floor(rand() * 360);
+    /* Faint is a decision worth rolling; too faint to see is not one. */
+    s.opacity = rand() < 0.75 ? 1 : step(0.4 + rand() * 0.5, 0.05);
+    /* Under the words as often as over them: over the type a mark is a stamp,
+       under it a mark is a ground. */
+    s.under = rand() < 0.5;
+    if (inks && rand() < 0.6) s.ink = paletteInk(Math.floor(rand() * 9999), theme, inks);
+
+    if (!framing && rand() < 0.55) {
+      const count = 2 + Math.floor(rand() * 11);
+      s.repeat = count;
+      s.along = pick(["x", "y", "arc", "ring"] as const);
+      /* A row of copies is `spread × count` long, so the spacing has to come
+         down as the count goes up or twelve of them leave the frame together.
+         A ring measures a radius instead, and doesn't. */
+      s.spread =
+        s.along === "ring"
+          ? step(0.14 + rand() * 0.22, 0.01)
+          : step((0.5 + rand() * 0.6) / count, 0.01);
+      if (rand() < 0.4) s.jitter = step(0.06 + rand() * 0.34, 0.02);
+      if (rand() < 0.4) s.twist = Math.floor(rand() * 90);
+      if (rand() < 0.35) s.taper = step(rand() * 0.7, 0.02);
+      s.seed = 1 + Math.floor(rand() * 9999);
+      /* A filled mark is a solid, and a dozen large overlapping solids is one
+         blob rather than a pattern of anything. Repeat a filled mark small or
+         don't repeat it. */
+      if (s.weight === 0) s.size = Math.min(s.size, 0.2);
+    }
+
+    /* A mark arrives moving, the same as one placed by hand. Three of the
+       named loops bend the row of copies rather than the mark itself, so they
+       are only offered to a mark that has copies to bend. */
+    const loops = SHAPE_LOOPS.filter(
+      (l) => s.repeat != null || !["bloom", "unfold", "shiver"].includes(l.id),
+    );
+    s.motion = pick(loops).motion(s);
+    return s;
+  });
+}
+
+/* Effects on a rolled layer.
+ *
+ * They are free to roll for one reason: a filter takes no time as an input, so
+ * it can never be why a loop stops closing. `pixelate` is the one that earns
+ * its place — it is the club's screen, and it puts a tile, a scene or a
+ * liquid-metal layer into the club's own pixels without the thing that drew it
+ * knowing anything about it. `screen` is how likely that is, because how much
+ * a register wants it depends on whether it is already made of pixels.
+ */
+function randomFilters(rand: () => number, screen: number): FilterSpec[] | undefined {
+  const out: FilterSpec[] = [];
+  if (rand() < screen) {
+    const f = defaultFilter("pixelate");
+    f.cell = 3 + Math.floor(rand() * 12);
+    f.dtype = ["4x4", "8x8", "2x2", "lines", "noise"][Math.floor(rand() * 5)];
+    out.push(f);
+  }
+  if (rand() < 0.2) {
+    const f = defaultFilter("posterize");
+    f.steps = 2 + Math.floor(rand() * 4);
+    out.push(f);
+  }
+  if (rand() < 0.22) {
+    const f = defaultFilter("grain");
+    f.amount = Math.round((0.1 + rand() * 0.4) * 50) / 50;
+    f.size = 1 + Math.floor(rand() * 3);
+    out.push(f);
+  }
+  if (rand() < 0.12) out.push(defaultFilter("invert"));
+  return out.length ? out : undefined;
+}
+
+/** One number on a layer sent on a trip, from wherever the roll left it. */
+function travel(layer: LayerSpec, rand: () => number, controls: ShaderControl[]) {
+  if (!controls.length) return;
+  const c = controls[Math.floor(rand() * controls.length)];
+  const from = Number(layer[c.key] ?? c.def);
+  const far = from < (c.min + c.max) / 2 ? c.max : c.min;
+  layer.motion = {
+    [c.key]: {
+      to: Math.round((from + (far - from) * (0.5 + rand() * 0.45)) * 100) / 100,
+      wave: WAVES[Math.floor(rand() * WAVES.length)],
+      cycles: 1 + Math.floor(rand() * 3),
+      phase: 0,
+    },
   };
 }
 
 /**
- * A look from nothing.
+ * The sheet: paper, the club's ruling, and marks on it. No graphic at all.
  *
- * It rolls across both families that *close their loop* — the club's own forms
- * renderer and the Kinetics. The WebGL dithering and the clean shaders are
- * deliberately not in here: they animate, but they walk through noise that
- * never repeats, and a roll that handed back a post with a seam in it would be
- * worse than a roll with a narrower vocabulary.
+ * This is the club's default register — the one most posts actually are — and
+ * until now the one thing a roll could never produce. It always brings at
+ * least one mark, because the looks are shown with the words switched off and
+ * a sheet with nothing on it is a blank page.
  */
-export function randomSlide(rand: () => number = Math.random): SlideStyle {
-  if (rand() < 0.4) return randomKinetic(rand);
+function randomSheet(rand: () => number): SlideStyle {
+  const coloured = rand() < 0.5;
+  const paper = randomPaper(rand);
+  return {
+    ...paper,
+    layers: [defaultLayer("none")],
+    colorSeed: Math.floor(rand() * 9999) + 1,
+    shapes: randomMarks(
+      rand,
+      1 + Math.floor(rand() * 3),
+      coloured ? PALETTE : null,
+      paper.theme,
+    ),
+  };
+}
+
+/**
+ * The club's pixels: one to three dithered-forms layers with every form, mix,
+ * fold, screen and colour in play.
+ *
+ * Two rules keep the results usable rather than merely random. Stacked layers
+ * get finer as they go up, so a coarse field reads through a fine one instead
+ * of two identical grids fighting; and colour is all or nothing on a slide,
+ * because one coloured layer under a black-and-white one just looks like a
+ * mistake.
+ *
+ * It comes in two arrangements. Full bleed is the pixels as the whole picture.
+ * *On paper* is the reference's own arrangement — a ground, a ruling, and the
+ * graphic given part of the sheet rather than all of it — and it is the one
+ * place a roll moves the transform, because there the edges coming into shot
+ * is the composition rather than an accident.
+ */
+function randomForms(rand: () => number): SlideStyle {
   const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
   const count = 1 + Math.floor(rand() * 3);
   const coloured = rand() < 0.45;
   const palette = PALETTE;
+  const onPaper = rand() < 0.4;
+  const paper = onPaper ? randomPaper(rand) : blankPaper(rand() < 0.3 ? "dark" : "light");
 
   const layers: LayerSpec[] = Array.from({ length: count }, (_, i) => {
     const layer = {
@@ -1555,45 +1705,186 @@ export function randomSlide(rand: () => number = Math.random): SlideStyle {
         layer.mixScale = 1 + Math.floor(rand() * 8);
         layer.mixSpeed = Math.round(rand() * 20) / 10;
       } else {
-        layer.ink = paletteInk(Math.floor(rand() * 9999), "light", palette);
+        layer.ink = paletteInk(Math.floor(rand() * 9999), paper.theme, palette);
       }
     }
 
     /* Every one of them gets a number that travels — a still graphic is not
        something this studio makes, so a roll never produces one. Never
        `speed`, which also sets how fast the colours move. */
-    {
-      const movable = shaderDef("forms").controls.filter(
+    travel(
+      layer,
+      rand,
+      shaderDef("forms").controls.filter(
         (c) => c.key !== "speed" && (c.key !== "exposure" || usesPhoto(layer)),
-      );
-      const c = pick(movable);
-      const from = Number(layer[c.key] ?? c.def);
-      const far = from < (c.min + c.max) / 2 ? c.max : c.min;
-      layer.motion = {
-        [c.key]: {
-          to: Math.round((from + (far - from) * (0.5 + rand() * 0.45)) * 100) / 100,
-          wave: pick(WAVES),
-          cycles: 1 + Math.floor(rand() * 3),
-          phase: 0,
-        },
-      };
-    }
+      ),
+    );
+
+    /* The club's screen is already what this draws, so an effect here is for
+       what it does to it afterwards, not for pixellating it again. */
+    layer.filters = randomFilters(rand, 0);
 
     return layer;
   });
 
-  /* Deliberately no `veil` and no type settings: a roll decides what the
-     graphic is, not whether the words on top of it can be read. Those stay
-     where the owner left them. */
+  if (onPaper) {
+    /* One transform across the stack, or two layers that were drawn to line
+       up stop lining up. */
+    const scale = Math.round((0.42 + rand() * 0.32) * 100) / 100;
+    const offsetX = Math.round((rand() * 0.4 - 0.2) * 100) / 100;
+    const offsetY = Math.round((rand() * 0.6 - 0.3) * 100) / 100;
+    for (const layer of layers) Object.assign(layer, { scale, offsetX, offsetY });
+  }
+
   const style: SlideStyle = {
+    ...paper,
     layers,
-    theme: rand() < 0.3 ? "dark" : "light",
     colorSeed: Math.floor(rand() * 9999) + 1,
+    shapes:
+      rand() < 0.35
+        ? randomMarks(rand, 1 + Math.floor(rand() * 2), coloured ? palette : null, paper.theme)
+        : undefined,
   };
-  if (coloured) style.background = paletteAt(Math.floor(rand() * 9999), 3, palette);
+  /* Full bleed takes its ground from the palette when colour is on; on paper
+     the paper has already answered that. */
+  if (coloured && !onPaper) style.background = paletteAt(Math.floor(rand() * 9999), 3, palette);
   return style;
 }
 
+/* A look rolled out of the Kinetics rather than out of the forms renderer.
+ *
+ * It is a single layer on purpose: a kinetic layer paints its own ground,
+ * because the words are the picture and a picture has to sit on something.
+ * Stacking two of them would just hide the first.
+ *
+ * This is also the one roll allowed to touch the type, and the exception is
+ * narrower than it looks. The rule is that a roll decides what the graphic is
+ * and never whether the owner's words can be read — but here the graphic *is*
+ * the words. Leaving the typographic layer switched on wouldn't be a
+ * readability decision, it would print the headline twice. The footer stays,
+ * because a handle in the corner is not the headline. */
+function randomKinetic(rand: () => number): SlideStyle {
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
+  const scenes =
+    shaderDef("kinetics").choices?.find((c) => c.key === "scene")?.values ?? ["stagger"];
+
+  const layer = { ...defaultLayer("kinetics") } as LayerSpec;
+  layer.scene = pick(scenes);
+  layer.density = Math.round(rand() * 100) / 100;
+  layer.kface = pick(["sans", "serif", "gothic"]);
+  layer.kweight = pick([400, 700, 800, 900]);
+  /* A blotter now and then. It is the one thing here that changes what the
+     piece is made of rather than how much of it there is, so it wants to turn
+     up sometimes and not most times. Kept below the spread that eats fine
+     type. */
+  layer.kblot = rand() < 0.3 ? 8 + Math.floor(rand() * 34) : 0;
+  /* A scene is drawn, not screened, so the club's screen over it is a real
+     decision rather than a second helping of the same thing. */
+  layer.filters = randomFilters(rand, 0.3);
+
+  /* No travelling number is plugged in, and this is the one roll where that
+     isn't an oversight: a Kinetics scene is a function of the playhead by
+     construction. It arrives moving because there is no version of it that
+     stands still. */
+  const theme: Theme = rand() < 0.45 ? "dark" : "light";
+  return {
+    ...blankPaper(theme),
+    layers: [layer],
+    colorSeed: Math.floor(rand() * 9999) + 1,
+    off: ["kicker", "title", "body", "mark", "rules"],
+    /* The veil exists to hold type up off a busy graphic. Here it would only
+       fog the thing it was meant to help. */
+    veil: 0,
+    /* A frame over a scene now and then, and nothing else: the scene is
+       already saying the thing, and marks scattered over it are litter. */
+    shapes: rand() < 0.25 ? randomMarks(rand, 1, null, theme) : undefined,
+  };
+}
+
+/**
+ * A tile from the third studio, as the whole picture.
+ *
+ * One layer, like the Kinetics and for the same reason: a tile paints its own
+ * ground, frame and all. It is also the one layer that brings its own colour,
+ * so the roll either lets it (a tile palette) or takes the ornament back into
+ * the club's own (`ink: "mix"`) — never both, because a tile whose inks come
+ * from two places is a tile with no palette at all.
+ */
+function randomTile(rand: () => number): SlideStyle {
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
+  const choice = (key: string) =>
+    shaderDef("tiles").choices?.find((c) => c.key === key)?.values ?? [];
+
+  const layer = { ...defaultLayer("tiles") } as LayerSpec;
+  layer.tile = pick(choice("tile"));
+  layer.tdensity = Math.round((0.15 + rand() * 0.75) * 50) / 50;
+  layer.thand = Math.round(rand() * 50) / 50;
+  /* Never 0. Boil is the hand redrawing the tile over the loop, and it is what
+     makes a tile with every arm held still not a still image. */
+  layer.tboil = 1 + Math.floor(rand() * 9);
+
+  if (rand() < 0.25) {
+    layer.ink = "mix";
+    layer.tpalette = "own";
+  } else {
+    const tp = choice("tpalette").filter((v) => v !== "own");
+    layer.tpalette = rand() < 0.25 ? "own" : pick(tp);
+  }
+
+  /* The hand travelling is the tile drawn tighter and looser over the loop —
+     the one dial of the three that reads as motion rather than as a rebuild. */
+  if (rand() < 0.5) travel(layer, rand, shaderDef("tiles").controls.filter((c) => c.key === "thand"));
+  layer.filters = randomFilters(rand, 0.3);
+
+  const theme: Theme = rand() < 0.4 ? "dark" : "light";
+  return {
+    ...blankPaper(theme),
+    layers: [layer],
+    colorSeed: Math.floor(rand() * 9999) + 1,
+    shapes: undefined,
+  };
+}
+
+/* Not here: the WebGL half — the clean shaders and the original dithering.
+ *
+ * The loop is no longer the reason. Frozen at `speed: 0` one of them is a
+ * still image, `layerLoops` says as much itself, and a still ground under a
+ * moving mark is exactly what the sheet register already is. The reason is
+ * that you would never see it: a `Poster` is canvas 2D, so it draws the
+ * families that are a function of the frame and paints nothing at all where a
+ * WebGL layer is — the shelf of twelve would show three empty sheets and only
+ * admit what they were once you clicked one. A roll whose picture is a lie is
+ * worse than a shorter list, which is the same argument as before with a
+ * different subject. Give `Poster` a way to draw them and this becomes a sixth
+ * entry below and nothing else.
+ */
+
+/* The registers, and how often each turns up. The weights are the argument in
+   one place: the club's pixels are one of the things a post can be, not what a
+   post is. */
+const REGISTERS: { roll: (rand: () => number) => SlideStyle; weight: number }[] = [
+  { roll: randomSheet, weight: 0.26 },
+  { roll: randomForms, weight: 0.32 },
+  { roll: randomKinetic, weight: 0.2 },
+  { roll: randomTile, weight: 0.22 },
+];
+
+/** A whole look from nothing, from any register the studio has. */
+export function randomSlide(rand: () => number = Math.random): SlideStyle {
+  let x = rand();
+  for (const register of REGISTERS) {
+    x -= register.weight;
+    if (x <= 0) return register.roll(rand);
+  }
+  return randomForms(rand);
+}
+
+/**
+ * The same rules with room to move: every number drifts within `amount` of
+ * its range, and the colours are rearranged. Every *decision* — which form,
+ * how it mixes, what it is inked with — is left alone, because that is what
+ * makes the results read as one family rather than as a shuffle.
+ */
 export function varyStyle(
   style: SlideStyle,
   amount = 0.25,

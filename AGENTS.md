@@ -168,18 +168,20 @@ plug-and-play here.
 effect and a layer switched to draw something else all arrive with a loop
 already plugged in — `addShape`, `addLayer`, `addFilter`, `setShaderType` and
 `reroll` each attach one — because this is a studio for motion and a still
-thing is the exception. `randomSlide` gives every rolled layer a travelling
-number, and **every recipe that draws a graphic moves it**; the recipes that
-don't move are the pure sheets, which carry a `none` layer and draw no graphic
+thing is the exception. `randomSlide` gives every rolled layer that can carry
+one a travelling number and every rolled mark a named loop, and **every recipe
+that draws a graphic moves it**; the recipes that don't move are the pure
+sheets, which carry a `none` layer and draw no graphic
 at all. An effect's numbers travel like any other: `resolveFilter` hands the
 chain already-resolved values, so an effect still never reads the clock itself
 and still can't be the reason a loop stops closing.
 
 That rule is also why nothing in the tool *offers* the WebGL dithering or the
-clean shaders any more — they animate but they don't close their loop, so a
-recipe or a roll would be handing over a post with a seam in it. They stay
-selectable under `draws`, because links from months ago name them and the spec
-is backwards-compatible; just don't reach for one when writing a recipe.
+clean shaders as animated things any more — they move but they don't close
+their loop, so a recipe that let one run would be handing over a post with a
+seam in it. They stay selectable under `draws`, because links from months ago
+name them and the spec is backwards-compatible; just don't reach for one when
+writing a recipe.
 
 `SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
 bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
@@ -372,19 +374,44 @@ headline rather than its own, because a layer carrying a second copy of the
 sentence is a second place to edit it. One `density` dial maps onto whichever
 control each scene leads with; the full set lives in the Kinetics.
 
-**The roll is a button, top left, and it rolls both families that close their
-loop** — the forms renderer and the Kinetics. The WebGL dithering and the clean
-shaders stay out of it for the reason above: they animate but they never come
-back, and a rolled look with a seam in it is worse than a shorter list. A
-Kinetics roll is the one roll allowed to touch the type, and only to switch the
-headline off — the layer is already drawing it, so leaving it on would print it
-twice rather than make a readability decision.
+**The roll is a button, top left, and it rolls every register the studio has.**
+It used to roll one — the forms renderer — because that is the family that is
+periodic in the post's duration by construction, and the cost was that twelve
+rolled looks came back as twelve screens of pixels long after the tool had
+grown a sheet, a tile, a scene and a set of marks. A roll that reaches a fifth
+of the studio is a preset, not a roll.
+
+The way out is that the loop rule is two rules, and only one of them is about
+the background: **the ground may be still, the post may not.** Ruled paper
+doesn't move and never has; what moves on it is a mark. So `REGISTERS` in
+`lib/postlab.ts` is four entries with weights — the sheet (paper, ruling and
+marks, no graphic at all), the club's pixels, the Kinetics and the Tiles — each
+graphic given a travelling number and each mark a named loop. Filters roll
+freely for the reason they always could: they take no time as an input, and
+`pixelate` is what puts a tile or a scene into the club's own pixels.
+
+The WebGL half stays out, but the reason has changed and is worth knowing.
+Frozen at `speed: 0` a clean shader is a still image and `layerLoops` says so
+itself, so the loop no longer objects — a still ground under a moving mark is
+what the sheet register already is. What objects is the preview: `Poster` is
+canvas 2D, it draws the `generative` families and paints nothing where a WebGL
+layer is, so a shelf of twelve would show empty sheets and only admit what they
+were once you clicked one. Teach `Poster` to draw them and the register is one
+more entry in `REGISTERS`.
+
+Two things follow from a roll now deciding the whole sheet. Each register
+returns a *complete* paper — ground, ruling and marks, even when the answer is
+none of them — because a ruling left behind from the roll before is a
+half-applied style. And the Kinetics exception (switching the headline off,
+since its layer is already drawing it) is undone by every other register when
+you pick one, or picking a scene and then a sheet would leave you with a sheet
+and no words on it.
 
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
   `varyStyle`, plus `randomSlide` for a look rolled from nothing (the
-  generate sheet). A roll decides the graphic only: it never touches
-  `veil` or the type settings, because whether the words can be read is
-  the owner's call and not the dice's. Varying keeps every *decision* (form, mix, fold, ink) and
+  generate sheet). A roll decides the graphic, the sheet and the marks: it
+  never touches `veil` or the type settings, because whether the words can
+  be read is the owner's call and not the dice's. Varying keeps every *decision* (form, mix, fold, ink) and
   moves only the numbers, which is what makes variations read as a family
   instead of a shuffle. The transform is left alone unless it was already
   moved by hand: a shrunk or turned background just drags its edges into

@@ -759,7 +759,15 @@ export default function PostLab() {
   };
 
   const pickCandidate = (style: SlideStyle) => {
-    patchSlide(structuredClone(style));
+    /* A Kinetics look switches the headline off because its layer is already
+       drawing it. That has to be reversible: pick one of those and then pick a
+       sheet, and without this you get a sheet with no words on it and nothing
+       on screen saying why. Every other register brings the headline back and
+       leaves the rest of the owner's switches alone. */
+    const off =
+      style.off ??
+      (slide.off?.includes("title") ? slide.off.filter((p) => p !== "title") : slide.off);
+    patchSlide({ ...structuredClone(style), off });
     setActiveLayer(0);
     say("Applied");
   };
@@ -2242,7 +2250,7 @@ export default function PostLab() {
           <div className="tc-float rounded-[var(--tc-r-pill)] h-10 px-1.5 flex items-center gap-1 shrink-0">
             <button
               onClick={() => roll(12)}
-              title="Twelve looks from nothing — every family that closes its loop"
+              title="Twelve looks from nothing — every register the studio has"
               className="h-8 px-3 rounded-[var(--tc-r-pill)] text-[12.5px] font-medium hover:bg-[color:var(--tc-field-hi)] transition-colors"
             >
               ⚄ Roll a look
@@ -2517,15 +2525,21 @@ export default function PostLab() {
                   title="Use this one"
                   className={"block rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)] transition-colors overflow-hidden"}
                 >
+                  {/* The words are off — a look is a slide without them — but
+                      the fonts are not: the ruling and the marks are drawn with
+                      the type and survive the switch, and a sheet shown without
+                      them is a blank rectangle. The veil goes too, because a
+                      roll never decides one and a look shouldn't be previewed
+                      under a wash it didn't ask for. */}
                   <Poster
                     spec={{
                       v: SPEC_VERSION,
                       format: spec.format,
                       duration: spec.duration,
-                      slides: [{ ...defaultSlide(), ...s, text: false } as SlideSpec],
+                      slides: [{ ...defaultSlide(), ...s, text: false, veil: 0 } as SlideSpec],
                     }}
                     index={0}
-                    fonts={null}
+                    fonts={fonts}
                     width={170}
                     live
                   />
@@ -2533,15 +2547,20 @@ export default function PostLab() {
               ))}
             </div>
             <p className="text-[10px] text-muted leading-relaxed pt-3 max-w-xl">
-              Two families, and they are the two that close their loop: one to three
-              dithered layers with every form, mix, fold, screen and colour in play and at
-              least one number travelling, or a single scene from the Kinetics set on this
-              slide&apos;s own headline. The WebGL dithering and the clean shaders are left
-              out on purpose — they animate, but they don&apos;t come back to where they
-              started, and a rolled look with a seam in it is worse than a shorter list.
-              A roll decides the graphic and leaves the veil and the type where you left
-              them; the one exception is a Kinetics roll, which switches the headline off
-              because it is already drawing it.
+              Four registers, not one: a sheet — paper, the club&apos;s ruling and marks
+              on it, no graphic at all — one to three dithered layers with every form,
+              mix, fold, screen and colour in play, a scene from the Kinetics set on this
+              slide&apos;s own headline, or a tile from the Tiles. Effects roll too, the
+              club&apos;s screen included, which is how a tile or a scene comes out in the
+              club&apos;s pixels. Nothing rolled has a seam in it: everything here is a
+              function of the frame, every graphic gets a number travelling and every mark
+              a named loop — the ground may be still, the post may not. The WebGL
+              dithering and the clean shaders stay out, now because a thumbnail is drawn
+              in canvas 2D and would show you an empty sheet where one of them was. A roll
+              decides the graphic, the sheet and the marks, and leaves the veil and the
+              type where you left them; the one exception is a Kinetics roll, which
+              switches the headline off because it is already drawing it, and puts it back
+              the moment you pick something else.
             </p>
           </Drawer>
         )}
