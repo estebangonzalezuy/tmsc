@@ -575,11 +575,21 @@ Three rules hold it together:
   hand-drawn look reads as a bug. And the hand is capped against the mark's own
   width, or the shake that ruffles a blade turns a bead into a burr. The sketch
   is the geometry; don't add a sketchy filter.
-- **The loop is a contract.** Whole turns, whole beads, one cosine over the
-  loop, all rounded in `normalize`. `boil` is the same idea for the hand
-  itself: the wobble's seed steps through whole redrawings and lands back on
-  the first, which is how a hand-drawn thing moves when nothing in it is
+- **The loop is a contract.** Whole turns, whole beads, whole waves, one
+  cosine over the loop, all rounded in `normalize`. `boil` is the same idea for
+  the hand itself: the wobble's seed steps through whole redrawings and lands
+  back on the first, which is how a hand-drawn thing moves when nothing in it is
   moving — and why a tile with every arm held still is not a still image.
+- **Two deformers make a tile generative rather than ornamental.** `ripple`
+  runs the arm's wave *along* the ray in whole waves over the loop — a stroke
+  with a wave looping out of it — and `stagger` is the duplicator's delay, how
+  much of the loop each copy runs behind the one before it. Stagger moves the
+  phase and never the angle, so the ring stays evenly spaced; it is done by
+  handing each copy its own playhead, which is why it staggers the breath, the
+  sway, the travelling wave and the marching beads together instead of four
+  fields drifting apart. Neither can open a seam: whole waves close, and a
+  phase offset of something periodic is the same periodic thing. `randomTile`
+  and the recipes both lean on them.
 - **A wave is a distance, not an angle.** Written as an angle the same few
   degrees are a few pixels near the middle and half the panel at the rim. The
   meander is measured across the ray and damped near the centre, so one wave

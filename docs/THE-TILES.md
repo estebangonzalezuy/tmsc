@@ -94,6 +94,27 @@ waver and ends as a whip. Measured across the ray instead, one wave setting is
 one wave everywhere along it, and it is damped near the middle so a bundle of
 rays still converges on a point.
 
+**And the wave travels.** `ripple` is whole waves run *along* the ray over the
+loop, so the meander leaves the middle and goes out to the rim rather than
+standing there — a stroke with a wave looping out of it, which is the one
+deformer the arm was missing and the one that turns an ornament into a piece
+of generative motion. Whole waves, so the crest at the end of the loop is
+exactly where the crest before it was; negative runs it back inwards.
+
+**And every copy can be late.** `stagger` is the duplicator's delay: how much
+of the loop each copy runs behind the one before it, as a share of the loop
+across the whole ring. It moves the *phase* and never the angle, so the ring
+stays evenly spaced however far it is staggered — and it moves the phase of
+everything on the arm at once (the breath, the sway, the travelling wave, the
+marching beads), because they all read the playhead and a copy is simply handed
+its own. At 0 the arm breathes as one object. At 1 the delay adds up to a whole
+loop by the time it has gone round, and whatever the arm does travels round the
+tile as a wave.
+
+Neither can open a seam, and for the two reasons the rest of the file gives:
+`ripple` is a whole number, and a phase offset of something periodic is the
+same periodic thing.
+
 ## Nothing is drawn straight
 
 Every closed shape — the panel, an arm, a bead, a tick — is built as an exact
@@ -121,10 +142,17 @@ Same rule as the other two studios, and for the same reason — an export is
 filmed frame by frame, so a seam would ship.
 
 Everything that moves moves through a whole number of somethings. `spin` is
-whole turns. `march` is whole beads. `pulse` and `sway` are one cosine over the
-loop. The global `spin` is whole turns of the whole composition. Every one of
-those is rounded in `normalize`, so there is no way to write a fraction into a
-spec that would fail to come back.
+whole turns. `march` is whole beads. `ripple` is whole waves along the ray.
+`pulse` and `sway` are one cosine over the loop. The global `spin` is whole
+turns of the whole composition. Every one of those is rounded in `normalize`,
+so there is no way to write a fraction into a spec that would fail to come
+back. `stagger` is the exception that proves it: it is not rounded and does not
+need to be, because it shifts a phase rather than counting anything, and a
+phase offset of something periodic is still periodic.
+
+Measured rather than assumed: scrub the playhead to the start and to the end of
+a rolled tile and the two frames are pixel-identical, while the middle of the
+loop is plainly a different picture.
 
 **`boil` is the interesting one.** It is the hand redrawing the tile a few
 times over the loop: the wobble's seed steps through `floor(p · boil)` whole

@@ -300,7 +300,12 @@ export default function Tiles() {
     `${a.count}× ${shapeDef(a.shape).label}${a.mirror ? ", mirrored" : ""}`;
 
   const moving = useMemo(
-    () => spec.spin !== 0 || spec.boil > 0 || spec.arms.some((a) => !a.mute && (a.spin || a.pulse || a.sway || a.march)),
+    () =>
+      spec.spin !== 0 ||
+      spec.boil > 0 ||
+      spec.arms.some(
+        (a) => !a.mute && (a.spin || a.pulse || a.sway || a.march || (a.wave > 0 && a.ripple)),
+      ),
     [spec],
   );
 
@@ -673,6 +678,18 @@ export default function Tiles() {
                     <Slider label="wave" value={arm.wave} min={0} max={1} step={0.02} onChange={(v) => patchArm(i, { wave: v })} />
                     <Slider label="waves" value={arm.waves} min={0} max={8} step={0.5} onChange={(v) => patchArm(i, { waves: v })} />
                   </Cols>
+                  {arm.wave > 0 && (
+                    <Slider
+                      label="waves travel"
+                      value={arm.ripple}
+                      min={-6}
+                      max={6}
+                      step={1}
+                      display={arm.ripple === 0 ? "standing" : undefined}
+                      onChange={(v) => patchArm(i, { ripple: v })}
+                      help="Whole waves run along the ray over the loop — out of the middle at a positive number, back into it at a negative one. Whole, so the last frame is the first."
+                    />
+                  )}
                   {(arm.shape === "chain" || arm.shape === "dot") && (
                     <Cols>
                       {arm.shape === "chain" ? (
@@ -742,6 +759,16 @@ export default function Tiles() {
                       <span />
                     )}
                   </Cols>
+                  <Slider
+                    label="delay round the ring"
+                    value={arm.stagger}
+                    min={-1}
+                    max={1}
+                    step={0.05}
+                    display={arm.stagger === 0 ? "all together" : undefined}
+                    onChange={(v) => patchArm(i, { stagger: v })}
+                    help="Each copy runs the arm's motion a little later than the one before it. At 1 the delay adds up to one whole loop by the time it has gone round, so whatever this arm does travels round the tile as a wave."
+                  />
                 </Block>
               ))}
             </Section>

@@ -313,8 +313,12 @@ function meander(f: ArmFrame, arm: Arm, a: number, r: number, t: number, flip: n
   const y = f.cy + Math.sin(a) * r;
   if (arm.wave <= 0) return { x, y };
   const hold = Math.min(1, r / (0.3 * f.u));
-  const off =
-    arm.wave * 0.22 * f.u * flip * hold * Math.sin(TAU * arm.waves * t);
+  /* `ripple` slides the wave along the ray as the loop runs, in whole waves,
+     so the meander travels out of the middle and off the rim instead of
+     standing still. Whole is what makes it safe: at the end of the loop the
+     crest is exactly where the crest before it was. */
+  const phase = TAU * (arm.waves * t - arm.ripple * f.p);
+  const off = arm.wave * 0.22 * f.u * flip * hold * Math.sin(phase);
   return { x: x - Math.sin(a) * off, y: y + Math.cos(a) * off };
 }
 
@@ -406,8 +410,6 @@ function chainMarks(arm: Arm, f: ArmFrame, a0: number, flip: number, pulse: numb
 
 function drawArm(ctx: CanvasRenderingContext2D, arm: Arm, f: ArmFrame, inks: string[], globalTurn: number) {
   const ink = inkAt(inks, arm.ink);
-  const pulse = 1 + arm.pulse * Math.sin(TAU * f.p);
-  const twist = rad(arm.twist + arm.sway * Math.sin(TAU * f.p));
   const spin = TAU * arm.spin * f.p;
   const feature = f.u * 0.1;
   /* The hand is capped against the mark's own width. A tile-wide amount that
@@ -422,6 +424,18 @@ function drawArm(ctx: CanvasRenderingContext2D, arm: Arm, f: ArmFrame, inks: str
   for (let k = 0; k < arm.count; k++) {
     const flip = arm.mirror && k % 2 === 1 ? -1 : 1;
     const a0 = rad(arm.turn) + (TAU * k) / arm.count + spin + globalTurn;
+
+    /* The duplicator's delay. Every copy runs the same motion a little later
+       than the one before it, which is the difference between an ornament
+       that breathes and a wave going round a ring. It is done by handing this
+       copy its own playhead rather than by moving anything: the breath, the
+       sway, the travelling wave and the marching beads all read `f.p`, so one
+       shifted frame staggers all four and can't get out of step with itself.
+       The angle is left alone, so the ring stays evenly spaced. */
+    const fk =
+      arm.stagger === 0 ? f : { ...f, p: f.p + (arm.stagger * k) / arm.count };
+    const pulse = 1 + arm.pulse * Math.sin(TAU * fk.p);
+    const twist = rad(arm.twist + arm.sway * Math.sin(TAU * fk.p));
     /* The seed is the copy, not a counter — so an arm keeps its own hand when
        another arm is added above it, exactly the way the site picks a hover
        colour by something stable about the item. */
@@ -440,13 +454,13 @@ function drawArm(ctx: CanvasRenderingContext2D, arm: Arm, f: ArmFrame, inks: str
     }
 
     if (arm.shape === "chain") {
-      chainMarks(arm, f, a0, flip, pulse, twist).forEach((pts, i) =>
+      chainMarks(arm, fk, a0, flip, pulse, twist).forEach((pts, i) =>
         fillShape(ctx, wobbleClosed(pts, amp * 0.9, seed + i * 17, beadFeature), ink),
       );
       continue;
     }
 
-    fillShape(ctx, wobbleClosed(armOutline(arm, f, a0, flip, pulse, twist), amp, seed, feature), ink);
+    fillShape(ctx, wobbleClosed(armOutline(arm, fk, a0, flip, pulse, twist), amp, seed, feature), ink);
   }
 }
 

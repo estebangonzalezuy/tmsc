@@ -115,6 +115,12 @@ export type Arm = {
   /** How far the mark meanders sideways, and how many meanders it makes. */
   wave: number;
   waves: number;
+  /** Whole waves travelled *along* the ray over the loop, so the meander
+      leaves the middle and runs out to the rim instead of standing still.
+      This is the deformer the whole thing wanted: a stroke with a wave
+      looping out of it. Whole, so the last frame is the first one; negative
+      runs it inwards. */
+  ripple: number;
   /** A static rotation, so two arms can interleave. */
   turn: number;
   /** `chain` only: how many beads on the thread. */
@@ -132,6 +138,17 @@ export type Arm = {
   sway: number;
   /** Whole beads travelled over the loop. `chain` only. */
   march: number;
+  /** The duplicator's delay: how much of the loop each copy runs behind the
+      one before it, as a share of the loop across the whole ring. 0 is every
+      copy in step — which is what an ornament does — and 1 is a wave going
+      once round the tile, which is what a generative one does. It moves the
+      *phase* of everything on this arm that moves (the breath, the sway, the
+      travelling wave, the marching beads) and never the angle a copy sits at,
+      so the ring stays evenly spaced however far it is staggered.
+
+      It cannot open a seam: each copy is periodic in its own phase, and a
+      phase offset of a periodic thing is the same periodic thing. */
+  stagger: number;
   mute?: boolean;
 };
 
@@ -146,6 +163,7 @@ export const defaultArm = (patch: Partial<Arm> = {}): Arm => ({
   twist: 0,
   wave: 0,
   waves: 2,
+  ripple: 0,
   turn: 0,
   beads: 7,
   stretch: 0,
@@ -154,6 +172,7 @@ export const defaultArm = (patch: Partial<Arm> = {}): Arm => ({
   pulse: 0,
   sway: 0,
   march: 0,
+  stagger: 0,
   ...patch,
 });
 
@@ -494,8 +513,8 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ rings: 4, ink: 2, alpha: 0.6, dash: 16, from: 0.2, to: 1.25 }),
       centre: defaultCentre({ kind: "dot", size: 0.11, ink: 1 }),
       arms: [
-        defaultArm({ shape: "ribbon", count: 12, ink: 0, inner: 0.06, outer: 1.6, width: 0.052, wave: 0.3, waves: 2, pulse: 0.04 }),
-        defaultArm({ shape: "chain", count: 12, ink: 1, inner: 0.18, outer: 1.35, width: 0.062, taper: -0.3, beads: 6, march: 1 }),
+        defaultArm({ shape: "ribbon", count: 12, ink: 0, inner: 0.06, outer: 1.6, width: 0.052, wave: 0.3, waves: 2, pulse: 0.04, ripple: 1, stagger: 1 }),
+        defaultArm({ shape: "chain", count: 12, ink: 1, inner: 0.18, outer: 1.35, width: 0.062, taper: -0.3, beads: 6, march: 1, stagger: 0.5 }),
       ],
     },
   },
@@ -509,7 +528,7 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ spokes: 8, arcs: 3, ink: 1, alpha: 1, weight: 4, dash: 20, gap: 16, from: 0.02, to: 1.45, spiral: 120 }),
       centre: defaultCentre({ kind: "star", size: 0.035, ink: 0, points: 8 }),
       arms: [
-        defaultArm({ shape: "ribbon", count: 12, ink: 0, inner: 0.01, outer: 1.6, width: 0.048, twist: 55, wave: 0.55, waves: 3, taper: 0.15, sway: 12 }),
+        defaultArm({ shape: "ribbon", count: 12, ink: 0, inner: 0.01, outer: 1.6, width: 0.048, twist: 55, wave: 0.55, waves: 3, taper: 0.15, sway: 12, ripple: -1, stagger: -1 }),
       ],
     },
   },
@@ -524,8 +543,8 @@ export const RECIPES: Recipe[] = [
       centre: defaultCentre({ kind: "star", size: 0.05, ink: 1, points: 9 }),
       round: 0.03,
       arms: [
-        defaultArm({ shape: "wedge", count: 6, ink: 0, inner: 0, outer: 1.7, width: 0.36, taper: -0.55, twist: 110, sway: 8 }),
-        defaultArm({ shape: "wedge", count: 6, ink: 1, turn: 20, inner: 0, outer: 1.7, width: 0.32, taper: -0.55, twist: 110, sway: 8 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 0, inner: 0, outer: 1.7, width: 0.36, taper: -0.55, twist: 110, sway: 8, stagger: 1 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 1, turn: 20, inner: 0, outer: 1.7, width: 0.32, taper: -0.55, twist: 110, sway: 8, stagger: 0.5 }),
       ],
     },
   },
@@ -539,8 +558,8 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ spokes: 4, ink: 2, alpha: 0.85, weight: 4, dash: 24, gap: 20, from: 0.35, to: 1.3 }),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "hook", count: 4, ink: 0, turn: 45, inner: 0.48, outer: 1.85, width: 0.19, twist: 78, mirror: true, sway: 10 }),
-        defaultArm({ shape: "petal", count: 4, ink: 1, inner: 0.22, outer: 1.0, width: 0.13, taper: -0.15, pulse: 0.05 }),
+        defaultArm({ shape: "hook", count: 4, ink: 0, turn: 45, inner: 0.48, outer: 1.85, width: 0.19, twist: 78, mirror: true, sway: 10, stagger: 1 }),
+        defaultArm({ shape: "petal", count: 4, ink: 1, inner: 0.22, outer: 1.0, width: 0.13, taper: -0.15, pulse: 0.05, stagger: -0.5 }),
       ],
     },
   },
@@ -555,7 +574,7 @@ export const RECIPES: Recipe[] = [
       centre: defaultCentre({ kind: "none" }),
       arms: [
         defaultArm({ shape: "bar", count: 8, ink: 0, inner: 0.18, outer: 1.6, width: 0.07 }),
-        defaultArm({ shape: "ribbon", count: 8, ink: 1, inner: 0.01, outer: 1.05, width: 0.032, twist: 25, wave: 0.62, waves: 2.5, taper: 0.25, sway: 12 }),
+        defaultArm({ shape: "ribbon", count: 8, ink: 1, inner: 0.01, outer: 1.05, width: 0.032, twist: 25, wave: 0.62, waves: 2.5, taper: 0.25, sway: 12, ripple: 2, stagger: 1 }),
       ],
     },
   },
@@ -569,9 +588,9 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ rings: 3, ink: 3, alpha: 0.5, dash: 18, gap: 22, from: 0.35, to: 1.2 }),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "wedge", count: 6, ink: 1, inner: 0, outer: 1.7, width: 0.44, twist: 80, wave: 0.42, waves: 1.5, taper: -0.4 }),
-        defaultArm({ shape: "wedge", count: 6, ink: 0, turn: 30, inner: 0, outer: 1.7, width: 0.38, twist: 80, wave: 0.42, waves: 1.5, taper: -0.4 }),
-        defaultArm({ shape: "lance", count: 8, ink: 2, inner: 0, outer: 1.5, width: 0.04, pulse: 0.05 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 1, inner: 0, outer: 1.7, width: 0.44, twist: 80, wave: 0.42, waves: 1.5, taper: -0.4, ripple: 1, stagger: 0.5 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 0, turn: 30, inner: 0, outer: 1.7, width: 0.38, twist: 80, wave: 0.42, waves: 1.5, taper: -0.4, ripple: -2, stagger: -1 }),
+        defaultArm({ shape: "lance", count: 8, ink: 2, inner: 0, outer: 1.5, width: 0.04, pulse: 0.05, stagger: 1 }),
       ],
     },
   },
@@ -585,7 +604,7 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ spokes: 5, arcs: 5, ink: 1, alpha: 1, weight: 5, dash: 26, gap: 20, from: 0.03, to: 1.5, spiral: 210, top: true }),
       centre: defaultCentre({ kind: "star", size: 0.03, ink: 1, points: 8 }),
       arms: [
-        defaultArm({ shape: "chain", count: 16, ink: 0, inner: 0.04, outer: 1.55, width: 0.026, beads: 9, stretch: 2.4, twist: 70, march: 1 }),
+        defaultArm({ shape: "chain", count: 16, ink: 0, inner: 0.04, outer: 1.55, width: 0.026, beads: 9, stretch: 2.4, twist: 70, march: 1, stagger: 0.5 }),
       ],
     },
   },
@@ -599,7 +618,7 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ spokes: 16, ink: 3, alpha: 0.85, weight: 3, dash: 18, gap: 20, from: 0.15, to: 1.2 }),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "petal", count: 8, ink: 0, inner: 0.06, outer: 1.35, width: 0.115, twist: 46, mirror: true, sway: 8 }),
+        defaultArm({ shape: "petal", count: 8, ink: 0, inner: 0.06, outer: 1.35, width: 0.115, twist: 46, mirror: true, sway: 8, stagger: 1 }),
         defaultArm({ shape: "bar", count: 4, ink: 1, inner: 0, outer: 1.6, width: 0.045 }),
       ],
     },
@@ -614,8 +633,8 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides(),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "lance", count: 8, ink: 0, turn: 22.5, inner: 0, outer: 1.55, width: 0.075, pulse: 0.05 }),
-        defaultArm({ shape: "bar", count: 8, ink: 0, inner: 0.3, outer: 1.0, width: 0.032, pulse: -0.05 }),
+        defaultArm({ shape: "lance", count: 8, ink: 0, turn: 22.5, inner: 0, outer: 1.55, width: 0.075, pulse: 0.05, stagger: -0.5 }),
+        defaultArm({ shape: "bar", count: 8, ink: 0, inner: 0.3, outer: 1.0, width: 0.032, pulse: -0.05, stagger: 1 }),
       ],
     },
   },
@@ -629,8 +648,8 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ arcs: 4, ink: 2, alpha: 1, weight: 5, dash: 22, gap: 18, from: 0.25, to: 1.3, spiral: 150, top: true }),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "wedge", count: 6, ink: 0, inner: 0.1, outer: 1.6, width: 0.7, twist: 26, wave: 0.5, waves: 1.5, taper: -0.3 }),
-        defaultArm({ shape: "wedge", count: 6, ink: 1, turn: 30, inner: 0.35, outer: 1.5, width: 0.34, twist: 26, wave: 0.5, waves: 1.5, taper: -0.5 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 0, inner: 0.1, outer: 1.6, width: 0.7, twist: 26, wave: 0.5, waves: 1.5, taper: -0.3, ripple: 1, stagger: 0.5 }),
+        defaultArm({ shape: "wedge", count: 6, ink: 1, turn: 30, inner: 0.35, outer: 1.5, width: 0.34, twist: 26, wave: 0.5, waves: 1.5, taper: -0.5, ripple: 1, stagger: -1 }),
       ],
     },
   },
@@ -644,7 +663,7 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ arcs: 5, ink: 1, alpha: 1, weight: 10, dash: 30, gap: 22, from: 0.05, to: 1.4, spiral: 150, top: true }),
       centre: defaultCentre({ kind: "dot", size: 0.03, ink: 1 }),
       arms: [
-        defaultArm({ shape: "petal", count: 8, ink: 0, inner: 0, outer: 1.35, width: 0.2, twist: 35, wave: 0.36, waves: 1.5, sway: 10 }),
+        defaultArm({ shape: "petal", count: 8, ink: 0, inner: 0, outer: 1.35, width: 0.2, twist: 35, wave: 0.36, waves: 1.5, sway: 10, ripple: -1, stagger: 1 }),
       ],
     },
   },
@@ -658,7 +677,7 @@ export const RECIPES: Recipe[] = [
       guides: defaultGuides({ arcs: 8, spokes: 8, ink: 1, alpha: 1, weight: 4, dash: 18, gap: 16, from: 0.02, to: 1.4, spiral: 110 }),
       centre: defaultCentre({ kind: "none" }),
       arms: [
-        defaultArm({ shape: "ribbon", count: 8, ink: 0, inner: 0.01, outer: 1.55, width: 0.05, wave: 0.4, waves: 3, pulse: 0.05 }),
+        defaultArm({ shape: "ribbon", count: 8, ink: 0, inner: 0.01, outer: 1.55, width: 0.05, wave: 0.4, waves: 3, pulse: 0.05, ripple: 2, stagger: 0.5 }),
       ],
     },
   },
@@ -673,8 +692,8 @@ export const RECIPES: Recipe[] = [
       centre: defaultCentre({ kind: "none" }),
       arms: [
         defaultArm({ shape: "petal", count: 8, ink: 1, turn: 22.5, inner: 0.18, outer: 1.6, width: 0.17, twist: 18, mirror: true }),
-        defaultArm({ shape: "lance", count: 8, ink: 0, inner: 0, outer: 0.85, width: 0.12, taper: 0.3, pulse: 0.06 }),
-        defaultArm({ shape: "chain", count: 8, ink: 3, turn: 22.5, inner: 0.4, outer: 1.35, width: 0.018, beads: 5, stretch: 2.2, march: 1 }),
+        defaultArm({ shape: "lance", count: 8, ink: 0, inner: 0, outer: 0.85, width: 0.12, taper: 0.3, pulse: 0.06, stagger: 1 }),
+        defaultArm({ shape: "chain", count: 8, ink: 3, turn: 22.5, inner: 0.4, outer: 1.35, width: 0.018, beads: 5, stretch: 2.2, march: 1, stagger: -0.5 }),
         defaultArm({ shape: "dot", count: 8, ink: 2, outer: 0.6, width: 0.055 }),
         defaultArm({ shape: "dot", count: 4, ink: 0, turn: 45, outer: 1.24, width: 0.05 }),
       ],
@@ -749,6 +768,10 @@ export function randomTile(seed: number, from?: TileSpec): TileSpec {
           twist: swirl,
           wave: rand() < 0.5 ? between(0.2, 0.6) : 0,
           waves: between(1, 3),
+          /* A wave that stands still is an ornament; a wave that runs out of
+             the middle is the thing this studio is for. Rolled whenever there
+             is a wave to run. */
+          ripple: rand() < 0.7 ? pick([-2, -1, 1, 1, 2]) : 0,
           sway: rand() < 0.5 ? between(-14, 14) : 0,
         }),
       );
@@ -773,10 +796,15 @@ export function randomTile(seed: number, from?: TileSpec): TileSpec {
       twist: swirl,
       wave: rand() < 0.5 ? between(0.2, 0.7) : 0,
       waves: between(1.5, 3.5),
+      ripple: rand() < 0.75 ? pick([-2, -1, 1, 1, 2]) : 0,
       mirror: rand() < 0.3,
       spin: rand() < 0.25 ? pick([-1, 1]) : 0,
       pulse: rand() < 0.6 ? between(-0.08, 0.08) : 0,
       sway: rand() < 0.4 ? between(-18, 18) : 0,
+      /* The delay round the ring: often, and often the whole loop, because a
+         breath that arrives everywhere at once reads as one object pulsing
+         and a breath that travels reads as a system. */
+      stagger: rand() < 0.6 ? pick([-1, -0.5, 0.5, 1, 1]) : 0,
     }),
   );
   /* And something threaded through it, often. */
@@ -794,12 +822,15 @@ export function randomTile(seed: number, from?: TileSpec): TileSpec {
         stretch: rand() < 0.5 ? between(0, 2.4) : 0,
         taper: between(-0.4, 0.2),
         march: rand() < 0.6 ? pick([-1, 1]) : 0,
+        stagger: rand() < 0.55 ? pick([-1, 0.5, 1]) : 0,
       }),
     );
   }
   /* Nothing shipped is still. If the dice left every arm holding, the whole
      composition turns instead. */
-  const moving = arms.some((a) => a.spin || a.pulse || a.sway || a.march);
+  const moving = arms.some(
+    (a) => a.spin || a.pulse || a.sway || a.march || (a.wave > 0 && a.ripple),
+  );
 
   return normalize({
     ...base,
@@ -870,6 +901,7 @@ export function normalize(raw: Partial<TileSpec>): TileSpec {
       twist: clamp(arm.twist, -540, 540, 0),
       wave: clamp(arm.wave, 0, 1, 0),
       waves: clamp(arm.waves, 0, 12, 2),
+      ripple: Math.round(clamp(arm.ripple, -6, 6, 0)),
       turn: clamp(arm.turn, -360, 360, 0),
       beads: Math.round(clamp(arm.beads, 1, 40, 7)),
       stretch: clamp(arm.stretch, 0, 6, 0),
@@ -880,6 +912,9 @@ export function normalize(raw: Partial<TileSpec>): TileSpec {
       pulse: clamp(arm.pulse, -0.6, 0.6, 0),
       sway: clamp(arm.sway, -180, 180, 0),
       march: Math.round(clamp(arm.march, -6, 6, 0)),
+      /* Not rounded, and it doesn't need to be: a delay is a phase, and a
+         phase offset of something periodic is still periodic. */
+      stagger: clamp(arm.stagger, -2, 2, 0),
       mute: arm.mute === true ? true : undefined,
     } satisfies Arm;
   });
