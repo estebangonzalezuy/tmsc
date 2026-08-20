@@ -540,6 +540,79 @@ export const TOOLS: ToolDef[] = [
       ]);
     },
   },
+  {
+    id: "tile",
+    name: "the Tile",
+    about: "A framed square of hand-cut ornament, turning. No words in it at all.",
+    fields: [
+      {
+        key: "tile",
+        label: "which one",
+        kind: "choice",
+        values: [
+          { value: "spokes", label: "spokes" },
+          { value: "flames", label: "flames" },
+          { value: "pinwheel", label: "pinwheel" },
+          { value: "bloom", label: "bloom" },
+          { value: "union", label: "union" },
+          { value: "leaves", label: "leaves" },
+          { value: "orbit", label: "orbit" },
+          { value: "cross", label: "cross" },
+          { value: "star", label: "star" },
+          { value: "rings", label: "rings" },
+          { value: "alarm", label: "alarm" },
+          { value: "beacon", label: "beacon" },
+          { value: "carnival", label: "carnival" },
+        ],
+      },
+      {
+        key: "palette",
+        label: "colour",
+        kind: "choice",
+        values: [
+          { value: "own", label: "its own" },
+          { value: "harbour", label: "harbour" },
+          { value: "thicket", label: "thicket" },
+          { value: "ember", label: "ember" },
+          { value: "flag", label: "flag" },
+          { value: "union", label: "union" },
+          { value: "garden", label: "garden" },
+          { value: "night", label: "night" },
+          { value: "signal", label: "signal" },
+          { value: "cocoa", label: "cocoa" },
+          { value: "peach", label: "peach" },
+          { value: "sunny", label: "sunny" },
+          { value: "alarm", label: "alarm" },
+          { value: "carnival", label: "carnival" },
+        ],
+      },
+      { key: "density", label: "how much", kind: "number", min: 0, max: 100, step: 5 },
+      { key: "hand", label: "the hand", kind: "number", min: 0, max: 100, step: 5 },
+      FORMAT_FIELD,
+    ],
+    defaults: { tile: "spokes", palette: "own", density: 50, hand: 40, format: "square" },
+    /* The one tool with nothing to say. A tile has no words in it — that is
+       what it is — so every part of the sheet is off and the layer is the
+       whole post. It still goes through `build`, and it still comes out as a
+       PostSpec the studio can reopen, because that is the contract. */
+    build: (p) =>
+      post(fmt(p), 8, [
+        sheet({
+          veil: 0,
+          grid: 0,
+          off: ["kicker", "title", "body", "mark", "rules", "footer"],
+          layers: [
+            {
+              ...defaultLayer("tiles"),
+              tile: str(p, "tile") || "spokes",
+              tpalette: str(p, "palette") || "own",
+              tdensity: Math.min(1, Math.max(0, int(p, "density", 50) / 100)),
+              thand: Math.min(1, Math.max(0, int(p, "hand", 40) / 100)),
+            },
+          ],
+        }),
+      ]),
+  },
 ];
 
 export const toolDef = (id: string) => TOOLS.find((t) => t.id === id);

@@ -25,6 +25,7 @@ import {
   type Theme,
 } from "@/lib/postlab";
 import { drawKineticLayer } from "@/components/kinetics/asLayer";
+import { drawTileLayer } from "@/components/tiles/asLayer";
 import type { SceneId } from "@/lib/kinetics";
 import { photo } from "./photos";
 import { clip, frameAt } from "./clips";
@@ -175,6 +176,21 @@ export function drawGenerative(
      which slide it is on. */
   words = "",
 ) {
+  if (spec.type === "tiles") {
+    const named = String(spec.tpalette ?? "own");
+    drawTileLayer(ctx, String(spec.tile ?? "spokes"), t, w, h, {
+      format: format ?? "portrait",
+      duration,
+      density: num(spec.tdensity, 0.5),
+      hand: num(spec.thand, 0.4),
+      boil: num(spec.tboil, 3),
+      palette: named === "own" ? undefined : named,
+      /* Only when the layer was told to mix. A tile's own inks are part of
+         what it is, so the post's palette has to be asked for. */
+      inks: color?.ink === "mix" ? (color.inks ?? color.palette) : undefined,
+    });
+    return;
+  }
   if (spec.type === "kinetics") {
     drawKineticLayer(ctx, String(spec.scene ?? "stagger") as SceneId, t, w, h, {
       words,

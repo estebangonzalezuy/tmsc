@@ -354,6 +354,13 @@ Four things extend the dithering vocabulary rather than sitting beside it:
   one door — the `media` block in `source` takes a picture, a film or a GIF and
   puts the layer on `photo` itself, because a file *is* the choice of what to
   draw.
+**the Tiles is one of the layer types too.** `type: "tiles"` draws a tile from
+the third studio — `components/tiles/asLayer.ts` builds a TileSpec from one of
+its thirteen recipes and hands it to the same renderer, so again there is no
+second implementation. It is `generative` for the same reasons, and it is the
+one layer that paints its own palette: a tile is three flat inks by
+construction, and `ink: "mix"` is how the post takes the colour back.
+
 **the Kinetics is one of the layer types.** `type: "kinetics"` draws a scene
 from the other studio — `components/kinetics/asLayer.ts` builds a KineticSpec
 out of the slide it is on and hands it to the same renderer, so there is no
@@ -478,11 +485,71 @@ the same clear punches holes through the piece — `paint` lays the ground back
 in with `destination-over` rather than forking the filters to know about this
 studio.
 
+## the Tiles (`/tiles`)
+
+The club's third studio, and the one with no words in it. The Posts Studio sets
+a headline on a sheet; the Kinetics makes the words the picture; a **tile** is
+a framed square of hand-cut folk ornament — radial, flat-coloured, printed
+rather than rendered. Documented in `docs/THE-TILES.md`; read that before
+touching it.
+
+Thirteen reference tiles produced one grammar, and it is deliberately five
+things: **a frame · a panel · some guides · a stack of arms · a centre.**
+Everything that looked like a sixth turned out to be an arm — the pinwheel
+field behind the rays is an arm of wide wedges, the beads on a spoke are an arm
+of beads, the four dots in the corners are an arm of four. A tile is not a
+background plus a foreground; it is a stack of repeats around one point, and
+saying so is what keeps the tool small.
+
+- `lib/tiles.ts` — the **TileSpec**, the eight shapes, thirteen palettes,
+  thirteen recipes, `randomTile`, and base64url encode/decode. The spec travels
+  in the URL exactly as a PostSpec does.
+- `components/tiles/render.ts` — `paint(ctx, spec, p, w, h)`, the one entry
+  point the stage, the thumbnails and the exporter all use.
+- `Tiles.tsx` (the studio, Toolcraft chrome), `Stage.tsx` (plus `Thumb`, a real
+  thumbnail that follows the playhead), `exports.ts`, `asLayer.ts`.
+
+Three rules hold it together:
+
+- **Nothing is drawn straight.** Every closed shape is built as an exact
+  outline and then pushed about by `wobbleClosed` before it is filled — smooth
+  noise along the outline's own arc length, along each point's own normal. The
+  noise *wraps* (a whole number of wavelengths, lattice index modulo the
+  count), or every shape has one visible join, which is the one place a
+  hand-drawn look reads as a bug. And the hand is capped against the mark's own
+  width, or the shake that ruffles a blade turns a bead into a burr. The sketch
+  is the geometry; don't add a sketchy filter.
+- **The loop is a contract.** Whole turns, whole beads, one cosine over the
+  loop, all rounded in `normalize`. `boil` is the same idea for the hand
+  itself: the wobble's seed steps through whole redrawings and lands back on
+  the first, which is how a hand-drawn thing moves when nothing in it is
+  moving — and why a tile with every arm held still is not a still image.
+- **A wave is a distance, not an angle.** Written as an angle the same few
+  degrees are a few pixels near the middle and half the panel at the rim. The
+  meander is measured across the ray and damped near the centre, so one wave
+  setting is one wave everywhere along it.
+
+Colour parts company with the site here, the way the Kinetics does: a tile is
+three or four flat inks by construction and there is no monochrome version of
+one that is the same object. A palette is four slots — band, ticks, panel,
+inks — and they travel together because in the references they were chosen
+together.
+
+Adding a shape is one entry in `SHAPES` plus a row in `PROFILE` and `CAPPED`,
+and no UI work — the arm block is generated from the shape list. Before adding
+one, ask whether it is really the same shape with a different profile.
+
+Two other front doors, both of which come free from the spec being a function:
+**`type: "tiles"` is a Posts Studio layer** (canvas 2D, periodic in the post's
+duration, so a reel with one in it still loops — and the one layer that brings
+its own colour, unless its `ink` is `"mix"`), and **`/tools/tile`** is the tool,
+the only one with nothing to say.
+
 ## the Tools (`/tools`)
 
 The everyday front door to the studio: small tools, one thing each. A note, a
 countdown, a quote card, a monthly round-up, a number, a practice card, a
-pixel note. `/tools` is the wall (every tool showing what it makes, rendered
+pixel note, a tile. `/tools` is the wall (every tool showing what it makes, rendered
 live), `/tools/<id>` is the tool.
 
 **the Note leads** because it is the one that takes a thought of any length and

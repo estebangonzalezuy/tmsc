@@ -1040,6 +1040,11 @@
     },
     {
       "group": "The instruments",
+      "name": "the Tiles",
+      "href": "/tiles"
+    },
+    {
+      "group": "The instruments",
       "name": "the Curator",
       "href": "/curate"
     },

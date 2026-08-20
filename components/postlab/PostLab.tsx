@@ -152,6 +152,7 @@ const FAMILY_NAMES: Record<string, string> = {
   plain: "nothing",
   pixelated: "the club's pixels",
   kinetic: "the Kinetics",
+  tile: "the Tiles",
   clean: "clean shaders",
 };
 

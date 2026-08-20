@@ -34,9 +34,9 @@ export type Theme = "light" | "dark";
  * a clean layer can be put through the pixelate filter and come out in the
  * club's pixels, which is the point of splitting the two in the first
  * place. Drawing and screening stopped being the same decision. */
-export type ShaderFamily = "plain" | "pixelated" | "clean" | "kinetic";
+export type ShaderFamily = "plain" | "pixelated" | "clean" | "kinetic" | "tile";
 
-export type ShaderType = "none" | "dithering" | "forms" | "kinetics" | CleanType;
+export type ShaderType = "none" | "dithering" | "forms" | "kinetics" | "tiles" | CleanType;
 
 /* ------------------------------------------------------------------ waves */
 
@@ -1209,6 +1209,77 @@ const kineticsLayer: ShaderDef = {
   ],
 };
 
+/* the Tiles, borrowed whole.
+ *
+ * The third studio available as one layer of a post, drawn by the same
+ * renderer from one of its thirteen starting points. One `tile` choice and one
+ * `tdensity` dial that means "more of it" whichever tile is showing — the full
+ * control set lives in the Tiles, which is where it belongs.
+ *
+ * It counts as `generative` for the same reason the Kinetics does: canvas 2D,
+ * a pure function of the frame, periodic in the post's duration. So the
+ * exporter draws it directly and a reel with one in it still loops.
+ *
+ * It is the one layer that brings its own colour. A tile is three or four flat
+ * inks by construction, and a two-tone tile is not a quieter tile, it is a
+ * different object. Set the layer's ink to `mix` and the post's palette takes
+ * over the ornament, which is the escape hatch. */
+const tilesLayer: ShaderDef = {
+  type: "tiles",
+  label: "tile",
+  animated: true,
+  kind: "generative",
+  family: "tile",
+  controls: [
+    { key: "tdensity", label: "density", min: 0, max: 1, step: 0.02, def: 0.5 },
+    { key: "thand", label: "the hand", min: 0, max: 1, step: 0.02, def: 0.4 },
+    { key: "tboil", label: "boil", min: 0, max: 12, step: 1, def: 3 },
+  ],
+  choices: [
+    {
+      key: "tile",
+      label: "tile",
+      values: [
+        "spokes",
+        "flames",
+        "pinwheel",
+        "bloom",
+        "union",
+        "leaves",
+        "orbit",
+        "cross",
+        "star",
+        "rings",
+        "alarm",
+        "beacon",
+        "carnival",
+      ],
+      def: "spokes",
+    },
+    {
+      key: "tpalette",
+      label: "palette",
+      values: [
+        "own",
+        "harbour",
+        "thicket",
+        "ember",
+        "flag",
+        "union",
+        "garden",
+        "night",
+        "signal",
+        "cocoa",
+        "peach",
+        "sunny",
+        "alarm",
+        "carnival",
+      ],
+      def: "own",
+    },
+  ],
+};
+
 export const SHADERS: ShaderDef[] = [
   {
     type: "none",
@@ -1221,6 +1292,7 @@ export const SHADERS: ShaderDef[] = [
   paperDithering,
   ditheredForms,
   kineticsLayer,
+  tilesLayer,
   ...cleanDefs,
 ];
 
