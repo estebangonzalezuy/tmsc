@@ -124,7 +124,8 @@ actually need — the *sheet*.
   that mixes roman and italic, small labels in the corners. A ground from
   `GROUNDS` (paper, ash, cream, slate — neutrals, not the palette), a `grid`
   column count, `veil: 0`, one layer of type `"none"`. This is the club's
-  default register and the one the recipes lead with.
+  default register, and the sheet the pictures in the recipe shelf are printed
+  on as much as the headlines are.
 - **the club's pixels** — the dithered graphics below, on the sheet or
   instead of it.
 
@@ -176,12 +177,27 @@ at all. An effect's numbers travel like any other: `resolveFilter` hands the
 chain already-resolved values, so an effect still never reads the clock itself
 and still can't be the reason a loop stops closing.
 
-That rule is also why nothing in the tool *offers* the WebGL dithering or the
-clean shaders as animated things any more — they move but they don't close
-their loop, so a recipe that let one run would be handing over a post with a
-seam in it. They stay selectable under `draws`, because links from months ago
-name them and the spec is backwards-compatible; just don't reach for one when
-writing a recipe.
+That rule is why the clean half is five shaders and not seventeen. Every one
+of them ran on `u_time` and there were only ever two endings: time reaches the
+picture through a `sin`, a `cos` or a `fract`, and the shader has a **period**
+— or it reaches the picture as an offset walking through noise, and never
+closes. Voronoi, swirl, spiral, dot orbit and colour panels have one; liquid
+metal, gem smoke, mesh gradient, water, metaballs, neuro noise, warp, the
+grain gradient and the smoke ring walk; god rays has a period 500 units long,
+which at one lap over a post is a grey blur; waves and paper texture never
+mentioned time at all. The nine walkers and the three that can't move are gone
+from `draws`, mapped in `LEGACY_TYPES` onto the club's own renderer so the
+links that name one still open — and now loop, which they never did.
+
+The five that stayed are driven in **whole laps of their own period**, which
+is why they have a `laps` control and no `speed`: `speed = laps × period /
+duration` is arithmetic, not a tempo, and it puts the shader's first frame at
+the post's last one. Each `period` in `CLEAN` is measured as well as reasoned
+— render frame 0 and frame `period`, and the two are identical to the byte.
+
+The WebGL dithering is the one that is left out for the old reason: its shapes
+advance through noise that never repeats. It stays selectable because links
+from months ago name it; `loopReport` says so before an export.
 
 `SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
 bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
@@ -210,14 +226,15 @@ Both families of graphics remain, with filters between them:
 - **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
   forms renderer (`components/postlab/generative.ts`, canvas 2D). Hard
   edges, thresholded, loops seamlessly.
-- **clean** — the rest of Paper Shaders (`PaperLayer.tsx`): liquid metal,
-  mesh gradient, gem smoke, god rays, water, voronoi, warp and the others.
-  They draw an image rather than a screen of pixels.
+- **clean** — the five of Paper Shaders' other families that close a loop
+  (`PaperLayer.tsx`): voronoi, swirl, spiral, dot orbit, colour panels. They
+  draw an image rather than a screen of pixels, and they are geared in whole
+  laps of their own period rather than given a speed.
 - **filters** (`filters.ts`) run over a layer *after* it is drawn, and
   `pixelate` is one of them. That is the whole point of the split: the
   club's screen is no longer welded to the thing that drew the image, so a
-  liquid-metal layer can come out in the club's pixels. Drawing and
-  screening are separate decisions now.
+  swirl layer can come out in the club's pixels. Drawing and screening are
+  separate decisions now.
 
 Filters take no time as an input — not even the grain — so a filter can
 never be the reason a loop stops closing. Keep it that way.
@@ -406,6 +423,18 @@ half-applied style. And the Kinetics exception (switching the headline off,
 since its layer is already drawing it) is undone by every other register when
 you pick one, or picking a scene and then a sheet would leave you with a sheet
 and no words on it.
+
+**The recipe shelf is two halves, and the pictures come first.** `PRESETS` in
+`lib/postlab.ts` used to be thirteen headlines on paper, which said the tool
+made captions. Nine of the seventeen now are pictures — a tile, a burst of
+marks, a rosette, an ornament through the club's screen, the dithered M, an
+interference pattern, a colour field, a Kinetics scene, a reel — built with
+`graphic()`, which is `sheet()`'s opposite number: the words switched off a
+part at a time rather than with `text: false`, so the club's handle survives in
+the corner and the sheet's ruling and marks still draw. The typographic
+recipes follow. `openingSpec()` names its recipe rather than taking
+`PRESETS[0]`, because the post the studio opens on should still have somewhere
+to type.
 
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
   `varyStyle`, plus `randomSlide` for a look rolled from nothing (the

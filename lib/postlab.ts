@@ -6,7 +6,7 @@
 // URL hash (/postlab#spec=...), so anything that can build JSON — including
 // a Claude conversation reading a Notion doc — can deep-link a ready post.
 
-export const SPEC_VERSION = 10;
+export const SPEC_VERSION = 11;
 
 export type PostFormat = "square" | "portrait" | "story" | "landscape";
 
@@ -757,6 +757,11 @@ export type ShaderChoice = {
 export type ShaderDef = {
   type: ShaderType;
   label: string;
+  /** Clean shaders only: `u_time` in one turn of the shader's own cycle, so
+      the layer can be driven in whole laps of it and land back on frame one.
+      Absent everywhere else — the canvas renderers take the post's duration
+      itself as their period. */
+  period?: number;
   /** Which half of the tool it belongs to. Absent means pixelated, which is
       what everything was before there was a second half. */
   family?: ShaderFamily;
@@ -937,132 +942,65 @@ const n = (
   label = key,
 ): ShaderControl => ({ key, label, min, max, step, def });
 
-const c = (key: string, values: string[], def: string, label = key): ShaderChoice => ({
-  key,
-  label,
-  values,
+
+/* The clean half: Paper Shaders' other families, which draw an image rather
+ * than a screen of pixels.
+ *
+ * There used to be seventeen. There are five, and the cut is the loop.
+ *
+ * Every one of these runs on `u_time`, and there are only two ways that ends.
+ * Either time reaches the picture through a `sin`, a `cos` or a `fract` — in
+ * which case the shader has a **period**: an amount of `u_time` after which it
+ * is showing exactly the first frame again — or it reaches the picture as an
+ * offset walking through noise, in which case there is no period and never
+ * will be. Liquid metal walks (`snoise(uv - t)`), so do gem smoke, mesh
+ * gradient, water, metaballs, neuro noise, warp, the grain gradient and the
+ * smoke ring; god rays *does* have a period, but it is 500 `u_time` units long
+ * and a post that ran it in one lap would be a grey blur. Waves and paper
+ * texture never mentioned time at all — they are pictures, not animations.
+ * None of them can be shipped as a loop, so none of them is offered; the
+ * removed names are mapped onto the club's own renderer in `LEGACY_TYPES`, so
+ * every link written when they existed still opens and now loops.
+ *
+ * The five that stayed are driven in **whole laps of their own period**, which
+ * is the same promise a travelling number makes and the same arithmetic:
+ * `speed = laps × period / duration`, so the last frame of the post is the
+ * first frame of the shader. That is why `speed` is not a control here any
+ * more. A free speed on a periodic shader is a seam with extra steps.
+ *
+ * Colour is not in here on purpose. Each of these takes a different set of
+ * colour props and the club's answer is always the same — the slide's two
+ * tones, or the layer's inks when colour was asked for — so it is worked
+ * out in one place (`paintProps`) rather than five times. */
+
+/** How many whole turns of the shader's own cycle happen over the post. */
+const laps = (def = 1): ShaderControl => ({
+  key: "laps",
+  label: "laps",
+  min: 1,
+  max: 6,
+  step: 1,
   def,
 });
 
 const CLEAN: {
   type: string;
   label: string;
+  /** `u_time` in one full turn of this shader's own cycle. Worked out from
+      the shader's source: how far time has to travel before every `sin`,
+      `cos` and `fract` it feeds is back where it started. */
+  period: number;
   controls: ShaderControl[];
   choices?: ShaderChoice[];
 }[] = [
   {
-    type: "metal",
-    label: "liquid metal",
-    controls: [
-      speed(1),
-      scale(1),
-      n("repetition", 1, 8, 0.1, 2),
-      n("distortion", 0, 1, 0.01, 0.07),
-      n("contour", 0, 1, 0.01, 0.4),
-      n("softness", 0, 1, 0.01, 0.1),
-      n("shiftRed", -1, 1, 0.01, 0.3, "red"),
-      n("shiftBlue", -1, 1, 0.01, 0.3, "blue"),
-      n("angle", 0, 360, 1, 70),
-    ],
-    choices: [
-      /* "none" fills the frame, which is what a background wants; the
-         shapes are there for when it shouldn't. */
-      c("shape", ["none", "circle", "daisy", "metaballs", "diamond"], "none"),
-    ],
-  },
-  {
-    type: "mesh",
-    label: "mesh gradient",
-    controls: [speed(1), n("distortion", 0, 1, 0.01, 0.8), n("swirl", 0, 1, 0.01, 0.1)],
-  },
-  {
-    type: "smoke",
-    label: "gem smoke",
-    controls: [
-      speed(1),
-      scale(0.6),
-      n("size", 0, 2, 0.01, 0.8),
-      n("innerDistortion", 0, 2, 0.01, 0.8, "inner"),
-      n("outerDistortion", 0, 2, 0.01, 0.6, "outer"),
-      n("outerGlow", 0, 1, 0.01, 0.55, "glow"),
-      n("angle", 0, 360, 1, 0),
-    ],
-    choices: [c("shape", ["circle", "diamond", "square"], "diamond")],
-  },
-  {
-    type: "rays",
-    label: "god rays",
-    controls: [
-      speed(0.75),
-      n("density", 0, 1, 0.01, 0.3),
-      n("intensity", 0, 1, 0.01, 0.8),
-      n("spotty", 0, 1, 0.01, 0.3),
-      n("bloom", 0, 1, 0.01, 0.4),
-      n("midSize", 0, 1, 0.01, 0.2, "mid size"),
-    ],
-  },
-  {
-    type: "grain",
-    label: "grain gradient",
-    controls: [
-      speed(1),
-      n("softness", 0, 1, 0.01, 0.5),
-      n("intensity", 0, 1, 0.01, 0.5),
-      n("noise", 0, 1, 0.01, 0.25),
-    ],
-    choices: [
-      c(
-        "shape",
-        ["wave", "dots", "truchet", "corners", "ripple", "blob", "sphere"],
-        "corners",
-      ),
-    ],
-  },
-  {
-    type: "water",
-    label: "water",
-    controls: [
-      speed(1),
-      scale(0.8),
-      n("size", 0, 2, 0.01, 1),
-      n("waves", 0, 1, 0.01, 0.3),
-      n("caustic", 0, 1, 0.01, 0.1),
-      n("edges", 0, 1, 0.01, 0.8),
-      n("layering", 0, 1, 0.01, 0.5),
-    ],
-  },
-  {
-    type: "ring",
-    label: "smoke ring",
-    controls: [
-      speed(0.5),
-      scale(0.8),
-      n("radius", 0, 1, 0.01, 0.25),
-      n("thickness", 0, 1, 0.01, 0.65),
-      n("innerShape", 0, 2, 0.01, 0.7, "inner"),
-      n("noiseScale", 0.5, 6, 0.1, 3, "noise"),
-    ],
-  },
-  {
-    type: "balls",
-    label: "metaballs",
-    controls: [speed(1), scale(1), n("count", 1, 20, 1, 10), n("size", 0, 2, 0.01, 0.83)],
-  },
-  {
-    type: "neuro",
-    label: "neuro noise",
-    controls: [
-      speed(1),
-      scale(1),
-      n("brightness", 0, 1, 0.01, 0.05),
-      n("contrast", 0, 1, 0.01, 0.3),
-    ],
-  },
-  {
     type: "cells",
     label: "voronoi",
+    /* Time only ever appears as `sin(t + TWO_PI * o)` on each cell's own
+       offset, so one turn is 2π and nothing else in the shader moves. */
+    period: 2 * Math.PI,
     controls: [
-      speed(0.5),
+      laps(1),
       scale(0.5),
       n("distortion", 0, 1, 0.01, 0.4),
       n("gap", 0, 0.5, 0.01, 0.04),
@@ -1071,24 +1009,13 @@ const CLEAN: {
     ],
   },
   {
-    type: "warpfield",
-    label: "warp",
-    controls: [
-      speed(1),
-      n("proportion", 0, 1, 0.01, 0.45),
-      n("softness", 0, 1, 0.01, 1),
-      n("distortion", 0, 1, 0.01, 0.25),
-      n("swirl", 0, 1, 0.01, 0.8),
-      n("shapeScale", 0, 1, 0.01, 0.1, "shape sc."),
-      n("rotation", 0, 360, 1, 0),
-    ],
-    choices: [c("shape", ["stripes", "checks", "edge"], "checks")],
-  },
-  {
     type: "twist",
     label: "swirl",
+    /* `angle = bands * atan(uv) + t`, read through `fract(angle / TWO_PI)`:
+       2π of time is the bands turned exactly one band further. */
+    period: 2 * Math.PI,
     controls: [
-      speed(0.32),
+      laps(1),
       n("bandCount", 1, 12, 1, 4, "bands"),
       n("twist", 0, 1, 0.01, 0.1),
       n("center", 0, 1, 0.01, 0.2),
@@ -1097,23 +1024,16 @@ const CLEAN: {
     ],
   },
   {
-    type: "ripples",
-    label: "waves",
-    controls: [
-      scale(0.6),
-      n("frequency", 0, 2, 0.01, 0.5),
-      n("amplitude", 0, 2, 0.01, 0.5),
-      n("spacing", 0, 3, 0.01, 1.2),
-      n("proportion", 0, 1, 0.01, 0.1),
-      n("softness", 0, 1, 0.01, 0),
-      n("rotation", 0, 360, 1, 0),
-    ],
-  },
-  {
     type: "coil",
     label: "spiral",
+    /* The stripe is `fract(l + (atan - t) / TWO_PI - distortion * …)`, so the
+       spiral itself turns once in 2π. The distortion term looks like it wants
+       4π — `sin(4l - .5t) * cos(PI + l + .5t)` — but a product of those two is
+       a sum of sines in whole `t`, so it lands on 2π as well. Measured, not
+       assumed: at 2π the frame is identical to frame zero. */
+    period: 2 * Math.PI,
     controls: [
-      speed(1),
+      laps(1),
       scale(1),
       n("density", 0, 4, 0.05, 1),
       n("distortion", 0, 1, 0.01, 0),
@@ -1126,8 +1046,11 @@ const CLEAN: {
   {
     type: "orbit",
     label: "dot orbit",
+    /* Each dot wobbles on `cos(t + TWO_PI * rand)` — 2π — inside a cell that
+       is rotated by `.1 * t`, which needs 20π for a whole turn. */
+    period: 20 * Math.PI,
     controls: [
-      speed(1.5),
+      laps(1),
       scale(1),
       n("size", 0, 2, 0.01, 1),
       n("sizeRange", 0, 1, 0.01, 0),
@@ -1137,8 +1060,14 @@ const CLEAN: {
   {
     type: "panels",
     label: "colour panels",
+    /* The one that says so itself: `t = fract(.02 * u_time)`, so the panels
+       have crossed the frame exactly once every 50. Some densities repeat
+       sooner — three panels come round again at 50/6 — but 50 is the one that
+       holds whatever the rest of the controls say, and a period that depends
+       on another dial is a seam waiting for someone to move it. */
+    period: 50,
     controls: [
-      speed(0.5),
+      laps(1),
       scale(0.8),
       n("density", 1, 8, 1, 3),
       n("length", 0, 3, 0.05, 1.1),
@@ -1146,20 +1075,6 @@ const CLEAN: {
       n("gradient", 0, 1, 0.01, 0),
       n("angle1", 0, 360, 1, 0, "angle a"),
       n("angle2", 0, 360, 1, 0, "angle b"),
-    ],
-  },
-  {
-    type: "paper",
-    label: "paper texture",
-    controls: [
-      scale(0.6),
-      n("contrast", 0, 1, 0.01, 0.3),
-      n("roughness", 0, 1, 0.01, 0.4),
-      n("fiber", 0, 1, 0.01, 0.3),
-      n("crumples", 0, 1, 0.01, 0.3),
-      n("folds", 0, 1, 0.01, 0.65),
-      n("foldCount", 0, 12, 1, 5, "fold no."),
-      n("drops", 0, 1, 0.01, 0.2),
     ],
   },
 ];
@@ -1172,6 +1087,7 @@ const cleanDefs: ShaderDef[] = CLEAN.map((s) => ({
   animated: true,
   kind: "shader",
   family: "clean",
+  period: s.period,
   controls: s.controls,
   choices: s.choices,
 }));
@@ -1359,9 +1275,11 @@ export function resolveFilter(f: FilterSpec, tt: number): FilterSpec {
 /* Whether a background returns to where it started at the end of the post.
    The club's own forms renderer is written to: every form is periodic in
    the post duration, and so is the colour rotation and any wave above. The
-   WebGL dithering is a different matter — its shapes advance through noise
-   that never repeats, so a recorded window has a seam. `swirl` is the
-   exception: it ignores time entirely. */
+   clean shaders are too, now that only the periodic ones are offered and they
+   are driven in whole laps of their own period. The WebGL dithering is the
+   one that is left — its shapes advance through noise that never repeats, so
+   a recorded window has a seam. `swirl` is the exception: it ignores time
+   entirely. */
 const LOOPING_SHAPES = ["swirl"];
 
 export function layerLoops(layer: LayerSpec): boolean {
@@ -1845,18 +1763,16 @@ function randomTile(rand: () => number): SlideStyle {
   };
 }
 
-/* Not here: the WebGL half — the clean shaders and the original dithering.
+/* Not here: the WebGL half — the five clean shaders and the original dithering.
  *
- * The loop is no longer the reason. Frozen at `speed: 0` one of them is a
- * still image, `layerLoops` says as much itself, and a still ground under a
- * moving mark is exactly what the sheet register already is. The reason is
- * that you would never see it: a `Poster` is canvas 2D, so it draws the
+ * For the clean five the loop is no longer the reason; they are periodic and
+ * geared in whole laps, which is the whole point of the cull above. The reason
+ * is that you would never see one: a `Poster` is canvas 2D, so it draws the
  * families that are a function of the frame and paints nothing at all where a
- * WebGL layer is — the shelf of twelve would show three empty sheets and only
- * admit what they were once you clicked one. A roll whose picture is a lie is
- * worse than a shorter list, which is the same argument as before with a
- * different subject. Give `Poster` a way to draw them and this becomes a sixth
- * entry below and nothing else.
+ * WebGL layer is — a shelf of twelve would show empty sheets and only admit
+ * what they were once you clicked one. A roll whose picture is a lie is worse
+ * than a shorter list. Give `Poster` a way to draw them and this becomes a
+ * fifth entry below and nothing else.
  */
 
 /* The registers, and how often each turns up. The weights are the argument in
@@ -2121,6 +2037,22 @@ const LEGACY_TYPES: Record<string, Partial<ShaderSpec>> = {
   scatter: { type: "dithering", shape: "dots" },
   ramp: { type: "forms", pattern: "ramp" },
   letters: { type: "forms", pattern: "letter" },
+
+  /* The clean shaders that were taken out because they cannot close a loop.
+     They land on the club's own renderer rather than on another clean shader:
+     the look is gone either way, and this way the link that named one comes
+     back as something that is periodic in the post's duration — which is what
+     it should have been in the first place. `mesh`, `smoke` and `rays` are
+     already mapped above, from an older round of the same argument. */
+  metal: { type: "forms", pattern: "blobs" },
+  grain: { type: "forms", pattern: "noise" },
+  water: { type: "forms", pattern: "noise" },
+  ring: { type: "forms", pattern: "rings" },
+  balls: { type: "forms", pattern: "blobs" },
+  neuro: { type: "forms", pattern: "noise" },
+  warpfield: { type: "forms", pattern: "grid" },
+  ripples: { type: "forms", pattern: "bars" },
+  paper: { type: "forms", pattern: "noise" },
 };
 
 function mapLegacyLayer(l: Partial<LayerSpec> | undefined) {
@@ -2439,7 +2371,318 @@ const sheet = (partial: Partial<SlideSpec> = {}): SlideSpec =>
     ...partial,
   });
 
+/* The other half of the shelf: a post that is a picture rather than a
+   sentence.
+
+   The words are switched off a part at a time rather than with `text: false`,
+   so the club's handle survives in the corner and the sheet's ruling and its
+   marks still draw — a graphic with a handle on it is still a club post, and
+   the headline is one switch away in the type panel when it wants one. Pass
+   `note: ""` for a picture with nothing on it at all. */
+const graphic = (partial: Partial<SlideSpec> = {}): SlideSpec =>
+  defaultSlide({
+    kicker: "",
+    body: "",
+    footer: "",
+    letter: "",
+    mark: "none",
+    note: "@themotionsocialclub",
+    veil: 0,
+    grid: 0,
+    off: ["kicker", "title", "body", "mark", "rules", "footer"],
+    ...partial,
+  });
+
 export const PRESETS: Preset[] = [
+  {
+    name: "the Tile",
+    about: "One tile from the third studio, printed edge to edge. No words on it at all.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        graphic({
+          note: "",
+          layers: [
+            {
+              ...defaultLayer("tiles"),
+              tile: "bloom",
+              tpalette: "thicket",
+              tdensity: 0.6,
+              thand: 0.45,
+              /* Boil is the hand redrawing the tile over the loop. It is why a
+                 tile with every arm held still is not a still image. */
+              tboil: 4,
+              motion: { thand: { to: 0.78, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "the Marks",
+    about: "A burst of strokes opening out of the centre and closing again. Nothing else on the sheet.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        graphic({
+          background: "#f4f3ef",
+          grid: 12,
+          gridAlpha: 0.09,
+          shapes: [
+            /* One stroke, twenty-four times around a ring, each turned a
+               twenty-fourth of a circle further than the last so it points
+               out of the middle — and the loop is plugged into the *spread*,
+               so what travels is the whole burst opening from the centre and
+               closing again. `repeat`, `along` and `twist` are doing all of
+               the drawing here; there is one mark in the spec. */
+            {
+              ...defaultShape("line"),
+              size: 0.3,
+              weight: 4,
+              repeat: 24,
+              along: "ring",
+              spread: 0.2,
+              twist: 15,
+              motion: { spread: { to: 0.44, wave: "sin", cycles: 1, phase: 0 } },
+            },
+            /* The centre it opens out of: a filled dot that shrinks as the
+               burst travels, so the two read as one movement. */
+            {
+              ...defaultShape("circle"),
+              size: 0.17,
+              weight: 0,
+              under: true,
+              motion: { size: { to: 0.05, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Rosette",
+    about: "Marks and deformers, and nothing else: one shape copied around a ring, turning as it goes.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        graphic({
+          background: "#e6e5e1",
+          grid: 8,
+          gridAlpha: 0.12,
+          shapes: [
+            /* One mark, copied around a ring and turned as it goes — the whole
+               point of the deformers in one shape. */
+            {
+              ...defaultShape("oval"),
+              size: 0.1,
+              weight: 2,
+              repeat: 14,
+              along: "ring",
+              spread: 0.38,
+              twist: 26,
+              motion: { rotation: { to: 180, wave: "sin", cycles: 1, phase: 0 } },
+            },
+            {
+              ...defaultShape("circle"),
+              size: 0.52,
+              weight: 2,
+              under: true,
+              opacity: 0.5,
+              motion: { size: { to: 0.58, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Through the screen",
+    about: "An ornament put through the club's own dither — the effect, not the renderer.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        graphic({
+          theme: "dark",
+          layers: [
+            {
+              ...defaultLayer("tiles"),
+              tile: "star",
+              tpalette: "flag",
+              tdensity: 0.45,
+              thand: 0.3,
+              tboil: 3,
+              /* The whole reason drawing and screening are separate decisions:
+                 the tile knows nothing about the club's pixels, and comes out
+                 in them anyway. */
+              filters: [{ type: "pixelate", cell: 7, amount: 1, dtype: "4x4" }],
+              motion: { thand: { to: 0.62, wave: "sin", cycles: 2, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "the Letter",
+    about: "The club's M, dithered enormous and bending — type as the picture, not over it.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 6,
+      slides: [
+        graphic({
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "letter",
+              word: "M",
+              warp: 0.35,
+              motion: { warp: { to: 0.75, wave: "sin", cycles: 1, phase: 0 } },
+            },
+            {
+              ...defaultLayer("forms"),
+              pattern: "noise",
+              density: 14,
+              pixel: 3,
+              blend: "multiply",
+              opacity: 0.5,
+              motion: { warp: { to: 0.5, wave: "sin", cycles: 2, phase: 0.5 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* Two forms interfering inside one layer — the cheapest way to a
+       pattern neither of them makes alone. */
+    name: "Interference",
+    about: "Two forms arguing inside one layer, with nothing written on them.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 8,
+      slides: [
+        graphic({
+          note: "",
+          theme: "dark",
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "moire",
+              pattern2: "rings",
+              mix: "diff",
+              density: 10,
+              warp: 0.1,
+              pixel: 5,
+              /* The interference is the point, so the thing that travels is
+                 the density the two forms disagree about. */
+              motion: { density: { to: 16, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* Colour as a field rather than confetti: broad patches drifting slowly
+       through three of the palette's colours. */
+    name: "Colour field",
+    about: "No words at all: broad patches of the palette drifting on cream.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        graphic({
+          note: "",
+          background: "#fffdf0",
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              /* Clouds rather than metaballs: "source" colouring reads as a
+                 contour map, which needs a form with shading all over the
+                 frame to colour. */
+              pattern: "noise",
+              density: 10,
+              pixel: 7,
+              warp: 0.15,
+              speed: 0.35,
+              ink: "mix",
+              inks: ["#3d3deb", "#ee4b2b", "#adb4f5"],
+              mixMode: "source",
+              mixScale: 6,
+              mixSpeed: 0.5,
+              motion: { warp: { to: 0.45, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "the Scene",
+    about: "A scene from the Kinetics: the words are the picture, so nothing is drawn under them.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        graphic({
+          /* The scene draws this, which is why the typographic layer's own
+             headline is switched off: leaving it on would print it twice. */
+          title: "PRACTICE\nOVER\nTUTORIALS",
+          theme: "dark",
+          layers: [
+            {
+              ...defaultLayer("kinetics"),
+              scene: "arcs",
+              density: 0.55,
+              kface: "gothic",
+              kweight: 800,
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    name: "Reel",
+    about: "Nine-by-sixteen, no words, a tunnel that keeps arriving.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "story",
+      duration: 8,
+      slides: [
+        graphic({
+          theme: "dark",
+          /* Dithered forms rather than the WebGL dithering: this post is a
+             reel, so it has to loop, and only the club's own renderer
+             promises that. */
+          layers: [
+            {
+              ...defaultLayer("forms"),
+              pattern: "tunnel",
+              density: 4,
+              pixel: 8,
+              warp: 0.3,
+              speed: 0.4,
+              motion: { density: { to: 8, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
   {
     name: "Saved for later",
     about: "The monthly round-up cover: an oval date, one headline, ruled paper.",
@@ -2529,6 +2772,40 @@ export const PRESETS: Preset[] = [
     },
   },
   {
+    name: "Grid poster",
+    about: "The ruling crosses the words — a drawing rather than a caption.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        sheet({
+          title: "PRACTICE\nOVER\nTUTORIALS",
+          titleFont: "sans",
+          titleSize: "fit",
+          titleWeight: 700,
+          align: "left",
+          margin: 72,
+          grid: 6,
+          gridAlpha: 0.22,
+          gridTop: true,
+          footer: "the Motion Social Club",
+          off: ["kicker", "body", "mark"],
+          /* The club's boxed headline, reduced to four corners — and breathing,
+             because a mark in this studio is an animated thing. */
+          shapes: [
+            {
+              ...defaultShape("bracket"),
+              size: 0.94,
+              weight: 3,
+              motion: { size: { to: 0.88, wave: "sin", cycles: 2, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
     name: "Reference card",
     about: "One piece of work, credited: title at the top, the note in the corner.",
     spec: {
@@ -2565,84 +2842,6 @@ export const PRESETS: Preset[] = [
                  back over the loop, so the card is a piece of motion even
                  when the words don't move. */
               motion: { warp: { to: 0.55, wave: "sin", cycles: 1, phase: 0 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
-  {
-    name: "Grid poster",
-    about: "The ruling crosses the words — a drawing rather than a caption.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "square",
-      duration: 6,
-      slides: [
-        sheet({
-          title: "PRACTICE\nOVER\nTUTORIALS",
-          titleFont: "sans",
-          titleSize: "fit",
-          titleWeight: 700,
-          align: "left",
-          margin: 72,
-          grid: 6,
-          gridAlpha: 0.22,
-          gridTop: true,
-          footer: "the Motion Social Club",
-          off: ["kicker", "body", "mark"],
-          /* The club's boxed headline, reduced to four corners — and breathing,
-             because a mark in this studio is an animated thing. */
-          shapes: [
-            {
-              ...defaultShape("bracket"),
-              size: 0.94,
-              weight: 3,
-              motion: { size: { to: 0.88, wave: "sin", cycles: 2, phase: 0 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
-  {
-    name: "Rosette",
-    about: "Marks and deformers: one shape copied around a ring, turning as it goes.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "square",
-      duration: 8,
-      slides: [
-        sheet({
-          tag: "the club",
-          title: "Same rules.\n*Different piece.*",
-          titleFont: "serif",
-          titleSize: "m",
-          align: "center",
-          margin: 128,
-          grid: 8,
-          gridAlpha: 0.12,
-          off: ["kicker", "body", "mark", "rules"],
-          shapes: [
-            /* One mark, copied around a ring and turned as it goes — the whole
-               point of the deformers in one shape. */
-            {
-              ...defaultShape("oval"),
-              size: 0.1,
-              weight: 2,
-              repeat: 14,
-              along: "ring",
-              spread: 0.38,
-              twist: 26,
-              motion: { rotation: { to: 180, wave: "sin", cycles: 1, phase: 0 } },
-            },
-            {
-              ...defaultShape("circle"),
-              size: 0.52,
-              weight: 2,
-              under: true,
-              opacity: 0.5,
-              motion: { size: { to: 0.58, wave: "sin", cycles: 1, phase: 0 } },
             },
           ],
         }),
@@ -2743,164 +2942,20 @@ export const PRESETS: Preset[] = [
       ],
     },
   },
-  {
-    name: "Reel",
-    about: "Nine-by-sixteen, one thought, a background that keeps moving.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "story",
-      duration: 8,
-      slides: [
-        defaultSlide({
-          kicker: "the Motion Social Club",
-          title: "Motion design\nshouldn't feel\n*this lonely*.",
-          body: "Real conversations over algorithm-driven encounters.",
-          theme: "dark",
-          letter: "",
-          mark: "none",
-          /* A reel is read in a second, so the words get a plate rather than
-             being asked to survive whatever the tunnel does behind them —
-             the same answer the Type and Interference recipes give. */
-          plate: true,
-          veil: 0.25,
-          /* Dithered forms rather than the WebGL dithering: this post is a
-             reel, so it has to loop, and only the club's own renderer
-             promises that. */
-          layers: [
-            {
-              ...defaultLayer("forms"),
-              pattern: "tunnel",
-              density: 4,
-              pixel: 8,
-              warp: 0.3,
-              speed: 0.4,
-              motion: { density: { to: 8, wave: "sin", cycles: 1, phase: 0 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
-  {
-    name: "Type",
-    about: "The club's letter, dithered enormous, with the words on a plate.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "portrait",
-      duration: 6,
-      slides: [
-        defaultSlide({
-          kicker: "the Motion Social Club",
-          title: "Bend the grid.\nKeep the rhythm.",
-          plate: true,
-          veil: 0,
-          layers: [
-            {
-              ...defaultLayer("forms"),
-              pattern: "letter",
-              word: "M",
-              warp: 0.35,
-              motion: { warp: { to: 0.75, wave: "sin", cycles: 1, phase: 0 } },
-            },
-            {
-              ...defaultLayer("forms"),
-              pattern: "noise",
-              density: 14,
-              pixel: 3,
-              blend: "multiply",
-              opacity: 0.5,
-              motion: { warp: { to: 0.5, wave: "sin", cycles: 2, phase: 0.5 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
-  {
-    /* Two forms interfering inside one layer — the cheapest way to a
-       pattern neither of them makes alone. */
-    name: "Interference",
-    about: "Two forms arguing inside one layer — the dither at its least tidy.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "square",
-      duration: 8,
-      slides: [
-        defaultSlide({
-          kicker: "the Motion Social Club",
-          title: "Two simple rules,\none complicated result.",
-          italic: true,
-          plate: true,
-          veil: 0,
-          theme: "dark",
-          layers: [
-            {
-              ...defaultLayer("forms"),
-              pattern: "moire",
-              pattern2: "rings",
-              mix: "diff",
-              density: 10,
-              warp: 0.1,
-              pixel: 5,
-              /* The interference is the point, so the thing that travels is
-                 the density the two forms disagree about. */
-              motion: { density: { to: 16, wave: "sin", cycles: 1, phase: 0 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
-  {
-    /* Colour as a field rather than confetti: broad patches drifting slowly
-       through three of the palette's colours. */
-    name: "Colour field",
-    about: "No words at all: broad patches of the palette drifting on cream.",
-    spec: {
-      v: SPEC_VERSION,
-      format: "portrait",
-      duration: 8,
-      slides: [
-        defaultSlide({
-          kicker: "the Motion Social Club",
-          title: "",
-          footer: "",
-          letter: "",
-          text: false,
-          veil: 0,
-          background: "#fffdf0",
-          layers: [
-            {
-              ...defaultLayer("forms"),
-              /* Clouds rather than metaballs: "source" colouring reads as a
-                 contour map, which needs a form with shading all over the
-                 frame to colour. */
-              pattern: "noise",
-              density: 10,
-              pixel: 7,
-              warp: 0.15,
-              speed: 0.35,
-              ink: "mix",
-              inks: ["#3d3deb", "#ee4b2b", "#adb4f5"],
-              mixMode: "source",
-              mixScale: 6,
-              mixSpeed: 0.5,
-              motion: { warp: { to: 0.45, wave: "sin", cycles: 1, phase: 0 } },
-            },
-          ],
-        }),
-      ],
-    },
-  },
 ];
 
 /** The post the studio opens on when nothing was asked for. A real recipe
     rather than a blank: the fastest way to say what this tool makes now is
     to already be showing one. `defaultSpec` stays where it is — it is the
     normalisation baseline every link is minified against, and moving it
-    would change what an old link decodes to. */
+    would change what an old link decodes to.
+
+    Named rather than `PRESETS[0]`, because the shelf leads with pictures and
+    the post you open on is a sheet: a studio that opened on a wordless
+    ornament would look like it had nowhere to type. */
 export function openingSpec(): PostSpec {
-  return normalizeSpec(structuredClone(PRESETS[0].spec));
+  const opening = PRESETS.find((p) => p.name === "Saved for later") ?? PRESETS[0];
+  return normalizeSpec(structuredClone(opening.spec));
 }
 
 /** A headline with its emphasis markers taken out — for lists and labels,

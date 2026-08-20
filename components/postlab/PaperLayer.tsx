@@ -17,25 +17,7 @@
 // thing generating the image.
 
 import { useEffect, useRef } from "react";
-import {
-  ColorPanels,
-  DotOrbit,
-  GemSmoke,
-  GodRays,
-  GrainGradient,
-  LiquidMetal,
-  MeshGradient,
-  Metaballs,
-  NeuroNoise,
-  PaperTexture,
-  SmokeRing,
-  Spiral,
-  Swirl,
-  Voronoi,
-  Warp,
-  Water,
-  Waves,
-} from "@paper-design/shaders-react";
+import { ColorPanels, DotOrbit, Spiral, Swirl, Voronoi } from "@paper-design/shaders-react";
 import {
   PALETTE,
   paletteInk,
@@ -50,45 +32,25 @@ import { clock } from "./clock";
 import { applyFilters } from "./filters";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* Five of the seventeen. The other twelve walk through noise rather than
+   turning on a period, so they cannot be shipped as a loop and are not
+   offered — `LEGACY_TYPES` maps their names onto the club's own renderer so
+   the links that carry one still open. See the note above `CLEAN`. */
 const COMPONENTS: Record<string, any> = {
-  metal: LiquidMetal,
-  mesh: MeshGradient,
-  smoke: GemSmoke,
-  rays: GodRays,
-  grain: GrainGradient,
-  water: Water,
-  ring: SmokeRing,
-  balls: Metaballs,
-  neuro: NeuroNoise,
   cells: Voronoi,
-  warpfield: Warp,
   twist: Swirl,
-  ripples: Waves,
   coil: Spiral,
   orbit: DotOrbit,
   panels: ColorPanels,
-  paper: PaperTexture,
 };
 
 /** Which colour props each family actually reads. */
 const PAINT: Record<string, string[]> = {
-  metal: ["colorBack", "colorTint"],
-  mesh: ["colors"],
-  smoke: ["colorBack", "colorInner", "colors"],
-  rays: ["colorBack", "colorBloom", "colors"],
-  grain: ["colorBack", "colors"],
-  water: ["colorBack", "colorHighlight"],
-  ring: ["colorBack", "colors"],
-  balls: ["colorBack", "colors"],
-  neuro: ["colorBack", "colorMid", "colorFront"],
   cells: ["colors", "colorGap", "colorGlow"],
-  warpfield: ["colors"],
   twist: ["colorBack", "colors"],
-  ripples: ["colorBack", "colorFront"],
   coil: ["colorBack", "colorFront"],
   orbit: ["colorBack", "colors"],
   panels: ["colorBack", "colors"],
-  paper: ["colorBack", "colorFront"],
 };
 
 const CLEAR = "rgba(0,0,0,0)";
@@ -149,14 +111,29 @@ export default function PaperLayer({
   const mountRef = useRef<HTMLDivElement>(null);
   const outRef = useRef<HTMLCanvasElement>(null);
   const filters = layer.filters;
-  const speed = typeof layer.speed === "number" ? layer.speed : 1;
+
+  /* Whole laps of the shader's own period over the post, which is the whole
+     reason these five are the ones that stayed: `speed` here is not a tempo
+     the owner picks, it is arithmetic — at the last frame the shader is
+     showing its first one. Same promise as a travelling number, same reason
+     it holds (a whole number of turns), and the same thing goes wrong if you
+     let it be anything else. */
+  const period = shaderDef(layer.type).period ?? 0;
+  const laps = Math.max(1, Math.round(typeof layer.laps === "number" ? layer.laps : 1));
+  const speed = period ? (laps * period) / Math.max(2, duration) : 0;
 
   /* Driven off the tool's clock rather than animating itself, so scrubbing
      moves it with everything else — and pushed imperatively, so the tool
      doesn't re-render sixty times a second to animate a background. */
   useEffect(() => {
     const put = (t: number) => {
-      const el = mountRef.current?.querySelector("[data-paper-shaders]") as
+      /* `data-paper-shader`, singular. It was plural here, which matches
+         nothing — so every clean layer sat on frame zero and the whole family
+         looked like a set of stills. Both spellings are accepted so a version
+         bump in the library can't quietly stop the clock again. */
+      const el = mountRef.current?.querySelector(
+        "[data-paper-shader], [data-paper-shaders]",
+      ) as
         | (HTMLElement & { paperShaderMount?: { setFrame(ms: number): void } })
         | null;
       el?.paperShaderMount?.setFrame(t * 1000 * speed);
@@ -199,7 +176,8 @@ export default function PaperLayer({
   const controls = shaderDef(layer.type).controls;
   const params: Record<string, number | string> = {};
   for (const c of controls) {
-    if (c.key === "speed") continue; // driven by the clock above
+    /* `laps` is not a shader prop — it is how the clock above is geared. */
+    if (c.key === "laps") continue;
     const v = layer[c.key];
     params[c.key] = typeof v === "number" ? v : c.def;
   }
