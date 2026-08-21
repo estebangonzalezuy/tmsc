@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import ClipCanvas from "@/components/clips/ClipCanvas";
+import ClipPlayer from "@/components/clips/ClipPlayer";
 import { ticker } from "@/components/clips/ticker";
 import {
   clipSeconds,
@@ -16,10 +16,16 @@ import {
 
 // One clip, large, with the controls a reference library owes you.
 //
-// The reason the club commits a filmstrip rather than a video is here: **frame
-// stepping**. A three-frame stagger is not something you can see at speed and
-// not something a YouTube embed will ever let you walk through. Left and right
-// step a frame; space runs it; the scrubber is the loop end to end.
+// **Frame stepping** is the reason any of this exists. A three-frame stagger is
+// not something you can see at speed, and not something a YouTube embed will
+// ever let you walk through. Left and right step a frame; space runs it; the
+// scrubber is the loop end to end.
+//
+// What is *shown* is the video the Cutter wrote, not the wall's sheet — a sheet
+// cannot hold thirty-six frames at a size worth looking at, because its canvas
+// grows with the square of the tile and iOS stops allocating long before you
+// get there. Both come out of the same pass over the film, and a clip with no
+// video falls back to the sheet with nothing else changing. See ClipPlayer.
 //
 // The clip runs on the shared ticker until somebody touches a control, at which
 // point it holds the frame it was on. Stepping is therefore just arithmetic on
@@ -112,22 +118,22 @@ export default function ClipLightbox({
         className="fixed inset-0 h-full w-full cursor-zoom-out"
       />
 
-      {/* Never blown up past twice the size the sheet was cut at. A filmstrip
-          is a few hundred kilobytes of intra-coded frames, so the tile is small
-          on purpose — and a lightbox that stretches it across a desktop is
-          advertising detail the club deliberately did not commit. */}
+      {/* A clip with a video is worth the room; one without is still a 400px
+          sheet, and stretching that across a desktop advertises detail the club
+          deliberately did not commit. */}
       <div
-        style={{ maxWidth: clip.w * 2 }}
+        style={{ maxWidth: clip.video ? 1100 : clip.w * 2 }}
         className="pointer-events-none relative mx-auto flex min-h-full flex-col justify-center gap-4 px-5 py-10 md:px-6"
       >
         <div className="pointer-events-auto card overflow-hidden">
-          <ClipCanvas
+          <ClipPlayer
             clip={clip}
+            src={sheetSrc(assetBase, item.projectId, clip, "video")}
             sheet={sheetSrc(assetBase, item.projectId, clip)}
             poster={sheetSrc(assetBase, item.projectId, clip, "poster")}
             alt={`Clip from ${item.projectTitle} at ${clipcode(clip.in)}`}
-            active={running}
-            {...(held !== null ? { frame: held } : {})}
+            running={running}
+            frame={held ?? 0}
             className="w-full"
           />
 

@@ -24,16 +24,81 @@ copy.** Clips live in `content/clips/clips.json` and `public/clips/`; the
 library's intro copy lives in `content/site.json` under `clips`, edited in the
 Studio like everything else.
 
-## A clip is a filmstrip, not a video
+## Two assets, each where its strengths are
+
+A clip is committed twice: a **filmstrip** and a **video**. That is not
+belt-and-braces, it is the only arrangement that works, and the reason is a
+hard ceiling rather than a matter of taste.
+
+A filmstrip holds every frame side by side, so its canvas grows with the square
+of the tile. 36 frames at a 400px tile is 3.3 megapixels; at 800px it is 13; at
+1280px it is 33, and at 1920px it would be 75 — well past what iOS will
+allocate for a canvas at all. **A sheet can never carry a clip at the size you
+want to look at one**, however many bytes you are willing to spend.
+
+A codec has the thing a sheet structurally cannot: inter-frame prediction.
+Consecutive frames of a film are nearly identical and a video stores only the
+difference, where WebP has to intra-code all thirty-six. Measured on a real cut:
+the videos came out at roughly the same total weight as the sheets while
+carrying 1280px instead of 400px — ten times the pixels for about the same
+bytes.
+
+So:
+
+- **The sheet is the wall.** Dozens animate at once with no decoders, no
+  autoplay policy and no codec branch. The wall never requests a video; that is
+  worth keeping true, and there is a check for it in the verification below.
+- **The video is the lightbox.** Fetched only when somebody opens a clip, and
+  what they actually watch. `VIDEO_EDGE` (1280) and `VIDEO_BITRATE` are the two
+  dials.
+
+Both come out of **one seek pass** over the film in `cutOne` — seeking a decoded
+film is the expensive part, so the same seek feeds the sheet cell, the poster
+and the recorder rather than walking the range three times.
+
+`video` and `videoSeconds` are both optional, so a clip cut before any of this
+existed still works: `ClipPlayer` falls back to the sheet with nothing else
+changing. That is why it could be added without a migration — and why the Cutter
+grows a **Re-cut all** button instead, which cuts a project's existing ranges
+again from the film. A clip's id is derived from its range, so a re-cut lands on
+the same ids and filenames: the facets, the notes and the cover survive, and the
+new files simply replace the old ones.
+
+### What the recorder gets wrong, and what to do about it
+
+MediaRecorder timestamps frames **by the wall clock**, not by how many you
+pushed. Three consequences, all of them handled and none of them obvious:
+
+- A pass that seeks faster than real time writes a video shorter than the clip,
+  and one that seeks slower writes a longer one. So the loop **paces** its
+  pushes to the clip's own frame rate, and `ClipPlayer` corrects what is left
+  with `playbackRate`. Tempo is the one thing a motion reference must not get
+  wrong.
+- The last frame needs a moment of its own or the muxer drops it, so the file
+  always runs past its content. Indexing frames against the file's `duration`
+  therefore lands late — measurably, the video showed a moment two frames ahead
+  of the sheet's. The Cutter measures the span from the first push to the last
+  and writes it down as **`videoSeconds`**; everything indexes against that.
+- `<video loop>` would replay that tail as a hitch at the end of every pass, so
+  `ClipPlayer` loops on the content itself with a rAF check rather than letting
+  the element do it.
+
+What is *not* fixed: frame `i` of the video is not exactly frame `i` of the
+sheet. The gaps between recorded frames are however long each seek took, so
+uniform indexing drifts by up to a frame (measured at about ±1). Nothing ever
+shows both assets at once — the sheet is the wall, the video is the lightbox —
+so it is invisible, and the alternative (shipping thirty-six timestamps per clip
+in the wall's payload) buys nobody anything. Don't "fix" it by adding them.
+
+## The filmstrip itself
 
 The constraint that shapes both walls is that a browser cannot take pixels out
 of a YouTube or Vimeo *embed* — cross-origin, tainted canvas — but it can out of
 a file you picked off your own disk. So the film never leaves the machine and
 only the cut pieces are committed.
 
-What gets committed is **one WebP sheet of the clip's frames, tiled in a grid**,
-plus a poster. The wall draws one cell of it into a `<canvas>` on a shared
-ticker.
+The sheet is **one WebP of the clip's frames, tiled in a grid**, plus a poster.
+The wall draws one cell of it into a `<canvas>` on a shared ticker.
 
 Three things this buys that a `.webm` would not:
 
@@ -47,17 +112,13 @@ Three things this buys that a `.webm` would not:
   thing an embed of the source will never let you do. This is the reason the
   whole approach was chosen.
 
-What it costs, stated plainly so nobody is surprised later:
+What it costs: a tile is 400px on its long edge, and every frame is
+intra-coded. That is fine for a wall tile and not enough for a clip you have
+opened — which is what the video is for. Reckon on 60–170KB a sheet for real
+footage; flat-colour graphics compress far better.
 
-- **Fidelity.** A tile is 400px on its long edge. Good enough to read timing and
-  spacing; not a substitute for the source.
-- **Bytes.** WebP has no inter-frame prediction, so every frame in a sheet is
-  intra-coded — a sheet is heavier than the equivalent video. Reckon on
-  250–600KB a clip for real footage; flat-colour graphics compress far better.
-  A sheet is the heaviest thing the club commits.
-
-Both costs are deliberate. Full-resolution playback is the source's job, and
-`momentUrl` is how a clip hands you back to it.
+`momentUrl` still hands you back to the source at the exact second, which is
+where you go for the real thing at full resolution.
 
 **`assetBase` is the way out.** Everything that renders a clip goes through
 `sheetSrc`, so moving the sheets to a CDN later is a change to one string in
@@ -74,14 +135,15 @@ All constants in `lib/clips-shared.ts`, so retuning is one edit:
 | tile | `TILE_EDGE` 400px on the long edge, even pixels so a cell never lands on a half |
 | quality | 0.72 for the sheet, 0.75 for the poster |
 | length | `MIN_SECONDS` 0.4 to `MAX_SECONDS` 6 |
+| video | `VIDEO_EDGE` 1280 on the long edge, never upscaled; `VIDEO_BITRATE` 2 Mbps |
 
 The rate falls as the clip gets longer on purpose. A UI snap is *all* easing and
 needs the frames; a six-second establishing shot is not, and spending the same
 budget on it buys blur. The cap is also what keeps a sheet inside 6×6.
 
-**The lightbox never blows a clip up past twice its tile width.** A lightbox
-that stretched a 400px tile across a desktop would be advertising detail the
-club deliberately did not commit.
+**A clip with a video gets the room; one without is capped at twice its tile
+width.** Stretching a 400px sheet across a desktop advertises detail the club
+deliberately did not commit.
 
 ## The facets
 
@@ -149,7 +211,10 @@ last.
 - `lib/github.ts` — committing from a browser, shared with the Curator. Same
   zero-config contract: the token is pasted into the page, every call goes
   straight to api.github.com, nothing on Vercel holds a secret.
-- `components/clips/cutSheet.ts` — a range in, a sheet out.
+- `components/clips/cutSheet.ts` — a range in, a sheet and a video out, in one
+  seek pass.
+- `components/clips/ClipPlayer.tsx` — the video, with the sheet as its fallback.
+  Everything about the recorder's wall-clock timestamps lives here.
 - `components/clips/ticker.ts` — the wall's playhead, outside React for the
   reason `components/postlab/clock.ts` spells out. Its own free-running rAF
   because a wall has no transport, and it stops when the last tile unsubscribes.
@@ -198,3 +263,12 @@ It exists because the alternative was untestable: the wall is a build-time
 derivation of a file the Cutter writes through the GitHub API, so without it the
 only way to see a real clip on a real wall is to publish one to the live site
 and wait for Vercel. Keep it working.
+
+Two things worth checking whenever this changes:
+
+- **The wall must never request a video.** Watch the network on `/clips`: it
+  should ask for `.webp` and nothing else. A video leaking into a wall tile
+  undoes the whole reason there are two assets.
+- **A clip with no `video` must still open.** The Aljoscha reel was cut before
+  videos existed and is the standing test for the fallback; don't re-cut every
+  project at once and lose it.

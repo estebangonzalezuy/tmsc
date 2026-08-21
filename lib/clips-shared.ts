@@ -57,6 +57,30 @@ export const TILE_EDGE = 400;
 export const MIN_SECONDS = 0.4;
 export const MAX_SECONDS = 6;
 
+/* ---------- the second asset ---------- */
+
+/**
+ * The sheet has a ceiling, and it is not a matter of taste.
+ *
+ * A filmstrip holds `frames` pictures side by side, so its canvas grows with
+ * the square of the tile: 36 frames at a 400px tile is 3.3 megapixels, at 800px
+ * it is 13, and at 1920px it would be 75 — past what iOS will allocate for a
+ * canvas at all. So a sheet can never carry a clip at the size you want to
+ * *look* at one, however many bytes you are willing to spend.
+ *
+ * A codec has the thing a sheet structurally cannot: inter-frame prediction.
+ * Consecutive frames of a film are nearly identical and a video stores only the
+ * difference, where WebP has to intra-code all thirty-six.
+ *
+ * So a clip gets both, each where its strengths are. The **sheet** is what the
+ * wall loads: dozens animate at once with no decoders, no autoplay policy and
+ * no codec branch. The **video** is fetched only when somebody opens a clip,
+ * and is what they actually watch.
+ */
+export const VIDEO_EDGE = 1280;
+/** Enough for a reference at VIDEO_EDGE without shipping a master. */
+export const VIDEO_BITRATE = 2_000_000;
+
 /**
  * How finely to sample a clip of this length.
  *
@@ -169,6 +193,21 @@ export type Clip = {
    *  canvas at all. */
   file: string;
   poster: string;
+  /** The full-size version, fetched only when a clip is opened. Absent on
+   *  clips cut before there was one, and on any browser whose MediaRecorder
+   *  refused — the lightbox falls back to the sheet, which is why this could
+   *  be added without a migration. */
+  video?: string;
+  /** How many seconds of the recording are actually the clip.
+   *
+   *  Not the same as the file's own duration, and that difference was a bug:
+   *  MediaRecorder timestamps by the wall clock, and the last frame needs a
+   *  moment of its own or the muxer drops it — so a file always runs a little
+   *  past its content. Indexing frames against `duration` therefore landed
+   *  late, and the video showed a moment two frames ahead of the sheet's.
+   *  Measured at the cut and written down, because it is the one number a
+   *  player cannot work out for itself. */
+  videoSeconds?: number;
   cols: number;
   rows: number;
   frames: number;
@@ -231,6 +270,8 @@ export type WallClip = {
   out: number;
   file: string;
   poster: string;
+  video?: string;
+  videoSeconds?: number;
   cols: number;
   rows: number;
   frames: number;
@@ -270,15 +311,21 @@ export type ClipWall = {
 
 /* ---------- pure helpers ---------- */
 
-/** Path to a clip's filmstrip. Everything that animates a clip goes through
- *  here, so moving the sheets off the repo is a change to `assetBase` alone. */
+/** Path to one of a clip's files. Everything that draws or plays a clip goes
+ *  through here, so moving the assets off the repo is a change to `assetBase`
+ *  alone — which matters most for the video, the heaviest of the three.
+ *
+ *  Returns "" for a video that was never written, so a caller can ask for one
+ *  and fall back rather than having to check the field first. */
 export function sheetSrc(
   assetBase: string,
   projectId: string,
-  clip: { file: string; poster: string },
-  which: "sheet" | "poster" = "sheet",
+  clip: { file: string; poster: string; video?: string },
+  which: "sheet" | "poster" | "video" = "sheet",
 ): string {
-  return `${assetBase}/${projectId}/${which === "poster" ? clip.poster : clip.file}`;
+  const name =
+    which === "poster" ? clip.poster : which === "video" ? clip.video : clip.file;
+  return name ? `${assetBase}/${projectId}/${name}` : "";
 }
 
 /** How long a clip runs. Its own duration, which is also its loop. */
@@ -361,6 +408,8 @@ export function buildClipWall(data: ClipsData): ClipWall {
         out: clip.out,
         file: clip.file,
         poster: clip.poster,
+        ...(clip.video ? { video: clip.video } : {}),
+        ...(clip.videoSeconds ? { videoSeconds: clip.videoSeconds } : {}),
         cols: clip.cols,
         rows: clip.rows,
         frames: clip.frames,

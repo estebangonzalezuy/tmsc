@@ -660,14 +660,28 @@ Same split again: **the clips are data, the framing is copy.** They live in
 `content/clips/clips.json` and `public/clips/`; the intro copy lives in
 `content/site.json` under `clips`, edited in the Studio.
 
-- **A clip is a filmstrip, not a video.** One WebP of its frames tiled 6 wide,
-  drawn a cell at a time into a canvas on a shared ticker. Dozens animate at
+- **A clip is committed twice — a filmstrip and a video — and that is a ceiling,
+  not a belt and braces.** The **sheet** is one WebP of its frames tiled 6 wide,
+  drawn a cell at a time into a canvas on a shared ticker: dozens animate at
   once with no decoders and no autoplay policy, it loops by construction (the
-  sampling never lands on `out`, so the last frame runs into the first), and it
-  **steps** — which is how a three-frame stagger is actually read, and the one
-  thing an embed of the source can never give you. It costs fidelity (400px
-  tiles) and bytes (no inter-frame prediction; a sheet is the heaviest thing the
-  club commits). Both are deliberate; `assetBase` is the way out.
+  sampling never lands on `out`), and it **steps**, which is how a three-frame
+  stagger is actually read. But a filmstrip's canvas grows with the square of
+  the tile — 36 frames at 1920px would be 75 megapixels, past what iOS will
+  allocate — so **a sheet can never carry a clip at the size you want to look at
+  one**. A codec can, because it predicts between frames where WebP must
+  intra-code all thirty-six. So the sheet is the wall (which must never request
+  a video) and the **video** is the lightbox, fetched only on click. Both come
+  out of one seek pass in `cutOne`.
+- **MediaRecorder timestamps by the wall clock**, so the cut paces its pushes,
+  `ClipPlayer` corrects the rest with `playbackRate`, and the clip writes down
+  `videoSeconds` — how much of the file is actually the clip — because indexing
+  frames against the file's own `duration` lands two frames late. Frame `i` of
+  the video is within about ±1 of frame `i` of the sheet and nothing shows both
+  at once; don't "fix" that by shipping per-frame timestamps.
+- `video` and `videoSeconds` are optional, so older clips still open on the
+  sheet — which is why this landed without a migration, and why the Cutter has
+  **Re-cut all** instead. A clip's id comes from its range, so a re-cut keeps
+  its filing and replaces its files.
 - **The facet vocabulary is closed.** Three axes in `FACETS` — subject,
   technique, feel — because a free tag list drifts into "ui", "UI" and
   "interface". Values **OR within an axis and AND across them**, which is the

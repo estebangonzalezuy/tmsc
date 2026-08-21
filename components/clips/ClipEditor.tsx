@@ -273,6 +273,67 @@ export default function ClipEditor({
     }
   }, [video, draft, pending, say, activeClip]);
 
+  /**
+   * Cut every range this project already has, again, from the attached film.
+   *
+   * A clip's id is derived from its range, so a re-cut lands on the same ids
+   * and the same filenames — the facets, the notes and the cover survive, and
+   * the new files simply replace the old ones. That is what makes changing what
+   * a clip *is* (a bigger sheet, a video beside it) a thing the owner can do to
+   * work already on the wall, rather than a migration.
+   */
+  const recut = useCallback(async () => {
+    if (!video || !draft || !draft.clips.length) return;
+    try {
+      const ranges = draft.clips.map((c) => ({ in: c.in, out: c.out }));
+      const result = await cutRanges(video, ranges, "hand", say);
+      const fresh = new Map(result.clips.map((c) => [c.id, c]));
+      setFiles((current) => {
+        const next = new Map(current);
+        for (const [name, blob] of result.files) next.set(name, blob);
+        return next;
+      });
+      setDraft((current) =>
+        current
+          ? {
+              ...current,
+              clips: current.clips.map((clip) => {
+                const cut = fresh.get(clip.id);
+                /* The new files and shape, the old filing. Origin stays put
+                   too: re-cutting is not a fresh judgement about the range. */
+                return cut
+                  ? {
+                      ...cut,
+                      subject: clip.subject,
+                      technique: clip.technique,
+                      ...(clip.feel ? { feel: clip.feel } : {}),
+                      ...(clip.tags ? { tags: clip.tags } : {}),
+                      ...(clip.note ? { note: clip.note } : {}),
+                      ...(clip.origin ? { origin: clip.origin } : {}),
+                    }
+                  : clip;
+              }),
+            }
+          : current,
+      );
+      /* These filenames exist in the repo already, so the uploader would skip
+         them as "already committed". They have new contents now. */
+      setCommitted((current) => {
+        const next = new Set(current);
+        for (const name of result.files.keys()) {
+          next.delete(`public/clips/${publishedAs || draft.id}/${name}`);
+        }
+        return next;
+      });
+      setStage({
+        kind: "done",
+        message: `Re-cut ${result.clips.length} ${result.clips.length === 1 ? "clip" : "clips"}. Save to send the new files up.`,
+      });
+    } catch (err) {
+      setStage({ kind: "error", message: (err as Error).message });
+    }
+  }, [video, draft, say, publishedAs]);
+
   /** The record as it would be written right now: dropped clips gone, facets
    *  as chosen, the cover guaranteed to be one of the survivors. The footer
    *  measures against this and the commit writes it, so the two cannot
@@ -302,6 +363,10 @@ export default function ClipEditor({
    *  under nothing cannot be found, which makes committing it the same as not
    *  committing it. */
   const unfiled = kept.filter((c) => !c.subject.length && !c.technique.length);
+
+  /** Clips cut before there was a video beside the sheet. They still work —
+   *  the lightbox falls back to the filmstrip — they are just small. */
+  const stale = kept.filter((c) => !c.video).length;
 
   const publish = useCallback(
     async (status?: ClipProject["status"]) => {
@@ -345,6 +410,7 @@ export default function ClipEditor({
         for (const clip of cleaned.clips) {
           want.add(clip.file);
           want.add(clip.poster);
+          if (clip.video) want.add(clip.video);
         }
         const binaries = new Map<string, Blob>();
         for (const [name, blob] of files) {
@@ -422,7 +488,9 @@ export default function ClipEditor({
 
       const body = new FormData();
       body.set("data", JSON.stringify(next, null, 2));
-      const want = new Set(cleaned.clips.flatMap((c) => [c.file, c.poster]));
+      const want = new Set(
+        cleaned.clips.flatMap((c) => [c.file, c.poster, c.video ?? ""]),
+      );
       for (const [name, blob] of files) {
         if (want.has(name)) body.set(`public/clips/${cleaned.id}/${name}`, blob, name);
       }
@@ -496,8 +564,8 @@ export default function ClipEditor({
   const toUpload = draft
     ? kept.filter((clip) => {
         const dir = `public/clips/${publishedAs || draft.id}/`;
-        return [clip.file, clip.poster].some(
-          (name) => files.has(name) && !committed.has(dir + name),
+        return [clip.file, clip.poster, clip.video].some(
+          (name) => name && files.has(name) && !committed.has(dir + name),
         );
       }).length
     : 0;
@@ -740,7 +808,20 @@ export default function ClipEditor({
               than where the scan guessed. */}
           {video && (
             <div className="space-y-3 border-t border-line pt-5">
-              <h3 className="font-serif text-xl">Cut one by hand</h3>
+              <div className="flex flex-wrap items-baseline justify-between gap-4">
+                <h3 className="font-serif text-xl">Cut one by hand</h3>
+                {draft.clips.length > 0 && (
+                  <button
+                    onClick={recut}
+                    disabled={busy}
+                    className="text-xs underline underline-offset-4 hover:text-muted transition-colors disabled:opacity-40"
+                  >
+                    {stale > 0
+                      ? `Re-cut all ${draft.clips.length} — ${stale} ${stale === 1 ? "has" : "have"} no video`
+                      : `Re-cut all ${draft.clips.length} from this film`}
+                  </button>
+                )}
+              </div>
               <p className="max-w-2xl text-sm text-muted leading-relaxed">
                 Scrub to where the movement starts and press In, then to where it
                 finishes and press Out. Between {MIN_SECONDS}s and {MAX_SECONDS}s.
@@ -841,6 +922,14 @@ export default function ClipEditor({
                 {pending.length === 1 ? "range has" : "ranges have"} not been cut
                 yet — saving now leaves {pending.length === 1 ? "it" : "them"}{" "}
                 behind.
+              </p>
+            )}
+            {stale > 0 && (
+              <p className="text-xs text-muted">
+                {stale} {stale === 1 ? "clip has" : "clips have"} only the
+                filmstrip, so {stale === 1 ? "it opens" : "they open"} small.
+                Attach the film and press <em>Re-cut all</em> to give{" "}
+                {stale === 1 ? "it" : "them"} a full-size video.
               </p>
             )}
             {unfiled.length > 0 && (

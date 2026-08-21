@@ -22,6 +22,8 @@ import {
   MIN_SECONDS,
   SHEET_COLS,
   TILE_EDGE,
+  VIDEO_BITRATE,
+  VIDEO_EDGE,
   clipId,
   frameCount,
   type Clip,
@@ -40,6 +42,34 @@ import {
  *  still reads and the file stops doubling. */
 const SHEET_QUALITY = 0.72;
 const POSTER_QUALITY = 0.75;
+
+/** mp4 where the browser will write it — it plays everywhere — and WebM where
+ *  it won't. The extension travels in the clip's `video` field, so nothing
+ *  downstream has to guess which one it got. */
+function pickMime(): { mime: string; ext: string } | null {
+  if (typeof MediaRecorder === "undefined") return null;
+  const candidates: [string, string][] = [
+    ["video/mp4;codecs=avc1", "mp4"],
+    ["video/mp4", "mp4"],
+    ["video/webm;codecs=vp9", "webm"],
+    ["video/webm;codecs=vp8", "webm"],
+    ["video/webm", "webm"],
+  ];
+  for (const [mime, ext] of candidates) {
+    if (MediaRecorder.isTypeSupported(mime)) return { mime, ext };
+  }
+  return null;
+}
+
+/** The video's size: the source's aspect at VIDEO_EDGE, never upscaled past
+ *  what the film actually has, and even so the encoder is happy. */
+function videoSize(video: LocalVideo): { w: number; h: number } {
+  const w = video.width || 16;
+  const h = video.height || 9;
+  const scale = Math.min(1, VIDEO_EDGE / Math.max(w, h));
+  const even = (n: number) => Math.max(2, Math.round((n * scale) / 2) * 2);
+  return { w: even(w), h: even(h) };
+}
 
 export type CutResult = {
   clips: Clip[];
@@ -66,7 +96,21 @@ export const isCuttable = (inT: number, outT: number): boolean => {
   return span >= MIN_SECONDS && span <= MAX_SECONDS + 0.001;
 };
 
-/** One range → one sheet, one poster, one record. */
+/**
+ * One range → one sheet, one poster, one video, in a **single seek pass**.
+ *
+ * Seeking a decoded film is the expensive part, so the same seek feeds the
+ * sheet cell, the poster and the recorder rather than walking the range three
+ * times.
+ *
+ * The recorder is the reason this loop is paced. MediaRecorder timestamps
+ * frames by the wall clock, not by how many you pushed — so a pass that seeks
+ * faster than real time produces a video shorter than the clip, and one that
+ * seeks slower produces a longer one. Waiting until each frame's own moment
+ * before pushing it is what makes the recording come out the length it is
+ * supposed to be. (The lightbox still corrects for a drifting recording, on
+ * the machines where a seek is slower than a frame is long.)
+ */
 async function cutOne(
   video: LocalVideo,
   inT: number,
@@ -86,6 +130,43 @@ async function cutOne(
   const poster = canvas(tile.w, tile.h);
   const posterCtx = poster.getContext("2d")!;
 
+  /* The recorder, when this browser has one. Everything about it is optional:
+     a clip with no video is a clip the lightbox draws from the sheet. */
+  const codec = pickMime();
+  const size = videoSize(video);
+  const film = codec ? canvas(size.w, size.h) : null;
+  const filmCtx = film?.getContext("2d") ?? null;
+  const chunks: Blob[] = [];
+  let recorder: MediaRecorder | null = null;
+  let track: CanvasCaptureMediaStreamTrack | null = null;
+
+  if (film && codec) {
+    try {
+      // captureStream(0) + requestFrame(): frames are pushed explicitly after
+      // each draw, which records reliably even when the canvas is off-DOM.
+      const stream = film.captureStream(0);
+      track = stream.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack;
+      recorder = new MediaRecorder(stream, {
+        mimeType: codec.mime,
+        videoBitsPerSecond: VIDEO_BITRATE,
+      });
+      recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    } catch {
+      // A browser that advertises a codec and then refuses to record it is not
+      // a reason to lose the clip.
+      recorder = null;
+    }
+  }
+
+  const started = performance.now();
+  const frameMs = (span * 1000) / frames;
+  /* When the first frame was pushed and when the last one was, so the clip can
+     write down how much of the recording is actually the clip. `start()` is
+     called against the first push rather than before the loop, or the first
+     seek's cost becomes a gap at the head of the file. */
+  let firstPush = 0;
+  let lastPush = 0;
+
   for (let i = 0; i < frames; i++) {
     /* Never landing on `out`: the frame after the last one is the first one. */
     await seek(video.el, inT + (i / frames) * span);
@@ -93,6 +174,20 @@ async function cutOne(
     const y = Math.floor(i / cols) * tile.h;
     sheetCtx.drawImage(video.el, x, y, tile.w, tile.h);
     if (i === 0) posterCtx.drawImage(video.el, 0, 0, tile.w, tile.h);
+
+    if (recorder && filmCtx && track) {
+      filmCtx.drawImage(video.el, 0, 0, size.w, size.h);
+      const due = started + i * frameMs;
+      const wait = due - performance.now();
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      if (!firstPush) {
+        recorder.start();
+        firstPush = performance.now();
+      }
+      track.requestFrame();
+      lastPush = performance.now();
+    }
+
     say?.(
       step ? `Cutting clip ${step.done + 1}/${step.total}` : "Cutting the clip",
       i + 1,
@@ -107,6 +202,31 @@ async function cutOne(
   files.set(`${id}.${ext}`, await toBlob(sheet, type, SHEET_QUALITY));
   files.set(`${id}.poster.${ext}`, await toBlob(poster, type, POSTER_QUALITY));
 
+  let videoName: string | undefined;
+  let videoSeconds: number | undefined;
+  if (recorder && codec && firstPush) {
+    /* The last frame needs a moment of its own or the muxer drops it, and the
+       recorder needs a beat to flush. That tail is why the file runs past its
+       content — so it is counted, not ignored. */
+    await new Promise((r) => setTimeout(r, Math.max(frameMs, 60)));
+    const stopped = new Promise<void>((r) => {
+      recorder!.onstop = () => r();
+    });
+    recorder.stop();
+    await stopped;
+    const blob = new Blob(chunks, { type: codec.mime });
+    if (blob.size) {
+      videoName = `${id}.${codec.ext}`;
+      files.set(videoName, blob);
+      /* First push to last push is frames - 1 gaps; the last frame is worth one
+         more. Pacing means this is never shorter than the clip, so the player's
+         rate correction only ever has to slow a recording down. */
+      videoSeconds = Number(
+        Math.max(0.05, (lastPush - firstPush + frameMs) / 1000).toFixed(3),
+      );
+    }
+  }
+
   return {
     files,
     clip: {
@@ -115,6 +235,8 @@ async function cutOne(
       out: Number(outT.toFixed(3)),
       file: `${id}.${ext}`,
       poster: `${id}.poster.${ext}`,
+      ...(videoName ? { video: videoName } : {}),
+      ...(videoSeconds ? { videoSeconds } : {}),
       cols,
       rows,
       frames,

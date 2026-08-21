@@ -44,6 +44,7 @@ for (const project of data.projects ?? []) {
   for (const clip of project.clips ?? []) {
     claimed.add(`${project.id}/${clip.file}`);
     claimed.add(`${project.id}/${clip.poster}`);
+    if (clip.video) claimed.add(`${project.id}/${clip.video}`);
   }
 }
 
@@ -62,7 +63,8 @@ for (const dir of await readdir(ASSETS, { withFileTypes: true })) {
 }
 
 if (!orphans.length) {
-  console.log(`Nothing to sweep — every file in public/clips is claimed by ${claimed.size / 2} clips.`);
+  const clips = (data.projects ?? []).reduce((n, p) => n + (p.clips ?? []).length, 0);
+  console.log(`Nothing to sweep — every file in public/clips is claimed by ${clips} clips.`);
   process.exit(0);
 }
 
