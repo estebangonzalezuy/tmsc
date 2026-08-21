@@ -47,7 +47,7 @@ import {
 
 const fallback = {
   label: "Clips",
-  headline: "How it *actually moves* — motion, a few seconds at a time.",
+  headline: "A library of *motion components*, a few seconds at a time.",
   note: "Every clip links back to the second it came from, and steps frame by frame, because a stagger is not something you can see at speed.",
 };
 
