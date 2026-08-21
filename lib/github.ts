@@ -1,18 +1,21 @@
-// GitHub from the browser, for the Curator.
+// GitHub from the browser, for the club's curating tools.
 //
 // Same contract as the Studio and the Desk: the token is pasted into the page
 // and kept in localStorage, every call goes straight to api.github.com, and
 // nothing on Vercel holds a secret. The deployed app needs no environment at
 // all, which is the whole reason the club's tools work this way.
 //
-// Publishing a project means one commit carrying content/stills/projects.json
-// and every image it just cut, so it goes through the Git Data API rather than
-// the contents API. What the public wall shows is derived from that file when
-// the site builds.
+// Publishing means one commit carrying a data file and every image just cut,
+// so it goes through the Git Data API rather than the contents API. What the
+// public wall shows is derived from that file when the site builds.
+//
+// It lived in components/stills/ while the Curator was the only thing that
+// committed from a browser. The Cutter does the same job on the same repo with
+// the same token, so it comes up here rather than being imported across from
+// one wall's folder into another's.
 
 export const GH_REPO = "estebangonzalezuy/tmsc";
 export const GH_BRANCH = "main";
-export const GH_FILE = "content/stills/projects.json";
 /** Shared with the Desk on purpose: it's the same token doing the same job,
  *  and being asked for it twice is friction with nothing behind it. */
 export const TOKEN_KEY = "desk-github-token";
@@ -134,11 +137,14 @@ export async function checkAccess(token: string): Promise<Access> {
   };
 }
 
-export async function readProjects<T>(
+/** One JSON file off the repo's head, with the blob sha the contents API
+ *  reports. `path` is repo-relative — each wall keeps its own data file. */
+export async function readJson<T>(
   token: string,
+  path: string,
 ): Promise<{ data: T; sha: string }> {
   const res = await fetch(
-    `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`,
+    `https://api.github.com/repos/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`,
     { headers: headers(token), cache: "no-store" },
   );
   if (!res.ok) await fail(res);

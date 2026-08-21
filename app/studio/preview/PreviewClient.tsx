@@ -13,8 +13,10 @@ import LearnPage from "@/components/pages/LearnPage";
 import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
 import StillsPage from "@/components/pages/StillsPage";
+import ClipsPage from "@/components/pages/ClipsPage";
 import LinksPage from "@/components/pages/LinksPage";
 import type { WallData } from "@/lib/stills-shared";
+import type { ClipWall } from "@/lib/clips-shared";
 
 const pages: Record<string, React.ComponentType> = {
   home: HomePage,
@@ -51,13 +53,15 @@ type ParentMessage =
   | { studio: "page"; page: string }
   | { studio: "active"; section: string; scroll?: boolean };
 
-// the Stills is the one page whose body is data rather than copy, so the
-// server route reads it and passes it down. Without it the preview would show
-// an empty wall while the owner edits the copy that sits above it.
+// the Stills and the Clips are the two pages whose bodies are data rather than
+// copy, so the server route reads both and passes them down. Without them the
+// preview would show an empty wall while the owner edits the copy above it.
 export default function PreviewClient({
   stillsWall,
+  clipsWall,
 }: {
   stillsWall?: WallData;
+  clipsWall?: ClipWall;
 }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [page, setPage] = useState("home");
@@ -127,7 +131,13 @@ export default function PreviewClient({
       <style>{previewCss}</style>
       <SiteHeader />
       <main className="flex-1">
-        {page === "stills" ? <StillsPage wall={stillsWall} /> : <Page />}
+        {page === "stills" ? (
+          <StillsPage wall={stillsWall} />
+        ) : page === "clips" ? (
+          <ClipsPage wall={clipsWall} />
+        ) : (
+          <Page />
+        )}
       </main>
       <SiteFooter />
     </ContentContext.Provider>

@@ -26,6 +26,8 @@ browser). Therefore:
   `hidden[]` list (section ids and `nav:<page>` entries the owner has hidden).
 - `content/directory/` — the Directory's data (not copy; see below). Generated,
   never hand-edited.
+- `content/stills/`, `content/clips/` — the two walls' data (not copy). Written
+  by the Curator and the Cutter, never hand-edited.
 - `components/content.tsx` — `ContentContext` (defaults to the built JSON so
   public pages stay static), `useContent()`, `studioSection(id, label)`
   (click-to-edit markers), `hiddenSet(content)`.
@@ -640,6 +642,54 @@ prop.
 
 Everything the site renders goes through `frameSrc`/`scrubSrc` and the
 `assetBase` field, so moving the images off the repo later is that one string.
+
+## the Clips (`/clips`)
+
+The club's library of motion fragments — a few seconds lifted out of real work,
+filed by what they are, how they move and how they land. Documented in
+`docs/THE-CLIPS.md`; read that before touching it.
+
+The Stills answers *what does good look like?*. It cannot answer **how do you
+animate this?**, because a frame has no easing in it — and easing is the whole
+content of a logo reveal or a UI micro-interaction. So the Clips takes the same
+road (drop a film you have, cut pieces out of it in the browser, commit only the
+pieces) and changes the unit, then makes the wall faceted, because a library of
+fragments is only worth having if you can interrogate it.
+
+Same split again: **the clips are data, the framing is copy.** They live in
+`content/clips/clips.json` and `public/clips/`; the intro copy lives in
+`content/site.json` under `clips`, edited in the Studio.
+
+- **A clip is a filmstrip, not a video.** One WebP of its frames tiled 6 wide,
+  drawn a cell at a time into a canvas on a shared ticker. Dozens animate at
+  once with no decoders and no autoplay policy, it loops by construction (the
+  sampling never lands on `out`, so the last frame runs into the first), and it
+  **steps** — which is how a three-frame stagger is actually read, and the one
+  thing an embed of the source can never give you. It costs fidelity (400px
+  tiles) and bytes (no inter-frame prediction; a sheet is the heaviest thing the
+  club commits). Both are deliberate; `assetBase` is the way out.
+- **The facet vocabulary is closed.** Three axes in `FACETS` — subject,
+  technique, feel — because a free tag list drifts into "ui", "UI" and
+  "interface". Values **OR within an axis and AND across them**, which is the
+  query somebody actually has; the Stills ANDs one flat list and that would make
+  two subjects return nothing. Rails are drawn in the vocabulary's order, never
+  by count. Adding a term is a deliberate edit, like a Directory collection.
+- **A cut is a spike, not a high number.** `chooseShots` reads the spans between
+  `findCuts`' peaks as shots. Calling every above-threshold sample a cut threw
+  away exactly the shots this exists for — a breathing gradient or a whip pan
+  scores high on every sample and gets shredded into sub-minimum fragments — so
+  the bar is raised by the film's own median change and a cut must beat its
+  neighbour.
+- **the Cutter** (`/cut`) is the tool, and a **pending clip animates** in it
+  before anything is committed: you cannot judge a clip from a poster. Zero
+  config like the Curator and the Desk — the token is pasted in the browser.
+  In `next dev` it needs no token at all and **Save to this checkout** writes
+  into the working copy through a dev-only route, which is how the wall gets
+  verified without publishing to the live site.
+
+`lib/video.ts` and `lib/github.ts` are shared with the Stills — the decoder and
+the seek that cannot hang, and committing from a browser. They were lifted out
+of `components/stills/` when the Clips needed all of them; don't fork either.
 
 ## The content system
 

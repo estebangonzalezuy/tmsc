@@ -6,7 +6,7 @@ import FrameGrid, {
   ProjectFields,
   SourceField,
 } from "@/components/stills/FrameGrid";
-import { commitFiles, readProjects } from "@/components/stills/github";
+import { commitFiles, readJson } from "@/lib/github";
 import {
   closeVideo,
   extractSuggested,
@@ -14,7 +14,7 @@ import {
   openVideo,
   type LocalVideo,
 } from "@/components/stills/localVideo";
-import { frameSrc, slugify, timecode } from "@/lib/stills-shared";
+import { STILLS_FILE, frameSrc, slugify, timecode } from "@/lib/stills-shared";
 import type { Frame, Project, StillsData } from "@/lib/stills-shared";
 
 // One editor, for a project being made and a project being fixed.
@@ -282,7 +282,7 @@ export default function ProjectEditor({
     if (!draft) return;
     try {
       setStage({ kind: "working", label: "Reading the projects", done: 0, total: 1 });
-      const fresh = await readProjects<StillsData>(token);
+      const fresh = await readJson<StillsData>(token, STILLS_FILE);
 
       // A project this editor already knows, missing from the repo, was removed
       // — here, in another tab, or by hand. Publishing would put it back, which
@@ -395,7 +395,7 @@ export default function ProjectEditor({
     }
     try {
       setStage({ kind: "working", label: "Removing", done: 0, total: 1 });
-      const fresh = await readProjects<StillsData>(token);
+      const fresh = await readJson<StillsData>(token, STILLS_FILE);
       await commitFiles(token, {
         message: `Remove ${draft.title} from the Stills`,
         text: {

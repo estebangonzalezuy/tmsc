@@ -20,6 +20,7 @@ const allColumns = [
       { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
       { label: "the Directory", href: "/directory", section: "directory", navId: "directory" },
       { label: "Stills", href: "/stills", section: "stills", navId: "stills" },
+      { label: "Clips", href: "/clips", section: "clips", navId: "clips" },
     ],
   },
 ];

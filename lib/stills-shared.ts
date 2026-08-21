@@ -5,9 +5,17 @@
 // into the browser bundle. The data lives next door in lib/stills.ts, which
 // holds projects.json and is for server components only.
 
+/** Where the club's data file for the Stills lives, so the Curator and the
+ *  site name it once. */
+export const STILLS_FILE = "content/stills/projects.json";
+
 /** Where a project came from. `platform` decides how a timestamp deep link
- *  is built — see momentUrl. */
-export type StillsSource = {
+ *  is built — see momentUrl.
+ *
+ *  Named for the club rather than for the Stills because the Clips points back
+ *  at a source the same way and through the same momentUrl. `StillsSource`
+ *  stays as an alias so nothing that already said it has to change. */
+export type SourceRef = {
   url: string;
   platform: "youtube" | "vimeo" | "other";
   /** The platform's own id, when the extractor could name one. */
@@ -17,6 +25,8 @@ export type StillsSource = {
   title?: string;
   author?: string;
 };
+
+export type StillsSource = SourceRef;
 
 /** Legacy. The Curator used to scrub a video it could not play by walking
  *  sprite sheets of one tile per second, because the frames it wanted lived on

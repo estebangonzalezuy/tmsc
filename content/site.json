@@ -613,6 +613,11 @@
     "headline": "Style frames from the best projects in *motion design*.",
     "note": "Every frame links back to the second it came from, so a still can always be checked against the thing that moved. Nothing here was made by the club; it is indexed, credited and linked, the way a reference library should be."
   },
+  "clips": {
+    "label": "Clips",
+    "headline": "How it *actually moves* — motion, a few seconds at a time.",
+    "note": "A still tells you what a frame looked like; it cannot tell you how anything got there. These are fragments of real work, filed by what they are, how they move and how they land, and every one steps frame by frame — because a three-frame stagger is not something you can see at speed. Nothing here was made by the club; it is cited, credited and linked back to the second it came from."
+  },
   "worksheets": [
     {
       "name": "Idea Mining Worksheet",
@@ -995,6 +1000,11 @@
     },
     {
       "group": "The site",
+      "name": "Clips",
+      "href": "/clips"
+    },
+    {
+      "group": "The site",
       "name": "Learn",
       "href": "/learn"
     },
@@ -1047,6 +1057,11 @@
       "group": "The instruments",
       "name": "the Curator",
       "href": "/curate"
+    },
+    {
+      "group": "The instruments",
+      "name": "the Cutter",
+      "href": "/cut"
     },
     {
       "group": "Notion",

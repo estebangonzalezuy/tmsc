@@ -12,6 +12,7 @@ const allMenuLinks = [
   { label: "Newsletter", href: "/newsletter", section: "archive", navId: "newsletter" },
   { label: "the Directory", href: "/directory", section: "directory", navId: "directory" },
   { label: "Stills", href: "/stills", section: "stills", navId: "stills" },
+  { label: "Clips", href: "/clips", section: "clips", navId: "clips" },
   { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
   { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
   { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },

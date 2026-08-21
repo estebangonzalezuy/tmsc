@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PreviewClient from "./PreviewClient";
 import { wall } from "@/lib/stills";
+import { clipWall } from "@/lib/clips";
 
 export const metadata: Metadata = {
   title: "Preview — the Studio",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function PreviewPage() {
-  return <PreviewClient stillsWall={wall} />;
+  return <PreviewClient stillsWall={wall} clipsWall={clipWall} />;
 }
