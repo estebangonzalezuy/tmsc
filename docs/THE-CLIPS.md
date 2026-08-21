@@ -79,9 +79,19 @@ pushed. Three consequences, all of them handled and none of them obvious:
   therefore lands late — measurably, the video showed a moment two frames ahead
   of the sheet's. The Cutter measures the span from the first push to the last
   and writes it down as **`videoSeconds`**; everything indexes against that.
-- `<video loop>` would replay that tail as a hitch at the end of every pass, so
-  `ClipPlayer` loops on the content itself with a rAF check rather than letting
-  the element do it.
+- **The looping belongs to the element**, and trying to be cleverer than that
+  broke it. A file MediaRecorder wrote has no duration in its header — it was a
+  live stream — so `video.duration` often reads `Infinity`. (lib/video.ts
+  already knew that about the Curator's *inputs*; it is just as true of the
+  Cutter's *outputs*.) A hand-rolled loop that watched `currentTime` for the end
+  was therefore waiting on a moment it could never reach: the clip played once
+  and stopped dead. `loop` on the element is the only thing that knows where the
+  data actually runs out. The tail it replays turns out to be nothing anyway —
+  the measured span lands a hair *under* the clip, not over it.
+
+That is also what makes `videoSeconds` load-bearing rather than a nicety: with
+`duration` reading `Infinity`, it is the only number frame stepping has to
+measure against.
 
 What is *not* fixed: frame `i` of the video is not exactly frame `i` of the
 sheet. The gaps between recorded frames are however long each seek took, so
@@ -272,3 +282,12 @@ Two things worth checking whenever this changes:
 - **A clip with no `video` must still open.** The Aljoscha reel was cut before
   videos existed and is the standing test for the fallback; don't re-cut every
   project at once and lose it.
+- **A clip must still be running a minute later.** Watch `currentTime` wrap
+  more than once without touching anything. Every loop bug here has looked
+  exactly like "plays once, then needs pressing again".
+
+A note on codecs, because it will come up: the Cutter writes mp4/H.264 where the
+browser offers it, which is what plays on every consumer device. Some
+open-source Chromium builds ship without H.264 and cannot play those files — the
+`onError` fallback catches it and draws the sheet instead, which is worth
+knowing before assuming a clip is broken.

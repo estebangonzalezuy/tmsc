@@ -22,6 +22,23 @@ import { clipSeconds, type WallClip } from "@/lib/clips-shared";
 // alternative (shipping thirty-six timestamps per clip in the wall's payload)
 // buys nobody anything.
 //
+// **The looping belongs to the element.** A file written by MediaRecorder has
+// no duration in its header — it was a live stream — so `video.duration` reads
+// `Infinity` until something walks it to the end. lib/video.ts already knew
+// that about the Curator's inputs; it is just as true of the Cutter's outputs.
+//
+// So a hand-rolled loop that watches for `currentTime` reaching the end cannot
+// work here: there is no end to compare against, and the version that compared
+// against the recorded span waited for a moment `currentTime` never quite
+// reached. The video played once and stopped. `loop` on the element is the only
+// thing that knows where the data actually runs out — and the tail it replays
+// turns out to be nothing, because the measured span comes in a hair under the
+// clip rather than over it.
+//
+// That is also what makes `videoSeconds` load-bearing rather than a nicety:
+// with `duration` reading `Infinity`, it is the only number frame stepping can
+// be measured against.
+//
 // A clip cut before there were videos, or on a browser whose MediaRecorder
 // refused, simply has no `video`. Then this is the sheet, exactly as before.
 
@@ -86,19 +103,7 @@ export default function ClipPlayer({
       const total = content();
       el.playbackRate = total > 0 ? Math.min(4, Math.max(0.25, total / wanted)) : 1;
       void el.play().catch(() => {});
-
-      /* Loop on the *content*, not on the file. `loop` on the element would
-         replay the muxer's tail — the held last frame — as a hitch at the end
-         of every pass. The loop is a contract everywhere else in the club; it
-         is one here too. rAF rather than `timeupdate`, which only fires about
-         four times a second and would miss a tail this short. */
-      let raf = 0;
-      const wrap = () => {
-        if (el.currentTime >= total - 0.001) el.currentTime = 0;
-        raf = requestAnimationFrame(wrap);
-      };
-      raf = requestAnimationFrame(wrap);
-      return () => cancelAnimationFrame(raf);
+      return;
     }
     el.pause();
     el.currentTime = timeOf(frame);
@@ -136,6 +141,7 @@ export default function ClipPlayer({
         ref={ref}
         src={src}
         muted
+        loop
         playsInline
         preload="auto"
         onLoadedData={() => setReady(true)}
