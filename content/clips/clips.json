@@ -1,5 +1,93 @@
 {
   "version": 1,
   "assetBase": "/clips",
-  "projects": []
+  "projects": [
+    {
+      "id": "aljoscha-hoeborn-reel",
+      "title": "Aljoscha Hoeborn - Reel",
+      "credit": "Aljoscha Hoeborn",
+      "year": "2026",
+      "note": "",
+      "status": "published",
+      "addedAt": "2026-08-21",
+      "source": {
+        "url": "https://aljoschahoehborn.de/reel/",
+        "platform": "other"
+      },
+      "duration": 38.52,
+      "cover": "c00000350-00003850",
+      "clips": [
+        {
+          "id": "c00000350-00003850",
+          "in": 0.35,
+          "out": 3.85,
+          "file": "c00000350-00003850.webp",
+          "poster": "c00000350-00003850.poster.webp",
+          "cols": 6,
+          "rows": 6,
+          "frames": 36,
+          "w": 400,
+          "h": 226,
+          "subject": [
+            "intro"
+          ],
+          "technique": [],
+          "origin": "auto"
+        },
+        {
+          "id": "c00012136-00016885",
+          "in": 12.136,
+          "out": 16.885,
+          "file": "c00012136-00016885.webp",
+          "poster": "c00012136-00016885.poster.webp",
+          "cols": 6,
+          "rows": 6,
+          "frames": 36,
+          "w": 400,
+          "h": 226,
+          "subject": [
+            "transition"
+          ],
+          "technique": [],
+          "origin": "hand"
+        },
+        {
+          "id": "c00016850-00018850",
+          "in": 16.85,
+          "out": 18.85,
+          "file": "c00016850-00018850.webp",
+          "poster": "c00016850-00018850.poster.webp",
+          "cols": 6,
+          "rows": 6,
+          "frames": 36,
+          "w": 400,
+          "h": 226,
+          "subject": [
+            "type"
+          ],
+          "technique": [],
+          "origin": "auto"
+        },
+        {
+          "id": "c00020350-00023850",
+          "in": 20.35,
+          "out": 23.85,
+          "file": "c00020350-00023850.webp",
+          "poster": "c00020350-00023850.poster.webp",
+          "cols": 6,
+          "rows": 6,
+          "frames": 36,
+          "w": 400,
+          "h": 226,
+          "subject": [
+            "type"
+          ],
+          "technique": [
+            "3d"
+          ],
+          "origin": "auto"
+        }
+      ]
+    }
+  ]
 }
