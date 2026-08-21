@@ -1124,6 +1124,7 @@
     "nav:offerings",
     "stats",
     "practiceFiles",
-    "offerings"
+    "offerings",
+    "nav:clips"
   ]
 }
