@@ -83,6 +83,11 @@ const sections: Section[] = [
       { key: "name", label: "Name" },
       { key: "short", label: "Short name" },
       { key: "title", label: "Browser title" },
+      {
+        key: "headline",
+        label: "Homepage headline — *between asterisks* turns italic",
+        kind: "textarea",
+      },
       { key: "description", label: "Description", kind: "textarea" },
       { key: "positioning", label: "Positioning", kind: "textarea" },
       { key: "email", label: "Email" },

@@ -7,10 +7,17 @@ import {
   LetterMarquee,
   OrbitRing,
   SectionHeading,
+  Emphasize,
   accentHoverText,
 } from "@/components/Motifs";
 import PostList from "@/components/PostList";
 import Cta from "@/components/Cta";
+
+/* `*...*` is italic — see Emphasize. The line has to tell somebody who has
+   never heard of the club what is here, so it names the three things the
+   site actually holds rather than setting a mood. */
+const FALLBACK_HEADLINE =
+  "Resources, exercises and letters for designers learning *motion design*.";
 
 export default function HomePage() {
   const content = useContent();
@@ -51,8 +58,7 @@ export default function HomePage() {
         <div className="relative">
           <p className="text-sm underline underline-offset-4">{site.name}</p>
           <h1 className="mt-8 font-serif text-4xl md:text-7xl leading-tight max-w-4xl mx-auto">
-            But the brain wasn&apos;t built to create <em>in a vacuum</em> for
-            years on end.
+            <Emphasize text={site.headline || FALLBACK_HEADLINE} />
           </h1>
           <p className="mt-8 max-w-md mx-auto text-sm leading-relaxed">
             <strong>The side companion on your motion design path.</strong>{" "}
