@@ -14,6 +14,7 @@ import {
   clipcode,
   hasSource,
   sheetSrc,
+  stageName,
   type Clip,
   type ClipProject,
   type WallClip,
@@ -49,6 +50,8 @@ export default function ClipsProjectPage({
     year: project.year,
     source: project.source,
     ...(project.link ? { link: project.link } : {}),
+    ...(project.brand ? { brand: project.brand } : {}),
+    ...(project.stage ? { stage: project.stage } : {}),
   }));
 
   const handPicked = project.clips.filter((c) => c.origin === "hand").length;
@@ -69,6 +72,16 @@ export default function ClipsProjectPage({
         <p className="mt-6 text-sm text-muted">
           {[project.credit, project.year].filter(Boolean).join(" · ")}
         </p>
+        {(project.brand || project.stage) && (
+          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+            {project.brand && <span className="pill px-2.5 py-0.5">{project.brand}</span>}
+            {project.stage && (
+              <span className="rounded-full bg-foreground px-2.5 py-0.5 text-background">
+                {stageName(project.stage)}
+              </span>
+            )}
+          </p>
+        )}
         {project.note && (
           <p className="mt-6 max-w-xl text-sm text-muted leading-relaxed">
             {project.note}

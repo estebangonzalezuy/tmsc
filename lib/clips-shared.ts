@@ -121,18 +121,17 @@ export const FACETS = [
     key: "subject",
     label: "What it is",
     values: [
-      "ui",
-      "intro",
       "logo",
-      "transition",
-      "type",
-      "gradient",
-      "texture",
-      "character",
-      "camera",
       "product",
+      "ui",
+      "type",
+      "packaging",
+      "endcard",
+      "transition",
+      "texture",
       "data",
-      "abstract",
+      "camera",
+      "environment",
     ],
   },
   {
@@ -168,6 +167,52 @@ export const FACETS = [
 ] as const;
 
 export type FacetKey = (typeof FACETS)[number]["key"];
+
+/**
+ * Who is doing the presenting, by stage.
+ *
+ * The fourth rail, and the one nothing else in this field has. A designer
+ * asking "how does a Series A present itself" is asking a question about
+ * *budget and ambition*, not about aesthetics — and the answer is genuinely
+ * different at seed than at IPO. Filing it makes the library answerable by a
+ * business decision rather than only by taste.
+ *
+ * It belongs to the **project**, not the clip: every clip cut from one launch
+ * film shares the company that made it. Putting it on the clip would duplicate
+ * the fact twelve times and ask the Cutter to stamp it twelve times.
+ *
+ * Optional on purpose. A studio's own reel is not a company presenting itself,
+ * and Apple has no "series" — `studio` and `public` are the honest escapes, and
+ * a project with no stage at all simply stays out of the rail.
+ */
+export const STAGES = [
+  "bootstrapped",
+  "seed",
+  "series-a",
+  "series-b",
+  "series-c",
+  "public",
+  "studio",
+] as const;
+
+export type Stage = (typeof STAGES)[number];
+
+export const STAGE_LABEL = "Who is presenting";
+
+/** "series-a" is how it is filed; "Series A" is how it is read. The stored
+ *  value stays the slug, because it travels in the URL. */
+export function stageName(value: string): string {
+  return value.startsWith("series-")
+    ? `Series ${value.slice(7).toUpperCase()}`
+    : value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/** Only a stage the vocabulary knows, so a hand-edited file can never put an
+ *  unknown chip on the rail. */
+export function cleanStage(value: string | undefined): Stage | undefined {
+  const held = value?.trim().toLowerCase();
+  return STAGES.find((s) => s === held);
+}
 
 export const FACET_KEYS = FACETS.map((f) => f.key) as FacetKey[];
 
@@ -244,6 +289,12 @@ export type ClipProject = {
   /** Where the work itself lives, as distinct from `source`, which is the video
    *  a clip can be checked against: one is the credit, the other the evidence. */
   link?: string;
+  /** The brand being presented, when it isn't the studio's own reel. Distinct
+   *  from `credit`, which is who made the film: Linear is the brand, the studio
+   *  that cut it is the credit, and a library about presentation needs both. */
+  brand?: string;
+  /** See STAGES. Absent means this isn't a company presenting itself. */
+  stage?: Stage;
   /** Clip id used as the project's cover. Falls back to the first. */
   cover?: string;
   clips: Clip[];
@@ -292,6 +343,8 @@ export type WallClipProject = {
   year: string;
   source: SourceRef;
   link?: string;
+  brand?: string;
+  stage?: Stage;
   clipCount: number;
 };
 
@@ -304,6 +357,10 @@ export type ClipWall = {
   clipCount: number;
   /** Counts per axis, in the vocabulary's order, values with none left out. */
   facets: { key: FacetKey; label: string; values: FacetCount[] }[];
+  /** The same shape for the stage rail, counted in clips rather than projects —
+   *  the wall filters clips, so the number under a chip has to say how many
+   *  clips it will leave. */
+  stages: FacetCount[];
   tags: FacetCount[];
   projects: WallClipProject[];
   clips: WallClip[];
@@ -390,6 +447,8 @@ export function buildClipWall(data: ClipsData): ClipWall {
     year: p.year,
     source: p.source,
     ...(p.link ? { link: p.link } : {}),
+    ...(p.brand ? { brand: p.brand } : {}),
+    ...(cleanStage(p.stage) ? { stage: cleanStage(p.stage) } : {}),
     clipCount: p.clips.length,
   }));
 
@@ -398,6 +457,9 @@ export function buildClipWall(data: ClipsData): ClipWall {
     FACET_KEYS.map((k) => [k, new Map<string, number>()]),
   );
   const tagCounts = new Map<string, number>();
+  /* Counted in clips, not projects: the wall filters clips, so the number under
+     a chip has to say how many clips pressing it will leave. */
+  const stageCounts = new Map<string, number>();
 
   published.forEach((project, p) => {
     for (const clip of project.clips) {
@@ -431,6 +493,8 @@ export function buildClipWall(data: ClipsData): ClipWall {
       for (const tag of clip.tags ?? []) {
         tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       }
+      const stage = cleanStage(project.stage);
+      if (stage) stageCounts.set(stage, (stageCounts.get(stage) ?? 0) + 1);
     }
   });
 
@@ -449,6 +513,10 @@ export function buildClipWall(data: ClipsData): ClipWall {
         .map((value) => ({ value, count: counts.get(facet.key)!.get(value) ?? 0 }))
         .filter((v) => v.count > 0),
     })),
+    /* In the vocabulary's order — seed before series A before public — because
+       the rail is a progression and sorting it by volume would scramble it. */
+    stages: STAGES.map((value) => ({ value, count: stageCounts.get(value) ?? 0 }))
+      .filter((s) => s.count > 0),
     tags: [...tagCounts.entries()]
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)),
@@ -465,6 +533,7 @@ export const emptyClipWall: ClipWall = {
   projectCount: 0,
   clipCount: 0,
   facets: [],
+  stages: [],
   tags: [],
   projects: [],
   clips: [],

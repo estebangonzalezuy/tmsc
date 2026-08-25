@@ -6,6 +6,20 @@ frame. `/clips` is the library, `/cut` is the Cutter.
 
 Read this before touching it.
 
+## What it collects
+
+**Brand and product presentation**: launch films, identity in motion, product
+reveals, keynote graphics, site hero work, studio case films. Not motion design
+in general — that is what everyone else already indexes, and the club's own
+**Directory** already covers the resource half of it with more rigour.
+
+The corpus was chosen partly on principle and partly on supply: this work lives
+on YouTube and Vimeo, which means it is downloadable, which means the Cutter
+works on it unchanged and the promise of *linked back to the second it came
+from* survives. In-app UI micro-interactions would need screen recording and
+have no citable source — that is the line, and it is a line about the contract,
+not about taste.
+
 ## Why it is not the Stills
 
 The Stills answers *what does good look like?* — composition, palette, type,
@@ -162,8 +176,8 @@ The vocabulary in `FACETS` is **closed on purpose**. A free tag list drifts —
 answerable. Three axes, because a motion reference is asked three different
 questions:
 
-- **subject** — what am I looking at: ui, intro, logo, transition, type,
-  gradient, texture, character, camera, product, data, abstract
+- **subject** — what am I looking at: logo, product, ui, type, packaging,
+  endcard, transition, texture, data, camera, environment
 - **technique** — what is the mechanism: stagger, mask, morph, spring, particle,
   distort, offset, trim-path, cutout, blur, 3d, loop
 - **feel** — how does it land: snap, overshoot, ease-out, linear, elastic, drift
@@ -185,6 +199,35 @@ so a hand-edited file can never put an unknown chip on the wall.
 A clip also carries free `tags[]` for the overflow, and a **`note`** — the field
 that makes this a library rather than a mood board. *"Three-frame stagger, and
 only the last item overshoots."* Write it.
+
+### The fourth rail: who is presenting
+
+`STAGES` — bootstrapped · seed · series-a · series-b · series-c · public ·
+studio — and it is the axis nothing else in this field has. A designer asking
+*"how does a Series A present itself"* is asking about budget and ambition, not
+about aesthetics, and the answer really is different at seed than at IPO. It
+makes the library answerable by a business decision rather than only by taste.
+
+Two things about its shape:
+
+- **It lives on the project, not the clip.** Every clip cut from one launch film
+  shares the company that made it. On the clip it would be the same fact twelve
+  times and twelve chances for the Cutter to disagree with itself. The wall
+  already indexes each clip with `p` pointing at its project, so filtering by
+  stage is `wall.projects[clip.p].stage` and costs nothing.
+- **It is optional, and the escapes are honest.** A studio's own reel is not a
+  company presenting itself, and Apple has no "series" — hence `studio` and
+  `public`. A project with no stage at all stays out of the rail entirely, which
+  also means a stage filter *excludes* it. That is correct behaviour for an
+  optional field, and it is item 3 in the verification list below.
+
+Alongside it, `brand` on the project: the company being presented, as distinct
+from `credit`, which is who made the film. Linear is the brand; the studio that
+cut it is the credit. A library about presentation needs to tell them apart, and
+the wall leads with the brand where there is one.
+
+Counts under the stage chips are **clips, not projects** — the wall filters
+clips, so the number has to say how many clips pressing it will leave.
 
 ## A cut is a spike, not a high number
 

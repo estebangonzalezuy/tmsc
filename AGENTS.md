@@ -682,12 +682,27 @@ Same split again: **the clips are data, the framing is copy.** They live in
   sheet — which is why this landed without a migration, and why the Cutter has
   **Re-cut all** instead. A clip's id comes from its range, so a re-cut keeps
   its filing and replaces its files.
+- **What it collects is brand and product presentation** — launch films,
+  identity in motion, product reveals, keynote and site work — not motion design
+  in general. Partly principle (the Directory already covers the resource half
+  of that, with more rigour) and partly supply: this work is on YouTube and
+  Vimeo, so it is downloadable, so the Cutter works on it and *linked back to
+  the second* survives. In-app UI would need screen recording and has no citable
+  source; that line is about the contract, not about taste.
 - **The facet vocabulary is closed.** Three axes in `FACETS` — subject,
   technique, feel — because a free tag list drifts into "ui", "UI" and
   "interface". Values **OR within an axis and AND across them**, which is the
   query somebody actually has; the Stills ANDs one flat list and that would make
   two subjects return nothing. Rails are drawn in the vocabulary's order, never
   by count. Adding a term is a deliberate edit, like a Directory collection.
+- **`STAGES` is the fourth rail and the one nothing else has** — bootstrapped,
+  seed, series-a/b/c, public, studio. "How does a Series A present itself" is a
+  question about budget and ambition, not aesthetics, and it makes the library
+  answerable by a business decision. It lives on the **project**, not the clip
+  (every clip from one film shares it), it is **optional**, and the escapes are
+  honest: a studio reel is not a company, Apple has no series, and a project with
+  no stage is correctly excluded by a stage filter. `brand` sits beside it — the
+  company presenting, as distinct from `credit`, who made the film.
 - **A cut is a spike, not a high number.** `chooseShots` reads the spans between
   `findCuts`' peaks as shots. Calling every above-threshold sample a cut threw
   away exactly the shots this exists for — a breathing gradient or a whip pan

@@ -1,6 +1,16 @@
 "use client";
 
-import { FACETS, type Clip, type ClipProject, type FacetKey, type SourceRef } from "@/lib/clips-shared";
+import {
+  FACETS,
+  STAGES,
+  STAGE_LABEL,
+  stageName,
+  type Clip,
+  type ClipProject,
+  type FacetKey,
+  type SourceRef,
+  type Stage,
+} from "@/lib/clips-shared";
 
 // The fields the Cutter sets, and the facet chips that are the point of the
 // whole tool.
@@ -33,7 +43,10 @@ export function ProjectFields({
   project,
   onPatch,
 }: {
-  project: Pick<ClipProject, "title" | "credit" | "year" | "note">;
+  project: Pick<
+    ClipProject,
+    "title" | "credit" | "year" | "note" | "brand" | "stage"
+  >;
   onPatch: (changes: Partial<ClipProject>) => void;
 }) {
   return (
@@ -60,6 +73,43 @@ export function ProjectFields({
             className={inputClass}
           />
         </Field>
+      </div>
+
+      {/* Who is presenting, as distinct from who made the film. Linear is the
+          brand, the studio that cut it is the credit, and a library about
+          presentation needs to be able to tell them apart. */}
+      <Field label="Brand — whose presentation this is, if not the studio's own">
+        <input
+          value={project.brand ?? ""}
+          onChange={(e) => onPatch({ brand: e.target.value })}
+          placeholder="Linear, Rivian, Figma…"
+          className={inputClass}
+        />
+      </Field>
+
+      <div className="grid md:grid-cols-[8rem_1fr] gap-1 md:gap-3 items-baseline">
+        <p className="text-xs text-muted">{STAGE_LABEL}</p>
+        <div className="flex flex-wrap gap-1">
+          {STAGES.map((value) => {
+            const on = project.stage === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                /* One value, not many — a company is at one stage. Pressing the
+                   one that is on clears it, because "no stage" is a real answer
+                   for a studio reel and there has to be a way back to it. */
+                onClick={() => onPatch({ stage: on ? undefined : (value as Stage) })}
+                aria-pressed={on}
+                className={`border border-line rounded-full px-2.5 py-0.5 text-xs transition-colors ${
+                  on ? "bg-foreground text-background" : "accent-hover"
+                }`}
+              >
+                {stageName(value)}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <Field label="Note — why this film is worth taking apart">
         <textarea

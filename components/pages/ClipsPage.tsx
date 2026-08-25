@@ -21,6 +21,8 @@ import {
   hashSeed,
   seededShuffle,
   sheetSrc,
+  STAGE_LABEL,
+  stageName,
   type ClipWall,
   type FacetKey,
   type WallClip,
@@ -101,7 +103,13 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
     return out;
   }, [params]);
 
-  const activeCount = FACET_KEYS.reduce((n, k) => n + active[k].length, 0);
+  /* The fourth rail. It lives on the project rather than the clip — every clip
+     cut from one launch film shares the company that made it — so it filters
+     through `wall.projects[clip.p]` rather than off the clip itself. */
+  const activeStages = useMemo(() => params.getAll("stage"), [params]);
+
+  const activeCount =
+    FACET_KEYS.reduce((n, k) => n + active[k].length, 0) + activeStages.length;
 
   /* push — a change to *what you are looking at*: a facet on or off, the two
      views, clearing. Back should undo exactly one.
@@ -120,6 +128,20 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
       });
     },
     [params, router],
+  );
+
+  /* One toggler for both kinds of rail: the parameter name is the axis, so a
+     facet and a stage differ only in which key they append to. */
+  const toggleValue = useCallback(
+    (key: string, value: string) => {
+      setParams((next) => {
+        const current = next.getAll(key);
+        next.delete(key);
+        for (const v of current) if (v !== value) next.append(key, v);
+        if (!current.includes(value)) next.append(key, value);
+      }, "push");
+    },
+    [setParams],
   );
 
   const toggleFacet = useCallback(
@@ -142,6 +164,11 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
         const project = wall.projects[clip.p];
         if (!project) return false;
         if (activeProject && project.id !== activeProject) return false;
+        // A project with no stage stays out of the rail entirely, which is what
+        // an optional field should do: a studio reel is not a company at seed.
+        if (activeStages.length && !activeStages.includes(project.stage ?? "")) {
+          return false;
+        }
         // OR within an axis, AND across them.
         for (const key of FACET_KEYS) {
           const wanted = active[key];
@@ -154,6 +181,8 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
           project.title,
           project.credit,
           project.year,
+          project.brand ?? "",
+          project.stage ?? "",
           clip.note ?? "",
           ...clip.subject,
           ...clip.technique,
@@ -164,7 +193,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
           .toLowerCase();
         return terms.every((term) => haystack.includes(term));
       });
-  }, [wall, query, active, activeProject]);
+  }, [wall, query, active, activeStages, activeProject]);
 
   const grouped = useMemo(() => {
     const byProject = new Map<number, WallClip[]>();
@@ -198,6 +227,8 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
           year: project.year,
           source: project.source,
           ...(project.link ? { link: project.link } : {}),
+          ...(project.brand ? { brand: project.brand } : {}),
+          ...(project.stage ? { stage: project.stage } : {}),
         };
       }),
     [wall, shuffled],
@@ -300,6 +331,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                     setParams((next) => {
                       next.delete("q");
                       next.delete("project");
+                      next.delete("stage");
                       for (const key of FACET_KEYS) next.delete(key);
                     }, "push")
                   }
@@ -312,7 +344,9 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
           </section>
 
           <section className="px-5 md:px-6 py-2 space-y-2">
-            {wall.facets.map((facet) => (
+            {wall.facets
+              .filter((facet) => facet.values.length > 0)
+              .map((facet) => (
               <div
                 key={facet.key}
                 className="grid md:grid-cols-[9rem_1fr] gap-2 md:gap-4 items-baseline"
@@ -338,6 +372,35 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                 </div>
               </div>
             ))}
+
+            {/* The fourth rail, and the one the library is really for: not what
+                the motion looks like but who was paying for it. Drawn last
+                because it is a different kind of question from the three above
+                — those are about the frames, this one is about the company. */}
+            {wall.stages.length > 0 && (
+              <div className="grid md:grid-cols-[9rem_1fr] gap-2 md:gap-4 items-baseline">
+                <p className="text-xs text-muted">{STAGE_LABEL}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {wall.stages.map((stage) => {
+                    const on = activeStages.includes(stage.value);
+                    return (
+                      <button
+                        key={stage.value}
+                        onClick={() => toggleValue("stage", stage.value)}
+                        aria-pressed={on}
+                        className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                          on ? "bg-foreground text-background" : "accent-hover"
+                        }`}
+                      >
+                        {stageName(stage.value)}{" "}
+                        <Count on={on}>{stage.count}</Count>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {activeCount > 1 && (
               <p className="md:pl-[calc(9rem+1rem)] text-xs text-muted">
                 Anything matching one of the chips in a row, and every row you
@@ -371,10 +434,15 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                       ))}
                     </div>
                     <h2 className="mt-5 font-serif text-xl md:text-2xl">
-                      {project.title}
+                      {project.brand || project.title}
                     </h2>
                     <p className="mt-1 text-xs text-muted accent-hover-sub">
-                      {[project.credit || "Uncredited", project.year]
+                      {[
+                        project.brand ? project.title : "",
+                        project.stage && stageName(project.stage),
+                        project.credit || "Uncredited",
+                        project.year,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                       {" · "}
@@ -405,7 +473,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                       <span className="absolute inset-0 flex flex-col justify-end bg-foreground/0 group-hover:bg-foreground/70 transition-colors">
                         <span className="p-3 opacity-0 group-hover:opacity-100 transition-opacity text-background">
                           <span className="block truncate text-sm">
-                            {project.title}
+                            {project.brand || project.title}
                           </span>
                           <span className="block truncate text-xs text-background/60">
                             {[...clip.subject, ...clip.technique]
@@ -414,8 +482,15 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                           </span>
                         </span>
                       </span>
-                      <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-background/85 px-2 py-0.5 text-[10px] tabular-nums">
-                        {clipSeconds(clip).toFixed(1)}s
+                      <span className="pointer-events-none absolute top-2 right-2 flex gap-1">
+                        {project.stage && (
+                          <span className="rounded-full bg-background/85 px-2 py-0.5 text-[10px]">
+                            {stageName(project.stage)}
+                          </span>
+                        )}
+                        <span className="rounded-full bg-background/85 px-2 py-0.5 text-[10px] tabular-nums">
+                          {clipSeconds(clip).toFixed(1)}s
+                        </span>
                       </span>
                     </button>
                   );

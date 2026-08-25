@@ -346,6 +346,13 @@ export default function ClipEditor({
         status: status ?? draft.status,
         clips: draft.clips.filter((c) => !dropped.includes(c.id)),
       };
+      /* An emptied field is an absent field, not an empty string. Otherwise
+         typing a brand and deleting it again leaves `""` in the JSON, and the
+         wall would print a blank pill for it. */
+      const brand = out.brand?.trim();
+      if (brand) out.brand = brand;
+      else delete out.brand;
+      if (!out.stage) delete out.stage;
       if (!out.clips.some((c) => c.id === out.cover)) {
         out.cover = out.clips[0]?.id;
       }

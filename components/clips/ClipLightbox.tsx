@@ -10,6 +10,7 @@ import {
   hasSource,
   momentUrl,
   sheetSrc,
+  stageName,
   type SourceRef,
   type WallClip,
 } from "@/lib/clips-shared";
@@ -43,6 +44,10 @@ export type LightboxClip = {
   year: string;
   source: SourceRef;
   link?: string;
+  /** Who was presenting, and at what stage. Both live on the project — every
+   *  clip cut from one film shares them — and both are optional. */
+  brand?: string;
+  stage?: string;
 };
 
 export default function ClipLightbox({
@@ -201,9 +206,17 @@ export default function ClipLightbox({
 
         <div className="pointer-events-auto card p-4 md:p-5 space-y-3">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 className="font-serif text-xl md:text-2xl">{item.projectTitle}</h2>
+            <h2 className="font-serif text-xl md:text-2xl">
+              {item.brand || item.projectTitle}
+            </h2>
             <p className="text-xs text-muted">
-              {[item.credit || "Uncredited", item.year].filter(Boolean).join(" · ")}
+              {[
+                item.brand ? item.projectTitle : "",
+                item.credit || "Uncredited",
+                item.year,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           </div>
 
@@ -212,6 +225,11 @@ export default function ClipLightbox({
           )}
 
           <div className="flex flex-wrap gap-1.5">
+            {item.stage && (
+              <span className="rounded-full bg-foreground px-2.5 py-0.5 text-xs text-background">
+                {stageName(item.stage)}
+              </span>
+            )}
             {[...clip.subject, ...clip.technique, ...(clip.feel ?? []), ...(clip.tags ?? [])].map(
               (value) => (
                 <span key={value} className="pill px-2.5 py-0.5 text-xs">

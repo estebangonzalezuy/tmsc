@@ -5,8 +5,8 @@ import { clipTotals, clipWall } from "@/lib/clips";
 export const metadata: Metadata = {
   title: "Clips | the Motion Social Club",
   description: clipTotals.clips
-    ? `${clipTotals.clips} fragments of motion cut from ${clipTotals.projects} projects and filed by what they are, how they move and how they land — every one steppable frame by frame.`
-    : "Fragments of motion cut from real projects and filed by what they are, how they move and how they land — every one steppable frame by frame.",
+    ? `${clipTotals.clips} fragments of brand and product presentation, cut from ${clipTotals.projects} films and filed by what they are, how they move, how they land and who was presenting — every one steppable frame by frame.`
+    : "Fragments of brand and product presentation, filed by what they are, how they move, how they land and who was presenting — every one steppable frame by frame.",
 };
 
 export default function Page() {
