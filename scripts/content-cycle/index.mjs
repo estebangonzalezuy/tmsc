@@ -113,6 +113,10 @@ async function activeObjective() {
 
 /* ------------------------------------------------------------- angles --- */
 
+/* Every job here says what it looked for even when it found nothing. A run
+   that does nothing and prints nothing is indistinguishable from a run that
+   never started — which is exactly the confusion worth spending four lines
+   to avoid. */
 async function jobAngles() {
   const waiting = await notion.byStatus(DB.pipeline, "Angle");
   if (waiting.length >= ANGLE_BACKLOG) {
@@ -253,7 +257,10 @@ async function visualFor(row, vocab, schema, draft) {
 
 async function jobDrafts() {
   const rows = await notion.byStatus(DB.pipeline, "Chosen");
-  if (!rows.length) return;
+  if (!rows.length) {
+    say("drafts: nothing marked Chosen in the Pipeline");
+    return;
+  }
   const objective = await activeObjective();
 
   for (const row of rows) {
@@ -273,7 +280,10 @@ async function jobDrafts() {
 
 async function jobVisuals() {
   const rows = await notion.byStatus(DB.pipeline, "Ready");
-  if (!rows.length) return;
+  if (!rows.length) {
+    say("visuals: nothing marked Ready in the Pipeline");
+    return;
+  }
 
   const vocab = await fetchVocabulary(ORIGIN);
   const schema = briefSchema(vocab);
@@ -484,7 +494,10 @@ async function jobCapture() {
 
 async function jobJournal() {
   const rows = await notion.byStatus(DB.journal, "Make post");
-  if (!rows.length) return;
+  if (!rows.length) {
+    say('journal: nothing marked "Make post" in the Journal — tick it on an entry worth saying out loud');
+    return;
+  }
 
   const objective = await activeObjective();
   const vocab = await fetchVocabulary(ORIGIN);
@@ -654,7 +667,10 @@ async function jobReview() {
    of angles can see it. Deduped by title, which makes reruns harmless. */
 async function jobLibrary() {
   const posted = await notion.byStatus(DB.pipeline, "Posted");
-  if (!posted.length) return;
+  if (!posted.length) {
+    say("library: nothing marked Posted to file away");
+    return;
+  }
 
   const known = new Set(
     (await notion.query(DB.library)).map((r) => get.title(r).toLowerCase()),

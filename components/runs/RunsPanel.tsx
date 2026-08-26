@@ -202,6 +202,9 @@ export default function RunsPanel() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState("");
+  /* Set when GitHub stops accepting the saved token — the one failure that
+     makes every other thing on this page silently stop working. */
+  const [dead, setDead] = useState("");
   /* The job you last started, so the page can point at where its result
      lands the moment it lands there. */
   const [started, setStarted] = useState<{ label: string; lands: Job["lands"] } | null>(
@@ -222,7 +225,18 @@ export default function RunsPanel() {
         `https://api.github.com/repos/${GH_REPO}/actions/workflows/${WORKFLOW}/runs?per_page=8`,
         { headers: ghHeaders(t), cache: "no-store" },
       );
+      /* A dead token has to be loud. This used to swallow every failure, and
+         the result was the worst state this panel can be in: the buttons look
+         armed, pressing one appears to work, the list quietly keeps showing
+         runs from a fortnight ago, and nothing anywhere says the token expired.
+         A fine-grained PAT expires on a timer, so this is not an edge case —
+         it is what happens to everyone eventually. */
+      if (res.status === 401 || res.status === 403 || res.status === 404) {
+        setDead(explain(res.status));
+        return false;
+      }
       if (!res.ok) return false;
+      setDead("");
       const data = (await res.json()) as { workflow_runs: Run[] };
       const list = data.workflow_runs ?? [];
       setRuns(list);
@@ -509,6 +523,22 @@ export default function RunsPanel() {
           </section>
         ) : (
           <>
+            {dead && (
+              <div className="mt-8 border border-line px-5 py-4 text-sm">
+                <p className="leading-relaxed">{dead}</p>
+                <p className="mt-2 text-xs text-muted leading-relaxed">
+                  Until then nothing you press here reaches GitHub, and the list
+                  below is the last thing this browser managed to read.
+                </p>
+                <button
+                  onClick={forget}
+                  className="mt-3 underline underline-offset-4 text-xs"
+                >
+                  Forget it and paste a new one →
+                </button>
+              </div>
+            )}
+
             <h2 className="mt-10 text-xs uppercase tracking-widest text-muted underline underline-offset-4">
               Or run a job
             </h2>
