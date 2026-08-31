@@ -619,6 +619,130 @@
     "headline": "How a brand or a product *introduces itself*, a few seconds at a time.",
     "note": "Launch films, identity in motion, product reveals, keynote and site work — cut into the few seconds that actually do the presenting. Each one is filed by what it is, how it moves and how it lands, and by who was presenting: a seed-stage company and one that has already gone public are not solving the same problem, and it shows in the frames. Every clip steps frame by frame, because a three-frame stagger is not something you can see at speed. Nothing here was made by the club; it is cited, credited and linked back to the second it came from."
   },
+  "ground": {
+    "label": "the Ground",
+    "headline": "Post the work that *isn't ready yet*.",
+    "intro": "the Ground is an open app for practising motion design next to other people. You post a test, a loop, a frame you are not sure about. Somebody tells you what they see. Nothing here has to be finished, and the rough ones are the point.",
+    "promise": "Your file is never re-compressed. What you upload is what people watch and what they download.",
+    "howLabel": "How it works",
+    "howTitle": "Four steps, and the last one *feeds the first*.",
+    "howNote": "Feedback is the scarce thing in motion design, so the app pays for it in the only currency worth having when you are learning: time with somebody further along.",
+    "weekTitle": "Your practice is a *run of weeks*.",
+    "weekNote": "Your profile is not a grid of your best work. It is every week in order, the full ones and the thin ones and the ones you missed. A quiet week stays on the page, because pretending it did not happen is how people quit.",
+    "firstTitle": "What the first version has.",
+    "firstNote": "Small on purpose. The first question is whether designers will post work they are not proud of, and nothing else matters until that is answered.",
+    "roadmapTitle": "Where it goes after that.",
+    "roadmapNote": "In order, and honestly labelled. Credits are worthless until there is a crowd, and mentors cannot be chosen before there is a record of who actually helps.",
+    "ctaLabel": "Ask for an invite",
+    "ctaHref": "https://humanandmotion.substack.com/subscribe"
+  },
+  "groundSteps": [
+    {
+      "number": "01",
+      "name": "Post a take",
+      "note": "One attempt. A loop, a test, a still. Sixty seconds or less, in whatever state it is in."
+    },
+    {
+      "number": "02",
+      "name": "Somebody answers",
+      "note": "Comments open with three questions instead of an empty box: what is working, what I would change, how did you do it."
+    },
+    {
+      "number": "03",
+      "name": "Useful answers earn credits",
+      "note": "You get a credit when the person you helped marks your comment useful. Leaving a comment on its own earns nothing, which is what keeps the feed clear of applause."
+    },
+    {
+      "number": "04",
+      "name": "Credits reach a mentor",
+      "note": "Every mentor keeps a few free slots each month and credits are the only way in. The other slots are paid, and the mentor sets the price."
+    }
+  ],
+  "groundFirst": [
+    {
+      "state": "in",
+      "name": "Sign in with your email",
+      "note": "No password, no GitHub, no app to install."
+    },
+    {
+      "state": "in",
+      "name": "Post video, gif or stills",
+      "note": "Up to 1080p and sixty seconds. Your original file is stored exactly as you sent it."
+    },
+    {
+      "state": "in",
+      "name": "A feed that starts with Needs eyes",
+      "note": "The posts nobody has answered yet, oldest first. Recent is the second tab, not the first."
+    },
+    {
+      "state": "in",
+      "name": "Comments, with three starters",
+      "note": "What is working, what I would change, how did you do it."
+    },
+    {
+      "state": "in",
+      "name": "A profile grouped by week",
+      "note": "Your takes in the week you made them, gaps included."
+    },
+    {
+      "state": "in",
+      "name": "No public counts",
+      "note": "No follower count, no like count, no comment count on the wall."
+    },
+    {
+      "state": "later",
+      "name": "Credits and mentors",
+      "note": "Both need a crowd first. Until then, mentoring happens by email and by hand."
+    },
+    {
+      "state": "later",
+      "name": "Weekly focus and reflection",
+      "note": "The planner the club already gives away, with other people in it."
+    },
+    {
+      "state": "later",
+      "name": "Posting from the studios",
+      "note": "A post that is a spec, so anyone can open it and change one number."
+    }
+  ],
+  "groundRoadmap": [
+    {
+      "number": "01",
+      "state": "Building",
+      "name": "The feed",
+      "note": "Accounts, takes, comments. The whole first version."
+    },
+    {
+      "number": "02",
+      "state": "Next",
+      "name": "The week",
+      "note": "A focus on Monday, a reflection on Sunday, and a profile that reads as a run of weeks."
+    },
+    {
+      "number": "03",
+      "state": "Then",
+      "name": "Credits",
+      "note": "Marking a comment useful, and the ledger behind it."
+    },
+    {
+      "number": "04",
+      "state": "Then",
+      "name": "Mentors",
+      "note": "Applications, free slots paid for with credits, and a call with every mentor before they are approved."
+    },
+    {
+      "number": "05",
+      "state": "Then",
+      "name": "Paid sessions",
+      "note": "Mentors set their own rate. The club takes a cut and handles the payout."
+    },
+    {
+      "number": "06",
+      "state": "Later",
+      "name": "The studios, and challenges",
+      "note": "Post straight from the Posts Studio, the Kinetics and the Tiles. Briefs drawn from the club's own exercises."
+    }
+  ],
   "worksheets": [
     {
       "name": "Idea Mining Worksheet",

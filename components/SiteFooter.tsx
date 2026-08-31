@@ -21,6 +21,7 @@ const allColumns = [
       { label: "the Directory", href: "/directory", section: "directory", navId: "directory" },
       { label: "Stills", href: "/stills", section: "stills", navId: "stills" },
       { label: "Clips", href: "/clips", section: "clips", navId: "clips" },
+      { label: "the Ground", href: "/ground", section: "ground", navId: "ground" },
     ],
   },
 ];

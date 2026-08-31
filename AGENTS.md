@@ -720,6 +720,39 @@ Same split again: **the clips are data, the framing is copy.** They live in
 the seek that cannot hang, and committing from a browser. They were lifted out
 of `components/stills/` when the Clips needed all of them; don't fork either.
 
+## the Ground (`/ground`)
+
+The club's practice app: post a take, get feedback, and useful feedback earns
+credits that reach a mentor. **Only the landing page exists so far** — static,
+no accounts, no database. `docs/THE-GROUND.md` is the argument and the plan;
+read it before building any of the app.
+
+Three things from it that bind work elsewhere in this repo:
+
+- **the Ground is the one authenticated surface, and it is the one place the
+  no-secrets rule bends.** The public site stays statically prerendered with
+  no secrets in its render path, and **the build must pass with no Supabase
+  env vars set** — absent config, `/ground` renders the landing page it
+  renders today. The keys are `NEXT_PUBLIC_*` and Row Level Security does the
+  enforcement, so the club's actual pattern holds: the browser carries the
+  credential and talks straight to the API. **No service-role key on Vercel,
+  ever**; money and credit minting are Supabase Edge Functions.
+- **Never re-encode a member's file.** The Clips' compression settings are for
+  citations of other people's films and must not carry over. A web-playable
+  upload is served as-is, the original is always downloadable, and a sprite
+  sheet is a wall thumbnail rather than the thing anyone judges from. In
+  particular, reuse the seek/tile half of `cutOne` and **not** the
+  MediaRecorder half.
+- **The week is the unit of practice**, from `practiceRules`: "what matters is
+  that you come back next week." A profile is a run of weeks with the thin
+  ones still on the page, which is the whole difference from a portfolio.
+
+Its copy lives in `content/site.json` under `ground`, `groundSteps`,
+`groundFirst` and `groundRoadmap`, edited in the Studio like every other
+section. The page stays in the club's white: the wall is the club's, the
+instrument is the instrument.
+
+
 ## The content system
 
 The club's posting loop — a Notion Pipeline, a Content library, monthly

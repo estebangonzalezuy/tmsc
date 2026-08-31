@@ -21,6 +21,10 @@ type Content = {
   directory: Item;
   stills: Item;
   clips: Item;
+  ground: Item;
+  groundSteps: Item[];
+  groundFirst: Item[];
+  groundRoadmap: Item[];
   linkIndex: Item[];
   worksheets: Item[];
   offerings: Item[];
@@ -38,11 +42,14 @@ type ListKey =
   | "offerings"
   | "practiceStages"
   | "practiceExercises"
+  | "groundSteps"
+  | "groundFirst"
+  | "groundRoadmap"
   | "linkIndex";
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory" | "stills" | "clips";
+type ObjectKey = "site" | "directory" | "stills" | "clips" | "ground";
 
 /* ---------- section schema ---------- */
 
@@ -248,6 +255,75 @@ const sections: Section[] = [
         kind: "textarea",
       },
       { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "ground",
+    title: "the Ground",
+    note: "The words on the Ground's page — the steps, the first version and the roadmap have their own panels",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      {
+        key: "headline",
+        label: "Headline — *between asterisks* turns italic",
+        kind: "textarea",
+      },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "promise", label: "The promise about files", kind: "textarea" },
+      { key: "howLabel", label: "How it works — kicker" },
+      { key: "howTitle", label: "How it works — title", kind: "textarea" },
+      { key: "howNote", label: "How it works — note", kind: "textarea" },
+      { key: "weekTitle", label: "Your weeks — title", kind: "textarea" },
+      { key: "weekNote", label: "Your weeks — note", kind: "textarea" },
+      { key: "firstTitle", label: "First version — title", kind: "textarea" },
+      { key: "firstNote", label: "First version — note", kind: "textarea" },
+      { key: "roadmapTitle", label: "Roadmap — title", kind: "textarea" },
+      { key: "roadmapNote", label: "Roadmap — note", kind: "textarea" },
+      { key: "ctaLabel", label: "Button label" },
+      { key: "ctaHref", label: "Button link" },
+    ],
+  },
+  {
+    id: "groundSteps",
+    title: "the Ground — how it works",
+    note: "The four steps of the loop, in order",
+    kind: "list",
+    itemName: "step",
+    fields: [
+      { key: "number", label: "Number" },
+      { key: "name", label: "Name" },
+      { key: "note", label: "Note", kind: "textarea" },
+    ],
+  },
+  {
+    id: "groundFirst",
+    title: "the Ground — the first version",
+    note: "What ships first, and what deliberately waits",
+    kind: "list",
+    itemName: "line",
+    fields: [
+      {
+        key: "state",
+        label: "Where it sits",
+        kind: "select",
+        options: ["in", "later"],
+      },
+      { key: "name", label: "Name" },
+      { key: "note", label: "Note", kind: "textarea" },
+    ],
+  },
+  {
+    id: "groundRoadmap",
+    title: "the Ground — roadmap",
+    note: "What comes after the first version, in order",
+    kind: "list",
+    itemName: "step",
+    fields: [
+      { key: "number", label: "Number" },
+      { key: "state", label: "Status" },
+      { key: "name", label: "Name" },
+      { key: "note", label: "Note", kind: "textarea" },
     ],
   },
   {
@@ -606,6 +682,7 @@ const navItems = [
   { id: "directory", label: "the Directory", section: "directory" },
   { id: "stills", label: "Stills", section: "stills" },
   { id: "clips", label: "Clips", section: "clips" },
+  { id: "ground", label: "the Ground", section: "ground" },
   { id: "learn", label: "Learn", section: "learningPaths" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
@@ -750,6 +827,7 @@ const pageTabs = [
   { id: "directory", label: "the Directory" },
   { id: "stills", label: "Stills" },
   { id: "clips", label: "Clips" },
+  { id: "ground", label: "the Ground" },
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },

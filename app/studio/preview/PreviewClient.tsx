@@ -14,6 +14,7 @@ import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
 import StillsPage from "@/components/pages/StillsPage";
 import ClipsPage from "@/components/pages/ClipsPage";
+import GroundPage from "@/components/pages/GroundPage";
 import LinksPage from "@/components/pages/LinksPage";
 import type { WallData } from "@/lib/stills-shared";
 import type { ClipWall } from "@/lib/clips-shared";
@@ -26,6 +27,7 @@ const pages: Record<string, React.ComponentType> = {
   learn: LearnPage,
   practice: PracticePage,
   offerings: OfferingsPage,
+  ground: GroundPage,
   links: LinksPage,
 };
 
