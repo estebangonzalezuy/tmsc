@@ -16,7 +16,7 @@ const allColumns = [
   {
     title: "Practice",
     links: [
-      { label: "Learn", href: "/learn", section: "learningPaths", navId: "learn" },
+      { label: "Learn", href: "/learn", section: "learn", navId: "learn" },
       { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
       { label: "the Directory", href: "/directory", section: "directory", navId: "directory" },
       { label: "Stills", href: "/stills", section: "stills", navId: "stills" },

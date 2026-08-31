@@ -19,6 +19,7 @@ type Content = {
   learningPaths: Item[];
   resources: Item[];
   directory: Item;
+  learn: Item;
   stills: Item;
   clips: Item;
   linkIndex: Item[];
@@ -42,7 +43,7 @@ type ListKey =
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory" | "stills" | "clips";
+type ObjectKey = "site" | "directory" | "learn" | "stills" | "clips";
 
 /* ---------- section schema ---------- */
 
@@ -216,6 +217,18 @@ const sections: Section[] = [
     kind: "object",
     fields: [
       { key: "label", label: "Label" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "learn",
+    title: "Learn",
+    note: "The words on the library \u2014 the pieces themselves are written as files in content/learn/sources/, not here",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "headline", label: "Headline \u2014 *between asterisks* turns italic", kind: "textarea" },
       { key: "intro", label: "Intro", kind: "textarea" },
       { key: "note", label: "How it's kept", kind: "textarea" },
     ],
@@ -606,7 +619,7 @@ const navItems = [
   { id: "directory", label: "the Directory", section: "directory" },
   { id: "stills", label: "Stills", section: "stills" },
   { id: "clips", label: "Clips", section: "clips" },
-  { id: "learn", label: "Learn", section: "learningPaths" },
+  { id: "learn", label: "Learn", section: "learn" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
 ];

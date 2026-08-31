@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "learn:build": "node scripts/learn/build.mjs",
+    "directory:build": "node scripts/directory/build.mjs"
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.77",
