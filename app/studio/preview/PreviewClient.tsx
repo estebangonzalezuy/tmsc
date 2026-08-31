@@ -14,7 +14,7 @@ import PracticePage from "@/components/pages/PracticePage";
 import OfferingsPage from "@/components/pages/OfferingsPage";
 import StillsPage from "@/components/pages/StillsPage";
 import ClipsPage from "@/components/pages/ClipsPage";
-import GroundPage from "@/components/pages/GroundPage";
+import GroundPage, { type DemoTake } from "@/components/pages/GroundPage";
 import LinksPage from "@/components/pages/LinksPage";
 import type { WallData } from "@/lib/stills-shared";
 import type { ClipWall } from "@/lib/clips-shared";
@@ -27,7 +27,6 @@ const pages: Record<string, React.ComponentType> = {
   learn: LearnPage,
   practice: PracticePage,
   offerings: OfferingsPage,
-  ground: GroundPage,
   links: LinksPage,
 };
 
@@ -61,9 +60,11 @@ type ParentMessage =
 export default function PreviewClient({
   stillsWall,
   clipsWall,
+  groundTakes,
 }: {
   stillsWall?: WallData;
   clipsWall?: ClipWall;
+  groundTakes?: DemoTake[];
 }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [page, setPage] = useState("home");
@@ -137,6 +138,8 @@ export default function PreviewClient({
           <StillsPage wall={stillsWall} />
         ) : page === "clips" ? (
           <ClipsPage wall={clipsWall} />
+        ) : page === "ground" ? (
+          <GroundPage takes={groundTakes} />
         ) : (
           <Page />
         )}

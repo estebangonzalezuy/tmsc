@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/lib/data";
+import { groundTakes } from "@/lib/ground";
 import GroundPage from "@/components/pages/GroundPage";
 
 export const metadata: Metadata = {
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function Ground() {
-  return <GroundPage />;
+  return <GroundPage takes={groundTakes()} />;
 }
