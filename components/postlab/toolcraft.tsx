@@ -37,6 +37,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -44,6 +45,30 @@ import {
 export const HAIR = "border-[color:var(--tc-edge)]";
 /** The stage the chrome floats on. The canvas is drawn over this, not in it. */
 export const STAGE = "toolcraft bg-[#0b0c0e]";
+
+/* The same breakpoint the layout itself switches on (`md:`) — a panel stops
+   floating and docks into the page below this width. */
+const COMPACT_QUERY = "(max-width: 767px)";
+
+function subscribeCompact(onChange: () => void) {
+  const mq = window.matchMedia(COMPACT_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+const getCompactSnapshot = () => window.matchMedia(COMPACT_QUERY).matches;
+const getCompactServerSnapshot = () => false;
+
+/**
+ * True on a phone-width viewport. `Section` and `Block` read this to start
+ * folded there, so a tool that would otherwise arrive as one long unrolled
+ * page instead arrives as a short stack of named rows — tap one to work in
+ * it, its summary or title says what it already holds while it's shut. On a
+ * wider viewport nothing changes: groups still open the way each call site
+ * asked them to.
+ */
+export function useCompact() {
+  return useSyncExternalStore(subscribeCompact, getCompactSnapshot, getCompactServerSnapshot);
+}
 
 const INK = "text-[color:var(--tc-ink)]";
 const INK2 = "text-[color:var(--tc-ink-2)]";
@@ -252,9 +277,12 @@ export function Section({
   note?: string;
 }) {
   /* `open` is a hint, not a value: a group that holds nothing starts folded and
-     opens itself the moment it holds something. Your own fold then wins. */
+     opens itself the moment it holds something. Your own fold then wins. On a
+     phone every group starts folded regardless — a tall stack of open groups
+     is the thing this fixes — until you tap one open yourself. */
+  const compact = useCompact();
   const [override, setOverride] = useState<boolean | null>(null);
-  const open = override ?? initial;
+  const open = override ?? (compact ? false : initial);
   return (
     <div className="border-b border-[color:var(--tc-rule)] last:border-b-0">
       <div className="h-9 flex items-center gap-1 pl-4 pr-2">
@@ -1021,7 +1049,9 @@ export function Block({
   children: ReactNode;
   open?: boolean;
 }) {
-  const [open, setOpen] = useState(initial);
+  const compact = useCompact();
+  const [override, setOverride] = useState<boolean | null>(null);
+  const open = override ?? (compact ? false : initial);
   return (
     <div className="rounded-[var(--tc-r)] border border-[color:var(--tc-edge)]">
       <div
@@ -1039,7 +1069,7 @@ export function Block({
           </button>
         )}
         <button
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => setOverride(!open)}
           className={`flex-1 flex items-center gap-1.5 text-[12.5px] text-left truncate ${
             on ? INK2 : `${INK3} line-through`
           }`}
