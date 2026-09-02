@@ -45,6 +45,7 @@ import {
   Text as TextField,
   Toggle,
   Toolbar,
+  TopBar,
 } from "@/components/postlab/toolcraft";
 
 const GROUND_NAMES = Object.fromEntries(GROUNDS.map((g) => [g.hex, g.label]));
@@ -261,10 +262,30 @@ export default function ToolViewer({ id }: { id: string }) {
 
   return (
     <div className={`min-h-dvh md:h-dvh flex flex-col ${STAGE}`}>
+      <TopBar title={tool.name} mark="✦" by={tool.about}>
+        {(flash || job) && (
+          <span className="text-[12.5px] tabular-nums text-[color:var(--tc-ink-3)]">
+            {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
+          </span>
+        )}
+        <Link
+          href="/tools"
+          title="every tool"
+          className="tc-field h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center hover:bg-[color:var(--tc-field-hi)] transition-colors"
+        >
+          ← tools
+        </Link>
+        <Link
+          href={studioLink()}
+          className="tc-field h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center hover:bg-[color:var(--tc-field-hi)] transition-colors"
+        >
+          open in the studio →
+        </Link>
+      </TopBar>
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[320px]"
         >
           <div
             className="relative overflow-hidden shrink-0"
@@ -280,39 +301,11 @@ export default function ToolViewer({ id }: { id: string }) {
           </div>
         </div>
 
-        {/* Top left: which tool this is, and the way back to the wall. */}
-        <div className="md:absolute md:top-3 md:left-3 z-20 flex items-center gap-1.5 p-2 md:p-0 overflow-x-auto">
-          <Link
-            href="/tools"
-            title="every tool"
-            className="tc-float rounded-[var(--tc-r)] size-9 shrink-0 inline-grid place-items-center text-[13px] hover:bg-[color:var(--tc-field-hi)] transition-colors"
-          >
-            ←
-          </Link>
-          <span
-            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center gap-2.5 shrink-0"
-          >
-            <span className="text-[13px] font-medium">{tool.name}</span>
-            <span className="text-[11px] text-[color:var(--tc-ink-3)] hidden xl:block max-w-[320px] truncate">
-              {tool.about}
-            </span>
-          </span>
-          <Link
-            href={studioLink()}
-            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 hover:bg-[color:var(--tc-field-hi)]"
-          >
-            open in the studio →
-          </Link>
-          {(flash || job) && (
-            <span className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 tabular-nums">
-              {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
-            </span>
-          )}
-        </div>
-
-        {/* Top right: the tool's questions, and its way out at the foot. */}
-        <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
+        {/* Right, docked: the tool's questions, and its way out at the foot.
+            No left dock — a tool is one panel, not a gallery. */}
+        <div className="md:absolute md:top-0 md:right-0 md:bottom-0 z-20 flex p-2 md:p-0">
           <Panel
+            dock="right"
             title={tool.name}
             right={
               <span className="text-[10px] text-muted tabular-nums pr-1">
@@ -409,7 +402,7 @@ export default function ToolViewer({ id }: { id: string }) {
 
         {/* Bottom centre: the whole transport a tool needs. Anything more
             belongs in the studio, which has a timeline. */}
-        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex justify-center">
+        <div className="md:absolute md:bottom-3 md:left-0 md:right-[320px] z-20 p-2 md:p-0 flex justify-center">
           <Toolbar>
             <IconBtn
               onClick={() => {

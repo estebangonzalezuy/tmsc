@@ -226,13 +226,16 @@ never be the reason a loop stops closing. Keep it that way.
   presets, base64url encode/decode. The spec travels in the URL
   (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
   ready post.
-- **The stage is the whole window, and it is black.** Nothing is docked: the
-  post sits in the middle of the club's own ink and every control floats over
-  it, which is the one thing a studio has to get right — the post is never
-  squeezed into what's left after the furniture. Top left is the identity and
-  the menus (what you *do*), top right is one panel (what you *set*), bottom
-  left the filmstrip, bottom centre the toolbar: undo, zoom, transport, guides,
-  the loop.
+- **The stage is the whole window, and it is the club's own light ground.**
+  A top bar spans it — the mark, the title, Import / Share / Export — and two
+  panels dock flush to its edges as flat columns, the post filling whatever
+  span is left between them rather than floating under a stack of glass.
+  Left is what you *pick from* (the layers stack, then recipes), right is
+  what you *set* (one panel, one column), bottom left the filmstrip, bottom
+  centre the toolbar: undo, zoom, transport, guides, the loop. This was a
+  full-bleed black stage with everything floating over it until September
+  2026, redrawn after Light Rails (`light-stroke-rail.vercel.app`) — see
+  `docs/THE-STUDIO-CHROME.md` for the decision.
   - **The layers panel is top left** — one row a layer with a live thumbnail of
     what that layer alone draws, front of the post at the top, and pick / hide /
     solo / reorder / delete on the row you pressed. It was a dropdown inside the
@@ -249,51 +252,62 @@ never be the reason a loop stops closing. Keep it that way.
     It had tabs once, and a tab is a second place to look for something that
     only ever lived in one place. Put a new control where its subject already
     is rather than adding another place to look.
-  - **Big grids of pictures go over the stage**: `Drawer` holds the recipe
-    shelf, the rolled looks and the paste-a-spec box. Moments, not places.
+  - **The recipe rail lives in the left dock**, above the layers stack — real
+    thumbnails, always in view, not summoned. `Drawer` still floats over the
+    stage for what's genuinely a moment: a sheet rolled from nothing, the
+    paste-a-spec box.
   - `Tracks.tsx` is the loop in tracks — transport, ruler, a lane per travelling
     parameter with its **wave drawn across the loop**, marks included. It floats
     above the toolbar and is off until asked for.
   - The filmstrip is `Poster.tsx` drawing every slide for real, and **live**: a
     thumbnail follows the playhead rather than holding frame zero, because a
     post in this studio moves.
-- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all of it is
-  built from — toolcraft.sh's *shapes* in the club's own colours: panels
-  floating over a full-bleed canvas, the same metrics and control shapes and
-  order, drawn in white with near-black ink and hairline rules on the club's
-  black stage. The reference was copied exactly first and then dressed, which is
-  why the dressing was one CSS block. It gets one thing exactly right: a tool is
-  a canvas with chrome floating over it. Every colour, radius and height is a
-  token in `app/globals.css` under `.toolcraft`, and nothing in the component
-  file hardcodes one — putting the instrument back in the reference's own dark
-  glass is that block and nothing else, and the dark values are kept in a comment
-  beside it. **The two rules suspended inside the chrome stay inside it**:
-  rounded corners and a translucent surface. Everything else is the club's —
-  white ground, near-black ink, 1px hairlines, no shadows, and green, the site's
-  own focus colour, as the only colour, on a switch that is on. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
+- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all four
+  studios (`/postlab`, `/tiles`, `/kinetics`, `/tools`) are built from —
+  toolcraft.sh's control shapes still, on the club's own light ground now
+  instead of its black one: a docked panel (`dock="left" | "right"`) is flat
+  and flush to the page's edge, a number is a dark filled pill (the field is
+  its own slider), a gallery is a `Rail` of `RailItem` thumbnails. Every
+  colour, radius and height is a token in `app/globals.css` under
+  `.toolcraft`, and nothing in the component file hardcodes one — the whole
+  point of the token layer, proven twice now: the first reskin (the club's
+  colours on toolcraft.sh's shapes) was one CSS block, and the second (this
+  one, after Light Rails) mostly was too. **The two rules suspended inside
+  the chrome stay inside it**: rounded corners, and a translucent surface on
+  the few things still floating (a menu, a drawer). Everything else is the
+  club's — warm ground, white panel, near-black ink, 1px hairlines, and
+  green, the site's own focus colour, as the only colour, on a switch that
+  is on. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
   same everywhere:
-  - `Panel` — a floating card: title, reset, fold, a scrolling body, and a
-    footer holding the one button you press at the end
+  - `TopBar` — the full-width bar above the docks: a mark, a title, the
+    primary actions right-aligned
+  - `Panel` — `dock="left" | "right"` for a flat column flush to the page's
+    edge, unset for a floating card; either way, title, reset, fold, a
+    scrolling body, a footer holding the one button you press at the end
   - `Section` — an uppercase label with its own reset and fold
-  - `Slider` — label left, value right, **track full width underneath**; never a
-    slider squeezed between two labels. `Num` inside it drags as well as types
+  - `Slider` — label outside, left; the field itself is the slider, a dark
+    pill filled from its own left edge in proportion to the value, dragged
+    sideways or typed into directly — never a track under a label
   - `Toggle` (a pill), `Segmented` (2-4 choices), `Select` (past four),
     `Cols` (two controls on one line)
-  - `Range` — two handles on one track. A number that travels is drawn with it
-    rather than as two sliders: where it rests and where it goes are one
-    journey, and `cross` lets the handles pass each other so a number can
-    travel downwards
+  - `Range` — two handles on one track, kept in its older label-over-track
+    style. A number that travels is drawn with it rather than as two
+    sliders: where it rests and where it goes are one journey, and `cross`
+    lets the handles pass each other so a number can travel downwards
   - `Dots` (colour as circles), `ColorRow` (swatch + hex + auto + remove — a
     palette is a two-column list of these), `XYPad` (two numbers that are one
     place), `Dropzone`
+  - `Rail` / `RailItem` — a grid of thumbnails you pick from, docked in a
+    panel's own scroll: a studio's gallery, no longer a `Drawer`
   - `Block` — one thing in a stack: switch, name, reorder, remove, numbers
   - `Menu` / `MenuItem` / `MenuRow` — the things you do
   - `Toolbar`, `Drawer`, `Help`, `Primary`
-  Anything that floats carries `tc-float`, anything with its own ground carries
-  `tc-field`, and a slider's track is drawn by two spans behind a transparent
-  native input — never by the input itself, which paints over the fill. Add to
-  Toolcraft rather than styling a control in place, and use the same kit on every
-  tool page. `/tools` — the wall — is *not* chrome: it is a page of the site and
+  Anything still floating carries `tc-float`, a docked column carries
+  `tc-dock`, anything with its own ground carries `tc-field`, and a number's
+  own field carries `tc-pill` — its fill is one span behind the text, sized
+  by `%`, never the input painting over itself. Add to Toolcraft rather than
+  styling a control in place, and use the same kit on every tool page.
+  `/tools` — the wall — is *not* chrome: it is a page of the site and
   stays in the club's white, hairlines and accent hovers. The wall is the club's;
   the instrument is the instrument.
 - `components/postlab/clock.ts` — the playhead, deliberately outside React.

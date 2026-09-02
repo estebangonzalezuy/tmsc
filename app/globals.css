@@ -219,12 +219,16 @@ body {
    See docs/THE-STUDIO-CHROME.md for why the club's rules are suspended
    inside the chrome and nowhere else. */
 .toolcraft {
-  /* The club's white, on the club's own black. This is the swap the reference
-     was copied in order to make: the *shapes* are toolcraft's — the floating
-     panel, the full-width track under its label, the pill switch, the order —
-     and the colour is tMSC's. Dark glass is one line away (the dark values are
-     kept beside each of these) if the instrument ever wants it back. */
-  --tc-glass: rgba(255, 255, 255, 0.94); /* dark: rgba(18, 20, 24, 0.66) */
+  /* Light Rails' shape: a light page, flat opaque sidebars docked to its
+     edges, dark filled-pill fields for a number. The page and the panel are
+     the club's own two grounds — the warm page a shade under the panel's
+     white — so the instrument reads as part of the site instead of a booth
+     bolted onto it. */
+  --tc-page: var(--background);
+  --tc-panel: var(--surface);
+  /* Still used by transient floating things — the menu, the drawer, a
+     popover toolbar — which stay glass over whatever they sit on. */
+  --tc-glass: rgba(255, 255, 255, 0.94);
   --tc-glass-solid: var(--background);
   --tc-blur: 20px;
   /* A panel's own edge is the club's hairline at full strength; everything
@@ -243,6 +247,12 @@ body {
   /* What a slider has travelled, and what a handle is made of. */
   --tc-fill: var(--foreground);
   --tc-thumb: var(--foreground);
+  /* A number's own field: near-black regardless of theme, the one dark
+     shape on the page, filled from its left edge in proportion to the
+     value and read in light ink over the fill. */
+  --tc-fill-bg: #17181b;
+  --tc-fill-quiet: rgba(255, 255, 255, 0.14);
+  --tc-fill-ink: #f4f3ef;
   /* Selected: the club's ink, not a tint. */
   --tc-sel: var(--foreground);
   --tc-focus: var(--accent-green);
@@ -254,9 +264,9 @@ body {
   --tc-r-lg: 12px;
   --tc-r-pill: 14px;
   --tc-h: 34px;
-  /* No shadow: a white panel on the club's black separates itself, and the
-     club doesn't have shadows. */
-  --tc-shadow: none;
+  /* A light panel on a light page needs the site's own shadow to separate —
+     the club's --shadow, the same lift a .card gets. */
+  --tc-shadow: var(--shadow);
   /* Instrument furniture, not the club's typefaces: a post set in Lora
      sitting inside a panel also set in Lora is a post you cannot see. */
   font-family:
@@ -265,12 +275,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Anything that floats: the panel, the toolbar, a drawer, the filmstrip. */
+/* Anything that floats: a popover, a menu, a drawer, a toolbar not docked. */
 .tc-float {
   background: var(--tc-glass);
   backdrop-filter: blur(var(--tc-blur)) saturate(140%);
   -webkit-backdrop-filter: blur(var(--tc-blur)) saturate(140%);
   border: 1px solid var(--tc-frame);
+  box-shadow: var(--tc-shadow);
+}
+
+/* A sidebar docked flush to the page's edge: flat and opaque, not glass —
+   the page itself, one ground lighter, is what separates it. */
+.tc-dock {
+  background: var(--tc-panel);
   box-shadow: var(--tc-shadow);
 }
 
@@ -348,6 +365,22 @@ body {
   border-radius: 2px;
   background: var(--tc-fill);
   transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* A number that is its own slider: the field IS the track, filled from the
+   left in proportion to the value, dragged sideways like Num already was. */
+.tc-pill {
+  position: relative;
+  background: var(--tc-fill-bg);
+  border-radius: var(--tc-r);
+  color: var(--tc-fill-ink);
+  overflow: hidden;
+}
+.tc-pill-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--tc-fill-quiet);
   pointer-events: none;
 }
 

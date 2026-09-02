@@ -2,24 +2,24 @@
 
 // the Posts Studio.
 //
-// The stage is the whole window and it is black; everything you touch floats on
-// top of it. Nothing is docked — the post is never squeezed into what is left
-// after the furniture, which is the one thing a studio has to get right.
+// The page is the club's own light ground; the post sits on it, docked between
+// two flat columns rather than floating under a stack of glass.
 //
-//   top left      the identity, and the menus: what you *do*
-//   top right     one panel: what you *set*, one column, read downwards
+//   top bar       the mark, the title, Import / Share / Export
+//   left, docked  the layers stack, then recipes to pick a whole look from
+//   right, docked one panel: what you *set*, one column, read downwards
 //   bottom left   the filmstrip, when there is more than one slide
 //   bottom centre the toolbar: undo, zoom, the transport, the loop
 //
 // Everything is drawn from Toolcraft (`toolcraft.tsx`), so a control learned in
-// one place is the same control everywhere: label on the left, value on the
-// right, track full width underneath.
+// one place is the same control everywhere — a number is a dark filled pill,
+// the field itself the slider.
 //
-// The panel's order is Toolcraft's own — canvas, source, type, marks, effect,
-// colour, and export at the foot — not this tool's history. It had tabs once,
-// and a tab is a second place to look for something that was only ever in one
-// place; a group that folds shut with its summary showing does the same job
-// without hiding half the post behind a switch.
+// The right panel's order is Toolcraft's own — canvas, source, type, marks,
+// effect, colour, and export at the foot — not this tool's history. It had
+// tabs once, and a tab is a second place to look for something that was only
+// ever in one place; a group that folds shut with its summary showing does
+// the same job without hiding half the post behind a switch.
 //
 // Two rules the studio keeps for itself. Every graphic arrives **moving** — a
 // mark, a layer, an effect — because this is a studio for motion and a still
@@ -113,6 +113,8 @@ import {
   MenuSep,
   Panel,
   Primary,
+  Rail,
+  RailItem,
   Range,
   Row,
   STAGE,
@@ -126,6 +128,7 @@ import {
   Thumb,
   Toggle,
   Toolbar,
+  TopBar,
   XYPad,
 } from "./toolcraft";
 
@@ -351,7 +354,7 @@ export default function PostLab() {
   /* A file is picked once; asking for another opens the door again. */
   const [pickMore, setPickMore] = useState(0);
   /* What's over the stage, when something needs the room. */
-  const [drawer, setDrawer] = useState<"recipes" | "generate" | "spec" | null>(null);
+  const [drawer, setDrawer] = useState<"generate" | "spec" | null>(null);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const shaderBoxRef = useRef<HTMLDivElement>(null);
@@ -916,7 +919,7 @@ export default function PostLab() {
         setActive((i) => Math.min(spec.slides.length - 1, i + 1));
       else if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
       else if (e.key.toLowerCase() === "g") setGuides((g) => !g);
-      else if (e.key.toLowerCase() === "r") setDrawer("recipes");
+      else if (e.key.toLowerCase() === "r") roll(12);
       else if (e.key === "0") setZoom(1);
       else if (e.key === "+" || e.key === "=") setZoom((z) => Math.min(4, z * 1.15));
       else if (e.key === "-") setZoom((z) => Math.max(0.25, z / 1.15));
@@ -980,11 +983,20 @@ export default function PostLab() {
 
   return (
     <div className={`min-h-dvh md:h-dvh flex flex-col ${STAGE}`}>
-      {/* The stage: the whole window, and black. Everything else floats. */}
+      <TopBar title="the Posts Studio" mark="✦">
+        <Btn onClick={() => setDrawer("spec")}>Import</Btn>
+        <Btn onClick={copyLink} title="Copy a link to this post">
+          Share
+        </Btn>
+        <Btn onClick={savePng} disabled={!!job} dark title="Export this slide as a PNG">
+          ⤓ Export
+        </Btn>
+      </TopBar>
+      {/* Below the bar: a docked column either side, the post in between. */}
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pl-[324px] md:pr-[352px]"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pl-[288px] md:pr-[320px]"
         >
           <div
             ref={frameRef}
@@ -1016,9 +1028,10 @@ export default function PostLab() {
           </div>
         </div>
 
-        {/* Top right: one panel, one column. */}
-        <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
+        {/* Right: one panel, docked, one column. */}
+        <div className="md:absolute md:top-0 md:right-0 md:bottom-0 z-20 flex p-2 md:p-0">
           <Panel
+            dock="right"
             title="the Posts Studio"
             /* Everything you *do*, in one menu off the panel's header. This
                chrome has no menu bar: the reference doesn't have one, and six
@@ -1027,10 +1040,9 @@ export default function PostLab() {
             menu={
               <Menu label="⋯" align="right" width={248}>
                 <MenuLabel>the post</MenuLabel>
-                  <MenuItem onClick={() => setDrawer("recipes")} hint="r">
-                    Recipes…
+                  <MenuItem onClick={() => roll(12)} hint="r">
+                    Generate a look…
                   </MenuItem>
-                  <MenuItem onClick={() => roll(12)}>Generate a look…</MenuItem>
                   <MenuSep />
                   <MenuRow label="format">
                     <Segmented
@@ -1305,8 +1317,8 @@ export default function PostLab() {
                 help="How long the post runs before it comes back to its first frame"
               />
               <Buttons>
-                <Btn onClick={() => setDrawer("recipes")} wide title="A whole post to start from">
-                  Recipes…
+                <Btn onClick={() => setDrawer("generate")} wide title="Twelve looks from nothing">
+                  Generate…
                 </Btn>
                 <Btn onClick={addSlide} wide title="Another slide, from this one">
                   + slide
@@ -2231,40 +2243,103 @@ export default function PostLab() {
           </Panel>
         </div>
 
-        {/* Top left: the stack, front to back. It was a dropdown inside the
-            effect group, which is the one place a stack can't live: you cannot
-            see the order of a thing you have to open a menu to read. */}
-        <div className="md:absolute md:top-3 md:left-3 z-20 flex flex-col gap-2 p-2 md:p-0">
-          {/* The roll, promoted out of the menu it was buried in. It is the
-              first thing anyone does with a studio they have just opened —
-              "show me what this makes" — so it is a button standing where you
-              can see it, not a line inside ⋯. */}
-          <div className="tc-float rounded-[var(--tc-r-pill)] h-10 px-1.5 flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => roll(12)}
-              title="Twelve looks from nothing — every family that closes its loop"
-              className="h-8 px-3 rounded-[var(--tc-r-pill)] text-[12.5px] font-medium hover:bg-[color:var(--tc-field-hi)] transition-colors"
-            >
-              ⚄ Roll a look
-            </button>
-            <span className="w-px h-4 bg-[color:var(--tc-edge)]" />
-            <button
-              onClick={randomizeSlide}
-              title="Re-roll this post's own layers, keeping its words"
-              className="h-8 px-2.5 rounded-[var(--tc-r-pill)] text-[12.5px] text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)] hover:bg-[color:var(--tc-field-hi)] transition-colors"
-            >
-              again
-            </button>
-          </div>
+        {/* Left: one panel, docked — the layers stack, then recipes to pick
+            a whole look from. Layers was a dropdown inside the effect group
+            once, which is the one place a stack can't live: you cannot see
+            the order of a thing you have to open a menu to read. */}
+        <div className="md:absolute md:top-0 md:left-0 md:bottom-0 z-20 flex p-2 md:p-0">
           <Panel
-            title="layers"
-            width={300}
+            dock="left"
+            title="looks"
+            width={288}
             right={
-              <span className="text-[11px] text-[color:var(--tc-ink-3)] tabular-nums pr-1">
-                {slide.layers.length}/{MAX_LAYERS}
-              </span>
+              <button
+                onClick={() => roll(12)}
+                title="Twelve looks from nothing — every family that closes its loop"
+                className="text-[11px] text-[color:var(--tc-ink-3)] hover:text-[color:var(--tc-ink)] transition-colors pr-1"
+              >
+                ⚄ roll
+              </button>
             }
-            footer={
+          >
+            <Section title="layers" summary={`${slide.layers.length}/${MAX_LAYERS}`}>
+              <div className="space-y-1">
+                {/* Front of the post at the top, the way a stack is drawn
+                    everywhere: the last layer is the one over the others. */}
+                {slide.layers
+                  .map((l, i) => ({ l, i }))
+                  .reverse()
+                  .map(({ l, i }) => (
+                    <ListRow
+                      key={i}
+                      name={`${String(i + 1).padStart(2, "0")} · ${layerName(l)}`}
+                      meta={`${l.blend}${l.opacity < 1 ? ` · ${Math.round(l.opacity * 100)}%` : ""}${
+                        l.motion ? ` · ${Object.keys(l.motion).join(", ")} ↻` : " · still"
+                      }`}
+                      selected={i === layerIndex}
+                      on={!l.mute}
+                      onSelect={() => setActiveLayer(i)}
+                      onToggle={() =>
+                        patchLayerAt(i, { mute: l.mute ? undefined : true } as Partial<LayerSpec>)
+                      }
+                      right={
+                        <>
+                          <IconBtn
+                            onClick={() => setSolo(solo === i ? null : i)}
+                            title="Show this layer on its own"
+                            on={solo === i}
+                            bare
+                            small
+                          >
+                            ◆
+                          </IconBtn>
+                          <IconBtn
+                            onClick={() => moveLayerAt(i, 1)}
+                            title="Bring forward"
+                            disabled={i >= slide.layers.length - 1}
+                            bare
+                            small
+                          >
+                            ↑
+                          </IconBtn>
+                          <IconBtn
+                            onClick={() => moveLayerAt(i, -1)}
+                            title="Send back"
+                            disabled={i <= 0}
+                            bare
+                            small
+                          >
+                            ↓
+                          </IconBtn>
+                          <IconBtn
+                            onClick={() => removeLayerAt(i)}
+                            title="Delete this layer"
+                            disabled={slide.layers.length <= 1}
+                            bare
+                            small
+                          >
+                            ×
+                          </IconBtn>
+                        </>
+                      }
+                    >
+                      {/* What the layer actually draws, on its own — the
+                          fastest way to know which one you're looking at. */}
+                      <span className="size-8 shrink-0 overflow-hidden rounded-[var(--tc-r-sm)] border border-[color:var(--tc-edge)]">
+                        <Poster
+                          spec={{
+                            ...spec,
+                            slides: [{ ...slide, layers: [l], text: false, veil: 0 }],
+                          }}
+                          index={0}
+                          fonts={null}
+                          width={32}
+                          live
+                        />
+                      </span>
+                    </ListRow>
+                  ))}
+              </div>
               <Buttons>
                 <Btn
                   onClick={addLayer}
@@ -2282,88 +2357,32 @@ export default function PostLab() {
                   Re-roll
                 </Btn>
               </Buttons>
-            }
-          >
-            <div className="p-2 space-y-1">
-              {/* Front of the post at the top, the way a stack is drawn
-                  everywhere: the last layer is the one over the others. */}
-              {slide.layers
-                .map((l, i) => ({ l, i }))
-                .reverse()
-                .map(({ l, i }) => (
-                  <ListRow
-                    key={i}
-                    name={`${String(i + 1).padStart(2, "0")} · ${layerName(l)}`}
-                    meta={`${l.blend}${l.opacity < 1 ? ` · ${Math.round(l.opacity * 100)}%` : ""}${
-                      l.motion ? ` · ${Object.keys(l.motion).join(", ")} ↻` : " · still"
-                    }`}
-                    selected={i === layerIndex}
-                    on={!l.mute}
-                    onSelect={() => setActiveLayer(i)}
-                    onToggle={() =>
-                      patchLayerAt(i, { mute: l.mute ? undefined : true } as Partial<LayerSpec>)
-                    }
-                    right={
-                      <>
-                        <IconBtn
-                          onClick={() => setSolo(solo === i ? null : i)}
-                          title="Show this layer on its own"
-                          on={solo === i}
-                          bare
-                          small
-                        >
-                          ◆
-                        </IconBtn>
-                        <IconBtn
-                          onClick={() => moveLayerAt(i, 1)}
-                          title="Bring forward"
-                          disabled={i >= slide.layers.length - 1}
-                          bare
-                          small
-                        >
-                          ↑
-                        </IconBtn>
-                        <IconBtn
-                          onClick={() => moveLayerAt(i, -1)}
-                          title="Send back"
-                          disabled={i <= 0}
-                          bare
-                          small
-                        >
-                          ↓
-                        </IconBtn>
-                        <IconBtn
-                          onClick={() => removeLayerAt(i)}
-                          title="Delete this layer"
-                          disabled={slide.layers.length <= 1}
-                          bare
-                          small
-                        >
-                          ×
-                        </IconBtn>
-                      </>
-                    }
-                  >
-                    {/* What the layer actually draws, on its own — the fastest
-                        way to know which one you're looking at. */}
-                    <span className="size-8 shrink-0 overflow-hidden rounded-[var(--tc-r-sm)] border border-[color:var(--tc-edge)]">
-                      <Poster
-                        spec={{ ...spec, slides: [{ ...slide, layers: [l], text: false, veil: 0 }] }}
-                        index={0}
-                        fonts={null}
-                        width={32}
-                        live
-                      />
-                    </span>
-                  </ListRow>
+            </Section>
+            <Section
+              title="recipes"
+              summary={`${PRESETS.length}`}
+              note="A whole post, ready to have its words replaced."
+            >
+              <Rail cols={2}>
+                {PRESETS.map((p, i) => (
+                  <RailItem key={p.name} label={p.name} title={p.about} onClick={() => loadPreset(i)}>
+                    <Poster
+                      spec={normalizeSpec(structuredClone(p.spec))}
+                      index={0}
+                      fonts={fonts}
+                      width={120}
+                      live
+                    />
+                  </RailItem>
                 ))}
-            </div>
+              </Rail>
+            </Section>
           </Panel>
         </div>
 
         {/* Bottom left: the slides, as pictures. */}
         {strip && spec.slides.length > 0 && (
-          <div className="md:absolute md:left-3 md:bottom-3 z-20 p-2 md:p-0 max-w-full">
+          <div className="md:absolute md:left-[300px] md:bottom-3 z-20 p-2 md:p-0 max-w-full">
             <div
               className="tc-float rounded-[var(--tc-r-lg)] p-2 flex items-end gap-2 overflow-x-auto"
             >
@@ -2388,8 +2407,8 @@ export default function PostLab() {
           </div>
         )}
 
-        {/* Bottom centre: the toolbar, and whatever it has to say. */}
-        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex flex-col items-center gap-2">
+        {/* Bottom, centred over the canvas span between the two docks. */}
+        <div className="md:absolute md:bottom-3 md:left-[288px] md:right-[320px] z-20 p-2 md:p-0 flex flex-col items-center gap-2">
           {(flash || job) && (
             <span className="tc-float rounded-[var(--tc-r)] h-8 px-3 flex items-center text-[12.5px] tabular-nums whitespace-nowrap">
               {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
@@ -2455,7 +2474,7 @@ export default function PostLab() {
 
         {/* The loop, when you ask for it. */}
         {tracks && (
-          <div className="md:absolute md:bottom-[68px] md:left-[324px] md:right-[352px] z-20 p-2 md:p-0">
+          <div className="md:absolute md:bottom-[68px] md:left-[288px] md:right-[320px] z-20 p-2 md:p-0">
             <div className="tc-float rounded-[var(--tc-r-lg)] overflow-hidden">
               <Tracks
                 slide={slide}
@@ -2469,37 +2488,8 @@ export default function PostLab() {
           </div>
         )}
 
-        {/* Over the stage, when something needs the room. */}
-        {drawer === "recipes" && (
-          <Drawer
-            title="recipes — a whole post, ready to have its words replaced"
-            onClose={() => setDrawer(null)}
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-start">
-              {PRESETS.map((p, i) => (
-                <button
-                  key={p.name}
-                  onClick={() => loadPreset(i)}
-                  title={p.about}
-                  className={"rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] hover:border-[color:var(--tc-edge-on)] transition-colors text-left overflow-hidden"}
-                >
-                  <Poster
-                    spec={normalizeSpec(structuredClone(p.spec))}
-                    index={0}
-                    fonts={fonts}
-                    width={220}
-                    live
-                  />
-                  <span className="block px-2 py-1.5 space-y-0.5">
-                    <span className="block text-[11px]">{p.name}</span>
-                    <span className="block text-[10px] text-muted leading-snug">{p.about}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Drawer>
-        )}
-
+        {/* Over the stage, when something needs the room. Recipes live in
+            the left dock now, always in view, not summoned here. */}
         {drawer === "generate" && (
           <Drawer
             title="rolled from nothing — click one to put it on this slide"

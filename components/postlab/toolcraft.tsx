@@ -2,34 +2,38 @@
 
 // Toolcraft — the studio's chrome.
 //
-// A reproduction of toolcraft.sh, not an interpretation of it: the same
-// metrics, the same control shapes, the same order. A tool is a *canvas* with
-// chrome floating over it, never a page divided into columns — the canvas is
-// the whole window and it continues underneath the panel, so the work is never
-// squeezed into what is left after the furniture.
+// toolcraft.sh's control shapes, on the club's own light ground: a docked
+// panel is flat and flush to the page's edge, not a card floating with
+// margin; a number is a dark filled pill, the field its own slider. Redrawn
+// after Light Rails (light-stroke-rail.vercel.app) in September 2026 — see
+// docs/THE-STUDIO-CHROME.md for why and what stayed.
 //
 // The anatomy, and it is the same on every tool page:
 //
-//   Panel      a floating card of dark glass — title, a menu, a reset, a fold,
-//              a scrolling body, and a footer holding the one button you press
-//              at the end
+//   TopBar     the full-width bar above the docks: mark, title, actions
+//   Panel      `dock="left" | "right"` for a flat column flush to the
+//              page's edge; unset for a floating card — title, a menu, a
+//              reset, a fold, a scrolling body, a footer for the one button
+//              you press at the end
 //   Section    an uppercase heading with its own reset and fold
-//   Slider     label left, value right, the track full width underneath —
-//              never a slider squeezed between two labels
-//   Range      the same track with two handles, for a number that travels
+//   Slider     label outside, left; the field itself is the slider — a dark
+//              pill filled from its own edge, dragged or typed into
+//   Range      a track with two handles, for a number that travels
 //   Toggle     a pill switch; on is the one place a colour appears
 //   Segmented  two to four choices side by side; past that, Select
 //   Dots       colour as circles you point at
 //   XYPad      two numbers that are really one place
 //   Dropzone   a file, dragged or clicked; Thumb is what was picked
+//   Rail       a grid of thumbnails you pick from, docked in a panel's own
+//              scroll — a studio's gallery, not a drawer
 //   Toolbar    the pill under the canvas: undo, zoom, the transport
 //
 // Every colour, radius and height is a token in `app/globals.css` under
-// `.toolcraft`. Nothing here hardcodes one, so dressing the studio in the
-// club's own black and white later is that block and nothing else. The rules
-// suspended in here — rounded corners, a shadow, a translucent surface, a blue
-// switch — stay suspended in here: the posts and the public site keep every one
-// of them. See docs/THE-STUDIO-CHROME.md.
+// `.toolcraft`. Nothing here hardcodes one — that's what let this reskin
+// land as mostly a token swap, same as the first one. The rules suspended
+// in here — rounded corners, a translucent surface on the few things still
+// floating — stay suspended in here: the posts and the public site keep
+// every one of them. See docs/THE-STUDIO-CHROME.md.
 
 import {
   createContext,
@@ -43,8 +47,9 @@ import {
 
 /** Kept for callers that draw their own hairline beside ours. */
 export const HAIR = "border-[color:var(--tc-edge)]";
-/** The stage the chrome floats on. The canvas is drawn over this, not in it. */
-export const STAGE = "toolcraft bg-[#0b0c0e]";
+/** The page the chrome docks into — the club's own warm ground, a shade
+    under the panels that sit on it. */
+export const STAGE = "toolcraft bg-[color:var(--tc-page)]";
 
 /* The same breakpoint the layout itself switches on (`md:`) — a panel stops
    floating and docks into the page below this width. */
@@ -97,6 +102,7 @@ export function Btn({
   onClick,
   children,
   on = false,
+  dark = false,
   disabled = false,
   title,
   wide = false,
@@ -104,6 +110,8 @@ export function Btn({
   onClick: () => void;
   children: ReactNode;
   on?: boolean;
+  /** The one solid-black action a bar gets — Light Rails' `Export`. */
+  dark?: boolean;
   disabled?: boolean;
   title?: string;
   wide?: boolean;
@@ -113,9 +121,7 @@ export function Btn({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`tc-field ${
-        on ? "tc-field-on" : ""
-      } h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${
+      className={`${dark ? "tc-pill" : `tc-field ${on ? "tc-field-on" : ""}`} h-[var(--tc-h)] px-3 text-[12.5px] font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap disabled:opacity-40 ${
         wide ? "flex-1 min-w-0" : "shrink-0"
       }`}
     >
@@ -196,9 +202,10 @@ export function Buttons({ children }: { children: ReactNode }) {
 /* ------------------------------------------------------------------ panel */
 
 /**
- * The floating card. One column of groups, read downwards, with the way out
- * pinned to its foot — the reference is emphatic about that, and it is right:
- * a tool's export is not one more group of settings.
+ * One column of groups, read downwards, with the way out pinned to its foot
+ * — the reference is emphatic about that, and it is right: a tool's export
+ * is not one more group of settings. `dock` docks it flush to the page's
+ * edge as a flat column; unset keeps the older floating card.
  */
 export function Panel({
   title,
@@ -209,6 +216,7 @@ export function Panel({
   menu,
   className = "",
   width = 320,
+  dock,
 }: {
   title: string;
   children: ReactNode;
@@ -220,13 +228,25 @@ export function Panel({
   menu?: ReactNode;
   className?: string;
   width?: number;
+  /** Docked flush to the page's edge as a real column, full height and flat
+      — instead of floating with margin over the canvas. Unset keeps the
+      floating card, still used for anything that's a moment, not a place. */
+  dock?: "left" | "right";
 }) {
   const [open, setOpen] = useState(true);
+  /* A docked panel is only a column once there's room for one — below that
+     it stacks like any other card, full width, auto height. */
+  const compact = useCompact();
   return (
     <section
-      /* Full width on a phone, its own width once there's room to float. */
-      className={`tc-float rounded-[var(--tc-r-lg)] flex flex-col min-h-0 w-full ${className}`}
-      style={{ maxWidth: width }}
+      className={`${
+        dock
+          ? `tc-dock rounded-[var(--tc-r-lg)] md:rounded-none md:h-full md:shrink-0 ${
+              dock === "left" ? "md:border-r" : "md:border-l"
+            } border-[color:var(--tc-rule)]`
+          : "tc-float rounded-[var(--tc-r-lg)]"
+      } flex flex-col min-h-0 w-full ${className}`}
+      style={dock ? (compact ? undefined : { width }) : { maxWidth: width }}
     >
       <header
         className={`h-11 shrink-0 flex items-center gap-1 pl-4 pr-2 ${
@@ -254,6 +274,40 @@ export function Panel({
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * The full-width flat bar above the docked columns — a mark, a title, then
+ * the primary actions, right-aligned. The old chrome had no equivalent: on
+ * a black stage a bar across the top would have cut the canvas in two, so
+ * everything you *do* hung off one panel's `⋯` instead. Docked columns
+ * leave room for a real one.
+ */
+export function TopBar({
+  title,
+  mark,
+  by,
+  children,
+}: {
+  title: string;
+  /** A small glyph before the title — Light Rails' ✦. */
+  mark?: ReactNode;
+  /** "by Dinesh" — who this belongs to, quieter, after the title. */
+  by?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="tc-dock h-12 shrink-0 border-b border-[color:var(--tc-rule)] flex items-center gap-2 px-3 md:px-4 overflow-x-auto">
+      {mark && <span className={`text-[13px] shrink-0 ${INK3}`}>{mark}</span>}
+      <span className={`text-[13px] font-medium truncate shrink-0 max-w-[40vw] md:max-w-none ${INK}`}>
+        {title}
+      </span>
+      {by && (
+        <span className={`text-[12px] truncate hidden sm:block ${INK3}`}>{by}</span>
+      )}
+      <span className="ml-auto flex items-center gap-1.5 shrink-0">{children}</span>
+    </header>
   );
 }
 
@@ -378,7 +432,12 @@ export function Num({
   );
 }
 
-/** Label left, value right, track full width underneath. */
+/**
+ * Label outside, left; the field itself is the slider — a dark pill filled
+ * from its own left edge in proportion to the value, dragged sideways or
+ * typed into like `Num`. Light Rails draws every number this way; this
+ * replaces the old label-over-track layout everywhere at once.
+ */
 export function Slider({
   label,
   value,
@@ -401,45 +460,70 @@ export function Slider({
   /** A word where the number would be — "off", "none", "as written". */
   display?: string;
   help?: string;
-  /** Anything that belongs after the value — the loop dot, for instance. */
+  /** Anything that belongs after the field — the loop dot, for instance. */
   right?: ReactNode;
 }) {
-  const pct = ((value - min) / (max - min)) * 100;
+  const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  const [text, setText] = useState<string | null>(null);
+  const drag = useRef<{ x: number; from: number } | null>(null);
+  const dp = step < 1 ? (String(step).split(".")[1]?.length ?? 2) : 0;
+  const shown = text ?? (dp ? value.toFixed(dp) : String(Math.round(value)));
+
+  const commit = (raw: string) => {
+    const n = Number(raw);
+    setText(null);
+    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
+  };
+
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center gap-1.5 min-w-0">
-        <span className={`text-[12.5px] truncate ${INK2}`}>{label}</span>
+    <div className="flex items-center gap-2.5 min-w-0">
+      <span className={`text-[12.5px] shrink-0 flex items-center gap-1.5 ${INK2}`}>
+        {label}
         {help && <Help>{help}</Help>}
-        <span className="ml-auto flex items-center gap-1.5 shrink-0">
-          {display ? (
-            <span className={`text-[12.5px] ${INK3}`}>{display}</span>
-          ) : (
-            <Num
-              value={value}
-              min={min}
-              max={max}
-              step={step}
-              onChange={onChange}
-              suffix={suffix}
-            />
-          )}
-          {right}
-        </span>
-      </div>
-      <div className="relative h-3">
-        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-sm bg-[color:var(--tc-track)]" />
-        <span className="tc-fill" style={{ left: 0, width: `${pct}%` }} />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          aria-label={label}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="tc-range absolute inset-0"
-        />
-      </div>
+      </span>
+      <span
+        role="slider"
+        aria-label={label}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        className={`tc-pill flex-1 min-w-0 h-[var(--tc-h)] flex items-center select-none touch-none ${
+          display ? "" : "cursor-ew-resize"
+        }`}
+        onPointerDown={(e) => {
+          if (display) return;
+          drag.current = { x: e.clientX, from: value };
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          const d = drag.current;
+          if (!d) return;
+          const span = max - min;
+          const next = d.from + ((e.clientX - d.x) / 160) * span;
+          const snapped = Math.round(next / step) * step;
+          onChange(Math.min(max, Math.max(min, Number(snapped.toFixed(4)))));
+        }}
+        onPointerUp={() => (drag.current = null)}
+        onPointerCancel={() => (drag.current = null)}
+      >
+        <span className="tc-pill-fill" style={{ width: `${pct}%` }} />
+        {display ? (
+          <span className="relative flex-1 px-3 text-[12.5px] tabular-nums text-right truncate">
+            {display}
+          </span>
+        ) : (
+          <input
+            value={shown}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={(e) => commit(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && commit((e.target as HTMLInputElement).value)}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="relative flex-1 min-w-0 bg-transparent px-3 text-[12.5px] tabular-nums text-right focus:outline-none"
+          />
+        )}
+        {suffix && <span className="relative pr-3 text-[11px] opacity-70">{suffix}</span>}
+      </span>
+      {right}
     </div>
   );
 }
@@ -1221,6 +1305,56 @@ export function MenuRow({ label, children }: { label: string; children: ReactNod
 
 export function MenuSep() {
   return <div className="my-1 h-px bg-[color:var(--tc-rule)]" />;
+}
+
+/* ---------------------------------------------------------------- gallery */
+
+/**
+ * A grid of pictures you pick from, docked in a panel's own scroll — the
+ * Looks/Templates rail. Used to live as a `Drawer`, a moment over the
+ * canvas; docked columns give it a permanent home instead.
+ */
+export function Rail({ children, cols = 3 }: { children: ReactNode; cols?: number }) {
+  return (
+    <div
+      className="grid gap-2"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** One tile in a `Rail`: a live thumbnail, a caption, selection as a ring. */
+export function RailItem({
+  label,
+  selected = false,
+  onClick,
+  title,
+  children,
+}: {
+  label: string;
+  selected?: boolean;
+  onClick: () => void;
+  title?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`flex flex-col items-center gap-1 rounded-[var(--tc-r)] border p-1.5 text-left transition-colors ${
+        selected
+          ? "border-[color:var(--tc-edge-on)] bg-[color:var(--tc-field-on)]"
+          : "border-transparent hover:bg-[color:var(--tc-field)]"
+      }`}
+    >
+      <span className="tc-field aspect-square w-full grid place-items-center overflow-hidden">
+        {children}
+      </span>
+      <span className={`text-[10.5px] text-center truncate w-full ${INK3}`}>{label}</span>
+    </button>
+  );
 }
 
 /* ----------------------------------------------------------------- drawer */

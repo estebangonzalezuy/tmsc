@@ -32,6 +32,8 @@ import {
   IconBtn,
   Panel,
   Primary,
+  Rail,
+  RailItem,
   Range,
   Row,
   STAGE,
@@ -43,6 +45,7 @@ import {
   Stack,
   Toggle,
   Toolbar,
+  TopBar,
 } from "@/components/postlab/toolcraft";
 import {
   FILTERS,
@@ -109,7 +112,7 @@ export default function Tiles() {
   const [playing, setPlaying] = useState(true);
   const [job, setJob] = useState<Job>(null);
   const [flash, setFlash] = useState("");
-  const [shelf, setShelf] = useState<"none" | "recipes" | "rolls">("none");
+  const [shelf, setShelf] = useState<"none" | "rolls">("none");
   const [rolls, setRolls] = useState<TileSpec[]>([]);
   const [quality, setQuality] = useState<"mid" | "high" | "max">("high");
   const stageRef = useRef<HTMLDivElement>(null);
@@ -306,96 +309,74 @@ export default function Tiles() {
 
   return (
     <div className={`min-h-dvh md:h-dvh flex flex-col ${STAGE}`}>
+      <TopBar title="the Tiles" mark="✦">
+        {(flash || job) && (
+          <span className="text-[12.5px] tabular-nums text-[color:var(--tc-ink-3)]">
+            {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
+          </span>
+        )}
+        <Link
+          href="/tools"
+          title="the club's tools"
+          className="tc-field h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center hover:bg-[color:var(--tc-field-hi)] transition-colors"
+        >
+          ← tools
+        </Link>
+        <Link
+          href="/postlab"
+          className="tc-field h-[var(--tc-h)] px-3 text-[12.5px] inline-flex items-center hover:bg-[color:var(--tc-field-hi)] transition-colors"
+        >
+          the Posts Studio →
+        </Link>
+        <Btn onClick={roll} title="A tile from nothing (R)" dark>
+          ⟳ roll
+        </Btn>
+      </TopBar>
       <div className="relative flex-1 min-h-0 flex flex-col md:block">
         <div
           ref={stageRef}
-          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pr-[352px]"
+          className="h-[52vh] md:h-full flex items-center justify-center overflow-hidden md:pl-[280px] md:pr-[320px]"
         >
           <div className="relative overflow-hidden shrink-0">
             <Stage spec={spec} width={stageSize.w} height={stageSize.h} />
           </div>
         </div>
 
-        {/* Top left: what this is, what you do, and the way to the other rooms. */}
-        <div className="md:absolute md:top-3 md:left-3 z-20 flex items-center gap-1.5 p-2 md:p-0 overflow-x-auto">
-          <Link
-            href="/tools"
-            title="the club's tools"
-            className="tc-float rounded-[var(--tc-r)] size-9 shrink-0 inline-grid place-items-center text-[13px] hover:bg-[color:var(--tc-field-hi)] transition-colors"
+        {/* Left, docked: the shelf it was drawn from, then a sheet rolled
+            from nothing. */}
+        <div className="md:absolute md:top-0 md:left-0 md:bottom-0 z-20 flex p-2 md:p-0">
+          <Panel
+            dock="left"
+            title="looks"
+            width={280}
+            right={
+              <span className="text-[11px] text-[color:var(--tc-ink-3)] hidden xl:block pr-1">
+                {spec.arms.length} arm{spec.arms.length === 1 ? "" : "s"} ·{" "}
+                {paletteOf(spec.palette).name}
+              </span>
+            }
           >
-            ←
-          </Link>
-          <span className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center gap-2.5 shrink-0">
-            <span className="text-[13px] font-medium">the Tiles</span>
-            <span className="text-[11px] text-[color:var(--tc-ink-3)] hidden xl:block">
-              {spec.arms.length} arm{spec.arms.length === 1 ? "" : "s"} · {paletteOf(spec.palette).name}
-            </span>
-          </span>
-          <span className="tc-float rounded-[var(--tc-r)] h-9 px-1 flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={roll}
-              title="A tile from nothing (R)"
-              className="h-7 px-2.5 rounded-[var(--tc-r-sm)] text-[12.5px] hover:bg-[color:var(--tc-field)]"
-            >
-              ⟳ roll
-            </button>
-            <button
-              onClick={() => setShelf("recipes")}
-              title="The thirteen it was drawn from"
-              className="h-7 px-2.5 rounded-[var(--tc-r-sm)] text-[12.5px] hover:bg-[color:var(--tc-field)]"
-            >
-              shelf
-            </button>
-            <button
-              onClick={openRolls}
-              title="Twelve rolled at once"
-              className="h-7 px-2.5 rounded-[var(--tc-r-sm)] text-[12.5px] hover:bg-[color:var(--tc-field)]"
-            >
-              sheet
-            </button>
-          </span>
-          <Link
-            href="/postlab"
-            className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 hover:bg-[color:var(--tc-field-hi)]"
-          >
-            the Posts Studio →
-          </Link>
-          {(flash || job) && (
-            <span className="tc-float rounded-[var(--tc-r)] h-9 px-3 flex items-center text-[12.5px] shrink-0 tabular-nums">
-              {job ? `${job.label} — ${Math.round(job.frac * 100)}%` : flash}
-            </span>
-          )}
-        </div>
-
-        {/* Big grids of pictures go over the stage: moments, not places. */}
-        {shelf === "recipes" && (
-          <Drawer title="the shelf" onClose={() => setShelf("none")}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-              {RECIPES.map((r) => {
-                const preview = applyRecipe(spec, r);
-                return (
-                  <button
+            <Section title="shelf" summary={`${RECIPES.length}`} note="The thirteen it was drawn from.">
+              <Rail cols={2}>
+                {RECIPES.map((r) => (
+                  <RailItem
                     key={r.id}
-                    onClick={() => {
-                      setSpec(applyRecipe(spec, r));
-                      setShelf("none");
-                    }}
+                    label={r.name}
                     title={r.note}
-                    className="text-left space-y-1.5 group"
+                    onClick={() => setSpec(applyRecipe(spec, r))}
                   >
-                    <span className="block overflow-hidden rounded-[var(--tc-r)] border border-[color:var(--tc-edge)] group-hover:border-[color:var(--tc-edge-on)]">
-                      <Thumb spec={preview} size={168} />
-                    </span>
-                    <span className="block text-[12.5px]">{r.name}</span>
-                    <span className="block text-[11px] text-[color:var(--tc-ink-3)] leading-snug">
-                      {r.note}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </Drawer>
-        )}
+                    <Thumb spec={applyRecipe(spec, r)} size={120} />
+                  </RailItem>
+                ))}
+              </Rail>
+            </Section>
+            <Section title="sheet" note="Twelve rolled at once.">
+              <Btn onClick={openRolls} wide>
+                Roll a sheet
+              </Btn>
+            </Section>
+          </Panel>
+        </div>
 
         {shelf === "rolls" && (
           <Drawer
@@ -422,9 +403,10 @@ export default function Tiles() {
           </Drawer>
         )}
 
-        {/* Top right: everything you set. */}
-        <div className="md:absolute md:top-3 md:right-3 md:bottom-3 z-20 flex p-2 md:p-0">
+        {/* Right, docked: everything you set. */}
+        <div className="md:absolute md:top-0 md:right-0 md:bottom-0 z-20 flex p-2 md:p-0">
           <Panel
+            dock="right"
             title="the Tiles"
             right={
               <span className="text-[10px] text-muted tabular-nums pr-1">
@@ -903,7 +885,7 @@ export default function Tiles() {
         </div>
 
         {/* Bottom centre: the transport. */}
-        <div className="md:absolute md:bottom-3 md:left-1/2 md:-translate-x-1/2 z-20 p-2 md:p-0 flex justify-center">
+        <div className="md:absolute md:bottom-3 md:left-[280px] md:right-[320px] z-20 p-2 md:p-0 flex justify-center">
           <Toolbar>
             <IconBtn
               onClick={() => {
