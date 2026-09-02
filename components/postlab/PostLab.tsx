@@ -85,7 +85,7 @@ import {
   type SlideStyle,
   type Wave,
 } from "@/lib/postlab";
-import { loadFonts, type Fonts } from "./overlay";
+import { loadFonts, type Fonts, type Hit } from "./overlay";
 import { canRenderDirectly } from "./exporter";
 import { photoUrl, readFile, savePhoto } from "./photos";
 import { clip as clipOf, isClip, paintFrame, saveClip, type Clip } from "./clips";
@@ -362,8 +362,17 @@ export default function PostLab() {
   const ownHashRef = useRef<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const fit = useStageFit(stageRef, spec.format, 96);
+  /* Where each editable part landed on the last frame Stage drew — read on
+     pointer down, never on render, so a moving mark's box is still exactly
+     where the click found it. */
+  const hitsRef = useRef<Hit[]>([]);
+  /* What's outlined on the canvas right now, and a tick to force the panel
+     section it lives in back open even if you'd folded it shut. */
+  const [selected, setSelected] = useState<Hit | null>(null);
+  const [selectTick, setSelectTick] = useState(0);
+  const [draggingLayer, setDraggingLayer] = useState(false);
 
-  const { w } = FORMATS[spec.format];
+  const { w, h } = FORMATS[spec.format];
   const stageSize = { w: Math.round(fit.w * zoom), h: Math.round(fit.h * zoom) };
   const activeIndex = Math.min(active, spec.slides.length - 1);
   const slide = spec.slides[activeIndex];
@@ -371,6 +380,15 @@ export default function PostLab() {
   const layer = slide.layers[layerIndex];
   const def = shaderDef(layer.type);
   const shapes = slide.shapes ?? [];
+
+  /* A selection belongs to the slide it was made on — cleared during render
+     when the slide changes, rather than in an effect, so it can never flash
+     on the wrong one first. */
+  const [selectedOnSlide, setSelectedOnSlide] = useState(activeIndex);
+  if (activeIndex !== selectedOnSlide) {
+    setSelectedOnSlide(activeIndex);
+    setSelected(null);
+  }
 
   /* Every change to the post goes through here, so every change is undoable.
      Pushes within half a second of each other coalesce — dragging a slider is
@@ -821,6 +839,23 @@ export default function PostLab() {
       pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale: layer.scale };
       dragRef.current = null;
     } else if (pointersRef.current.size === 1) {
+      /* A click that lands on a word, the oval or a mark selects it — an
+         outline on the canvas, and the panel section it lives in forced
+         back open — instead of starting the background drag underneath. */
+      const rect = e.currentTarget.getBoundingClientRect();
+      const px = ((e.clientX - rect.left) / rect.width) * w;
+      const py = ((e.clientY - rect.top) / rect.height) * h;
+      const hit = [...hitsRef.current]
+        .reverse()
+        .find((r) => px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h);
+      if (hit) {
+        setSelected(hit);
+        setSelectTick((t) => t + 1);
+        dragRef.current = null;
+        return;
+      }
+      setSelected(null);
+      setDraggingLayer(true);
       dragRef.current = {
         x: e.clientX,
         y: e.clientY,
@@ -861,7 +896,10 @@ export default function PostLab() {
   const onStagePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     pointersRef.current.delete(e.pointerId);
     if (pointersRef.current.size < 2) pinchRef.current = null;
-    if (pointersRef.current.size === 0) dragRef.current = null;
+    if (pointersRef.current.size === 0) {
+      dragRef.current = null;
+      setDraggingLayer(false);
+    }
   };
 
   /* ------------------------------------------------------------ exports */
@@ -920,6 +958,7 @@ export default function PostLab() {
       else if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
       else if (e.key.toLowerCase() === "g") setGuides((g) => !g);
       else if (e.key.toLowerCase() === "r") roll(12);
+      else if (e.key === "Escape") setSelected(null);
       else if (e.key === "0") setZoom(1);
       else if (e.key === "+" || e.key === "=") setZoom((z) => Math.min(4, z * 1.15));
       else if (e.key === "-") setZoom((z) => Math.max(0.25, z / 1.15));
@@ -1014,6 +1053,7 @@ export default function PostLab() {
               shaderBoxRef={shaderBoxRef}
               overlayRef={overlayRef}
               solo={solo}
+              hitsRef={hitsRef}
             />
             {guides && (
               <div
@@ -1024,6 +1064,39 @@ export default function PostLab() {
                   opacity: 0.35,
                 }}
               />
+            )}
+            {/* What's being moved right now — a layer covers the whole
+                frame, so its own frame is the whole canvas. */}
+            {draggingLayer && (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ border: "2px solid var(--tc-focus)" }}
+              />
+            )}
+            {/* What was clicked — a word, the oval, a mark — outlined where
+                Stage's last frame said it landed, corner handles and all, so
+                the canvas reads as something you click into, not a picture. */}
+            {selected && (
+              <div
+                className="absolute pointer-events-none rounded-[3px]"
+                style={{
+                  left: (selected.x / w) * stageSize.w - 6,
+                  top: (selected.y / h) * stageSize.h - 6,
+                  width: (selected.w / w) * stageSize.w + 12,
+                  height: (selected.h / h) * stageSize.h + 12,
+                  border: "2px solid var(--tc-focus)",
+                }}
+              >
+                {["-left-1", "-right-1"].flatMap((x) =>
+                  ["-top-1", "-bottom-1"].map((y) => (
+                    <span
+                      key={`${x}${y}`}
+                      className={`absolute size-[9px] rounded-[2px] ${x} ${y}`}
+                      style={{ background: "var(--tc-focus)" }}
+                    />
+                  )),
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -1479,7 +1552,11 @@ export default function PostLab() {
               </Block>
             </Section>
 
-            <Section title="type" summary={plainTitle(slide.title).slice(0, 24)}>
+            <Section
+              title="type"
+              summary={plainTitle(slide.title).slice(0, 24)}
+              openSignal={typeof selected?.kind === "string" ? selectTick : undefined}
+            >
               <Cols>
                 <Stack label="kicker">
                   <Text
@@ -1762,6 +1839,7 @@ export default function PostLab() {
               title="marks"
               summary={shapes.length ? shapes.map((s) => s.kind).join(" · ") : "none"}
               open={shapes.length > 0}
+              openSignal={typeof selected?.kind === "number" ? selectTick : undefined}
               note="The club's motifs as objects, over the words or under them. Each one arrives with a loop already plugged in."
             >
               {shapes.map((shape, i) => {

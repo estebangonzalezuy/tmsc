@@ -18,6 +18,22 @@ import { BAYER4 } from "./generative";
 
 export type Fonts = { sans: string; serif: string; gothic: string };
 
+/* Which editable part a screen point landed on, and its box — in the same
+   design-pixel space as `w`/`h`, so the caller scales once to put it on
+   screen. A shape's `kind` is its index in `slide.shapes`, matching the
+   Block order the marks group already uses. Collecting these piggybacks
+   on the same pass that draws each part, so a hit box can never drift from
+   where the thing actually is — there is no second layout pass to keep in
+   sync. */
+export type HitKind = "kicker" | "tag" | "title" | "body" | "note" | "footer" | number;
+export interface Hit {
+  kind: HitKind;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 // next/font registers hashed family names; read them off the live page.
 export async function loadFonts(): Promise<Fonts> {
   await document.fonts.ready;
@@ -280,6 +296,21 @@ const scatter = (seed: number, i: number, k: number) => {
  * `taper` bend the row of them — one mark becomes a pattern without becoming a
  * second layer.
  */
+/* A generous box around a mark's whole pattern — center plus its own size
+   and however far `repeat` spreads its copies. Loose on purpose: this is a
+   click target and a selection frame, not a measurement, so it doesn't
+   walk the same per-copy jitter/taper math `drawShape` does. */
+function shapeBox(raw: ShapeSpec, w: number, h: number, tt: number) {
+  const s = resolveShape(raw, tt);
+  const short = Math.min(w, h);
+  const r0 = (s.size * short) / 2;
+  const spread = Math.max(1, s.repeat ?? 1) > 1 ? (s.spread ?? 0.25) * short : 0;
+  const cx = w / 2 + (s.x * w) / 2;
+  const cy = h / 2 + (s.y * h) / 2;
+  const half = r0 + spread;
+  return { x: cx - half, y: cy - half, w: half * 2, h: half * 2 };
+}
+
 function drawShape(
   ctx: CanvasRenderingContext2D,
   raw: ShapeSpec,
@@ -457,6 +488,10 @@ export function drawOverlay(
      `u`, so the type is redrawn at the target size rather than scaled up
      from 1080 — which is the whole point of exporting bigger. */
   scale = 1,
+  /* Screen-only: where each editable part landed, for the studio's click-to-
+     select. The exporter never passes this — it costs nothing when it isn't
+     asked for, and it never changes a pixel that gets drawn. */
+  hits?: Hit[],
 ) {
   const slide: SlideSpec = spec.slides[index];
   const base = FORMATS[spec.format];
@@ -528,9 +563,12 @@ export function drawOverlay(
      everything else is drawn after them, at the bottom of this function. */
   const shapes = partOn(slide, "shapes") ? (slide.shapes ?? []) : [];
   const marks = (under: boolean) => {
-    for (const s of shapes) {
-      if (!!s.under === under) drawShape(ctx, s, w, h, u, ink, tt);
-    }
+    shapes.forEach((s, i) => {
+      if (!!s.under === under) {
+        drawShape(ctx, s, w, h, u, ink, tt);
+        if (hits) hits.push({ kind: i, ...shapeBox(s, w, h, tt) });
+      }
+    });
   };
   marks(true);
 
@@ -639,6 +677,7 @@ export function drawOverlay(
     const ky = pad + 30 * u;
     const kw = mctx.measureText(kicker).width;
     strip(center ? kx - kw / 2 : kx, ky - 34 * u, kw, 56 * u);
+    hits?.push({ kind: "kicker", x: center ? kx - kw / 2 : kx, y: ky - 34 * u, w: kw, h: 56 * u });
     mctx.fillStyle = ink;
     mctx.fillText(kicker, kx, ky);
     if (rules) {
@@ -671,6 +710,7 @@ export function drawOverlay(
     mctx.textBaseline = "alphabetic";
     const nw = mctx.measureText(note).width;
     strip(w - pad - nw, pad - 4 * u, nw, 56 * u);
+    hits?.push({ kind: "note", x: w - pad - nw, y: pad - 4 * u, w: nw, h: 56 * u });
     mctx.fillStyle = ink;
     mctx.fillText(note, w - pad, pad + 30 * u);
   }
@@ -776,6 +816,7 @@ export function drawOverlay(
     }
     ctx.strokeStyle = ink;
     ctx.stroke();
+    hits?.push({ kind: "tag", x: cx - rx, y: cy - tagH / 2, w: rx * 2, h: tagH });
     mctx.save();
     mctx.fillStyle = ink;
     mctx.textAlign = "center";
@@ -812,6 +853,15 @@ export function drawOverlay(
     const lx = center ? w / 2 - titleWidths[i] / 2 : tx;
     drawWords(tctx, line, lx, y + titlePx * 0.82 + i * titleLH, titleFace, titlePx);
   });
+  if (titleLines.length) {
+    hits?.push({
+      kind: "title",
+      x: center ? w / 2 - maxLineW / 2 : tx,
+      y: y - titlePx * 0.1,
+      w: maxLineW,
+      h: titleH,
+    });
+  }
 
   if (slide.boxed && titleLines.length) {
     const bx = center ? w / 2 - maxLineW / 2 - boxPad : pad;
@@ -824,6 +874,14 @@ export function drawOverlay(
     const bodyWidths = bodyLines.map((line) =>
       lineWidth(mctx, line, bodyFace, bodyPx),
     );
+    const bodyMaxW = Math.max(...bodyWidths);
+    hits?.push({
+      kind: "body",
+      x: center ? w / 2 - bodyMaxW / 2 : pad,
+      y: by - bodyPx * 0.1,
+      w: bodyMaxW,
+      h: bodyLines.length * bodyLH,
+    });
     bodyLines.forEach((_, i) => {
       const lw = bodyWidths[i];
       const lx = center ? w / 2 - lw / 2 : pad;
@@ -853,7 +911,11 @@ export function drawOverlay(
     mctx.font = `400 ${28 * u}px ${fonts.sans}`;
     const footer = said(slide.footer);
     const counter = many && markChar !== pageMark ? `${pageMark} / ${String(spec.slides.length).padStart(2, "0")}` : "tMSC";
-    if (footer) strip(pad, h - pad - 30 * u, mctx.measureText(footer).width, 44 * u);
+    if (footer) {
+      const fw = mctx.measureText(footer).width;
+      strip(pad, h - pad - 30 * u, fw, 44 * u);
+      hits?.push({ kind: "footer", x: pad, y: h - pad - 30 * u, w: fw, h: 44 * u });
+    }
     const cw = mctx.measureText(counter).width;
     strip(w - pad - cw, h - pad - 30 * u, cw, 44 * u);
     mctx.textAlign = "left";

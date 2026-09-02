@@ -256,6 +256,17 @@ never be the reason a loop stops closing. Keep it that way.
     thumbnails, always in view, not summoned. `Drawer` still floats over the
     stage for what's genuinely a moment: a sheet rolled from nothing, the
     paste-a-spec box.
+  - **Click a word, the oval or a mark and it outlines** — corner handles, the
+    club's own focus green — and the panel section it lives in forces back
+    open even if you'd folded it shut, so the canvas reads as something you
+    click into rather than a picture with a settings page beside it.
+    `overlay.ts`'s `drawOverlay` takes an optional `hits` array and pushes a
+    box for each part as it draws it — piggybacked on the one pass that
+    already knows where everything is, so a hit box can't drift from the
+    thing it's a box around, and the exporter (which never passes one) pays
+    nothing for it. Click empty canvas and you're back to dragging the
+    active layer's own pan/rotate/zoom, outlined as the whole frame while
+    you do.
   - `Tracks.tsx` is the loop in tracks — transport, ruler, a lane per travelling
     parameter with its **wave drawn across the loop**, marks included. It floats
     above the toolbar and is off until asked for.

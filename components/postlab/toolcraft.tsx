@@ -322,6 +322,7 @@ export function Section({
   summary,
   onReset,
   note,
+  openSignal,
 }: {
   title: string;
   children: ReactNode;
@@ -329,6 +330,10 @@ export function Section({
   summary?: string;
   onReset?: () => void;
   note?: string;
+  /** Force the group open from outside — a click on the canvas selecting
+      something it holds. Any change of value reopens it; the value itself
+      is never read, so a counter works as well as anything else. */
+  openSignal?: unknown;
 }) {
   /* `open` is a hint, not a value: a group that holds nothing starts folded and
      opens itself the moment it holds something. Your own fold then wins. On a
@@ -336,6 +341,14 @@ export function Section({
      is the thing this fixes — until you tap one open yourself. */
   const compact = useCompact();
   const [override, setOverride] = useState<boolean | null>(null);
+  /* Adjusted during render rather than in an effect — the recommended shape
+     for "a prop changed, reset some state" — so a selection on the canvas
+     reopens the group in the same paint instead of one behind. */
+  const [seenSignal, setSeenSignal] = useState(openSignal);
+  if (openSignal !== undefined && openSignal !== seenSignal) {
+    setSeenSignal(openSignal);
+    setOverride(true);
+  }
   const open = override ?? (compact ? false : initial);
   return (
     <div className="border-b border-[color:var(--tc-rule)] last:border-b-0">

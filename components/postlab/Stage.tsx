@@ -10,7 +10,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { FORMATS, slideTones, type PostSpec } from "@/lib/postlab";
 import ShaderLayer from "./ShaderLayer";
-import { drawOverlay, type Fonts } from "./overlay";
+import { drawOverlay, type Fonts, type Hit } from "./overlay";
 import { clock } from "./clock";
 
 export default function Stage({
@@ -20,6 +20,7 @@ export default function Stage({
   shaderBoxRef,
   overlayRef,
   solo = null,
+  hitsRef,
 }: {
   spec: PostSpec;
   index: number;
@@ -27,6 +28,10 @@ export default function Stage({
   shaderBoxRef: React.RefObject<HTMLDivElement | null>;
   overlayRef: React.RefObject<HTMLCanvasElement | null>;
   solo?: number | null;
+  /** Where each editable part landed on the last frame drawn — the studio's
+      click-to-select reads this on pointer down. Nothing writes it back;
+      Stage owns the only pass that knows where anything is. */
+  hitsRef?: React.RefObject<Hit[]>;
 }) {
   const slide = spec.slides[index];
   const { w, h } = FORMATS[spec.format];
@@ -41,15 +46,20 @@ export default function Stage({
   useEffect(() => {
     const ctx = overlayRef.current?.getContext("2d");
     if (!ctx || !fonts) return;
-    drawOverlay(ctx, spec, index, fonts, clock.get());
+    const draw = (t: number) => {
+      const hits: Hit[] = [];
+      drawOverlay(ctx, spec, index, fonts, t, 1, hits);
+      if (hitsRef) hitsRef.current = hits;
+    };
+    draw(clock.get());
     if (!moves) return;
     let last = -1;
     return clock.watch((t) => {
       if (t - last < 1 / 30 && t > last) return;
       last = t;
-      drawOverlay(ctx, spec, index, fonts, t);
+      draw(t);
     });
-  }, [spec, index, fonts, moves, overlayRef]);
+  }, [spec, index, fonts, moves, overlayRef, hitsRef]);
 
   return (
     <>
