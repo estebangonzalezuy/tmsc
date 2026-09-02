@@ -1135,7 +1135,6 @@
     }
   ],
   "hidden": [
-    "nav:learn",
     "nav:offerings",
     "stats",
     "practiceFiles",
