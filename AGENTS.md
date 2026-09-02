@@ -667,15 +667,18 @@ manifest directly.
 - **A piece page is a server component**, the only page type here with no reason
   to be `"use client"`. Only the three blocks that need the browser are client
   islands. Don't undo that out of habit.
-- **Covers are rolled, not photographed, and carry no words.**
-  `lib/learnCover.ts` seeds a roll from the item's slug, so a cover is the same
-  on every visit and every build. The slide's type is off and the Kinetics looks
-  are re-rolled past, because a roll decides the graphic only — whether words can
-  be read is not the dice's call, and the card prints the title on white anyway.
-- **One `<ClockRunner />` per page, never two.** Every canvas subscribes to the
-  one shared clock, so a second starter doesn't animate a second thing: it
-  advances the clock twice a frame and runs the page at double speed. Covers
-  additionally take `live` from an IntersectionObserver so offscreen tiles rest.
+- **A cover is a title card, and it is still.** `lib/learnCover.ts` builds the
+  club's sheet register — ruled paper, a `GROUNDS` neutral seeded by the slug, a
+  `none` layer that draws no graphic — so the type can always be read because
+  nothing is behind it. `balance()` (exported from `lib/tools.ts`, not forked)
+  breaks the title over at most two lines, since `fit` never adds a break itself.
+  **A drawn title is not text**, so every tile keeps a real `sr-only` heading:
+  only the appearance moved onto the card.
+- **One `<ClockRunner />` per page, and only where something moves.** Every canvas
+  subscribes to the one shared clock, so a second starter doesn't animate a second
+  thing: it advances the clock twice a frame and runs the page at double speed.
+  The hub and the track pages start no clock at all now; the piece page does,
+  because a `:::spec` example animates.
 - **`:::spec` is the whole point.** It renders a Posts Studio or Tiles spec
   *running* inside the article, through `Poster` with `live` — the same thing
   `components/tools/ToolWall.tsx` already does. No second renderer, and the loop

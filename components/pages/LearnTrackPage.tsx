@@ -2,7 +2,6 @@ import Link from "next/link";
 import { CircleLetter } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 import PieceGrid from "@/components/learn/PieceGrid";
-import ClockRunner from "@/components/learn/ClockRunner";
 import OfferBlock from "@/components/learn/OfferBlock";
 import type { PieceCard, Track } from "@/lib/learn";
 
@@ -19,8 +18,6 @@ export default function LearnTrackPage({
 
   return (
     <>
-      <ClockRunner />
-
       <section className="px-5 md:px-6 py-24 md:py-32">
         <p className="text-sm">
           <Link href="/learn" className="underline underline-offset-4">

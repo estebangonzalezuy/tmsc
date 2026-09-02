@@ -5,19 +5,16 @@ import Poster from "@/components/postlab/Poster";
 import { useSharedFonts } from "@/components/postlab/useFonts";
 import { coverSpec } from "@/lib/learnCover";
 
-/* One tile's picture: the piece's own rolled sheet, drawn by the studio's
-   renderer at the size it is displayed, so the dither cells land where they will
-   instead of being smoothed into gray on the way down.
+/* The title card, drawn by the studio's own renderer at the size it is shown.
    
-   Two things keep a wall of these affordable:
+   It is still. A sheet with a layer of type "none" draws no graphic, so there is
+   nothing to animate — which is why this takes no clock, no `live`, and no
+   IntersectionObserver. Poster paints frame zero once, and repaints when the
+   fonts arrive.
    
-   - The clock is shared and lives outside React, so a cover repaints its own
-     canvas without re-rendering anything. The page calls useClockRunning once;
-     a cover never does, because twenty rAF loops driving one clock is nineteen
-     too many.
-   - `live` follows an IntersectionObserver, so only the tiles actually on screen
-     are drawing. /tools gets away without this at nine posters; a library that
-     keeps growing does not. */
+   The words it draws are pixels, not text. Every tile therefore keeps a real
+   heading in the markup beside this — see PieceGrid — or the title would be
+   invisible to a screen reader, to search, and to find-on-page. */
 
 export default function Cover({
   slug,
@@ -30,7 +27,6 @@ export default function Cover({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
-  const [inView, setInView] = useState(false);
   const fonts = useSharedFonts();
 
   const spec = useMemo(() => coverSpec(slug, title), [slug, title]);
@@ -38,30 +34,17 @@ export default function Cover({
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-
     const ro = new ResizeObserver(([entry]) =>
       setWidth(Math.round(entry.contentRect.width)),
     );
     ro.observe(el);
-
-    /* A margin, so a tile is already moving by the time it is scrolled to
-       rather than starting from frame zero under the reader's eye. */
-    const io = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { rootMargin: "200px" },
-    );
-    io.observe(el);
-
-    return () => {
-      ro.disconnect();
-      io.disconnect();
-    };
+    return () => ro.disconnect();
   }, []);
 
   return (
     <div ref={box} className={`aspect-square overflow-hidden ${className}`}>
       {width > 0 && (
-        <Poster spec={spec} index={0} fonts={fonts} width={width} live={inView} />
+        <Poster spec={spec} index={0} fonts={fonts} width={width} />
       )}
     </div>
   );

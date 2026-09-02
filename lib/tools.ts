@@ -125,7 +125,11 @@ function daysUntil(iso: string, now: Date): number {
    them, rather than filling each line to the brim and leaving a short one at
    the bottom. Typed breaks always win — the moment someone has placed one, the
    decision is theirs again. */
-function balance(text: string, per: number): string {
+/* Exported for the Learn covers, which have the same problem the Note does: a
+   title arrives as one sentence with no breaks in it, and something has to
+   decide where the lines fall. One implementation, two callers — the rule that
+   it stands aside the moment a writer types their own break holds for both. */
+export function balance(text: string, per: number): string {
   const clean = text.trim();
   if (!clean || clean.includes("\n")) return clean;
   const words = clean.split(/\s+/);

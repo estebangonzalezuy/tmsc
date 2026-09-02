@@ -6,7 +6,6 @@ import { CircleLetter, SectionHeading, Emphasize } from "@/components/Motifs";
 import { accentHover } from "@/lib/accent";
 import Cta from "@/components/Cta";
 import Cover from "@/components/learn/Cover";
-import ClockRunner from "@/components/learn/ClockRunner";
 import PieceGrid from "@/components/learn/PieceGrid";
 import OfferBlock from "@/components/learn/OfferBlock";
 import { useProgress } from "@/components/learn/useProgress";
@@ -61,8 +60,6 @@ export default function LearnPage() {
 
   return (
     <>
-      <ClockRunner />
-
       <section
         {...studioSection("learn", "Learn")}
         className="px-5 md:px-6 py-24 md:py-32"
@@ -116,16 +113,16 @@ export default function LearnPage() {
             >
               <Cover slug={`track-${t.id}`} title={t.name} />
               <div className="p-6">
+                {/* The card says the name; this keeps it as text for a screen
+                    reader, for search, and for find-on-page. */}
+                <h3 className="sr-only">{t.name}</h3>
                 <div className="flex items-baseline justify-between gap-4">
                   <CircleLetter>{t.letter}</CircleLetter>
                   <span className="text-xs text-muted accent-hover-sub">
                     {t.published} of {t.count}
                   </span>
                 </div>
-                <h3 className="mt-5 font-serif text-2xl group-hover:underline underline-offset-4">
-                  {t.name}
-                </h3>
-                <p className="mt-3 text-sm text-muted accent-hover-sub leading-relaxed">
+                <p className="mt-5 text-sm text-muted accent-hover-sub leading-relaxed">
                   {t.blurb}
                 </p>
               </div>

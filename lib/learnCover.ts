@@ -1,25 +1,37 @@
+import { balance } from "@/lib/tools";
 import {
+  GROUNDS,
   SPEC_VERSION,
-  applyStyle,
+  defaultLayer,
   defaultSlide,
-  randomSlide,
   type PostSpec,
 } from "@/lib/postlab";
 
-/* A piece's cover.
+/* A piece's cover: a title card.
    
-   The club has no photography and should not start collecting any. What it has
-   is four studios and one renderer, and /tools already draws a wall of live
-   posters with it. So a cover is a rolled Posts Studio sheet carrying the
-   piece's own title.
+   It used to be a rolled graphic with no words on it, and the words were taken
+   off because a roll picks its own ground and its own ink, so nothing could
+   promise the title would be readable over whatever turned up. Making the card
+   *be* the title removes that problem at the root rather than working around it.
 
-   It is rolled from the slug, not from Math.random, so a piece keeps the same
-   cover between visits, between builds, and between the grid and the article —
-   the same "stable, not shuffled" rule accentHover follows. A cover that
-   reshuffled on every render would make the library feel like a slot machine. */
+   So a cover is the club's own default register — the sheet: ruled paper, a
+   neutral ground, an editorial headline, and a layer of type "none" that draws
+   no graphic at all. There is nothing behind the words, which is exactly why
+   they can always be read.
+
+   Nothing on it moves, and nothing should: a printed sheet has nothing to
+   animate. That is why the grid pages no longer start the shared clock. */
+
+/* The light neutrals only. GROUNDS also carries slate and black, and a dark
+   ground needs the type inverted with `theme` to stay legible — a real option,
+   but one that would make some tiles read as a different kind of thing. The
+   grid is calmer when every card is paper. */
+const PAPERS = GROUNDS.filter((g) =>
+  ["white", "paper", "ash", "cream"].includes(g.label),
+);
 
 /* FNV-1a. Its own copy rather than the one behind lib/accent.ts: sharing a hash
-   would tie a piece's cover to its hover colour, and those two should be able to
+   would tie a piece's paper to its hover colour, and those two should be able to
    change independently. */
 function seedOf(key: string): number {
   let h = 2166136261;
@@ -29,48 +41,55 @@ function seedOf(key: string): number {
   return h;
 }
 
-/* mulberry32: small, fast, and deterministic from one 32-bit seed, which is all
-   a roll needs. */
-function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+/* `fit` will size a headline to fill the frame but never add a break — where the
+   lines fall belongs to whoever typed them. A title arrives as one sentence, so
+   on a square card it would set as a single wide line with the paper empty above
+   and below it. balance() places the breaks, and stands aside the moment the
+   writer types one of their own.
+
+   Two lines at most. Asked for three, balance's greedy fill leaves the first
+   line an orphan — "What / motion / design actually is" — because it commits to
+   a line the moment the next word passes the target. Over two lines that same
+   pass reads as an editorial headline, which is the register these are in. */
+function coverTitle(title: string): string {
+  const len = title.trim().length;
+  return len <= 13 ? title : balance(title, Math.ceil(len / 2));
 }
 
 export function coverSpec(slug: string, title: string): PostSpec {
-  /* A cover carries no words.
+  /* Seeded by the slug, so a piece keeps its paper between visits, between
+     builds, and between the grid and the article — the same "stable, not
+     shuffled" rule accentHover follows. */
+  const ground = PAPERS[seedOf(slug) % PAPERS.length];
 
-     It used to set the title into the sheet, and that was wrong twice over. The
-     card already prints the title underneath, on white, where it is legible — so
-     the cover was saying it a second time. And a rolled look decides its own
-     ground and its own ink, which means nothing can promise the type will be
-     readable against it. The club's rule is that a roll decides the graphic
-     only, because whether the words can be read is not the dice's call. Turning
-     the type off honours that rule instead of fighting it with a scrim.
-
-     The ruling stays: it belongs to the paper rather than to the type, so a
-     cover is still a sheet and not just a texture. */
-  let style = randomSlide(rng(seedOf(slug)));
-
-  /* Skip the Kinetics looks. They draw the slide's headline as the picture,
-     which is a lovely thing on a post and the one thing a wordless cover cannot
-     have — it would put the title back, at whatever contrast the roll chose.
-     Re-roll rather than special-case: eight tries is plenty, and the seed still
-     comes from the slug, so a piece keeps one cover forever. */
-  for (let i = 1; i <= 8 && style.layers.some((l) => l.type === "kinetics"); i++) {
-    style = randomSlide(rng(seedOf(`${slug}#${i}`)));
-  }
-
-  const slide = applyStyle(
-    defaultSlide({ title, kicker: "", body: "", footer: "", letter: "" }),
-    style,
-  );
-
-  slide.text = false;
+  /* The shape of the studio's own `sheet()` helper, which is module-private, so
+     it is written out here from the exported defaultSlide. Everything the sheet
+     doesn't need is switched off: the card is the title and the ruling, and
+     nothing else competes with it. */
+  const slide = defaultSlide({
+    title: coverTitle(title),
+    kicker: "",
+    body: "",
+    footer: "",
+    note: "",
+    letter: "",
+    mark: "none",
+    off: ["kicker", "tag", "body", "mark", "note", "footer", "rules", "shapes"],
+    layers: [defaultLayer("none")],
+    background: ground.hex,
+    theme: "light",
+    grid: 7,
+    /* A whisper. The ruling is the paper, not a table — and it reads heavier on
+       white than on ash, so it is set low enough to sit under every ground. */
+    gridAlpha: 0.32,
+    veil: 0,
+    text: true,
+    titleFont: "serif",
+    titleSize: "fit",
+    align: "left",
+    anchor: "middle",
+    margin: 112,
+  });
 
   return { v: SPEC_VERSION, format: "square", duration: 6, slides: [slide] };
 }

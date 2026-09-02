@@ -145,30 +145,39 @@ and this is the same promise about which of these pages exist.
 
 ## Covers
 
-Every piece and every track has one, and none of them is a photograph. A cover is
-a Posts Studio sheet rolled from the item's **slug**, so it is the same cover on
-every visit and every build — the same "stable, not shuffled" rule `accentHover`
-follows. `lib/learnCover.ts` seeds mulberry32 from the slug, rolls `randomSlide`,
-and applies it with `applyStyle`.
+Every piece and every track has one, and it is a **title card**: the club's own
+default register — the sheet. Ruled paper, a neutral ground, an editorial serif
+headline, and a layer of type `"none"` that draws no graphic at all.
 
-**A cover carries no words.** It set the title into the sheet once, and that was
-wrong twice: the card already prints the title underneath on white where it is
-legible, and a rolled look chooses its own ground and ink, so nothing can promise
-type will read against it. The club's rule is that a roll decides the graphic only
-— whether the words can be read is not the dice's call. So the slide's type is
-switched off, and the Kinetics looks are re-rolled past, because those draw the
-headline *as* the picture and would put it back at whatever contrast the roll
-chose. The ruling stays: it belongs to the paper, not the type.
+They were rolled dithered graphics first, and wordless, because a roll picks its
+own ground and its own ink and nothing could promise a title would read over it.
+Making the card *be* the title removes that problem at the root instead of
+working around it: there is nothing behind the words, which is exactly why they
+can always be read.
 
-`components/learn/Cover.tsx` draws it with `Poster` and `live`, at display size.
-Two things keep a wall of them affordable, and both matter:
+- **The ground is seeded by the slug**, from the light half of `GROUNDS` (white,
+  paper, ash, cream), so a piece keeps its paper between visits, between builds,
+  and between the grid and the article — the same "stable, not shuffled" rule
+  `accentHover` follows. The dark grounds are left out: they need the type
+  inverted with `theme`, and a card that reads as a different kind of thing.
+- **They are still.** A `none` layer has nothing to animate, so `Cover` takes no
+  clock, no `live` and no IntersectionObserver — `Poster` paints frame zero once
+  and repaints when the fonts land. That is why only the piece page still renders
+  a `<ClockRunner />`: it is the one Learn page where something moves, because a
+  `:::spec` example does.
+- **Two lines at most.** `fit` sizes a headline to fill the frame but never adds a
+  break, so a one-sentence title would set as a single wide line on a square card.
+  `balance()` from `lib/tools.ts` places the breaks — exported for this, not
+  forked, and it still stands aside the moment a writer types their own. Asked for
+  three lines its greedy fill orphans the first one ("What / motion / design
+  actually is"); over two the same pass reads as an editorial headline.
 
-- **One clock per page.** Every page carrying canvases renders exactly one
-  `<ClockRunner />`. Every canvas subscribes to the same shared clock outside
-  React, so a second starter does not animate a second thing — it advances the
-  one clock twice a frame and runs the whole page at double speed. Two live
-  examples in one article used to be enough to do it.
-- **`live` follows an IntersectionObserver**, so only tiles on screen draw.
+**A drawn title is not text.** It cannot be read by a screen reader, found by
+find-on-page, or indexed. So every tile keeps a real heading in the markup marked
+`sr-only`, and only its *appearance* moved onto the card. Deleting the heading
+along with its appearance would have cost all three, silently, and a screenshot
+would not have shown it. The piece page is the exception and keeps its visible
+`<h1>`: an article needs a real headline above its body, and it is not a tile.
 
 ## The live example
 

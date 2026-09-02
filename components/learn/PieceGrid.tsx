@@ -5,13 +5,16 @@ import { accentHover } from "@/lib/accent";
 import Cover from "./Cover";
 import type { PieceCard } from "@/lib/learn";
 
-/* The library as a wall. Three up, square covers, real gaps — a grid of things
-   to look at rather than a list of titles.
-
-   The playhead is not started here. Every page carrying canvases renders one
-   <ClockRunner />, because every canvas on the page subscribes to the same
-   shared clock — a second starter would advance it twice a frame rather than
-   animate a second thing. */
+/* The library as a shelf. Three up, square title cards, real gaps.
+   
+   The card carries the title, the way a book cover does, so the body underneath
+   holds only what the cover can't say: what kind of thing it is, how long it
+   takes, and the one line about it.
+   
+   The heading is still in the markup, marked sr-only. A title painted onto a
+   canvas is not text — it cannot be read by a screen reader, found by
+   find-on-page, or indexed — so deleting the heading along with its appearance
+   would have quietly cost all three. */
 
 const KIND_LABEL: Record<string, string> = {
   article: "Read",
@@ -25,44 +28,37 @@ function Tile({ piece, index }: { piece: PieceCard; index?: number }) {
 
   const inner = (
     <>
-      {/* A placeholder gets a cover too. It is a real part of the library that
-          is not written yet, and a hole in the grid would say something else. */}
       <Cover
         slug={piece.slug}
         title={piece.title}
-        className={coming ? "opacity-40 saturate-0" : ""}
+        className={coming ? "opacity-45" : ""}
       />
       <div className="p-6">
+        <h3 className="sr-only">{piece.title}</h3>
         <div className="flex items-baseline justify-between gap-3">
-          <span className="pill text-xs">
-            {coming ? "Coming" : KIND_LABEL[piece.kind]}
+          <span className="flex items-baseline gap-2">
+            {typeof index === "number" && (
+              <span className="text-xs text-muted accent-hover-sub">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            )}
+            <span className="pill text-xs">
+              {coming ? "Coming" : KIND_LABEL[piece.kind]}
+            </span>
           </span>
           <span className="text-xs text-muted accent-hover-sub">
-            {coming ? `${piece.minutes} min` : open ? "Open" : `${piece.minutes} min`}
+            {coming || !open ? `${piece.minutes} min` : "Open"}
           </span>
         </div>
-        <h3 className="mt-4 font-serif text-xl leading-snug group-hover:underline underline-offset-4">
-          {typeof index === "number" && (
-            <span className="text-muted accent-hover-sub text-sm mr-2">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-          )}
-          {piece.title}
-        </h3>
-        <p className="mt-3 text-sm text-muted accent-hover-sub leading-relaxed">
+        <p className="mt-4 text-sm text-muted accent-hover-sub leading-relaxed">
           {piece.blurb}
         </p>
       </div>
     </>
   );
 
-  /* A placeholder has no address of its own, so it is not a link. Same promise
-     the track list has always made, kept in a different shape. */
-  if (coming) {
-    return (
-      <div className="card overflow-hidden opacity-60">{inner}</div>
-    );
-  }
+  /* A placeholder has no address of its own, so it is not a link. */
+  if (coming) return <div className="card overflow-hidden opacity-60">{inner}</div>;
 
   return (
     <Link
