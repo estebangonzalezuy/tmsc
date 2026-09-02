@@ -4,6 +4,7 @@ blurb: What the job is for, before we argue about which software does it.
 kind: article
 state: published
 minutes: 8
+access: free
 updated: 2026-08-31
 ---
 

@@ -33,8 +33,17 @@ export default async function Page({
      no address of its own until it is written. */
   if (!piece || !track || piece.state === "placeholder") notFound();
 
+  /* The next piece a reader can actually open. Walking to the literal next slug
+     would hand them a placeholder, and a placeholder has no page — the link
+     would 404. */
   const at = track.pieces.indexOf(slug);
-  const next = at >= 0 ? getCard(track.pieces[at + 1] ?? "") : null;
+  const next =
+    at >= 0
+      ? (track.pieces
+          .slice(at + 1)
+          .map((s) => getCard(s))
+          .find((c) => c?.state === "published") ?? null)
+      : null;
   const day = path.find((d) => d.piece === slug) ?? null;
 
   return <LearnPiecePage piece={piece} track={track} day={day} next={next} />;

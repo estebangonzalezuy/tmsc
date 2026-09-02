@@ -4,9 +4,11 @@
   "blurb": "What the job is for, before we argue about which software does it.",
   "kind": "article",
   "state": "published",
+  "access": "free",
   "track": "foundations",
   "minutes": 8,
   "updated": "2026-08-31",
+  "locked": 0,
   "blocks": [
     {
       "t": "p",

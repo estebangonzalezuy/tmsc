@@ -104,8 +104,10 @@
       "blurb": "Your first animation, deliberately smaller than you want it to be.",
       "kind": "video",
       "state": "placeholder",
+      "access": "paid",
       "track": "foundations",
-      "minutes": 14
+      "minutes": 14,
+      "updated": "2026-08-31"
     },
     {
       "slug": "sketch-how-it-moves",
@@ -113,8 +115,10 @@
       "blurb": "Think in motion on paper, before a timeline can talk you out of it.",
       "kind": "article",
       "state": "placeholder",
+      "access": "paid",
       "track": "foundations",
-      "minutes": 10
+      "minutes": 10,
+      "updated": "2026-08-31"
     },
     {
       "slug": "what-motion-design-is",
@@ -122,8 +126,10 @@
       "blurb": "What the job is for, before we argue about which software does it.",
       "kind": "article",
       "state": "published",
+      "access": "free",
       "track": "foundations",
-      "minutes": 8
+      "minutes": 8,
+      "updated": "2026-08-31"
     },
     {
       "slug": "easing-past-easy-ease",
@@ -131,8 +137,10 @@
       "blurb": "Why the default curve makes everything feel the same, and how to leave it.",
       "kind": "article",
       "state": "published",
+      "access": "paid",
       "track": "craft",
-      "minutes": 12
+      "minutes": 12,
+      "updated": "2026-08-31"
     },
     {
       "slug": "timing-and-spacing",
@@ -140,8 +148,10 @@
       "blurb": "Five things moving at once, and which of them should share a curve.",
       "kind": "article",
       "state": "placeholder",
+      "access": "paid",
       "track": "craft",
-      "minutes": 12
+      "minutes": 12,
+      "updated": "2026-08-31"
     },
     {
       "slug": "type-that-moves",
@@ -149,8 +159,10 @@
       "blurb": "Animating a line of text without animating every letter in it.",
       "kind": "video",
       "state": "placeholder",
+      "access": "paid",
       "track": "craft",
-      "minutes": 16
+      "minutes": 16,
+      "updated": "2026-08-31"
     },
     {
       "slug": "finish-something-small",
@@ -158,8 +170,10 @@
       "blurb": "Getting a piece out of the folder, at a size you can actually finish.",
       "kind": "article",
       "state": "placeholder",
+      "access": "paid",
       "track": "working",
-      "minutes": 10
+      "minutes": 10,
+      "updated": "2026-08-31"
     },
     {
       "slug": "how-to-show-your-work",
@@ -167,8 +181,10 @@
       "blurb": "Talking about a piece so people see what you decided, not just what moved.",
       "kind": "audio",
       "state": "placeholder",
+      "access": "paid",
       "track": "working",
-      "minutes": 22
+      "minutes": 22,
+      "updated": "2026-08-31"
     }
   ],
   "counts": {
@@ -176,6 +192,32 @@
     "published": 2,
     "placeholder": 6,
     "tracks": 3,
-    "minutes": 20
-  }
+    "days": 7,
+    "minutes": 20,
+    "articles": 5,
+    "videos": 2,
+    "audio": 1,
+    "free": 1,
+    "paid": 7
+  },
+  "updates": [
+    {
+      "slug": "what-motion-design-is",
+      "title": "What motion design actually is",
+      "blurb": "What the job is for, before we argue about which software does it.",
+      "kind": "article",
+      "access": "free",
+      "track": "foundations",
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "easing-past-easy-ease",
+      "title": "Easing, past Easy Ease",
+      "blurb": "Why the default curve makes everything feel the same, and how to leave it.",
+      "kind": "article",
+      "access": "paid",
+      "track": "craft",
+      "updated": "2026-08-31"
+    }
+  ]
 }

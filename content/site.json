@@ -613,7 +613,15 @@
     "label": "Learn",
     "headline": "Start in motion *today*, from the base.",
     "intro": "You don't need more tutorials. You need an order to do things in, a constraint, and a reason to finish. Seven days that everyone walks, then a shelf you pick from.",
-    "note": "The club is writing this library one piece at a time, so some of it is still a list of titles. A piece marked as coming is a promise, not a page, and it says so rather than sitting behind a link that goes nowhere. The pieces themselves are written as files and built into the site; only these words are edited here."
+    "note": "The club is writing this library one piece at a time, so some of it is still a list of titles. A piece marked as coming is a promise, not a page, and it says so rather than sitting behind a link that goes nowhere. The pieces themselves are written as files and built into the site; only these words are edited here.",
+    "forWho": "For someone who can already open the software and is tired of finishing tutorials with nothing of their own to show. It assumes you want to make the decisions, not copy them. If you have never opened a timeline, start with the free piece first and come back.",
+    "inside": "Written by the club, in one place, in the order the club would teach it.",
+    "offerTitle": "The library",
+    "offerPrice": "",
+    "offerNote": "",
+    "offerHref": "",
+    "offerIncludes": "Every piece in every track, as it is written\nThe seven-day path, in order\nLive examples you can open in the studio and take apart\nEverything added later, at no extra cost",
+    "offerCta": ""
   },
   "stills": {
     "label": "Stills",

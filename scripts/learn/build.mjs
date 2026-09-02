@@ -64,7 +64,10 @@ const PATH = [
 
 const KINDS = new Set(["article", "video", "audio"]);
 const STATES = new Set(["published", "placeholder"]);
-const REQUIRED = ["title", "blurb", "kind", "state", "minutes", "updated"];
+/* What the reader gets without paying. The library is a pay-once library, so
+   "paid" is the norm and "free" is the deliberate sample. */
+const ACCESS = new Set(["free", "paid"]);
+const REQUIRED = ["title", "blurb", "kind", "state", "minutes", "updated", "access"];
 
 /* Every directive the writer may use, and how many positional arguments it
    takes. An unknown one stops the build rather than vanishing from the page:
@@ -147,6 +150,9 @@ function frontmatter(file, lines) {
   if (!STATES.has(meta.state)) {
     throw new SourceError(file, 1, `state "${meta.state}" is not one of ${[...STATES].join(", ")}`);
   }
+  if (!ACCESS.has(meta.access)) {
+    throw new SourceError(file, 1, `access "${meta.access}" is not one of ${[...ACCESS].join(", ")}`);
+  }
   const minutes = Number(meta.minutes);
   if (!Number.isFinite(minutes) || minutes <= 0) {
     throw new SourceError(file, 1, `minutes must be a positive number, got "${meta.minutes}"`);
@@ -174,6 +180,16 @@ function parseBody(file, lines, start) {
     const n = i + 1; // 1-indexed, for messages
 
     if (!line.trim()) { i++; continue; }
+
+    /* Where the free preview of a paid piece ends. A marker, not a block: it
+       has no body and no closing fence, so it is caught before the fenced
+       directives below. Everything after it is dropped on the way out — see
+       readPieces. */
+    if (line.trim() === ":::more") {
+      blocks.push({ t: "more" });
+      i++;
+      continue;
+    }
 
     /* a fenced directive */
     if (line.startsWith(":::")) {
@@ -326,16 +342,47 @@ function readPieces() {
         throw new SourceError(rel, 1, `this is marked "published" but has no body. Mark it "placeholder" until it does.`);
       }
 
+      /* The paywall, such as it is. A paid piece is cut at its :::more marker
+         and only the blocks above it are written out, so the rest never reaches
+         content/learn/pieces/, the bundle, or a browser. There is no lock to
+         pick because there is nothing there to unlock.
+
+         Be honest about the shape of that: this keeps paid writing off the
+         published site, and the markdown source still sits in this repo. It is
+         a preview mechanism, not access control. Real gating arrives with
+         whatever platform takes the payment. */
+      const cut = blocks.findIndex((b) => b.t === "more");
+
+      if (meta.access === "paid" && meta.state === "published" && cut === -1) {
+        throw new SourceError(
+          rel, 1,
+          `this is a paid piece with no ":::more" marker, so there is no way to ` +
+          `tell what may be published. Put ":::more" where the free preview should end.`,
+        );
+      }
+      if (cut !== -1 && meta.access === "free") {
+        throw new SourceError(rel, 1, `":::more" has no meaning in a free piece — all of it is published.`);
+      }
+
+      const kept = cut === -1 ? blocks : blocks.slice(0, cut);
+      const locked = cut === -1 ? 0 : blocks.length - cut - 1;
+
+      if (meta.access === "paid" && meta.state === "published" && !kept.length) {
+        throw new SourceError(rel, 1, `the ":::more" marker is at the top, so this piece previews nothing.`);
+      }
+
       pieces.set(slug, {
         slug,
         title: meta.title,
         blurb: meta.blurb,
         kind: meta.kind,
         state: meta.state,
+        access: meta.access,
         track: track.id,
         minutes: meta.minutes,
         updated: meta.updated,
-        blocks,
+        locked,
+        blocks: kept,
       });
     }
   }
@@ -374,7 +421,8 @@ function main() {
 
   const card = (p) => ({
     slug: p.slug, title: p.title, blurb: p.blurb,
-    kind: p.kind, state: p.state, track: p.track, minutes: p.minutes,
+    kind: p.kind, state: p.state, access: p.access,
+    track: p.track, minutes: p.minutes, updated: p.updated,
   });
 
   for (const p of pieces.values()) {
@@ -392,20 +440,38 @@ function main() {
     })),
     path: PATH.map((d) => ({ ...d, title: pieces.get(d.piece).title, track: pieces.get(d.piece).track })),
     pieces: all.map(card),
+    /* What is in the library, counted from the library. Every number the hub
+       shows comes from here, so a "what's inside" panel can never drift from
+       what was actually built. */
     counts: {
       total: all.length,
       published: published.length,
       placeholder: all.length - published.length,
       tracks: TRACKS.length,
+      days: PATH.length,
       minutes: published.reduce((n, p) => n + p.minutes, 0),
+      articles: all.filter((p) => p.kind === "article").length,
+      videos: all.filter((p) => p.kind === "video").length,
+      audio: all.filter((p) => p.kind === "audio").length,
+      free: published.filter((p) => p.access === "free").length,
+      paid: all.filter((p) => p.access === "paid").length,
     },
+    /* The updates log: newest first, and only things that exist. It is a view of
+       each piece's own `updated`, not a second source to keep in step. */
+    updates: published
+      .map((p) => ({
+        slug: p.slug, title: p.title, blurb: p.blurb,
+        kind: p.kind, access: p.access, track: p.track, updated: p.updated,
+      }))
+      .sort((a, b) => (a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : 0)),
   };
   writeFileSync(join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 
+  const open = published.filter((p) => p.access === "free").length;
   console.log(
     `the Learn library: ${all.length} pieces across ${TRACKS.length} tracks ` +
     `(${published.length} written, ${all.length - published.length} still placeholders), ` +
-    `${PATH.length} days on the path.`,
+    `${PATH.length} days on the path, ${open} open to read.`,
   );
 }
 

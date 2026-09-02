@@ -2,24 +2,53 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, SectionHeading, accentHover, Emphasize } from "@/components/Motifs";
+import { CircleLetter, SectionHeading, Emphasize } from "@/components/Motifs";
+import { accentHover } from "@/lib/accent";
 import Cta from "@/components/Cta";
+import Cover from "@/components/learn/Cover";
+import ClockRunner from "@/components/learn/ClockRunner";
+import PieceGrid from "@/components/learn/PieceGrid";
+import OfferBlock from "@/components/learn/OfferBlock";
 import { useProgress } from "@/components/learn/useProgress";
 import manifest from "@/content/learn/manifest.json";
+import type { PieceCard } from "@/lib/learn";
 
-/* The hub. It imports the manifest directly rather than lib/learn, because this
-   is a client component and the manifest is cards and counts with no piece
-   bodies in it — the same split the Directory's hub makes with its own. */
+/* The library's front page. It imports the manifest directly rather than
+   lib/learn, because this is a client component and the manifest is cards and
+   counts with no piece bodies in it — the same split the Directory's hub makes. */
 
 const { tracks, path, counts } = manifest;
+/* A JSON import widens "free" | "paid" back to string, so the cards are named
+   here once rather than at every use. */
+const pieces = manifest.pieces as PieceCard[];
+
+/* The sample, in curriculum order. */
+const open = tracks
+  .flatMap((t) => t.pieces)
+  .map((slug) => pieces.find((p) => p.slug === slug))
+  .filter(
+    (p): p is PieceCard =>
+      !!p && p.state === "published" && p.access === "free",
+  );
 
 const fallback = {
   label: "Learn",
   headline: "Start in motion *today*, from the base.",
   intro:
     "You don't need more tutorials. You need an order to do things in, a constraint, and a reason to finish. Seven days that everyone walks, then a shelf you pick from.",
-  note: "The club is writing this library one piece at a time. A piece marked as coming is a promise, not a page, and it says so rather than sitting behind a link that goes nowhere.",
+  inside: "Written by the club, in one place, in the order the club would teach it.",
+  forWho: "",
+  note: "",
 };
+
+function Stat({ n, label }: { n: number | string; label: string }) {
+  return (
+    <div className="card px-5 md:px-6 py-8">
+      <p className="font-serif text-4xl">{n}</p>
+      <p className="mt-3 text-xs text-muted leading-relaxed">{label}</p>
+    </div>
+  );
+}
 
 export default function LearnPage() {
   const content = useContent();
@@ -32,25 +61,123 @@ export default function LearnPage() {
 
   return (
     <>
+      <ClockRunner />
+
       <section
         {...studioSection("learn", "Learn")}
         className="px-5 md:px-6 py-24 md:py-32"
       >
-        <p className="text-sm underline underline-offset-4">{learn?.label ?? fallback.label}</p>
+        <p className="text-sm underline underline-offset-4">
+          {learn?.label ?? fallback.label}
+        </p>
         <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
           <Emphasize text={learn?.headline ?? fallback.headline} />
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
           {learn?.intro ?? fallback.intro}
         </p>
-        <p className="mt-8 text-sm">
-          <Link href="/practice" className="underline underline-offset-4">
-            Only have half an hour? Let the club pick the exercise →
-          </Link>
+      </section>
+
+      {/* What's inside, counted from the library itself, so the numbers can
+          never drift from what was actually built. */}
+      <section className="px-5 md:px-6 py-16">
+        <SectionHeading
+          label="What's inside"
+          title={<>{learn?.inside ?? fallback.inside}</>}
+        />
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Stat n={counts.total} label={`pieces, ${counts.published} written so far`} />
+          <Stat n={counts.tracks} label="tracks, in the order they get useful" />
+          <Stat n={counts.days} label="days on the path, start to finish" />
+          <Stat n={counts.free} label="open to read, no strings" />
+        </div>
+        <p className="mt-6 text-xs text-muted">
+          {counts.articles} to read · {counts.videos} to watch · {counts.audio} to
+          listen to. The rest are named and not yet made.
         </p>
       </section>
 
-      {/* The on-ramp. Everyone walks this before picking a shelf. */}
+      {/* The collections. */}
+      <section className="px-5 md:px-6 py-16">
+        <SectionHeading
+          label="The tracks"
+          title={
+            <>
+              Three shelves, <em>in the order they get useful</em>.
+            </>
+          }
+        />
+        <div className="mt-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {tracks.map((t) => (
+            <Link
+              key={t.id}
+              href={`/learn/${t.id}`}
+              className={`group card card-lift overflow-hidden ${accentHover(t.id)}`}
+            >
+              <Cover slug={`track-${t.id}`} title={t.name} />
+              <div className="p-6">
+                <div className="flex items-baseline justify-between gap-4">
+                  <CircleLetter>{t.letter}</CircleLetter>
+                  <span className="text-xs text-muted accent-hover-sub">
+                    {t.published} of {t.count}
+                  </span>
+                </div>
+                <h3 className="mt-5 font-serif text-2xl group-hover:underline underline-offset-4">
+                  {t.name}
+                </h3>
+                <p className="mt-3 text-sm text-muted accent-hover-sub leading-relaxed">
+                  {t.blurb}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* The sample. */}
+      {open.length > 0 && (
+        <section className="px-5 md:px-6 py-16">
+          <SectionHeading
+            label="Open to read"
+            title={
+              <>
+                Start here, <em>for nothing</em>.
+              </>
+            }
+          />
+          <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
+            {open.length === 1 ? "This one is" : `These ${open.length} are`} out from
+            behind the library, in full, so you can decide what the rest is worth.
+          </p>
+          <div className="mt-12">
+            <PieceGrid pieces={open} />
+          </div>
+        </section>
+      )}
+
+      {/* Who it's for. A library that says who it isn't for is more useful than
+          one that claims to be for everybody. */}
+      {learn?.forWho && (
+        <section className="px-5 md:px-6 py-16">
+          <SectionHeading
+            label="Who it's for"
+            title={
+              <>
+                Not a first tutorial, <em>and not a reference</em>.
+              </>
+            }
+          />
+          <p className="mt-8 max-w-xl text-sm text-muted leading-relaxed">
+            {learn.forWho}
+          </p>
+        </section>
+      )}
+
+      <section className="px-5 md:px-6 py-16">
+        <OfferBlock />
+      </section>
+
+      {/* The on-ramp. */}
       <section className="px-5 md:px-6 py-16">
         <SectionHeading
           label="The first seven days"
@@ -75,6 +202,11 @@ export default function LearnPage() {
         <ul className="mt-6 card row-divide px-6">
           {path.map((d) => {
             const isDone = ready && done.has(d.piece);
+            const card = pieces.find((p) => p.slug === d.piece);
+            /* The curriculum is allowed to plan a day for a piece that is not
+               written yet — that is what the path is for. What it must not do is
+               link to it, because a placeholder has no page. */
+            const written = card?.state === "published";
             return (
               <li
                 key={d.day}
@@ -84,75 +216,54 @@ export default function LearnPage() {
                   Day {String(d.day).padStart(2, "0")}
                 </span>
                 <span>
-                  <Link
-                    href={`/learn/${d.track}/${d.piece}`}
-                    className={`font-serif text-xl underline-offset-4 hover:underline ${
-                      isDone ? "text-muted" : ""
-                    }`}
-                  >
-                    {d.title}
-                  </Link>
+                  {written ? (
+                    <Link
+                      href={`/learn/${d.track}/${d.piece}`}
+                      className={`font-serif text-xl underline-offset-4 hover:underline ${
+                        isDone ? "text-muted" : ""
+                      }`}
+                    >
+                      {d.title}
+                    </Link>
+                  ) : (
+                    <span className="font-serif text-xl text-muted">{d.title}</span>
+                  )}
+                  {written && card?.access === "free" && (
+                    <span className="ml-3 pill text-xs">Open</span>
+                  )}
+                  {!written && <span className="ml-3 pill text-xs">Coming</span>}
                   <span className="mt-2 block text-sm text-muted leading-relaxed">
                     {d.todo}
                   </span>
                 </span>
-                <button
-                  type="button"
-                  onClick={() => toggle(d.piece)}
-                  aria-pressed={isDone}
-                  className={`rounded-full px-3 py-1 text-xs transition-colors whitespace-nowrap ${
-                    isDone ? "bg-foreground text-background" : `card ${accentHover(d.piece)}`
-                  }`}
-                >
-                  {isDone ? "Done" : `${d.minutes} min`}
-                </button>
+                {written ? (
+                  <button
+                    type="button"
+                    onClick={() => toggle(d.piece)}
+                    aria-pressed={isDone}
+                    className={`rounded-full px-3 py-1 text-xs transition-colors whitespace-nowrap ${
+                      isDone ? "bg-foreground text-background" : `card ${accentHover(d.piece)}`
+                    }`}
+                  >
+                    {isDone ? "Done" : `${d.minutes} min`}
+                  </button>
+                ) : (
+                  <span className="text-xs text-muted whitespace-nowrap">
+                    {d.minutes} min
+                  </span>
+                )}
               </li>
             );
           })}
         </ul>
-      </section>
 
-      {/* The shelves. */}
-      <section className="px-5 md:px-6 py-16">
-        <SectionHeading
-          label="Then pick a track"
-          title={
-            <>
-              Three shelves, <em>in the order they get useful</em>.
-            </>
-          }
-        />
-        <div className="mt-12 grid gap-3 md:grid-cols-3">
-          {tracks.map((t) => (
-            <Link
-              key={t.id}
-              href={`/learn/${t.id}`}
-              className={`group card card-lift p-8 ${accentHover(t.id)}`}
-            >
-              <div className="flex items-baseline justify-between gap-4">
-                <CircleLetter>{t.letter}</CircleLetter>
-                <span className="text-xs text-muted accent-hover-sub">
-                  {t.published} of {t.count}
-                </span>
-              </div>
-              <h3 className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">
-                {t.name}
-              </h3>
-              <p className="mt-4 text-sm text-muted accent-hover-sub leading-relaxed">
-                {t.blurb}
-              </p>
-            </Link>
-          ))}
-        </div>
-
-        <p className="mt-8 text-xs text-muted">
-          {counts.published} of {counts.total} pieces written so far, across{" "}
-          {counts.tracks} tracks. The rest are named and not yet made.
+        <p className="mt-8 text-sm">
+          <Link href="/learn/updates" className="underline underline-offset-4">
+            What&apos;s been added lately →
+          </Link>
         </p>
       </section>
 
-      {/* Until the library is written, the club's paths still live on Notion.
-          Saying so beats quietly linking out of a page that claims to be one. */}
       {!hidden.has("learningPaths") && (
         <section
           {...studioSection("learningPaths", "Learning paths")}
@@ -168,9 +279,9 @@ export default function LearnPage() {
           />
           <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
             These were written before the library existed and have not been
-            rebuilt yet. They open in Notion.
+            rebuilt yet. They open in Notion, and they are free.
           </p>
-          <div className="mt-12 grid gap-3 md:grid-cols-2">
+          <div className="mt-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {learningPaths.map((p) => (
               <a
                 key={p.name}
@@ -238,16 +349,14 @@ export default function LearnPage() {
         </section>
       )}
 
-      {!hidden.has("learnNote") && (
+      {!hidden.has("learnNote") && learn?.note && (
         <section
           {...studioSection("learnNote", "Learn: how it's kept")}
           className="px-5 md:px-6 py-16"
         >
           <div className="card px-6 py-8 max-w-2xl">
             <p className="text-xs underline underline-offset-4">How it&apos;s kept</p>
-            <p className="mt-4 text-sm text-muted leading-relaxed">
-              {learn?.note ?? fallback.note}
-            </p>
+            <p className="mt-4 text-sm text-muted leading-relaxed">{learn.note}</p>
           </div>
         </section>
       )}

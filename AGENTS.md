@@ -626,6 +626,24 @@ which is the decision everything rests on: reorganising the curriculum moves a
 piece or reorders a day without minting or breaking a URL, and nothing is ever
 published at two addresses.
 
+It is a **pay-once library** — buy it, keep it, later additions included — with a
+piece or two left open. Three rules hold that up:
+
+- **A paid body is never built.** `access: free | paid` in frontmatter, and a
+  `:::more` marker where a paid piece's preview ends; the build writes only the
+  blocks above it, plus `locked: <n>`. Nothing paid reaches the JSON, the bundle
+  or a browser, so there is no lock to pick. Say what that is and isn't: it keeps
+  paid writing off the *published site*, the sources still sit in the repo, and
+  it is a preview mechanism rather than access control. Don't write UI implying
+  otherwise.
+- **The price is content, not code.** The offer lives in `content/site.json`
+  under `learn` as flat `offer*` fields. `OfferBlock` becomes an offer when a
+  price *and* a checkout link are set, and asks for a waitlist when either is
+  empty — same shape, same weight. Never hardcode a number.
+- **A link must never point at a placeholder.** They have no page, so the hub's
+  day rows, the track tiles and the next-piece link all check `state` first. Two
+  separate 404 bugs came from forgetting this.
+
 Same split again: **the pieces are data, the framing is copy.** Pieces are
 written as markdown under `content/learn/sources/` and built by
 `npm run learn:build` into `content/learn/pieces/*.json` plus a bodiless
@@ -649,6 +667,15 @@ manifest directly.
 - **A piece page is a server component**, the only page type here with no reason
   to be `"use client"`. Only the three blocks that need the browser are client
   islands. Don't undo that out of habit.
+- **Covers are rolled, not photographed, and carry no words.**
+  `lib/learnCover.ts` seeds a roll from the item's slug, so a cover is the same
+  on every visit and every build. The slide's type is off and the Kinetics looks
+  are re-rolled past, because a roll decides the graphic only — whether words can
+  be read is not the dice's call, and the card prints the title on white anyway.
+- **One `<ClockRunner />` per page, never two.** Every canvas subscribes to the
+  one shared clock, so a second starter doesn't animate a second thing: it
+  advances the clock twice a frame and runs the page at double speed. Covers
+  additionally take `live` from an IntersectionObserver so offscreen tiles rest.
 - **`:::spec` is the whole point.** It renders a Posts Studio or Tiles spec
   *running* inside the article, through `Poster` with `live` — the same thing
   `components/tools/ToolWall.tsx` already does. No second renderer, and the loop
@@ -664,7 +691,8 @@ and the one place the curriculum's order is written down.
 The club's older paths are still six links into Notion (`learningPaths`); they
 sit on the hub under a heading that says so rather than being mixed in with
 pages that exist. `nav:learn` stays in `hidden[]` until the library is mostly
-real.
+real. `/learn/updates` is the log of what has been added, built from each
+piece's own `updated` field rather than a second list to keep in step.
 
 
 ## the Directory (`/directory`)

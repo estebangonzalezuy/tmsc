@@ -19,6 +19,11 @@ export type PieceKind = "article" | "video" | "audio";
     never lets one look finished. */
 export type PieceState = "published" | "placeholder";
 
+/** The library is pay-once, so "paid" is the norm and "free" is the deliberate
+    sample. A paid piece's body past its :::more marker is never built into the
+    site at all — see scripts/learn/build.mjs. */
+export type PieceAccess = "free" | "paid";
+
 export type Span =
   | { t: "text" | "em" | "strong" | "code"; v: string }
   | { t: "a"; v: string; href: string };
@@ -42,11 +47,22 @@ export type PieceCard = {
   blurb: string;
   kind: PieceKind;
   state: PieceState;
+  access: PieceAccess;
   track: string;
   minutes: number;
+  updated: string;
 };
 
-export type Piece = PieceCard & { updated: string; blocks: Block[] };
+export type Piece = PieceCard & {
+  blocks: Block[];
+  /** How many blocks were withheld. Zero for a free piece. */
+  locked: number;
+};
+
+export type Update = Pick<
+  PieceCard,
+  "slug" | "title" | "blurb" | "kind" | "access" | "track" | "updated"
+>;
 
 export type Track = {
   id: string;
@@ -75,19 +91,36 @@ export type Counts = {
   published: number;
   placeholder: number;
   tracks: number;
+  days: number;
   minutes: number;
+  articles: number;
+  videos: number;
+  audio: number;
+  free: number;
+  paid: number;
 };
 
 export const tracks: Track[] = manifest.tracks as Track[];
 export const path: Day[] = manifest.path as Day[];
 export const pieceCards: PieceCard[] = manifest.pieces as PieceCard[];
 export const counts: Counts = manifest.counts as Counts;
+export const updates: Update[] = manifest.updates as Update[];
 
 export const trackIds = () => tracks.map((t) => t.id);
 export const getTrack = (id: string) => tracks.find((t) => t.id === id) ?? null;
 
 const cards = new Map(pieceCards.map((p) => [p.slug, p]));
 export const getCard = (slug: string) => cards.get(slug) ?? null;
+
+/** The pieces anyone can read, in curriculum order. The library's sample. */
+export const openPieces = (): PieceCard[] =>
+  tracks
+    .flatMap((t) => t.pieces)
+    .map((slug) => cards.get(slug))
+    .filter(
+      (p): p is PieceCard =>
+        !!p && p.state === "published" && p.access === "free",
+    );
 
 /** Every (track, piece) pair worth prerendering. Placeholders are left out:
     a piece that is still a promise has no address of its own, so generating a

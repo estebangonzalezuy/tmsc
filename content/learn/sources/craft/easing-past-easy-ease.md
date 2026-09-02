@@ -4,6 +4,7 @@ blurb: Why the default curve makes everything feel the same, and how to leave it
 kind: article
 state: published
 minutes: 12
+access: paid
 updated: 2026-08-31
 ---
 
@@ -23,6 +24,8 @@ only its curve.
 :::spec postlab caption="Same distance, same duration. The curve is doing all the talking."
 eyJ2IjoxMCwiZm9ybWF0Ijoic3F1YXJlIiwiZHVyYXRpb24iOjYsInNsaWRlcyI6W3sia2lja2VyIjoidGhlIE1vdGlvbiBTb2NpYWwgQ2x1YiIsInRpdGxlIjoiT25lIG1vdmUsXG4qdGhyZWUgY3VydmVzKiIsImJvZHkiOiIiLCJmb290ZXIiOiJAdGhlbW90aW9uc29jaWFsY2x1YiIsImxldHRlciI6IkMiLCJ0aXRsZUZvbnQiOiJzZXJpZiIsInRpdGxlU2l6ZSI6ImZpdCIsImFsaWduIjoiY2VudGVyIiwibWFyZ2luIjoxMjgsImdyaWQiOjEyLCJncmlkQWxwaGEiOjAuMywidmVpbCI6MCwiYmFja2dyb3VuZCI6IiNmNGYzZWYiLCJ0aGVtZSI6ImxpZ2h0IiwibGF5ZXJzIjpbeyJ0eXBlIjoiZm9ybXMiLCJwYXR0ZXJuIjoiYmxvYnMiLCJkZW5zaXR5IjoxNCwicGl4ZWwiOjEwLCJ3YXJwIjowLjI1LCJzcGVlZCI6MC4zLCJzY2FsZSI6MC40Miwib2Zmc2V0WCI6MC4yMiwib2Zmc2V0WSI6MC4yMiwiaW5rIjoiIzNkM2RlYiIsIm1vdGlvbiI6eyJ3YXJwIjp7InRvIjowLjYyLCJ3YXZlIjoic2luIiwiY3ljbGVzIjoxLCJwaGFzZSI6MH19fV19XX0
 :::
+
+:::more
 
 ## Two numbers, and that is most of it
 

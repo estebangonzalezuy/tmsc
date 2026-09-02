@@ -17,8 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FORMATS, decodeSpec } from "@/lib/postlab";
 import { decodeSpec as decodeTile, normalize as normalizeTile } from "@/lib/tiles";
 import Poster from "@/components/postlab/Poster";
-import { useClockRunning } from "@/components/postlab/Stage";
-import { loadFonts, type Fonts } from "@/components/postlab/overlay";
+import { useSharedFonts } from "@/components/postlab/useFonts";
 import TileStage from "@/components/tiles/Stage";
 
 export default function SpecBlock({
@@ -32,7 +31,7 @@ export default function SpecBlock({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
-  const [fonts, setFonts] = useState<Fonts | null>(null);
+  const fonts = useSharedFonts();
 
   const post = useMemo(
     () => (studio === "postlab" ? decodeSpec(encoded) : null),
@@ -43,11 +42,11 @@ export default function SpecBlock({
     [studio, encoded],
   );
 
-  useClockRunning(true, post?.duration ?? 6);
-
-  useEffect(() => {
-    if (studio === "postlab") loadFonts().then(setFonts);
-  }, [studio]);
+  /* The playhead is started once per page by ClockRunner, never here. Every
+     canvas subscribes to the one shared clock, so a second rAF loop would not
+     add a second animation — it would advance the same clock twice per frame
+     and run everything on the page at double speed. Two examples in one article
+     used to be enough to do it. */
 
   /* Drawn at the size it is displayed, so the dither cells land where they will
      instead of being smoothed into gray on the way down. */
