@@ -34,9 +34,16 @@ export type Theme = "light" | "dark";
  * a clean layer can be put through the pixelate filter and come out in the
  * club's pixels, which is the point of splitting the two in the first
  * place. Drawing and screening stopped being the same decision. */
-export type ShaderFamily = "plain" | "pixelated" | "clean" | "kinetic" | "tile";
+export type ShaderFamily = "plain" | "pixelated" | "clean" | "kinetic" | "tile" | "trails";
 
-export type ShaderType = "none" | "dithering" | "forms" | "kinetics" | "tiles" | CleanType;
+export type ShaderType =
+  | "none"
+  | "dithering"
+  | "forms"
+  | "kinetics"
+  | "tiles"
+  | "trails"
+  | CleanType;
 
 /* ------------------------------------------------------------------ waves */
 
@@ -1280,6 +1287,32 @@ const tilesLayer: ShaderDef = {
   ],
 };
 
+/* Trails — the smooth register, after Light Rails. Soft glowing colour bands
+ * on a bow, canvas 2D, no threshold: the club's pixels' other half, the one
+ * that doesn't dither. Named "trails" rather than "rays" — that name was
+ * already the WebGL clean family's own god-rays shader below, a different
+ * technique entirely. `kind: "generative"` for the same reason the Kinetics
+ * and the Tiles are — a pure function of the frame, periodic in the post's
+ * own duration, so the exporter draws it directly and a reel with one in it
+ * still loops. One tuned shape rather than a shape switcher, so no `choices`.
+ */
+const trailsLayer: ShaderDef = {
+  type: "trails",
+  label: "trails",
+  animated: true,
+  kind: "generative",
+  family: "trails",
+  controls: [
+    speed(0.6),
+    n("count", 1, 6, 1, 3, "bands"),
+    n("width", 0.02, 0.4, 0.01, 0.14),
+    n("curve", 0, 1, 0.02, 0.35, "bow"),
+    n("spread", 0.1, 1, 0.02, 0.55),
+    n("glow", 0, 100, 1, 55),
+    n("angle", 0, 360, 1, 20),
+  ],
+};
+
 export const SHADERS: ShaderDef[] = [
   {
     type: "none",
@@ -1293,6 +1326,7 @@ export const SHADERS: ShaderDef[] = [
   ditheredForms,
   kineticsLayer,
   tilesLayer,
+  trailsLayer,
   ...cleanDefs,
 ];
 
@@ -1512,17 +1546,56 @@ function randomKinetic(rand: () => number): SlideStyle {
   };
 }
 
+/* Trails is a background graphic like forms — over the words, not instead
+   of them — so unlike randomKinetic it never touches `off`. Colour reads
+   well here more often than it does on the dithered register: this is the
+   one that's meant to glow. */
+function randomTrails(rand: () => number): SlideStyle {
+  const layer = {
+    ...defaultLayer("trails"),
+    ...randomShader("trails"),
+  } as LayerSpec;
+
+  const coloured = rand() < 0.55;
+  const palette = PALETTE;
+  if (coloured) {
+    if (rand() < 0.7) {
+      layer.ink = "mix";
+      /* A narrower set reads as a decision; the whole palette reads as
+         confetti — same rule the forms roll follows. */
+      const inks = [...palette].sort(() => rand() - 0.5).slice(2 + Math.floor(rand() * 3));
+      if (inks.length >= 2) layer.inks = inks;
+    } else {
+      layer.ink = paletteInk(Math.floor(rand() * 9999), "light", palette);
+    }
+  }
+
+  const style: SlideStyle = {
+    layers: [layer],
+    /* Dark is where a glowing band actually glows. */
+    theme: rand() < 0.55 ? "dark" : "light",
+    colorSeed: Math.floor(rand() * 9999) + 1,
+  };
+  if (coloured) style.background = paletteAt(Math.floor(rand() * 9999), 3, palette);
+  return style;
+}
+
 /**
  * A look from nothing.
  *
- * It rolls across both families that *close their loop* — the club's own forms
- * renderer and the Kinetics. The WebGL dithering and the clean shaders are
- * deliberately not in here: they animate, but they walk through noise that
- * never repeats, and a roll that handed back a post with a seam in it would be
- * worse than a roll with a narrower vocabulary.
+ * It rolls across the families that *close their loop* — the Kinetics, the
+ * smooth trails and, rarely, the club's own dithered forms. Dithering used to
+ * be what every non-Kinetics roll produced; now it's the deliberate minority,
+ * because a roll should mostly hand back the register that doesn't pixelate.
+ * The WebGL dithering and the clean shaders stay out of here entirely: they
+ * animate, but they walk through noise that never repeats, and a roll that
+ * handed back a post with a seam in it would be worse than a roll with a
+ * narrower vocabulary.
  */
 export function randomSlide(rand: () => number = Math.random): SlideStyle {
-  if (rand() < 0.4) return randomKinetic(rand);
+  const family = rand();
+  if (family < 0.35) return randomKinetic(rand);
+  if (family < 0.9) return randomTrails(rand);
   const pick = <T,>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
   const count = 1 + Math.floor(rand() * 3);
   const coloured = rand() < 0.45;
@@ -2595,6 +2668,70 @@ export const PRESETS: Preset[] = [
               mixScale: 6,
               mixSpeed: 0.5,
               motion: { warp: { to: 0.45, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* The smooth register's showcase: colour as light instead of pixels —
+       dark is where a glowing band actually glows. */
+    name: "Night signal",
+    about: "Colour as light instead of pixels — glowing bands on the club's own black.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "portrait",
+      duration: 8,
+      slides: [
+        defaultSlide({
+          kicker: "the Motion Social Club",
+          title: "What moves best\n*after dark*.",
+          theme: "dark",
+          veil: 0,
+          layers: [
+            {
+              ...defaultLayer("trails"),
+              count: 4,
+              width: 0.12,
+              curve: 0.4,
+              spread: 0.6,
+              glow: 60,
+              angle: 25,
+              ink: "mix",
+              inks: ["#adb4f5", "#3d3deb", "#ee4b2b"],
+              motion: { curve: { to: 0.75, wave: "sin", cycles: 1, phase: 0 } },
+            },
+          ],
+        }),
+      ],
+    },
+  },
+  {
+    /* The same register with the colour switched off — proof it isn't only
+       a dark, loud thing. One soft band behind editorial type on paper. */
+    name: "Paper trail",
+    about: "One soft band of light behind a sentence, on the club's own sheet.",
+    spec: {
+      v: SPEC_VERSION,
+      format: "square",
+      duration: 6,
+      slides: [
+        sheet({
+          title: "Not every glow\nneeds *colour*.",
+          titleFont: "serif",
+          titleSize: "fit",
+          align: "left",
+          layers: [
+            {
+              ...defaultLayer("trails"),
+              count: 1,
+              width: 0.22,
+              curve: 0.2,
+              spread: 0.3,
+              glow: 45,
+              angle: 100,
+              motion: { angle: { to: 130, wave: "sin", cycles: 1, phase: 0 } },
             },
           ],
         }),

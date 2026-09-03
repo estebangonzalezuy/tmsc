@@ -129,6 +129,10 @@ actually need — the *sheet*.
   default register and the one the recipes lead with.
 - **the club's pixels** — the dithered graphics below, on the sheet or
   instead of it.
+- **the club's trails** — the smooth register, on the sheet or instead of
+  it same as the pixels: soft glowing colour bands rather than dithered
+  cells, after Light Rails (`light-stroke-rail.vercel.app`). See "Both
+  families of graphics" below — it's a third now.
 
 Three things carry the sheet, all of them in `overlay.ts` and all absent by
 default:
@@ -205,11 +209,21 @@ headline is measured against the widest value it will ever show, because type
 that resized itself as a digit dropped would jump on every tick. That is what a
 countdown is, and `/tools` is where one gets made.
 
-Both families of graphics remain, with filters between them:
+Three families of graphics now, with filters between them:
 
 - **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
   forms renderer (`components/postlab/generative.ts`, canvas 2D). Hard
   edges, thresholded, loops seamlessly.
+- **trails** (`components/postlab/trails.ts`, canvas 2D, `family: "trails"`)
+  — soft glowing colour bands on a bow, built after Light Rails. No
+  threshold: the bands are painted crisp into a small offscreen canvas and
+  blurred there (the cheap-blur technique Kinetics' `soften()` uses, copied
+  locally rather than shared across studios), then scaled back up. Periodic
+  the same way every generative layer here is, and never still — the band
+  field sways and bows on its own, `speed` only sets how fast. Named
+  "trails" rather than "rays": that name already belonged to the clean
+  family's own god-rays WebGL shader below, a different technique entirely.
+  This is now the register a roll reaches for most.
 - **clean** — the rest of Paper Shaders (`PaperLayer.tsx`): liquid metal,
   mesh gradient, gem smoke, god rays, water, voronoi, warp and the others.
   They draw an image rather than a screen of pixels.
@@ -399,13 +413,17 @@ headline rather than its own, because a layer carrying a second copy of the
 sentence is a second place to edit it. One `density` dial maps onto whichever
 control each scene leads with; the full set lives in the Kinetics.
 
-**The roll is a button, top left, and it rolls both families that close their
-loop** — the forms renderer and the Kinetics. The WebGL dithering and the clean
-shaders stay out of it for the reason above: they animate but they never come
-back, and a rolled look with a seam in it is worse than a shorter list. A
-Kinetics roll is the one roll allowed to touch the type, and only to switch the
-headline off — the layer is already drawing it, so leaving it on would print it
-twice rather than make a readability decision.
+**The roll is a button, top left, and it rolls the families that close their
+loop** — trails, the Kinetics, and, rarely now, the forms renderer. Dithering
+used to be what every non-Kinetics roll produced; it's the deliberate
+minority now (`randomSlide` in `lib/postlab.ts` weights it at roughly a
+tenth), because a roll should mostly hand back the register that doesn't
+pixelate. The WebGL dithering and the clean shaders stay out of it entirely
+for the reason above: they animate but they never come back, and a rolled
+look with a seam in it is worse than a shorter list. A Kinetics roll is the
+one roll allowed to touch the type, and only to switch the headline off —
+the layer is already drawing it, so leaving it on would print it twice
+rather than make a readability decision.
 
 - **A style is a slide without its words** — `styleOf` / `applyStyle` /
   `varyStyle`, plus `randomSlide` for a look rolled from nothing (the

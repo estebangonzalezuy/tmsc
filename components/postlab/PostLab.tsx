@@ -1390,7 +1390,7 @@ export default function PostLab() {
                 help="How long the post runs before it comes back to its first frame"
               />
               <Buttons>
-                <Btn onClick={() => setDrawer("generate")} wide title="Twelve looks from nothing">
+                <Btn onClick={() => roll(12)} wide title="Twelve looks from nothing">
                   Generate…
                 </Btn>
                 <Btn onClick={addSlide} wide title="Another slide, from this one">
@@ -2601,15 +2601,15 @@ export default function PostLab() {
               ))}
             </div>
             <p className="text-[10px] text-muted leading-relaxed pt-3 max-w-xl">
-              Two families, and they are the two that close their loop: one to three
-              dithered layers with every form, mix, fold, screen and colour in play and at
-              least one number travelling, or a single scene from the Kinetics set on this
-              slide&apos;s own headline. The WebGL dithering and the clean shaders are left
-              out on purpose — they animate, but they don&apos;t come back to where they
-              started, and a rolled look with a seam in it is worse than a shorter list.
-              A roll decides the graphic and leaves the veil and the type where you left
-              them; the one exception is a Kinetics roll, which switches the headline off
-              because it is already drawing it.
+              Three families, and they are the three that close their loop: mostly the
+              smooth glowing trails, often a scene from the Kinetics set on this
+              slide&apos;s own headline, and rarely — on purpose, now — a dithered layer
+              with every form, mix, fold, screen and colour in play. The WebGL dithering
+              and the clean shaders are left out entirely — they animate, but they
+              don&apos;t come back to where they started, and a rolled look with a seam
+              in it is worse than a shorter list. A roll decides the graphic and leaves
+              the veil and the type where you left them; the one exception is a Kinetics
+              roll, which switches the headline off because it is already drawing it.
             </p>
           </Drawer>
         )}

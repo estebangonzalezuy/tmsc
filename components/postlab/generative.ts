@@ -30,6 +30,7 @@ import type { SceneId } from "@/lib/kinetics";
 import { photo } from "./photos";
 import { clip, frameAt } from "./clips";
 import { applyFilters } from "./filters";
+import { drawTrails } from "./trails";
 
 const TAU = Math.PI * 2;
 
@@ -201,6 +202,13 @@ export function drawGenerative(
       blot: num(spec.kblot, 0),
       face: String(spec.kface ?? "sans") as "sans" | "serif" | "gothic",
       weight: num(spec.kweight, 800),
+      ink: color?.ink,
+      palette: color?.ink === "mix" ? (color.inks ?? color.palette) : undefined,
+    });
+    return;
+  }
+  if (spec.type === "trails") {
+    drawTrails(ctx, spec, theme, t, duration, w, h, {
       ink: color?.ink,
       palette: color?.ink === "mix" ? (color.inks ?? color.palette) : undefined,
     });
