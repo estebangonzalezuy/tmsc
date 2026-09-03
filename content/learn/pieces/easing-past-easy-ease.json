@@ -1,0 +1,57 @@
+{
+  "slug": "easing-past-easy-ease",
+  "title": "Easing, past Easy Ease",
+  "blurb": "Why the default curve makes everything feel the same, and how to leave it.",
+  "kind": "article",
+  "state": "published",
+  "access": "paid",
+  "track": "craft",
+  "minutes": 12,
+  "updated": "2026-08-31",
+  "locked": 10,
+  "blocks": [
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Easy Ease is a fine curve. The problem is that it is the same curve every time, on every property, in every piece, and after a while your work has one accent."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "What a curve is actually saying"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "A curve is a claim about weight. A move that starts slowly and arrives quickly reads as something falling. One that leaves fast and settles slowly reads as something thrown. Easy Ease sits politely in the middle and says very little."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "The fastest way to hear the difference is to keep a move identical and change only its curve."
+        }
+      ]
+    },
+    {
+      "t": "spec",
+      "studio": "postlab",
+      "spec": "eyJ2IjoxMCwiZm9ybWF0Ijoic3F1YXJlIiwiZHVyYXRpb24iOjYsInNsaWRlcyI6W3sia2lja2VyIjoidGhlIE1vdGlvbiBTb2NpYWwgQ2x1YiIsInRpdGxlIjoiT25lIG1vdmUsXG4qdGhyZWUgY3VydmVzKiIsImJvZHkiOiIiLCJmb290ZXIiOiJAdGhlbW90aW9uc29jaWFsY2x1YiIsImxldHRlciI6IkMiLCJ0aXRsZUZvbnQiOiJzZXJpZiIsInRpdGxlU2l6ZSI6ImZpdCIsImFsaWduIjoiY2VudGVyIiwibWFyZ2luIjoxMjgsImdyaWQiOjEyLCJncmlkQWxwaGEiOjAuMywidmVpbCI6MCwiYmFja2dyb3VuZCI6IiNmNGYzZWYiLCJ0aGVtZSI6ImxpZ2h0IiwibGF5ZXJzIjpbeyJ0eXBlIjoiZm9ybXMiLCJwYXR0ZXJuIjoiYmxvYnMiLCJkZW5zaXR5IjoxNCwicGl4ZWwiOjEwLCJ3YXJwIjowLjI1LCJzcGVlZCI6MC4zLCJzY2FsZSI6MC40Miwib2Zmc2V0WCI6MC4yMiwib2Zmc2V0WSI6MC4yMiwiaW5rIjoiIzNkM2RlYiIsIm1vdGlvbiI6eyJ3YXJwIjp7InRvIjowLjYyLCJ3YXZlIjoic2luIiwiY3ljbGVzIjoxLCJwaGFzZSI6MH19fV19XX0",
+      "caption": "Same distance, same duration. The curve is doing all the talking."
+    }
+  ]
+}

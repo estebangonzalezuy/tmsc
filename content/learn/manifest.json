@@ -1,0 +1,223 @@
+{
+  "tracks": [
+    {
+      "id": "foundations",
+      "name": "Foundations",
+      "letter": "F",
+      "blurb": "The decisions that happen before the software does. What motion is for, and how to think in it.",
+      "pieces": [
+        "what-motion-design-is",
+        "sketch-how-it-moves",
+        "one-element-one-move"
+      ],
+      "count": 3,
+      "published": 1
+    },
+    {
+      "id": "craft",
+      "name": "Craft",
+      "letter": "C",
+      "blurb": "Easing, timing, hierarchy, type. The fundamentals that make a move feel deliberate instead of default.",
+      "pieces": [
+        "easing-past-easy-ease",
+        "timing-and-spacing",
+        "type-that-moves"
+      ],
+      "count": 3,
+      "published": 1
+    },
+    {
+      "id": "working",
+      "name": "Working",
+      "letter": "W",
+      "blurb": "Finishing things, showing them, and talking about them. The part nobody makes tutorials about.",
+      "pieces": [
+        "finish-something-small",
+        "how-to-show-your-work"
+      ],
+      "count": 2,
+      "published": 0
+    }
+  ],
+  "path": [
+    {
+      "day": 1,
+      "piece": "what-motion-design-is",
+      "todo": "Write down the three words you want your work to feel like.",
+      "minutes": 20,
+      "title": "What motion design actually is",
+      "track": "foundations"
+    },
+    {
+      "day": 2,
+      "piece": "sketch-how-it-moves",
+      "todo": "Draw three frames of something you already designed.",
+      "minutes": 30,
+      "title": "Sketch how it moves",
+      "track": "foundations"
+    },
+    {
+      "day": 3,
+      "piece": "one-element-one-move",
+      "todo": "Animate one element. Two properties, maximum.",
+      "minutes": 30,
+      "title": "One element, one move",
+      "track": "foundations"
+    },
+    {
+      "day": 4,
+      "piece": "easing-past-easy-ease",
+      "todo": "Take yesterday's move and rebuild its curve by hand.",
+      "minutes": 30,
+      "title": "Easing, past Easy Ease",
+      "track": "craft"
+    },
+    {
+      "day": 5,
+      "piece": "timing-and-spacing",
+      "todo": "Make the same move read fast, then heavy. Change nothing but time.",
+      "minutes": 30,
+      "title": "Timing and spacing",
+      "track": "craft"
+    },
+    {
+      "day": 6,
+      "piece": "type-that-moves",
+      "todo": "Animate one line of text. Resist animating every letter.",
+      "minutes": 40,
+      "title": "Type that moves",
+      "track": "craft"
+    },
+    {
+      "day": 7,
+      "piece": "finish-something-small",
+      "todo": "Take one of this week's tests to finished. Export it.",
+      "minutes": 60,
+      "title": "Finish something small",
+      "track": "working"
+    }
+  ],
+  "pieces": [
+    {
+      "slug": "one-element-one-move",
+      "title": "One element, one move",
+      "blurb": "Your first animation, deliberately smaller than you want it to be.",
+      "kind": "video",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "foundations",
+      "minutes": 14,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "sketch-how-it-moves",
+      "title": "Sketch how it moves",
+      "blurb": "Think in motion on paper, before a timeline can talk you out of it.",
+      "kind": "article",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "foundations",
+      "minutes": 10,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "what-motion-design-is",
+      "title": "What motion design actually is",
+      "blurb": "What the job is for, before we argue about which software does it.",
+      "kind": "article",
+      "state": "published",
+      "access": "free",
+      "track": "foundations",
+      "minutes": 8,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "easing-past-easy-ease",
+      "title": "Easing, past Easy Ease",
+      "blurb": "Why the default curve makes everything feel the same, and how to leave it.",
+      "kind": "article",
+      "state": "published",
+      "access": "paid",
+      "track": "craft",
+      "minutes": 12,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "timing-and-spacing",
+      "title": "Timing and spacing",
+      "blurb": "Five things moving at once, and which of them should share a curve.",
+      "kind": "article",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "craft",
+      "minutes": 12,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "type-that-moves",
+      "title": "Type that moves",
+      "blurb": "Animating a line of text without animating every letter in it.",
+      "kind": "video",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "craft",
+      "minutes": 16,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "finish-something-small",
+      "title": "Finish something small",
+      "blurb": "Getting a piece out of the folder, at a size you can actually finish.",
+      "kind": "article",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "working",
+      "minutes": 10,
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "how-to-show-your-work",
+      "title": "How to show your work",
+      "blurb": "Talking about a piece so people see what you decided, not just what moved.",
+      "kind": "audio",
+      "state": "placeholder",
+      "access": "paid",
+      "track": "working",
+      "minutes": 22,
+      "updated": "2026-08-31"
+    }
+  ],
+  "counts": {
+    "total": 8,
+    "published": 2,
+    "placeholder": 6,
+    "tracks": 3,
+    "days": 7,
+    "minutes": 20,
+    "articles": 5,
+    "videos": 2,
+    "audio": 1,
+    "free": 1,
+    "paid": 7
+  },
+  "updates": [
+    {
+      "slug": "what-motion-design-is",
+      "title": "What motion design actually is",
+      "blurb": "What the job is for, before we argue about which software does it.",
+      "kind": "article",
+      "access": "free",
+      "track": "foundations",
+      "updated": "2026-08-31"
+    },
+    {
+      "slug": "easing-past-easy-ease",
+      "title": "Easing, past Easy Ease",
+      "blurb": "Why the default curve makes everything feel the same, and how to leave it.",
+      "kind": "article",
+      "access": "paid",
+      "track": "craft",
+      "updated": "2026-08-31"
+    }
+  ]
+}
