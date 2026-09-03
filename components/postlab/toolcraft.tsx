@@ -42,6 +42,7 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 
@@ -947,7 +948,7 @@ export function XYPad({
   max?: number;
 }) {
   const box = useRef<HTMLDivElement>(null);
-  const put = (e: React.PointerEvent) => {
+  const put = (e: ReactPointerEvent) => {
     const r = box.current?.getBoundingClientRect();
     if (!r) return;
     const nx = min + ((e.clientX - r.left) / r.width) * (max - min);
@@ -1404,4 +1405,98 @@ export function Drawer({
       </div>
     </div>
   );
+}
+
+/* -------------------------------------------------------------- node graph */
+
+/**
+ * The box shell for one node on the canvas — title bar, port dots, selection
+ * ring. Purely presentational (className/style helpers plus a couple of
+ * small wrapper components); the actual pointer-event wiring (drag, wire,
+ * select) lives in components/postlab/canvas/NodeBox.tsx. Reuses the same
+ * tokens every other Toolcraft control draws from rather than a parallel
+ * palette — a node is one more control family, not a different system.
+ */
+export function NodeShell({
+  title,
+  selected,
+  muted,
+  width = 200,
+  onPointerDownTitle,
+  onClick,
+  right,
+  children,
+}: {
+  title: string;
+  selected?: boolean;
+  muted?: boolean;
+  width?: number;
+  /** Starts a drag — the caller does the imperative translate3d follow. */
+  onPointerDownTitle?: (e: ReactPointerEvent) => void;
+  onClick?: () => void;
+  /** Mute/delete icons, right-aligned in the title bar. */
+  right?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`rounded-[var(--tc-r)] flex flex-col select-none ${muted ? "opacity-50" : ""}`}
+      style={{
+        width,
+        background: "var(--tc-panel)",
+        border: `1px solid var(--tc-edge${selected ? "-on" : ""})`,
+        boxShadow: selected ? "0 0 0 2px var(--tc-focus)" : "var(--tc-shadow)",
+      }}
+    >
+      <div
+        onPointerDown={onPointerDownTitle}
+        className={`h-8 shrink-0 flex items-center gap-1.5 px-2.5 rounded-t-[var(--tc-r)] cursor-grab active:cursor-grabbing border-b border-[color:var(--tc-rule)]`}
+      >
+        <span className={`text-[11.5px] font-medium truncate flex-1 ${INK2}`}>{title}</span>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/** One port dot — an input on a node's left edge, an output on its right. */
+export function PortDot({
+  connected,
+  onPointerDown,
+  onPointerUp,
+  title,
+}: {
+  connected?: boolean;
+  onPointerDown?: (e: ReactPointerEvent) => void;
+  onPointerUp?: (e: ReactPointerEvent) => void;
+  title?: string;
+}) {
+  return (
+    <span
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      title={title}
+      className="block size-3 rounded-full border-2 cursor-crosshair shrink-0"
+      style={{
+        background: connected ? "var(--tc-live)" : "var(--tc-panel)",
+        borderColor: connected ? "var(--tc-live)" : "var(--tc-edge-on)",
+      }}
+    />
+  );
+}
+
+/** Stroke/marker styling for a wire's `<path>` — live (being dragged) vs.
+    committed, matching the port dot's own "connected" colour. */
+export const wirePathProps = (live?: boolean) => ({
+  fill: "none",
+  stroke: live ? "var(--tc-focus)" : "var(--tc-live)",
+  strokeWidth: live ? 2 : 1.75,
+  strokeDasharray: live ? "4 3" : undefined,
+  opacity: live ? 0.85 : 0.65,
+});
+
+export function WirePath({ d, live }: { d: string; live?: boolean }) {
+  return <path d={d} {...wirePathProps(live)} />;
 }

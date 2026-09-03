@@ -1,7 +1,9 @@
 # the Studio's chrome
 
-How `/postlab`, `/tiles`, `/kinetics`, `/tools` and every tool page are
-dressed, and why. Read this with the "the Posts Studio" section of
+How `/postlab` and every tool page are dressed, and why. `/tiles` and
+`/kinetics` shared this chrome too until both were retired in the September
+2026 rebuild (see `AGENTS.md`'s "the Posts Studio" section); Postlab is the
+only studio left in this family. Read this with that section of
 `AGENTS.md`, which covers what the studio *does*; this covers what it
 *looks like*.
 
@@ -103,12 +105,10 @@ set in Lora is a post you cannot see.
   "six menus floating over the canvas are six things standing where the work
   is" — which was true when nothing was docked. It's a real bar now because
   there's a real place for it to live that isn't over the canvas.
-- **The left dock** — one panel, full height, flush to the edge. What's on
-  it is the one thing that differs studio to studio: Postlab stacks its
-  layers list over its recipe rail; Tiles stacks its shelf over "roll a
-  sheet." Kinetics and a tool have nothing gallery-shaped to put there, so
-  they don't get a left dock at all — an empty column is worse than no
-  column.
+- **The left dock** — one panel, full height, flush to the edge. Postlab
+  puts its add-a-node rail there, one `RailItem` a `NodeKind`; a retired
+  tool page with nothing gallery-shaped to put there didn't get a left dock
+  at all — an empty column is worse than no column.
 - **The right dock** — the inspector, unchanged in what it holds: canvas,
   source, type, marks, effect, colour, export at the foot, one column read
   downwards. Only how it's drawn changed — flat and flush instead of a

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadFonts, type Fonts } from "./overlay";
+import { loadFonts, type Fonts } from "./nodes/type";
 
 /* loadFonts() reads the hashed next/font family names off the live page, and it
    does that by appending a probe element and reading it back. That is cheap once

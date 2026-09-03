@@ -234,8 +234,11 @@ function parseBody(file, lines, start) {
         blocks.push(block);
       } else if (name === "spec") {
         const [studio] = positional;
-        if (studio !== "postlab" && studio !== "tiles") {
-          throw new SourceError(file, n, `:::spec needs "postlab" or "tiles", got "${studio ?? ""}"`);
+        // "tiles" retired with the Tiles studio itself (AGENTS.md, "What
+        // became of the Kinetics and the Tiles") — a Posts Studio graph is
+        // the only kind of running example left.
+        if (studio !== "postlab") {
+          throw new SourceError(file, n, `:::spec needs "postlab", got "${studio ?? ""}"`);
         }
         const spec = inner.join("");
         if (!spec) throw new SourceError(file, n, ":::spec needs an encoded spec in its body");

@@ -5,22 +5,23 @@ description: Turn a prompt, note, or Notion doc into a tMSC Posts Studio link �
 
 # Generating tMSC posts with the Posts Studio
 
-The Posts Studio (`/postlab`) renders the club's posts. A post is fully
-described by a **PostSpec** JSON; your job is to write that JSON and hand
-back a link.
+The Posts Studio (`/postlab`) is a **node graph**: small boxes (a `field`, a
+`photo`, some `type`, a `shape`, a `filter`, a `mix`) wired together, each one
+a carousel slide's own pipeline, ending in a `frame` node, with every frame
+wired into one `showreel` in order. A post is fully described by a
+**PostGraph** JSON — nodes plus edges — and your job is to build that graph
+and hand back a link. (This replaced an older, flat `PostSpec` model in
+2026 — AGENTS.md, Workstream 4 — so a `#spec=` link from before that date
+opens the retired studio, not this one; always emit `#graph=`.)
 
-There are two registers and they share every control:
+Two registers, same as before, now expressed as which nodes you wire:
 
-- **The sheet** — ruled paper, an oval label, an editorial headline that
-  mixes roman and italic, corner labels. This is the club's default and what
-  most posts should be: a ground from the neutrals, a `grid`, `veil: 0`, and
-  a single layer of type `"none"`.
-- **The club's pixels** — dithered graphics, animated, in black and white or
-  one flat colour from the palette. Reach for them when the post wants a
-  graphic, not by default.
+- **The sheet** — a `type` node alone (or over a plain `field`), ruled with
+  its own `grid`. This is the club's default and what most posts should be.
+- **The club's pixels** — a `field` node (rings, lobed, quantized, dithered)
+  feeding `type`. Reach for it when the post wants a graphic, not by default.
 
-They mix: a sheet with one dithered form on it is the club's most useful
-post. What you must not do is reach for a shader because it's there.
+What you must not do is reach for a graphic because a node exists for one.
 
 ## Workflow
 
@@ -28,180 +29,106 @@ post. What you must not do is reach for a shader because it's there.
    fetch it with the Notion tools if the user points at one).
 2. Distill it into slides in the club's voice: honest, human, anti-hype,
    short lines. Use `\n` in titles to control line breaks deliberately.
-3. Build the spec (schema below, full reference in `lib/postlab.ts` or
-   `GET /api/postlab/schema` on the deployed site).
+3. Build one small graph per slide — usually `field -> type -> frame` (or
+   just `type -> frame` for a plain sheet) — and wire every `frame`'s output
+   into the `showreel`'s `in-1`, `in-2`, ... ports, in carousel order. Node
+   kinds and their params are below; the full, current schema is always
+   `lib/postgraph.ts` plus `components/postlab/nodes/*.ts` in a repo
+   checkout — there is no `GET /api/postlab/schema` fetchable endpoint any
+   more (retired with the old model; a Claude session with no repo access
+   has to work from this skill's own reference below, which is a real,
+   disclosed regression versus the old always-fetchable schema).
 4. Encode and link it:
 
 ```bash
-node -e 'const spec={/* ... */}; console.log("/postlab#spec="+Buffer.from(JSON.stringify(spec)).toString("base64url"))'
+node -e '
+const graph = { v: 1, format: "portrait", duration: 6, nodes: [ /* ... */ ], edges: [ /* ... */ ] };
+const json = JSON.stringify(graph);
+const b64 = Buffer.from(json, "utf-8").toString("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+console.log("/postlab#graph=" + b64);
+'
 ```
 
 Prefix with the site origin (production Vercel domain, or
-`http://localhost:3124` in dev). Opening the link loads the post ready to
-tweak and export. Alternatively give the user the raw JSON — the tool's
-"claude" panel has a paste-to-load box.
+`http://localhost:3124` in dev). Opening the link loads the graph ready to
+tweak and export. Alternatively give the user the raw JSON — the studio's
+Import drawer takes a pasted link or the bare JSON.
 
-## Spec shape
+Every node needs an `id` (any unique string), a `kind`, `x`/`y` (canvas
+position — layout doesn't matter for a generated link, `{x: i*300, y: 60}`
+per node in pipeline order is fine), and `params` (only the ones that differ
+from the kind's own default — see each kind below; anything omitted takes
+that default, which is what keeps a link short and future nodes
+backwards-compatible).
 
-```jsonc
-{
-  "v": 9,
-  "format": "square" | "portrait" | "story" | "landscape",  // 1:1 post, 4:5 feed/carousel, 9:16 reel, 16:9 link/video post
-  "duration": 6,                               // seconds recorded for video export
-  "slides": [{
-    "kicker": "design inspiration",            // small label, top left
-    "tag": "08/26",                            // short label in an outlined oval above the headline
-    "title": "What the club\n*saved for later*\nin August",  // *run* = the other voice
-    "body": "",                                // optional supporting sentence
-    "note": "@themotionsocialclub",            // small label top right; takes the mark's slot
-    "footer": "@themotionsocialclub",
-    "letter": "M",                             // circled letter top right, "" hides
-    "text": true,                              // false = the sheet with no words on it
-    "titleFont": "serif" | "sans" | "gothic",  // serif = editorial, sans = poster, gothic = blackletter
-    "italic": false,                            // the whole headline in the italic; *runs* then read roman
-    "titleSize": "s" | "m" | "l" | "fit",
-    "anchor": "top" | "middle" | "bottom",     // where the headline block sits; middle is the default
-    "boxed": false,                             // outlined box around headline
-    "plate": false,                             // filled bg behind headline (legibility)
-    "align": "left" | "center",
-    "ring": false,                              // orbit ring of circled letters
-    "grid": 7,                                  // columns of hairline ruling; omit for none
-    "gridAlpha": 0.16,                          // how present the ruling is
-    "gridTop": false,                           // ruling over the type instead of under it
-    "background": "#e6e5e1",                   // the ground: paper #f4f3ef, ash #e6e5e1, cream #fffdf0, slate #1a1a1a
-    "veil": 0,                                  // 0-0.9 wash dimming the background
-    "titlePixel": 0,                            // 0-32, dithers the title into sharp blocks; 0 = off
-    "metaPixel": 0,                             // 0-32, same dithering for kicker/body/footer/letter/ring
-    "theme": "light" | "dark",
-    "off": ["kicker", "body", "mark", "rules"], // parts to leave out; the words stay in the spec
-    "layers": [{ "type": "none" }]              // 1-4 layers, bottom first; "none" = a plain sheet
-  }]
-}
-```
+## Node kinds
 
-**Emphasis is markup.** `*a run like this*` inside a `title` (or `body`)
-switches that run to the other voice — italic in a roman headline, roman in
-an italic one. Mixing the two mid-sentence is the club's editorial move; use
-it on one phrase per headline, never on every other word.
+**`field`** — a dithered radial field: rings, lobed by angle, quantized into
+flat bands, with a quiet centre. No inputs. Key params: `pixelsAcross` (8-64),
+`rings` (2-24), `distortion` (lobing, 0-1), `grain` (0-1), `quantize` (2-16),
+`quietCentre` (0-1), `rotationOffset` (0-360°), `movement`
+(`none`|`ripple`|`breathe`), `amount` (0-1), `wave` (`sin`|`tri`|`saw`|
+`square`), `loopLength` (whole trips, 1-8), `dtype` (screen: `4x4`|`2x2`|
+`8x8`|`lines`|`noise`), `inks` (hex array, deepest-first — a ramp from
+`lib/palette.ts`'s `FIELD_PRESET_RAMPS`, or hand-picked).
 
-**The oval and the corner.** `tag` is a date, an issue number or a chapter,
-set in an outlined oval above the headline. `note` is a handle, a source or a
-credit in the top-right corner; while it's set the circled mark stands down,
-because there is only one corner.
+**`photo`** — a picture, a film, or a GIF, composited in full colour (cover
+or contain, no thresholding — pixelate it downstream with a `filter` node if
+you want it dithered). `src`: a path on this site (`/stills/x.jpg`, travels
+in the link) or `local:<id>`/`clip:<id>` (kept in the owner's browser,
+doesn't travel — never invent one of these). `fit` (`cover`|`contain`),
+`exposure` (gamma, 0.2-3), `clipCycles` (whole loop trips for a film, 1-8).
 
-**A counting number.** `count: { from, to, pad? }` makes a number travel over
-the loop, and every `#` in the slide's words becomes its current value — title
-`"#"` with body `"days to go"` is a countdown. It still loops (each value gets
-an equal slice, and the last ends where the first begins), and `pad` holds the
-same room for every value so the headline doesn't resize as a digit drops. Give
-the number the headline and put the words under it in `body`: one size covers a
-whole headline, so `"# days to go"` makes the number just another word.
+**`type`** — the club's editorial headline over whatever's wired into its
+`in` port (or a flat `ground` fill when nothing is). `kicker`, `tag`, `title`
+(`*a run like this*` = the other voice — roman inside an italic headline,
+italic inside a roman one), `body`, `footer`, `note`, `titleFont`
+(`sans`|`serif`|`gothic`), `italic` (bool), `titleSize` (`s`|`m`|`l`|`fit` —
+`fit` grows the headline to the frame, never inserting a break you didn't
+type), `align` (`left`|`center`), `anchor` (`top`|`middle`|`bottom`),
+`margin` (32-200), `grid` (ruling columns, 0 = off), `ink`/`ground` (hex).
 
-Before writing a countdown, a monthly round-up, a quote card or a big number by
-hand, check `/tools` — those are tools on the site, and a link to one arrives
-filled in. Write a spec when the post is not one of those.
+**`shape`** — the club's motifs as placed marks: `circle`|`oval`|`square`|
+`triangle`|`line`|`bar`|`arc`|`cross`|`bracket`, over its `in` port. Marks
+travel as a JSON string in the single `marksJson` param (an array of
+`{kind,x,y,size,weight,rotation,opacity,ink?,repeat,along,spread,jitter,
+twist,taper,seed}` — `weight: 0` fills the mark, `along` is `none`|`y`|
+`arc`|`ring` for `repeat > 1`). `spin` (0-360) is the one top-level number a
+`motion` map can travel — it turns every mark on the node uniformly.
 
-**Marks, and the deformers on them.** `shapes` is up to six of the club's
-motifs placed on the sheet — `circle|oval|square|triangle|line|bar|arc|cross|
-bracket` — each `{ kind, x, y, size, weight, rotation, opacity }`, plus `ink`,
-`under` (behind the words), and the deformers that turn one into a pattern:
-`repeat`, `along` (`x|y|arc|ring`), `spread`, `jitter` (seeded — set `seed`),
-`twist`, `taper`. `weight` is the stroke; 0 fills it. A bracket at `size: 0.9`
-is the club's boxed frame; a `line` repeated `along: "y"` is a ruled block; a
-small `triangle` with `repeat: 7, along: "ring"` is a rosette. Two or three
-marks is a composition; six is a mess.
+**`filter`** — one effect over its `in` port: `type`
+(`pixelate`|`posterize`|`levels`|`grain`|`mono`|`invert`) plus that effect's
+own params (`cell`/`amount`/`dtype` for pixelate; `steps` for posterize;
+`brightness`/`contrast` for levels; `amount`/`size` for grain; `amount` for
+mono/invert), `ink`/`ground` (hex, used by pixelate and mono). Chain several
+by wiring `filter` nodes in series — there is no filter list on one node.
 
-**Motion has names.** Use the club's loops rather than arbitrary waves: drift
-(sin ×1), breathe (sin ×2), pulse (sin ×4), swing (tri ×2), sweep (saw ×1),
-march (saw ×3), blink (square ×4). They apply to any number on a layer or a
-mark, and the studio shows them by name.
+**`mix`** — composites `over` onto `base`: `mode` (`normal`|`multiply`|
+`screen`|`overlay`|`darken`|`lighten`|`color-dodge`|`color-burn`|
+`difference`|`exclusion`), `opacity` (0-1).
 
-**The ruling.** `grid` is a column count — 6 to 8 on a portrait sheet — drawn
-in square cells that are cut equally at top and bottom. `gridTop: true` puts
-it over the words, which reads as a technical drawing rather than a caption.
+**`frame`** — terminal, one carousel slide; passes its `in` through. `label`
+is cosmetic only.
 
-Each layer also accepts `opacity` (0-1), `blend` (normal | multiply |
-screen | overlay | darken | lighten | difference | exclusion), and a
-transform: `offsetX`/`offsetY` (-1..1), `rotation` (degrees), `scale`
-(0.1-4). Blending a texture over a gradient (mesh + dithering multiply)
-is the signature look. v1 specs with a single `shader` field still load.
+**`showreel`** — the carousel: `slots` (1-12) sets how many `in-N` ports it
+has. Wire `frame` outputs into `in-1`, `in-2`, ... in order — carousel order
+is which port a frame is wired into, not a separate array.
 
-When a post does want a graphic, the club's own half is a **dithering
-instrument** — hard-edged, thresholded pixels. Two layer types (plus `none`,
-which draws nothing and is what a sheet wants):
+**Motion.** Any node can carry a top-level `motion` map: `{ "<param>": { to,
+wave, cycles, phase } }` — `to` is where the number travels, `wave` is
+`sin`|`tri`|`saw`|`square`, `cycles` is whole trips per loop (1-8, rounded —
+this is what keeps the loop seamless), `phase` (0-1) is where in the trip it
+starts. Only params that are plain numbers on that node's own `params` object
+qualify — `field`'s `distortion`/`grain`/`rotationOffset`/etc., `shape`'s
+`spin`, `mix`'s `opacity`, a `filter`'s `amount`. `field`'s own `movement`
+param already gives it looping motion without touching `motion` at all —
+reach for `motion` when you want a *different* number to travel.
 
-- `dithering` (Paper Shaders): `shape` simplex|warp|dots|wave|ripple|swirl|
-  sphere, `dtype` 4x4|8x8|2x2|random, `size` (pixel 1-14), `speed`, `scale`.
-- `forms` (canvas ordered dither, shapes the shader lacks): `pattern`
-  rings|ramp|bars|letter|spiral|grid|blobs|tunnel|noise|moire, `word`
-  M|tMSC|MOTION|CLUB (for `letter`), `pixel` (2-16), `density`, `warp`
-  (0-1 flow-field deformation), `speed`, `dtype` 4x4|8x8|2x2|lines|noise.
+## Instant links
 
-**Forms combine.** A `forms` layer can fold a second shape into the first:
-`pattern2` (any pattern, or `none`) mixed with `mix` add|sub|mul|diff|max|
-min, then mirrored with `fold` x|y|quad|radial. Both are mixed as grayscale
-and dithered once, so the output stays hard-edged pixels. This is where the
-good backgrounds are — `moire` + `rings` on `diff`, `grid` + `blobs` on
-`mul`, `letter` + `noise` on `sub`.
-
-**What's on the slide.** `off` is an array of parts to leave out — `kicker`,
-`tag`, `title`, `body`, `mark`, `note`, `footer`, `rules` (the two decorative
-lines). The words stay in the spec, so a part switched back on brings its text
-with it. Only a headline: `off: ["kicker","tag","body","mark","note","footer","rules"]`.
-
-`mark` decides the top-right circle: `auto` (default — the page number on a
-carousel, the letter on a single post) | `letter` | `page` | `none`. When
-it shows the page, the footer drops its counter.
-
-**A photograph is a form.** `pattern: "photo"` with a `src` on the layer —
-a path on this site (`/stills/x.jpg`, travels in the link) or `local:<id>`
-(a file in the owner's browser, doesn't). It gets sampled and thresholded
-like everything else, so it mixes, folds, screens and inks the same way.
-`exposure` (0.2-2.5) is gamma before the threshold; `fit` is cover or
-contain. Never invent a `src` — without a real one the layer is blank.
-
-**Headlines.** `titleSize` is `s | m | l | fit`. `fit` grows the headline
-until it fills the frame inside the margin, so short copy comes out
-enormous and long copy comes out smaller, and neither overflows. Optional
-`titleWeight` (100-900; serif caps at 700, gothic at 400) and `margin`
-(24-240, default 96).
-
-**Parameters can travel.** A `forms` layer may carry `motion`, a map of
-parameter name to `{ to, wave, cycles, phase }` — the parameter's own value
-is where the trip starts, `to` is where it goes, `wave` is
-sin|tri|saw|square, and `cycles` is whole trips per loop (1-8, rounded).
-Everything numeric is animatable, including `offsetX`/`offsetY`/`scale`/
-`rotation`. A drifting `density` or `warp` is usually the difference
-between a background that reads as a pattern and one that reads as motion.
-
-**It loops.** The club's own `forms` renderer always returns to its first
-frame at the end of the post, so exported reels loop — the forms, the
-colour travel and any wave above are all periodic in the duration. The
-WebGL `dithering` shader does not, except for `swirl` (no time in it) or
-speed 0. For anything posted as a loop, use `forms`.
-
-**Colour is per layer and off by default.** Leave `ink` out for the club's
-black and white. Set it to a hex for one flat colour, or `"mix"` to scatter
-the palette across the pixels. A `"mix"` layer takes four optional dials:
-`inks` (hex array — the subset of the palette this layer may use),
-`mixMode` blocks|bands|radial|source|noise (`source` colours by the shape's
-own shading, which reads as a contour map), `mixScale` 1-12 (patch size),
-`mixSpeed` 0-3 (0 holds the colours still). The slide's `colorSeed` decides
-which colour starts where, and `background` sets the slide's own hex.
-Generated posts stay monochrome unless colour was asked for.
-
-Old type names from earlier spec versions (grid, mesh, orbits, lattice…)
-are auto-mapped to the closest dithering equivalent, and the old slide-wide
-`color: true` switch still reads as "palette on every layer", so old links
-keep working.
-
-## Instant links (no AI needed)
-
-For a quick single-slide post, skip the spec entirely:
-`/postlab?title=Line one // line two&body=...&kicker=...&format=portrait&theme=dark&shape=sphere`
-— params build the spec in the browser; `//` becomes a line break. The
-Notion queue's "Instant link" formula column assembles these automatically.
-Use the encoded `#spec=` form when you need carousels or fine control.
+There is no query-param bootstrap for the graph model yet (the old model's
+`/postlab?title=...` instant links) — a deliberate, disclosed gap versus the
+old studio; always build the full graph and use `#graph=`.
 
 ## The queue automation (Notion → post)
 
@@ -228,9 +155,9 @@ Never modify rows in statuses you weren't asked to handle, and never commit
 or push repo code during a content run.
 
 **Job 1 — visuals.** For each Pipeline row with `Status = 'Ready'`:
-distill its body/Copy/Notes into a PostSpec per this skill, encode it,
+distill its body/Copy/Notes into a PostGraph per this skill, encode it,
 set **Post link** to
-`https://themotionsocialclub.vercel.app/postlab#spec=<base64url>`, set
+`https://themotionsocialclub.vercel.app/postlab#graph=<base64url>`, set
 **Status** to `Generated`.
 
 **Job 2 — angles.** Skip if 6+ rows already sit in `Angle`. Otherwise
@@ -251,31 +178,32 @@ library (Channel, Date, Type, Pillar) so future angle proposals see it.
 
 ## Editorial defaults
 
-The studio's own recipes are the reference — fetch `/api/postlab/schema` and
-read `presets`, or copy one of these. Every one of them is a sheet unless it
-says otherwise.
+There is no recipe/preset rail for the graph model yet (the old model's
+`PRESETS`, and the schema endpoint that served them, are both retired — a
+disclosed gap, not a secret one). Build each of these as a small graph by
+hand, `field/type -> frame`, per slide:
 
-- **A month's round-up** → `portrait`, ash ground, `grid: 7`, a `tag` of
-  `MM/YY`, serif `fit` headline centred with one italic run, everything else
-  off. The club's most-used post.
-- **A line worth keeping** → `portrait`, paper ground, sans `m` headline at
-  `anchor: "bottom"`, `kicker` top left and `note` top right, and one `forms`
-  `blobs` layer inked from the palette, scaled to about 0.6 and pushed to the
-  half of the sheet the words don't use. Never let a procedural form land
-  behind the headline — give the type its own half.
-- **A quote** → `square`, ash ground, `grid: 6` at `gridAlpha: 0.12`, serif
-  `fit` centred with German low quotes („…"), the attribution in `footer`.
-- **A reference card** → `portrait`, slate ground, `theme: "dark"`, sans
-  headline at `anchor: "top"` with the source in `body`, a numbered `tag`, a
-  `note` for where it was seen.
-- **A poster** → `square`, ash, sans `fit` in caps at weight 700, `grid: 6`
-  with `gridTop: true` so the ruling crosses the letters.
-- **Carousel** → `portrait`, one sheet per idea with the same ground and
-  ruling throughout (that sameness is what makes four slides read as one
-  piece), a `tag` of `01`, `02`, `03`, and the cover carrying the promise.
-- **Reel** → `story`, one slide, a dithered background, duration 6-10 —
-  `forms` loops seamlessly at exactly that length, `dithering` does not.
-- **Link / video share** → `landscape`, one slide, shorter title (`s`/`m`),
-  keep the block tight since the frame is short.
+- **A month's round-up** → `portrait`, `type` alone, `tag` of `MM/YY`, serif
+  `fit` title centred with one italic run, `ground` ash. The club's
+  most-used post.
+- **A line worth keeping** → `portrait`, `field -> type`, `type.anchor:
+  "bottom"`, `kicker` set, sans `titleSize: "m"`. Keep the field's `amount`/
+  `distortion` modest so it reads as texture, not as the subject — the words
+  are the subject.
+- **A quote** → `square`, `type` alone, `ground` ash, `grid: 6`, serif `fit`
+  centred, the attribution in `footer`.
+- **A reference card** → `portrait`, `type` alone, `ground` slate (`#1a1a1a`)
+  with `ink` `#ffffff`, sans title at `anchor: "top"`, source in `body`, a
+  numbered `tag`.
+- **A poster** → `square`, `field -> type`, sans `fit` caps, `grid: 6`.
+- **Carousel** → `portrait`, one `field/type -> frame` trio per idea sharing
+  the same `ground`/`grid` (that sameness is what makes several slides read
+  as one piece), a `tag` of `01`, `02`, `03`, every `frame` wired into the
+  one `showreel` in order.
+- **Reel** → `story`, one frame, `field` with `movement` set, `duration`
+  6-10 — every node kind here is periodic in the loop by construction, so
+  any graph exports as a seamless reel.
+- **Link / video share** → `landscape`, one frame, shorter title
+  (`titleSize: "s"` or `"m"`), keep the block tight since the frame is short.
 - Content to draw from lives in `content/site.json` (quotes, threads,
   pillars, archive titles).

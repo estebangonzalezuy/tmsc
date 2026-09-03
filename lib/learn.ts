@@ -39,7 +39,7 @@ export type Block =
   | { t: "do"; text: Span[]; minutes?: number }
   | { t: "video"; provider: "youtube" | "vimeo"; id: string; caption?: string }
   | { t: "audio"; src: string; seconds?: number }
-  | { t: "spec"; studio: "postlab" | "tiles"; spec: string; caption?: string };
+  | { t: "spec"; studio: "postlab"; spec: string; caption?: string };
 
 export type PieceCard = {
   slug: string;

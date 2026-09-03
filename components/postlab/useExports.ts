@@ -1,79 +1,58 @@
 "use client";
 
-// Getting a post out: a still, a clip, a GIF — one slide or all of them.
-//
-// Shared by the studio and by every tool, because "export" has to mean exactly
-// the same thing in both. The batch runner is the fiddly part: each slide has
-// to be made current, remount, and finish rendering before it can be captured,
-// which is why this is a hook holding a job rather than a plain function.
+// Getting a post out: a still, a video, a GIF — one frame or every frame in
+// the showreel. Retargeted from the old slide-array walk to
+// showreelFrames(graph, showreelId): each iteration renders that frame
+// node's own ancestor subgraph directly (no DOM canvas query — the graph
+// already produces the final composited image, so there's no separate
+// "layers then type" step left to walk).
 
 import { useState } from "react";
-import { FORMATS, type PostSpec } from "@/lib/postlab";
-import { drawOverlay, type Fonts } from "./overlay";
-import { exportPng, recordGif, recordVideo } from "./exporter";
+import { FORMATS, ancestorSubgraph, showreelFrames, type PostGraph } from "@/lib/postgraph";
+import { exportFramePng, recordGif, recordVideo } from "./exporter";
 import { loadSlidePhotos } from "./photos";
 import { loadSlideClips } from "./clips";
 
 export type Quality = "mid" | "high" | "max";
 
-export function useExports({
-  spec,
-  index,
-  fonts,
-  shaderBoxRef,
-  overlayRef,
-  setIndex,
-  say,
-}: {
-  spec: PostSpec;
-  index: number;
-  fonts: Fonts | null;
-  shaderBoxRef: React.RefObject<HTMLDivElement | null>;
-  overlayRef: React.RefObject<HTMLCanvasElement | null>;
-  setIndex: (i: number) => void;
-  say: (msg: string) => void;
-}) {
+export function useExports({ graph, showreelId, say }: { graph: PostGraph; showreelId: string | null; say: (msg: string) => void }) {
   const [job, setJob] = useState<{ label: string; frac: number } | null>(null);
-  /* An export setting, not a design one, so it stays out of the spec and out
-     of shared links. */
+  /* An export setting, not a design one, so it stays out of the graph and
+     out of shared links. */
   const [quality, setQuality] = useState<Quality>("high");
 
   /* 1080 is the Instagram baseline; "max" targets 4K on the long-ish edge. */
   const scale = quality === "mid" ? 1 : quality === "high" ? 2 : 3840 / 1080;
-  const outW = Math.round(FORMATS[spec.format].w * scale);
-  const outH = Math.round(FORMATS[spec.format].h * scale);
+  const outW = Math.round(FORMATS[graph.format].w * scale);
+  const outH = Math.round(FORMATS[graph.format].h * scale);
 
-  const layerCanvases = () => {
-    const wrappers = shaderBoxRef.current?.querySelectorAll("[data-layer]");
-    return Array.from(wrappers ?? []).map((el) => el.querySelector("canvas"));
+  const frames = showreelId ? showreelFrames(graph, showreelId) : [];
+
+  /* Nothing gets exported holding a picture or a film that hasn't decoded
+     yet — every photo node the frame depends on, resolved before capture. */
+  const preload = async (frameId: string) => {
+    const photos = ancestorSubgraph(graph, frameId)
+      .filter((n) => n.kind === "photo")
+      .map((n) => ({ src: typeof n.params.src === "string" ? n.params.src : undefined }));
+    await loadSlidePhotos(photos);
+    await loadSlideClips(photos);
   };
 
-  const savePng = async () => {
-    if (!overlayRef.current) return;
-    await loadSlidePhotos(spec.slides[index]?.layers ?? []);
-    await loadSlideClips(spec.slides[index]?.layers ?? []);
-    exportPng(spec, index, layerCanvases(), overlayRef.current, fonts, scale);
-  };
-
-  /* Walks the slides, letting each one remount and render before the per-slide
-     export (PNG capture, video or GIF recording). */
-  const eachSlide = async (
+  const eachFrame = async (
     label: string,
-    fn: (i: number, report: (f: number) => void) => Promise<void> | void,
-    only?: number,
+    fn: (id: string, index: number, total: number, report: (f: number) => void) => Promise<void> | void,
+    only?: string,
   ) => {
-    if (!fonts || job) return;
-    const idx = only !== undefined ? [only] : spec.slides.map((_, i) => i);
+    if (job || !frames.length) return;
+    const ids = only ? [only] : frames;
     try {
-      for (const i of idx) {
-        const tag = idx.length > 1 ? `${label} ${i + 1}/${idx.length}` : label;
+      for (const id of ids) {
+        const i = frames.indexOf(id);
+        const tag = ids.length > 1 ? `${label} ${i + 1}/${frames.length}` : label;
         setJob({ label: tag, frac: 0 });
-        setIndex(i);
-        /* Nothing gets exported holding a picture that hasn't decoded. */
-        await loadSlidePhotos(spec.slides[i]?.layers ?? []);
-        await loadSlideClips(spec.slides[i]?.layers ?? []);
-        await new Promise((r) => setTimeout(r, 600));
-        await fn(i, (f) => setJob({ label: tag, frac: f }));
+        await preload(id);
+        await new Promise((r) => setTimeout(r, 300));
+        await fn(id, i, frames.length, (f) => setJob({ label: tag, frac: f }));
       }
       say("Saved");
     } catch {
@@ -83,41 +62,18 @@ export function useExports({
     }
   };
 
-  const pngSlide = (i: number) => {
-    const overlay = overlayRef.current;
-    if (!overlay || !fonts) return;
-    const ctx = overlay.getContext("2d");
-    if (ctx) drawOverlay(ctx, spec, i, fonts, 0);
-    exportPng(spec, i, layerCanvases(), overlay, fonts, scale);
-  };
-
   return {
     job,
     quality,
     setQuality,
     outW,
     outH,
-    savePng,
-    saveAllPngs: () => eachSlide("PNG", pngSlide),
-    saveVideo: () =>
-      eachSlide(
-        "Video",
-        (i, rep) => recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
-        index,
-      ),
-    saveAllVideos: () =>
-      eachSlide("Video", (i, rep) =>
-        recordVideo(spec, i, layerCanvases(), fonts!, rep, scale),
-      ),
-    saveGif: () =>
-      eachSlide(
-        "GIF",
-        (i, rep) => recordGif(spec, i, layerCanvases(), fonts!, rep, scale),
-        index,
-      ),
-    saveAllGifs: () =>
-      eachSlide("GIF", (i, rep) =>
-        recordGif(spec, i, layerCanvases(), fonts!, rep, scale),
-      ),
+    frames,
+    savePng: (frameId: string) => eachFrame("PNG", (id, i, total) => exportFramePng(graph, id, i, total, scale), frameId),
+    saveAllPngs: () => eachFrame("PNG", (id, i, total) => exportFramePng(graph, id, i, total, scale)),
+    saveVideo: (frameId: string) => eachFrame("Video", (id, i, total, rep) => recordVideo(graph, id, i, total, rep, scale), frameId),
+    saveAllVideos: () => eachFrame("Video", (id, i, total, rep) => recordVideo(graph, id, i, total, rep, scale)),
+    saveGif: (frameId: string) => eachFrame("GIF", (id, i, total, rep) => recordGif(graph, id, i, total, rep, scale), frameId),
+    saveAllGifs: () => eachFrame("GIF", (id, i, total, rep) => recordGif(graph, id, i, total, rep, scale)),
   };
 }

@@ -1,5 +1,13 @@
 # the Tiles
 
+**Retired.** `/tiles` was deleted in the September 2026 rebuild that folded
+the Kinetics' "type is the graphic" half into the Posts Studio as a
+`kinetic` node kind (see `AGENTS.md`'s "the Posts Studio" section). The
+Tiles' own folk-ornament system — the frame/panel/guides/arms/centre grammar
+below — did **not** come along: it has no `NodeKind` today and no other
+home, so it is gone with no replacement. This document is kept for its
+design history, not as a guide to anything live.
+
 The club's third studio, at `/tiles`. It makes a **tile**: a framed square of
 hand-cut folk ornament — radial, flat-coloured, printed rather than rendered,
 and never quite still.
@@ -151,7 +159,8 @@ monochrome version of one that is the same object.
 
 - `lib/tiles.ts` — the **TileSpec**: arms, frame, guides, centre, the palettes,
   the thirteen recipes, `randomTile`, `normalize`, base64url encode/decode. The
-  spec travels in the URL (`/tiles#spec=<encoded>`) exactly as a PostSpec does.
+  spec travels in the URL (`/tiles#spec=<encoded>`) exactly as a Posts Studio
+  graph does.
 - `components/tiles/render.ts` — `paint(ctx, spec, p, w, h)`, the only entry
   point, shared by the stage, the thumbnails and the exporter so they cannot
   disagree.
@@ -161,22 +170,16 @@ monochrome version of one that is the same object.
 - `components/tiles/exports.ts` — PNG, webm, and a numbered run of frames.
 - `components/tiles/asLayer.ts` — a tile as one layer of a post.
 
-## Two other front doors
+## Two other front doors, both currently closed
 
-**A tile is a layer of a post.** `type: "tiles"` in the Posts Studio draws one
-of the thirteen through the same renderer, with one `tile` choice and one
-`tdensity` dial that scales every count in it at once. It counts as
-`generative` for the same reason the Kinetics does — canvas 2D, a pure function
-of the frame, periodic in the post's duration — so the exporter draws it
-directly and a reel with a tile in it still loops.
-
-It is the one layer that brings its own colour. Set the layer's `ink` to
-`"mix"` and the post's palette takes over the ornament instead.
-
-**A tile is a tool.** `/tools/tile` asks four questions — which one, what
-colour, how much, how hard the hand shakes — and hands back a PostSpec with a
-single tile layer and every part of the sheet switched off. It is the one tool
-with nothing to say, which is what a tile is.
+**A tile used to be a layer of a post and a tool of its own** — `type: "tiles"`
+in the old Posts Studio drew one of the thirteen through the same renderer,
+and `/tools/tile` asked four questions and handed back a ready single-tile
+post. Both retired with the Posts Studio's September 2026 node-graph rebuild
+(see `AGENTS.md`'s "the Posts Studio" section, "What's retired"): the rebuilt
+studio's node kinds are a fixed eight, none of them Tiles, and `/tools` is
+gone entirely. `components/tiles/asLayer.ts` is kept, unedited, as the shape
+a future `tiles` node kind would reuse — it has no caller today.
 
 ## Adding to it
 

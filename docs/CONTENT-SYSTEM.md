@@ -8,6 +8,17 @@ The loop, in one line: **the library of what's been published feeds the
 angles → an angle becomes a draft → the draft gets a visual → it gets
 scheduled → posting writes it back into the library.**
 
+> **The scheduled half is currently broken.** The Posts Studio was rebuilt
+> as a node graph in September 2026 (`AGENTS.md`, "the Posts Studio", "What's
+> retired") and `/api/postlab/schema` — what `scripts/content-cycle/
+> postspec.mjs` reads to build a visual — no longer exists; every "build a
+> PostSpec" instruction below is the pre-rebuild routine, not yet adapted.
+> `postspec.mjs`'s `assembleSpec`/`encodeSpec` need rewriting against
+> `lib/postgraph.ts` (node kinds, `NodeDef`s, `encodeGraph`) before Job 1/2
+> can post a working link again. The Desk's manual "Make it" path (below) is
+> unaffected — it builds its own small graph directly, no schema fetch
+> involved.
+
 ## Start here: the box on the Desk
 
 Everything below is the machinery. The everyday way in is one text field at
@@ -16,7 +27,7 @@ two speeds:
 
 | | what it does | cost | where it lands |
 |---|---|---|---|
-| **Make it** | Sets your words as a sheet and opens [the Note](https://themotionsocialclub.vercel.app/tools/note) with them already in. Never leaves the browser. | instant, nothing | the Post Lab, right now |
+| **Make it** | Builds a small [Post Lab](https://themotionsocialclub.vercel.app/postlab) graph — your words as a sheet — and opens it already in. Never leaves the browser. | instant, nothing | the Post Lab, right now |
 | **Ask the club** | Hands the same words to the runner, which writes the angle and the LinkedIn draft, art-directs the visual, and files the row. | about a minute, one model call | a Pipeline row at `Generated`, with the Post link |
 
 Use **Make it** when you already know what you want to say — it is the whole

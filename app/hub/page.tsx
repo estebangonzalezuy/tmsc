@@ -21,10 +21,7 @@ const groups: { title: string; note: string; rows: Row[] }[] = [
     note: "where the work happens",
     rows: [
       { href: "/desk", name: "the Desk", what: "start a run, see what's going" },
-      { href: "/tools", name: "the Tools", what: "a post from four questions" },
-      { href: "/postlab", name: "the Posts Studio", what: "every control, when a tool isn't enough" },
-      { href: "/kinetics", name: "the Kinetics", what: "when the words are the picture, and all of it moves" },
-      { href: "/tiles", name: "the Tiles", what: "framed squares of hand-cut ornament, turning" },
+      { href: "/postlab", name: "the Posts Studio", what: "nodes in, a post out" },
       { href: "/studio", name: "the Studio", what: "the site's own words" },
       { href: "/curate", name: "the Curator", what: "a video in, style frames out" },
     ],

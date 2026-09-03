@@ -3,7 +3,7 @@
 // frames with no real quantization step — no ffmpeg payload needed for a
 // format this simple.
 
-import { PALETTE } from "@/lib/postlab";
+import { PALETTE } from "@/lib/palette";
 
 class BitWriter {
   bytes: number[] = [];

@@ -55,8 +55,9 @@ browser). Therefore:
   would need a Notion token on Vercel, which is the one thing this
   architecture is built to avoid. **Write on the site, read in Notion.**
   The box has two speeds and only one of them needs the token: "Make it"
-  hands the words to `/tools/note` through `encodeParams` and never touches
-  the network, so it renders above the setup and works on a device that has
+  builds a small Posts Studio graph straight from the words
+  (`lib/noteGraph.ts`) and opens it in `/postlab`, never touching the
+  network, so it renders above the setup and works on a device that has
   never been set up; "Ask the club" dispatches the `capture` job.
 - `lib/data.ts` — typed re-exports of the JSON for server components.
 
@@ -68,7 +69,7 @@ browser). Therefore:
 - **Colour only ever answers a pointer.** At rest a page is black, white and
   gray — nothing on the site is coloured until it is hovered or focused. The
   palette lives in two places kept in step by hand: `PALETTE` in
-  `lib/postlab.ts` (the studio's exporter needs it at module scope) and the
+  `lib/palette.ts` (the studio's exporter needs it at module scope) and the
   `--accent*` variables in `app/globals.css`.
 - **A hover picks its colour from the whole palette**, so a grid lights up
   differently as you cross it. Don't write hover colours by hand: use
@@ -91,7 +92,7 @@ browser). Therefore:
 - Never colour body copy, a heading, a border or a section background, and
   never introduce a hex outside the palette. the Posts Studio is still the one
   place colour can fill a surface without being asked — and the one place with
-  a second list of hexes: `GROUNDS` in `lib/postlab.ts`, the neutral papers a
+  a second list of hexes: `GROUNDS` in `lib/palette.ts`, the neutral papers a
   *post* is printed on. They are not accents and they never touch the site.
 - **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
   emphasis) via `next/font`, both loaded with their real italics — the studio
@@ -122,513 +123,199 @@ browser). Therefore:
 
 An internal design tool (like `/studio`, not in the nav) for generating the
 club's Instagram posts, carousels, and reels, with PNG, video, and GIF export.
+Rebuilt from scratch in September 2026 as a node-graph editor, replacing the
+earlier layer-stack model (`PostSpec`, dithering/trails/clean shaders) named
+after the same owner reference that shaped `docs/THE-STUDIO-CHROME.md` a
+month earlier — a canvas of connected nodes rather than a stack of layers
+behind one panel. Nothing about that old model was migrated: every shared
+link built against it (`#spec=…`), the `/tools` wall of eight PostSpec-built
+tools, and `/api/postlab/schema` are retired with no replacement, a
+deliberate, disclosed cost of the rebuild rather than an oversight — see
+"What's retired" below.
 
-**Two registers, one spec.** The tool began as a dithering instrument and grew
-the rest of Paper Shaders; in August 2026 it grew the half that most posts
-actually need — the *sheet*.
+**The model is a graph, not a stack.** A post is a `PostGraph`
+(`lib/postgraph.ts`): nodes and edges, where an edge carries an *image* —
+one node's rendered canvas — into another node's input port. Every node
+still animates its own numeric params through the same `MotionMap`/`waveAt`
+machinery the old model used (`to`, `wave`, whole-number `cycles`, `phase`),
+so **the loop is still a contract**: every node's `evaluate(params, inputs,
+p, w, h)` is a pure, periodic function of `p ∈ [0,1]`, cycle counts are
+always forced to whole numbers, and preview and export call the exact same
+function at different resolutions/instants — a recording is still produced
+frame-by-frame, never screen-captured, and two exports of the same graph are
+byte-identical.
 
-- **the sheet** — ruled paper, an outlined oval label, an editorial headline
-  that mixes roman and italic, small labels in the corners. A ground from
-  `GROUNDS` (paper, ash, cream, slate — neutrals, not the palette), a `grid`
-  column count, `veil: 0`, one layer of type `"none"`. This is the club's
-  default register and the one the recipes lead with.
-- **the club's pixels** — the dithered graphics below, on the sheet or
-  instead of it.
-- **the club's trails** — the smooth register, on the sheet or instead of
-  it same as the pixels: soft glowing colour bands rather than dithered
-  cells, after Light Rails (`light-stroke-rail.vercel.app`). See "Both
-  families of graphics" below — it's a third now.
+- **Nine node kinds**, the whole vocabulary (`NodeKind` in `lib/postgraph.ts`):
+  `field`, `photo`, `type`, `shape`, `kinetic` compose an image (`kinetic` is
+  a source like `field`/`photo` — it has no input port; see below), `filter`
+  and `mix` combine or alter one, `frame` and `showreel` are how a graph
+  becomes a post.
+- **A carousel is structural, not a second list.** Several parallel branches
+  (`field`/`photo` → `filter`(s) → `type`/`shape` → `mix`) each end in their
+  own `frame` node — one slide, with its own live thumbnail. A single
+  `showreel` node takes every `frame` it needs as **ordered input ports**
+  (`in-1`, `in-2`, …) and is the thing that gets exported; slide order is
+  which port a wire lands on, not a flat array kept in step by hand.
+- **`renderFrame(graph, targetId, p, w, h)`** (`lib/postgraph.ts`) is the
+  whole render path: walk backward from `targetId` to its ancestor subgraph,
+  topologically sort it, evaluate each node in order feeding it its
+  already-rendered inputs. The live preview, a node's own thumbnail, and
+  every exported frame all call exactly this — one function, not three.
+- **A link is `/postlab#graph=<encoded>`.** `encodeGraph`/`decodeGraph`/
+  `normalizeGraph`/`minifyGraph` mirror the old spec's base64url mechanism
+  exactly (`minifyGraph` diffs each node's params against that kind's
+  defaults, so a link stays short and a node picks up a new field for free
+  at its default).
+- **Colour lives on the graph, not a site-wide switch.** `lib/palette.ts`
+  keeps `PALETTE`/`GROUNDS` (the club's own colours, still the values
+  `--accent*` in `app/globals.css` is kept in step with by hand) plus
+  `FIELD_PRESET_RAMPS` — named, ordered starting ramps for a `field` node's
+  ink list. A `field` node's `inks: string[]` is a **free ramp per post**;
+  the club palette is one selectable preset among others, not the only
+  source. `rerollInks(seed, source)` picks a seeded subset and always
+  re-sorts it deepest-to-palest by luminance before assigning outward, so a
+  reroll changes *which* colours and how they're arranged without ever
+  breaking the ramp's own direction.
 
-Three things carry the sheet, all of them in `overlay.ts` and all absent by
-default:
+**`field` is the new visual identity** — a dithered, radially-lobed ring
+field, replacing the old dithering/trails/clean-shader families outright
+(`components/postlab/nodes/field.ts`). For each grid cell (sized off
+`pixelsAcross`, always inscribing a full circle on the format's short axis,
+so every aspect preset is free): the angle and radius are read, the radius
+is perturbed by a small sum of seeded low-integer angular harmonics at
+*every* ring (not just the outer edge, which is what makes the whole field
+read organic rather than only its silhouette), the perturbed radius picks a
+position along the ink ramp, a `quietCentre` disc is tested against the
+*undistorted* radius so it reads as a deliberate flat circle in contrast to
+the organic field around it, `grain` perturbs that ramp position with the
+club's own ordered-dither `screenAt` (extracted to
+`components/postlab/nodes/dither.ts`, the same `hash01`/Bayer toolkit the
+old dithering used) rather than generic noise, and `quantize` steps the
+ramp independently of the ring count. Two movement modes, both whole-cycle
+forced like every other `Motion`: `ripple` reuses the seamless
+`sin(TAU·(r·rings − cycles·p))` idiom the old `rings` form already proved;
+`breathe` scales the whole field via `waveAt`. `rotate` is a discrete param
+bump, not animation.
 
-- **The ruling.** `grid` columns in square cells, cut equally top and bottom;
-  `gridAlpha` for presence, `gridTop` to draw it over the words. It belongs to
-  the paper, not to the type, so it survives `text: false`.
-- **Emphasis is markup, not a field.** `*a run like this*` in a `title` flips
-  that run to the other voice — italic in a roman headline, roman in an italic
-  one. It happens mid-sentence, so it can't be a switch. Type is therefore
-  measured a word at a time (`Word`, `Face`, `wrap`, `drawWords`), and the
-  fit-to-frame search goes through the same measurement.
-- **`tag` and `note`.** The oval above the headline, and the top-right corner
-  label. There is one corner, so a `note` makes the circled mark stand down.
+**The canvas is hand-rolled — no graph library.** Consistent with every
+other studio here, `components/postlab/canvas/` builds pan/zoom, drag, and
+drag-to-connect from scratch: `viewport.ts` is an external pan/zoom store
+shaped exactly like `clock.ts` (`get/set/watch`, written imperatively via
+`requestAnimationFrame`, never through React state, for the same reason
+`clock.ts` exists — a re-render on every pointer move is the mistake this
+codebase already made once). `NodeCanvas.tsx` is the world transform;
+`NodeBox.tsx` is one node (title bar, a live thumbnail via `GraphPoster`,
+port dots) — dragging writes position imperatively and only commits `x,y`
+to graph state on `pointerup`; `Wire.tsx` is an SVG bezier between ports,
+with the same imperative-during-the-gesture, commit-on-release discipline
+for a pending connection. `Inspector.tsx` renders a selected node's controls
+generically from its `NodeDef` (`controls`/`choices`/`texts` — the direct
+generalization of the old `ShaderDef`/`FilterDef`) over the *existing*
+Toolcraft primitives; `field`'s ramp editor (presets, per-swatch hex,
+reroll, rotate) is the one genuinely bespoke inspector section. Two new
+Toolcraft primitives back the node/wire chrome itself — `NodeShell` and
+`WirePath`/`PortDot` in `components/postlab/toolcraft.tsx` — token-driven
+off `.toolcraft`'s existing `--tc-*` set in `app/globals.css`, same as
+everything else in that file. The canvas stays on the club's light
+Toolcraft ground (not a dark stage) per `docs/THE-STUDIO-CHROME.md`'s
+already-settled direction; it is single-player, no realtime collaboration.
 
-**Marks and their deformers.** `shapes[]` on a slide is the club's motif
-language as placed objects — circle, oval, square, triangle, line, bar, arc,
-cross, bracket — each with a position, a size, a weight (0 fills it), a turn, an
-ink and `under` to put it behind the words. They are drawn in `overlay.ts`
-alongside the type because that is what they are compositionally, and like the
-ruling they survive `text: false`, so a sheet of marks with no words is a post.
+**What ports over almost unchanged**, because the engineering underneath
+the old model was sound even though its data shape wasn't: `clock.ts`; the
+`type` and `shape` node kinds, which port `overlay.ts`'s word-level
+typographic engine (`Word`/`Face`/`wrap`/`drawWords`/`fitSize`, the
+mid-sentence `*emphasis*` markup, the shapes/deformers system) almost
+verbatim behind a trimmed, colour-agnostic (`ink`/`ground` hex params, no
+slide `theme`) param set; the `filter` node kind, wrapping
+`components/postlab/filters.ts`'s pure per-filter functions unchanged (a
+filter chain is now several `filter` nodes wired in series — the graph does
+the chaining a flat array used to); `photo`, wrapping `photos.ts`/`clips.ts`
+unchanged (neither ever depended on the old spec); `exporter.ts` (same
+`canRenderDirectly`/`pickMime`/hand-driven MediaRecorder-and-GIF frame
+loop, its compositing internals now calling `renderFrame` per exported
+frame instead of iterating a layer array).
 
-What makes them worth having is the **deformers**: `repeat` copies a mark,
-`along` lays the copies out (row, column, arc, ring), and `spread`, `jitter`,
-`twist` and `taper` bend the row of them. One mark becomes a pattern without
-becoming a second layer, which is the same rule the forms renderer follows —
-combine before you render, never add a pass. `jitter` is seeded (`seed`), so a
-scattered pattern is a design decision and never crawls.
+**What's retired, disclosed rather than silently dropped:** every `/tools/*`
+tool and the `/tools` wall (`lib/tools.ts`, `components/tools/*` — a tool
+built a `PostSpec`, and rebuilding all eight against the graph model wasn't
+in scope for this pass); `/api/postlab/schema` (no replacement — the schema
+now lives in the repo itself, `lib/postgraph.ts` and each node kind's
+`NodeDef`, not at a fetchable URL, which is a real capability loss for a
+Claude session generating links from outside a checkout); the WebGL "clean"
+Paper Shaders family, which never got a node kind of its own and has no
+replacement; a recipe/preset rail for the graph model; per-mark shape motion
+(only a node-level numeric param travels, not each mark's own). Two whole
+studios were later retired into this same rebuild rather than out of scope
+of it — see "What became of the Kinetics and the Tiles" at the end of this
+section. The Desk's "Make it" fast path (see
+`docs/CONTENT-SYSTEM.md`/`components/runs/RunsPanel.tsx`) used to hand a
+thought straight to `/tools/note`; it now builds a small `PostGraph` by hand
+via `lib/noteGraph.ts` (a `type` node → `frame` → `showreel`) using the same
+`makeNode`/`addEdge`/`encodeGraph` the studio itself uses, so the fast path
+keeps its promise — no network, no token — without the tool it used to open.
+`scripts/content-cycle/`'s automated posting (Job 1/2 in
+`docs/CONTENT-SYSTEM.md`) built its links against `/api/postlab/schema` and
+the old `PostSpec`; it is not adapted to the graph model in this pass and
+will fail until it is — flagged here so it isn't mistaken for a flake.
 
-**Loops are named motion.** `LOOPS` in `lib/postlab.ts` — drift, breathe, pulse,
-swing, sweep, march, blink, far-and-back — is a wave plus a whole number of
-trips plus how far to travel across the parameter's own range. `applyLoop`
-writes the `Motion`, `loopOf` reads one back, so the studio can offer motion by
-name instead of by arithmetic and still show "custom" for a hand-written spec.
-Every number on a layer *and* on a shape takes one, which is what makes motion
-plug-and-play here.
+- `components/postlab/nodes/*.ts` — the nine node kind implementations
+  (`kinetic.ts` splits its own ported machinery into a `kinetic/` subfolder —
+  easing, stagger timing, the type layout/mask engine, the seven scenes),
+  plus `dither.ts` (the extracted ordered-dither toolkit) and `util.ts`
+  (shared param-reading helpers, and a local copy of `WAVES`/`waveAt` —
+  every node file may only ever `import type` from `lib/postgraph.ts` in
+  return, since that file imports the node registry at its own bottom; a
+  real *value* import back would be a circular import that throws
+  "Cannot access before initialization" on first load).
+- `components/postlab/canvas/*` — `NodeCanvas.tsx`, `NodeBox.tsx`,
+  `Wire.tsx`, `Inspector.tsx`, `viewport.ts`, `layout.ts`/`positions.ts`
+  (where a new node drops).
+- `components/postlab/PostGraphStudio.tsx` — the shell: top bar, an
+  add-node rail (one `RailItem` per `NodeKind`), the canvas, the Inspector,
+  an export footer.
+- `components/postlab/GraphPoster.tsx` — the throttled, clock-driven live
+  thumbnail (redraws at a few fps, only while something is actually
+  animating), used both by a node's own preview and by `SpecBlock.tsx`'s
+  live example inside a Learn piece (see "Learn" below) — one shared
+  component rather than the same throttle logic twice.
 
-**Nothing is added still, and nothing shipped is still.** A mark, a layer, an
-effect and a layer switched to draw something else all arrive with a loop
-already plugged in — `addShape`, `addLayer`, `addFilter`, `setShaderType` and
-`reroll` each attach one — because this is a studio for motion and a still
-thing is the exception. `randomSlide` gives every rolled layer a travelling
-number, and **every recipe that draws a graphic moves it**; the recipes that
-don't move are the pure sheets, which carry a `none` layer and draw no graphic
-at all. An effect's numbers travel like any other: `resolveFilter` hands the
-chain already-resolved values, so an effect still never reads the clock itself
-and still can't be the reason a loop stops closing.
+### What became of the Kinetics and the Tiles
 
-That rule is also why nothing in the tool *offers* the WebGL dithering or the
-clean shaders any more — they animate but they don't close their loop, so a
-recipe or a roll would be handing over a post with a seam in it. They stay
-selectable under `draws`, because links from months ago name them and the spec
-is backwards-compatible; just don't reach for one when writing a recipe.
+Both of the club's other two studios were retired in this same rebuild,
+disclosed here rather than silently dropped. **The Kinetics** (`/kinetics`,
+"the type is the graphic" — no background layer in any scene, because the
+words were the picture) had its whole argument folded into this studio as
+the `kinetic` node kind: the easing library, the stagger timing model
+(`presence`/`queue`), the type layout/mask engine and all seven scene
+renderers ported into `components/postlab/nodes/kinetic/`, reading flat
+`${scene}_${key}`-prefixed params instead of a `KineticSpec`, with its own
+colour ramp following `field`'s preset-ramp convention
+(`KINETIC_PRESET_PALETTES` in `lib/palette.ts`). Nothing about it was lost —
+see the node's own doc comment in `components/postlab/nodes/kinetic.ts` for
+what ported and what changed shape. **The Tiles** (`/tiles`, hand-cut folk
+ornament — frame, panel, guides, arms, centre) did not port anywhere: its
+grammar never became a node kind and has no replacement in the graph model,
+a real capability loss rather than a rename. `docs/THE-TILES.md` is kept for
+its design history, marked retired at the top.
 
-`SHAPE_LOOPS` is the same idea one level up: sway, spin, breathe, pulse, drift,
-bloom, unfold, shiver — a named loop for a *whole mark*, which is the control
-the studio leads with. **A mark arrives already moving** (a frame breathes, a
-mark sways) because this is a studio for motion and a still mark is the
-exception; "still" is the first option in the same dropdown. `shapeLoopOf` names
-what a mark is running, and while it's running a named loop the per-number loop
-rows stay folded away — one control at a time, not two views of the same wave.
-Everything that moves gets a track in `Tracks.tsx`, marks included.
+## the Tools (`/tools`) — retired
 
-Anything with a stack — effects on a layer, marks on a slide — is drawn as
-`Block`s in Toolcraft: a switch, a name, reorder, remove, and its numbers
-inside. An effect switched off (`mute`) stays in the chain rather than being
-deleted, so you can take one out and see what it was doing.
-
-A fourth thing makes the *type* move rather than the background: **`count`**,
-a number travelling through whole values over the loop, with every `#` in the
-slide's words replaced by its current value. Each value gets an equal slice and
-the last ends where the first begins, so it loops like everything else; the
-headline is measured against the widest value it will ever show, because type
-that resized itself as a digit dropped would jump on every tick. That is what a
-countdown is, and `/tools` is where one gets made.
-
-Three families of graphics now, with filters between them:
-
-- **pixelated** — Paper Shaders' Dithering and the club's own ordered-dither
-  forms renderer (`components/postlab/generative.ts`, canvas 2D). Hard
-  edges, thresholded, loops seamlessly.
-- **trails** (`components/postlab/trails.ts`, canvas 2D, `family: "trails"`)
-  — soft glowing colour bands on a bow, built after Light Rails. No
-  threshold: the bands are painted crisp into a small offscreen canvas and
-  blurred there (the cheap-blur technique Kinetics' `soften()` uses, copied
-  locally rather than shared across studios), then scaled back up. Periodic
-  the same way every generative layer here is, and never still — the band
-  field sways and bows on its own, `speed` only sets how fast. Named
-  "trails" rather than "rays": that name already belonged to the clean
-  family's own god-rays WebGL shader below, a different technique entirely.
-  This is now the register a roll reaches for most.
-- **clean** — the rest of Paper Shaders (`PaperLayer.tsx`): liquid metal,
-  mesh gradient, gem smoke, god rays, water, voronoi, warp and the others.
-  They draw an image rather than a screen of pixels.
-- **filters** (`filters.ts`) run over a layer *after* it is drawn, and
-  `pixelate` is one of them. That is the whole point of the split: the
-  club's screen is no longer welded to the thing that drew the image, so a
-  liquid-metal layer can come out in the club's pixels. Drawing and
-  screening are separate decisions now.
-
-Filters take no time as an input — not even the grain — so a filter can
-never be the reason a loop stops closing. Keep it that way.
-
-- `lib/postlab.ts` — the **PostSpec** model: types, shader registry,
-  presets, base64url encode/decode. The spec travels in the URL
-  (`/postlab#spec=<encoded>`), so anything that writes JSON can deep-link a
-  ready post.
-- **The stage is the whole window, and it is the club's own light ground.**
-  A top bar spans it — the mark, the title, Import / Share / Export — and two
-  panels dock flush to its edges as flat columns, the post filling whatever
-  span is left between them rather than floating under a stack of glass.
-  Left is what you *pick from* (the layers stack, then recipes), right is
-  what you *set* (one panel, one column), bottom left the filmstrip, bottom
-  centre the toolbar: undo, zoom, transport, guides, the loop. This was a
-  full-bleed black stage with everything floating over it until September
-  2026, redrawn after Light Rails (`light-stroke-rail.vercel.app`) — see
-  `docs/THE-STUDIO-CHROME.md` for the decision.
-  - **The layers panel is top left** — one row a layer with a live thumbnail of
-    what that layer alone draws, front of the post at the top, and pick / hide /
-    solo / reorder / delete on the row you pressed. It was a dropdown inside the
-    effect group once, which is the one place a stack cannot live: you can't see
-    the order of a thing you have to open a menu to read.
-  - **The inspector is top right, one column, in Toolcraft's order:** `canvas`
-    (the format, the resolution, the loop) · `source` (the sheet, its media and
-    its ruling) · `type` (the
-    words, and their setting, parts, counter and screen as folded `Block`s) ·
-    `marks` · `effect` (the layer, its filters, where it sits) · `colour` (the
-    layer's ink and the palette) — and **export in the footer**, where a tool's
-    way out belongs. Read downwards; a `Section` folds and shows a summary when
-    closed, and a `Block` carries its summary in its own title.
-    It had tabs once, and a tab is a second place to look for something that
-    only ever lived in one place. Put a new control where its subject already
-    is rather than adding another place to look.
-  - **The recipe rail lives in the left dock**, above the layers stack — real
-    thumbnails, always in view, not summoned. `Drawer` still floats over the
-    stage for what's genuinely a moment: a sheet rolled from nothing, the
-    paste-a-spec box.
-  - **Click a word, the oval or a mark and it outlines** — corner handles, the
-    club's own focus green — and the panel section it lives in forces back
-    open even if you'd folded it shut, so the canvas reads as something you
-    click into rather than a picture with a settings page beside it.
-    `overlay.ts`'s `drawOverlay` takes an optional `hits` array and pushes a
-    box for each part as it draws it — piggybacked on the one pass that
-    already knows where everything is, so a hit box can't drift from the
-    thing it's a box around, and the exporter (which never passes one) pays
-    nothing for it. Click empty canvas and you're back to dragging the
-    active layer's own pan/rotate/zoom, outlined as the whole frame while
-    you do.
-  - `Tracks.tsx` is the loop in tracks — transport, ruler, a lane per travelling
-    parameter with its **wave drawn across the loop**, marks included. It floats
-    above the toolbar and is off until asked for.
-  - The filmstrip is `Poster.tsx` drawing every slide for real, and **live**: a
-    thumbnail follows the playhead rather than holding frame zero, because a
-    post in this studio moves.
-- **Toolcraft** (`components/postlab/toolcraft.tsx`) is the chrome all four
-  studios (`/postlab`, `/tiles`, `/kinetics`, `/tools`) are built from —
-  toolcraft.sh's control shapes still, on the club's own light ground now
-  instead of its black one: a docked panel (`dock="left" | "right"`) is flat
-  and flush to the page's edge, a number is a dark filled pill (the field is
-  its own slider), a gallery is a `Rail` of `RailItem` thumbnails. Every
-  colour, radius and height is a token in `app/globals.css` under
-  `.toolcraft`, and nothing in the component file hardcodes one — the whole
-  point of the token layer, proven twice now: the first reskin (the club's
-  colours on toolcraft.sh's shapes) was one CSS block, and the second (this
-  one, after Light Rails) mostly was too. **The two rules suspended inside
-  the chrome stay inside it**: rounded corners, and a translucent surface on
-  the few things still floating (a menu, a drawer). Everything else is the
-  club's — warm ground, white panel, near-black ink, 1px hairlines, and
-  green, the site's own focus colour, as the only colour, on a switch that
-  is on. `docs/THE-STUDIO-CHROME.md` is the spec. The anatomy, and it is the
-  same everywhere:
-  - `TopBar` — the full-width bar above the docks: a mark, a title, the
-    primary actions right-aligned
-  - `Panel` — `dock="left" | "right"` for a flat column flush to the page's
-    edge, unset for a floating card; either way, title, reset, fold, a
-    scrolling body, a footer holding the one button you press at the end
-  - `Section` — an uppercase label with its own reset and fold
-  - `Slider` — label outside, left; the field itself is the slider, a dark
-    pill filled from its own left edge in proportion to the value, dragged
-    sideways or typed into directly — never a track under a label
-  - `Toggle` (a pill), `Segmented` (2-4 choices), `Select` (past four),
-    `Cols` (two controls on one line)
-  - `Range` — two handles on one track, kept in its older label-over-track
-    style. A number that travels is drawn with it rather than as two
-    sliders: where it rests and where it goes are one journey, and `cross`
-    lets the handles pass each other so a number can travel downwards
-  - `Dots` (colour as circles), `ColorRow` (swatch + hex + auto + remove — a
-    palette is a two-column list of these), `XYPad` (two numbers that are one
-    place), `Dropzone`
-  - `Rail` / `RailItem` — a grid of thumbnails you pick from, docked in a
-    panel's own scroll: a studio's gallery, no longer a `Drawer`
-  - `Block` — one thing in a stack: switch, name, reorder, remove, numbers
-  - `Menu` / `MenuItem` / `MenuRow` — the things you do
-  - `Toolbar`, `Drawer`, `Help`, `Primary`
-  Anything still floating carries `tc-float`, a docked column carries
-  `tc-dock`, anything with its own ground carries `tc-field`, and a number's
-  own field carries `tc-pill` — its fill is one span behind the text, sized
-  by `%`, never the input painting over itself. Add to Toolcraft rather than
-  styling a control in place, and use the same kit on every tool page.
-  `/tools` — the wall — is *not* chrome: it is a page of the site and
-  stays in the club's white, hairlines and accent hovers. The wall is the club's;
-  the instrument is the instrument.
-- `components/postlab/clock.ts` — the playhead, deliberately outside React.
-  Every canvas subscribes and draws itself; only the readout under the stage
-  asks React for the number. It was state once, and re-rendering the tool
-  sixty times a second cost about a third of the frame rate (29fps to 21 on
-  a two-layer post, measured) — so keep new per-frame work subscribing, not
-  re-rendering.
-- `components/postlab/` — `PostLab.tsx` (the studio: state and layout),
-  `toolcraft.tsx` (its chrome), `Stage.tsx` (the post on screen, shared with the
-  tools), `useExports.ts` (getting one out), `Poster.tsx` (a real thumbnail),
-  `Tracks.tsx` (the timeline), `ShaderLayer.tsx` (spec → Paper Shaders, tones
-  from the slide theme or the palette when `color` is on), `overlay.ts`
-  (canvas 2D type/motif renderer shared by preview and export), `exporter.ts`
-  (PNG + MediaRecorder video + `paintPoster` for the thumbnails).
-- `app/api/postlab/schema/route.ts` — public, static JSON description of
-  the spec so a Claude session anywhere can fetch it and generate links.
-- `.claude/skills/postlab/SKILL.md` — the skill for doing exactly that from
-  a repo session (including from Notion content).
-
-Keep the spec backwards-compatible (bump `SPEC_VERSION` and normalize in
-`normalizeSpec` if it must change) — links and the schema endpoint are the
-integration surface. **Every field added since v1 defaults to absent, and
-absent means the look the older links were shared with**; that rule is why
-new effects can keep landing without breaking a Notion row from months ago.
-
-Four things extend the dithering vocabulary rather than sitting beside it:
-
-- **Parameters travel.** A layer's `motion` map sends any number on a trip
-  over the loop (`to`, `wave`, `cycles`, `phase`). `resolveLayer` in
-  `lib/postlab.ts` is the only place that knows about it, and both the
-  preview and the exporter go through it, so they can't disagree. Cycles
-  are whole numbers on purpose — that is the entire reason a travelling
-  parameter can't open a seam.
-- **The loop is a contract, not a hope.** Everything in
-  `components/postlab/generative.ts` is periodic in the post duration:
-  time only ever reaches a form as sin/cos of TAU·p, colour rotation
-  completes whole rounds, and the orbit ring turns exactly one lap. When a
-  slide is forms-only the exporter draws each frame itself, at its exact
-  moment and at full export size, instead of filming the page — so a
-  recording is a function of the frame number and two exports of the same
-  post are byte-identical. The WebGL dithering can't do this (its shapes
-  walk through noise that never repeats), so `loopReport` says so in the
-  export panel rather than letting a seam ship.
-- **A photograph is a form, not a layer type — and so is a film.**
-  `pattern: "photo"` reads the layer's `src`, samples it at the cell size and
-  pushes it through the same threshold, so it mixes, folds and inks like anything
-  else. The picture itself never enters the spec:
-  `components/postlab/photos.ts` keeps a picked file in that browser under
-  `local:<id>`, the same bargain the Studio and the Desk make with the token. A
-  `src` starting with `/` is a path on this site and does travel in a link —
-  cross-origin is refused on purpose, because a tainted canvas breaks the dither,
-  the export and the GIF at once and does it silently.
-  `components/postlab/clips.ts` does the same for a **film or a GIF** under
-  `clip:<id>`: decoded once on the way in to at most 96 grayscale frames at 512px
-  on the long edge, kept in IndexedDB, and sampled straight into the cell grid
-  with no canvas in between. Which frame is `floor(p · clipCycles · n) mod n`
-  with whole `clipCycles`, so a film can no more open a seam than a travelling
-  number can, and the exporter stays a function of the frame number. Uploading is
-  one door — the `media` block in `source` takes a picture, a film or a GIF and
-  puts the layer on `photo` itself, because a file *is* the choice of what to
-  draw.
-**the Tiles is one of the layer types too.** `type: "tiles"` draws a tile from
-the third studio — `components/tiles/asLayer.ts` builds a TileSpec from one of
-its thirteen recipes and hands it to the same renderer, so again there is no
-second implementation. It is `generative` for the same reasons, and it is the
-one layer that paints its own palette: a tile is three flat inks by
-construction, and `ink: "mix"` is how the post takes the colour back.
-
-**the Kinetics is one of the layer types.** `type: "kinetics"` draws a scene
-from the other studio — `components/kinetics/asLayer.ts` builds a KineticSpec
-out of the slide it is on and hands it to the same renderer, so there is no
-second implementation of a scene and no second answer to what one looks like.
-It counts as `generative` because that is what it is: canvas 2D, a pure
-function of the frame, periodic in the post's duration — so the exporter draws
-it directly and a reel with one in it still loops. Its words are the slide's
-headline rather than its own, because a layer carrying a second copy of the
-sentence is a second place to edit it. One `density` dial maps onto whichever
-control each scene leads with; the full set lives in the Kinetics.
-
-**The roll is a button, top left, and it rolls the families that close their
-loop** — trails, the Kinetics, and, rarely now, the forms renderer. Dithering
-used to be what every non-Kinetics roll produced; it's the deliberate
-minority now (`randomSlide` in `lib/postlab.ts` weights it at roughly a
-tenth), because a roll should mostly hand back the register that doesn't
-pixelate. The WebGL dithering and the clean shaders stay out of it entirely
-for the reason above: they animate but they never come back, and a rolled
-look with a seam in it is worse than a shorter list. A Kinetics roll is the
-one roll allowed to touch the type, and only to switch the headline off —
-the layer is already drawing it, so leaving it on would print it twice
-rather than make a readability decision.
-
-- **A style is a slide without its words** — `styleOf` / `applyStyle` /
-  `varyStyle`, plus `randomSlide` for a look rolled from nothing (the
-  generate sheet). A roll decides the graphic only: it never touches
-  `veil` or the type settings, because whether the words can be read is
-  the owner's call and not the dice's. Varying keeps every *decision* (form, mix, fold, ink) and
-  moves only the numbers, which is what makes variations read as a family
-  instead of a shuffle. The transform is left alone unless it was already
-  moved by hand: a shrunk or turned background just drags its edges into
-  shot.
-
-- **Forms combine before the threshold.** A `forms` layer can mix a second
-  `pattern2` into its `pattern` (`mix`), and `fold` the coordinates for
-  symmetry. Both sources are grayscale and the *result* is dithered once,
-  so the output is always the same hard-edged pixels. Anything new belongs
-  in that pipeline — a second render pass would not be this tool.
-- **Colour is per layer.** `ink` is a hex, `"mix"` (the palette scattered
-  across the pixels), or absent for the theme's black and white — the
-  default, and where the site itself stays. A `"mix"` layer can narrow the
-  palette to its own `inks`, and choose `mixMode` / `mixScale` / `mixSpeed`
-  for how colour is spread and how fast it travels. The palette lives in
-  `PALETTE` in `lib/postlab.ts`, so editing that one array restyles every
-  post that never overrode it. A slide may carry its own `palette` when the
-  owner picks colours by hand; that slide then stops following the club
-  palette, which is the deliberate cost of the picker. Generated posts
-  never set it, and never set `ink` unless colour was asked for.
-
-## the Kinetics (`/kinetics`)
-
-The club's second studio, and a different argument from the first one. The
-Posts Studio treats type as a layer *over* a graphic. Here **the type is the
-graphic** — there is no background layer in any scene, because the words are
-the picture. It is not a mode of the other studio and does not share its spec.
-
-- `lib/kinetics.ts` — the **KineticSpec**, the easing library, `presence` /
-  `queue` (the stagger model), the palettes, and base64url encode/decode. The
-  spec travels in the URL exactly as a PostSpec does.
-- `components/kinetics/type.ts` — the two things every scene needs: the
-  **layout** (where each line and each letter sits) and the **mask** (the same
-  words drawn white-on-black offscreen, with a sampler). The mask is the
-  important one: half the scenes never draw a letter at all, they draw a field
-  and ask the mask whether each point is inside a word. It is cached per size
-  because `getImageData` is the only genuinely expensive call here.
-- `components/kinetics/scenes.ts` — the seven renderers. A scene is
-  `(frame) => void` plus the controls it declares, so **adding one is one entry
-  in `SCENES` and no UI work** — the panel is generated from the controls, the
-  same bargain the Tools make with the wall.
-- `Kinetics.tsx` (the studio, Toolcraft chrome), `Stage.tsx` (subscribes to the
-  shared `clock`, never re-renders), `exports.ts` (PNG + webm).
-
-Two rules carried over from the Posts Studio, and they are why an export is
-trustworthy:
-
-- **The loop is a contract.** Every scene is a function of `p` (0-1 through the
-  loop) and lands on the same frame at 1 as at 0. Rotations are whole turns,
-  scrolls are whole cells, and a stagger's intro/pause/outro are *shares of the
-  loop* renormalized to sum to 1 — which is why moving any timing slider can
-  never open a seam. Nothing reads the wall clock.
-- **A recording is a function of the frame number.** `recordVideo` drives
-  `captureStream(0)` by hand, drawing frame i of n at `p = i/n` (never
-  `i/(n-1)`, or the last frame repeats the first). Two exports are identical.
-
-Weights and distances inside a scene are **shares of something the scene
-already has**, not pixels — `strokes` measures its stroke weight against the
-gap between rings, `mosaic` sets each glyph to its own cell, `soften` takes its
-radius as a share of the frame. That is what lets one slider keep meaning the
-same thing when the count above it moves, and in a 4K export.
-
-Two things there to reuse rather than rewrite:
-
-- **`soften(frame, blur, paint)`** — blur at a controllable radius for about
-  the cost of not blurring. The field is painted into a canvas an eighth the
-  size, blurred *there*, and only then blown up: a 150px radius over a 4K frame
-  is a convolution nobody can afford at 30fps, and the same radius an eighth
-  the size is 1/64th of the work and identical once stretched. The small canvas
-  is padded because a blur samples past its own edges and would otherwise fade
-  the field out at the frame's border.
-- **`grain`** draws a repeating tile, not a cell at a time. The first version
-  filled the frame pixel by pixel — invisible in a preview, half a minute added
-  to a video export. Eight fields, stepped a whole number of times over the
-  loop, so it flickers like film and still lands back on field zero.
-
-`RECIPES` in `lib/kinetics.ts` are the starting points, one a scene.
-`applyRecipe` deliberately never touches the words: a recipe is "put my
-sentence in this", not a poster about something else.
-
-**Blotter** (`blotter` + `blot`) is a *mode*, not an effect: it overrules the
-palette to one ink on paper, because there is no such thing as a two-colour
-blotter. The whole effect is blur then crushed contrast — blurring turns every
-edge into a gradient and the crush snaps it back to a hard edge, so a shape's
-own edge returns almost where it was while two shapes that were merely *near*
-each other blur into a shared grey, land above the line, and become one mass.
-Both halves are CSS filter functions, so it costs about one extra draw. Fine
-type genuinely bleaches away at a high spread — that is what ink does, not a
-bug; keep `blot` low when the type is small.
-
-**The Posts Studio's effects run here unforked** — `applyFilters` from
-`components/postlab/filters.ts`, over the finished frame, in `paint`. They take
-no time as an input so they can never open a seam. One thing has to be put back
-afterwards: over there a filter runs on a *layer* drawn on a transparent canvas
-and composited onto the ground later, so `pixelate` clearing the cells it
-didn't ink is how the ground shows through. Here there is one opaque frame, so
-the same clear punches holes through the piece — `paint` lays the ground back
-in with `destination-over` rather than forking the filters to know about this
-studio.
-
-## the Tiles (`/tiles`)
-
-The club's third studio, and the one with no words in it. The Posts Studio sets
-a headline on a sheet; the Kinetics makes the words the picture; a **tile** is
-a framed square of hand-cut folk ornament — radial, flat-coloured, printed
-rather than rendered. Documented in `docs/THE-TILES.md`; read that before
-touching it.
-
-Thirteen reference tiles produced one grammar, and it is deliberately five
-things: **a frame · a panel · some guides · a stack of arms · a centre.**
-Everything that looked like a sixth turned out to be an arm — the pinwheel
-field behind the rays is an arm of wide wedges, the beads on a spoke are an arm
-of beads, the four dots in the corners are an arm of four. A tile is not a
-background plus a foreground; it is a stack of repeats around one point, and
-saying so is what keeps the tool small.
-
-- `lib/tiles.ts` — the **TileSpec**, the eight shapes, thirteen palettes,
-  thirteen recipes, `randomTile`, and base64url encode/decode. The spec travels
-  in the URL exactly as a PostSpec does.
-- `components/tiles/render.ts` — `paint(ctx, spec, p, w, h)`, the one entry
-  point the stage, the thumbnails and the exporter all use.
-- `Tiles.tsx` (the studio, Toolcraft chrome), `Stage.tsx` (plus `Thumb`, a real
-  thumbnail that follows the playhead), `exports.ts`, `asLayer.ts`.
-
-Three rules hold it together:
-
-- **Nothing is drawn straight.** Every closed shape is built as an exact
-  outline and then pushed about by `wobbleClosed` before it is filled — smooth
-  noise along the outline's own arc length, along each point's own normal. The
-  noise *wraps* (a whole number of wavelengths, lattice index modulo the
-  count), or every shape has one visible join, which is the one place a
-  hand-drawn look reads as a bug. And the hand is capped against the mark's own
-  width, or the shake that ruffles a blade turns a bead into a burr. The sketch
-  is the geometry; don't add a sketchy filter.
-- **The loop is a contract.** Whole turns, whole beads, one cosine over the
-  loop, all rounded in `normalize`. `boil` is the same idea for the hand
-  itself: the wobble's seed steps through whole redrawings and lands back on
-  the first, which is how a hand-drawn thing moves when nothing in it is
-  moving — and why a tile with every arm held still is not a still image.
-- **A wave is a distance, not an angle.** Written as an angle the same few
-  degrees are a few pixels near the middle and half the panel at the rim. The
-  meander is measured across the ray and damped near the centre, so one wave
-  setting is one wave everywhere along it.
-
-Colour parts company with the site here, the way the Kinetics does: a tile is
-three or four flat inks by construction and there is no monochrome version of
-one that is the same object. A palette is four slots — band, ticks, panel,
-inks — and they travel together because in the references they were chosen
-together.
-
-Adding a shape is one entry in `SHAPES` plus a row in `PROFILE` and `CAPPED`,
-and no UI work — the arm block is generated from the shape list. Before adding
-one, ask whether it is really the same shape with a different profile.
-
-Two other front doors, both of which come free from the spec being a function:
-**`type: "tiles"` is a Posts Studio layer** (canvas 2D, periodic in the post's
-duration, so a reel with one in it still loops — and the one layer that brings
-its own colour, unless its `ink` is `"mix"`), and **`/tools/tile`** is the tool,
-the only one with nothing to say.
-
-## the Tools (`/tools`)
-
-The everyday front door to the studio: small tools, one thing each. A note, a
-countdown, a quote card, a monthly round-up, a number, a practice card, a
-pixel note, a tile. `/tools` is the wall (every tool showing what it makes, rendered
-live), `/tools/<id>` is the tool.
-
-**the Note leads** because it is the one that takes a thought of any length and
-nothing else, which makes it the landing place for the box on the Desk. It is
-also the only tool that breaks its own lines: `fitSize` in `overlay.ts` will
-size a headline to fill a frame but never add a break, because where the lines
-fall belongs to whoever typed them — a promise that holds in the studio and
-can't hold for a sentence dictated into a box, which arrives with no breaks at
-all. So `balance()` places them, evenly rather than greedily, and stands aside
-the moment the writer types one.
-
-**A tool is not a template.** It is one function — `build(params) → PostSpec`
-in `lib/tools.ts` — so it asks the four questions that actually differ between
-two of its posts and decides everything else. Because the output is a spec,
-every tool inherits the renderer, the exporter and the shareable link for
-free, and "open in the studio" is not an integration: it hands over the post
-it already built. **No tool may produce a post the studio can't reopen.**
-
-- Adding one is a `ToolDef` in `TOOLS` — id, name, a one-line `about`, its
-  `fields`, `defaults`, and `build`. No route, no component: the wall and the
-  viewer are generic, and `generateStaticParams` picks it up.
-- The field kinds are deliberately few (text, lines, date, number, choice,
-  ground, ink, format, switch). A tool that needs a control the list doesn't
-  have is usually a tool that should have decided for you.
-- Params travel in the URL (`/tools/<id>#p=<encoded>`) the same way a spec
-  does, so a filled-in tool *is* a link.
-- `components/postlab/Stage.tsx`, `useExports.ts`, `Poster.tsx` and `ui.tsx`
-  are shared with the studio on purpose — one renderer, one exporter, one set
-  of controls, two front doors. Don't fork them for a tool.
+The everyday front door to the studio (a note, a countdown, a quote card, a
+monthly round-up, a number, a practice card, a pixel note, a tile — each one
+function, `build(params) → PostSpec`, inheriting the renderer/exporter/link
+for free) was retired with the rest of the `PostSpec` model in the Posts
+Studio's September 2026 rebuild (see "What's retired" up there) rather than
+rebuilt against the graph model — out of scope for that pass, not forgotten.
+`lib/tools.ts` and `components/tools/*` are gone; the Desk's "Make it" fast
+path, the one thing that depended on it beyond its own wall, was given its
+own small graph-builder instead (`lib/noteGraph.ts`). Rebuilding the wall
+against `PostGraph` is future work, not designed here. If it is rebuilt, the
+old shape is worth keeping: a tool was one function
+(`build(params) → PostSpec`, now `→ PostGraph`) deciding only the few
+questions that actually differed between two of its posts, so it inherited
+the renderer/exporter/shareable-link for free and "open in the studio" was
+never a separate integration — the same discipline "**No tool may produce a
+post the studio can't reopen**" should still hold for whatever replaces it.
 
 ## Learn (`/learn`)
 
@@ -685,22 +372,24 @@ manifest directly.
 - **A piece page is a server component**, the only page type here with no reason
   to be `"use client"`. Only the three blocks that need the browser are client
   islands. Don't undo that out of habit.
-- **A cover is a title card, and it is still.** `lib/learnCover.ts` builds the
-  club's sheet register — ruled paper, a `GROUNDS` neutral seeded by the slug, a
-  `none` layer that draws no graphic — so the type can always be read because
-  nothing is behind it. `balance()` (exported from `lib/tools.ts`, not forked)
-  breaks the title over at most two lines, since `fit` never adds a break itself.
-  **A drawn title is not text**, so every tile keeps a real `sr-only` heading:
-  only the appearance moved onto the card.
+- **A cover is a title card, and it is still.** It used to be a generated
+  sheet drawn through the old Posts Studio renderer (`lib/learnCover.ts`);
+  that renderer retired with the rest of `PostSpec` (see the Posts Studio's
+  "What's retired"), and a static card that never animated in the first
+  place needed no live renderer to replace it with — `Cover.tsx` is a plain
+  server component now: a `GROUNDS` neutral seeded by the slug, and a real
+  heading, not pixels, so it costs nothing for a11y or search and there is
+  no line-balancing left to do (a short heading just wraps).
 - **One `<ClockRunner />` per page, and only where something moves.** Every canvas
   subscribes to the one shared clock, so a second starter doesn't animate a second
   thing: it advances the clock twice a frame and runs the page at double speed.
   The hub and the track pages start no clock at all now; the piece page does,
   because a `:::spec` example animates.
-- **`:::spec` is the whole point.** It renders a Posts Studio or Tiles spec
-  *running* inside the article, through `Poster` with `live` — the same thing
-  `components/tools/ToolWall.tsx` already does. No second renderer, and the loop
-  closes for free because every spec is periodic in its own duration.
+- **`:::spec` is the whole point.** It renders a Posts Studio graph *running*
+  inside the article — `components/learn/SpecBlock.tsx` decodes it and hands
+  it to `GraphPoster` (the Posts Studio's own live node-thumbnail component,
+  reused rather than forked) with `live`. No second renderer, and the loop
+  closes for free because every graph is periodic in its own duration.
 - **Progress is `useSyncExternalStore`, not an effect.** The server renders
   nothing ticked and the browser renders what it remembers, and that has to
   differ without being a hydration mismatch. See `components/learn/useProgress.ts`.
@@ -867,10 +556,17 @@ The scheduled half of it lives in `scripts/content-cycle/` and runs from
 `.github/workflows/content-cycle.yml` — Notion REST + the Claude API, no
 chat session involved. It keeps its own `package.json` on purpose: the
 deployed app must stay dependency- and secret-free, so never move those
-dependencies into the root manifest or add env vars to Vercel for it. It
-reads the studio's vocabulary from the live `/api/postlab/schema` rather
-than duplicating `lib/postlab.ts`; keep that endpoint accurate and the
-automation follows.
+dependencies into the root manifest or add env vars to Vercel for it.
+
+**Currently broken, not a flake.** It read the Posts Studio's vocabulary
+from the live `/api/postlab/schema` and built links against the old
+`PostSpec`; both retired with that studio's September 2026 rebuild (see
+"What's retired" under "the Posts Studio") and this automation was not
+adapted to the graph model in the same pass. `postspec.mjs`'s
+`assembleSpec`/`encodeSpec` need rewriting against `lib/postgraph.ts` (node
+kinds, `NodeDef`s, `encodeGraph`) before Job 1/2 can post a working link
+again — treat any failure here as this, not as GitHub/Notion flaking, until
+that adaptation lands.
 
 The writing voice lives in `docs/voice/` — `PROFILE.md` (how Esteban
 writes, ending in the hard rules) and `EXAMPLES.md` (twenty published

@@ -5,51 +5,46 @@
 // This is the one thing the club can do that a motion blog cannot: an article
 // about easing can show the easing, running, looping, at the bottom of the
 // paragraph that describes it. It costs almost nothing, because the renderer
-// already exists and /tools already does exactly this on its wall — Poster with
-// `live` is a self-contained canvas that subscribes to the shared clock and
-// repaints itself without ever re-rendering React.
+// already exists — GraphPoster is the same throttled-live-canvas component
+// the node-graph studio uses for every node's own thumbnail.
 //
-// And because every studio spec is periodic in its own duration, the example
-// loops seamlessly for free. That contract is enforced elsewhere; this spends it.
+// And because every graph is periodic in its own duration, the example loops
+// seamlessly for free. That contract is enforced elsewhere; this spends it.
+//
+// Only ever a Posts Studio graph now — the Tiles studio this once also
+// supported was retired (AGENTS.md, "What became of the Kinetics and the
+// Tiles"); `studio` stays a prop rather than being inlined away so a future
+// second kind of running example has somewhere to land.
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FORMATS, decodeSpec } from "@/lib/postlab";
-import { decodeSpec as decodeTile, normalize as normalizeTile } from "@/lib/tiles";
-import Poster from "@/components/postlab/Poster";
-import { useSharedFonts } from "@/components/postlab/useFonts";
-import TileStage from "@/components/tiles/Stage";
+import { useEffect, useRef, useState } from "react";
+import { FORMATS, decodeGraph } from "@/lib/postgraph";
+import GraphPoster from "@/components/postlab/GraphPoster";
 
 export default function SpecBlock({
   studio,
   spec: encoded,
   caption,
 }: {
-  studio: "postlab" | "tiles";
+  studio: "postlab";
   spec: string;
   caption?: string;
 }) {
+  void studio;
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
-  const fonts = useSharedFonts();
 
-  const post = useMemo(
-    () => (studio === "postlab" ? decodeSpec(encoded) : null),
-    [studio, encoded],
-  );
-  const tile = useMemo(
-    () => (studio === "tiles" ? normalizeTile(decodeTile(encoded) ?? {}) : null),
-    [studio, encoded],
-  );
+  const graph = decodeGraph(encoded);
+  const showreelId = graph?.nodes.find((n) => n.kind === "showreel")?.id ?? null;
 
   /* The playhead is started once per page by ClockRunner, never here. Every
      canvas subscribes to the one shared clock, so a second rAF loop would not
      add a second animation — it would advance the same clock twice per frame
-     and run everything on the page at double speed. Two examples in one article
-     used to be enough to do it. */
+     and run everything on the page at double speed. Two examples in one
+     article used to be enough to do it. */
 
-  /* Drawn at the size it is displayed, so the dither cells land where they will
-     instead of being smoothed into gray on the way down. */
+  /* Drawn at the size it is displayed, so the dither cells land where they
+     will instead of being smoothed into gray on the way down. */
   useEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -60,22 +55,17 @@ export default function SpecBlock({
     return () => ro.disconnect();
   }, []);
 
-  if (studio === "postlab" && !post) return null;
-  if (studio === "tiles" && !tile) return null;
+  if (!graph || !showreelId) return null;
 
-  const ratio = post ? FORMATS[post.format].h / FORMATS[post.format].w : 1;
-  const href = studio === "postlab" ? `/postlab#spec=${encoded}` : `/tiles#spec=${encoded}`;
+  const ratio = FORMATS[graph.format].h / FORMATS[graph.format].w;
+  const href = `/postlab#graph=${encoded}`;
 
   return (
     <figure className="mt-12">
       <div ref={box} className="card overflow-hidden p-0">
         {width > 0 && (
           <div style={{ aspectRatio: `1 / ${ratio}` }} className="w-full">
-            {post ? (
-              <Poster spec={post} index={0} fonts={fonts} width={width} live />
-            ) : (
-              <TileStage spec={tile!} width={width} height={width} />
-            )}
+            <GraphPoster graph={graph} targetId={showreelId} width={width} live />
           </div>
         )}
       </div>

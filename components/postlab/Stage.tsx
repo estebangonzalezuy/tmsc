@@ -1,125 +1,24 @@
 "use client";
 
-// The post itself, on screen: the layer stack, and the type over it.
-//
-// It lives on its own because two things show a post now — the studio, where
-// every control is in reach, and a tool, where four are. Both have to render
-// the same way for the same spec, and both export by reading the very canvases
-// this draws. One renderer, two front doors.
+// Two generic hooks, kept from the old model's Stage.tsx and nothing else of
+// it: `useStageFit` (fit a format into available room) and `useClockRunning`
+// (the rAF loop that advances clock.set) are both generic over format/
+// duration, never over the old PostSpec/layer-stack shape.
+// `components/learn/ClockRunner.tsx` is the one remaining caller — the
+// Tiles and Kinetics studios that used to share this file (each with its
+// own Stage.tsx hardcoding this path) were retired along with the rest of
+// the old model. The node-graph studio itself doesn't need either hook (the
+// node canvas is a free pan/zoom surface, not a fixed-aspect stage), so
+// nothing here is used by components/postlab/* — this file exists solely
+// for ClockRunner.
 
-import { useEffect, useLayoutEffect, useState } from "react";
-import { FORMATS, slideTones, type PostSpec } from "@/lib/postlab";
-import ShaderLayer from "./ShaderLayer";
-import { drawOverlay, type Fonts, type Hit } from "./overlay";
+import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
+import { FORMATS, type PostFormat } from "@/lib/postgraph";
 import { clock } from "./clock";
-
-export default function Stage({
-  spec,
-  index,
-  fonts,
-  shaderBoxRef,
-  overlayRef,
-  solo = null,
-  hitsRef,
-}: {
-  spec: PostSpec;
-  index: number;
-  fonts: Fonts | null;
-  shaderBoxRef: React.RefObject<HTMLDivElement | null>;
-  overlayRef: React.RefObject<HTMLCanvasElement | null>;
-  solo?: number | null;
-  /** Where each editable part landed on the last frame drawn — the studio's
-      click-to-select reads this on pointer down. Nothing writes it back;
-      Stage owns the only pass that knows where anything is. */
-  hitsRef?: React.RefObject<Hit[]>;
-}) {
-  const slide = spec.slides[index];
-  const { w, h } = FORMATS[spec.format];
-
-  /* The type is redrawn when the post changes, and — only when something in it
-     actually moves — as the playhead does. Three things move: the orbit ring, a
-     counting slide's number, and a shape with a loop plugged into it. This
-     redraws every glyph at full resolution, so it deliberately doesn't follow
-     the clock unless it has to, and it follows it at 30fps rather than 60. */
-  const moves =
-    slide.ring || !!slide.count || (slide.shapes ?? []).some((s) => !!s.motion);
-  useEffect(() => {
-    const ctx = overlayRef.current?.getContext("2d");
-    if (!ctx || !fonts) return;
-    const draw = (t: number) => {
-      const hits: Hit[] = [];
-      drawOverlay(ctx, spec, index, fonts, t, 1, hits);
-      if (hitsRef) hitsRef.current = hits;
-    };
-    draw(clock.get());
-    if (!moves) return;
-    let last = -1;
-    return clock.watch((t) => {
-      if (t - last < 1 / 30 && t > last) return;
-      last = t;
-      draw(t);
-    });
-  }, [spec, index, fonts, moves, overlayRef, hitsRef]);
-
-  return (
-    <>
-      <div
-        ref={shaderBoxRef}
-        className="absolute inset-0"
-        style={{ background: slideTones(slide).bg, isolation: "isolate" }}
-      >
-        {slide.layers.map((l, i) => (
-          <div
-            key={`${i}-${l.type}-${slide.theme}-${spec.format}-${index}`}
-            data-layer
-            className="absolute inset-0"
-            style={{
-              opacity: l.opacity,
-              mixBlendMode: l.blend === "normal" ? undefined : l.blend,
-            }}
-          >
-            {/* The wrapper stays even when the layer is off, so the exporter's
-                index-to-canvas mapping doesn't shift. */}
-            {!l.mute && (solo === null || solo === i) && (
-              <ShaderLayer
-                shader={l}
-                theme={slide.theme}
-                width={w}
-                height={h}
-                duration={spec.duration}
-                format={spec.format}
-                words={slide.title}
-                color={{
-                  ink: l.ink,
-                  seed: slide.colorSeed,
-                  palette: slide.palette,
-                  inks: l.inks,
-                  mixMode: l.mixMode,
-                  mixScale: l.mixScale,
-                  mixSpeed: l.mixSpeed,
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      <canvas
-        ref={overlayRef}
-        width={w}
-        height={h}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
-    </>
-  );
-}
 
 /** Fit a post of this format into whatever room the element has, keeping its
     proportions. Returns CSS pixels for the frame. */
-export function useStageFit(
-  ref: React.RefObject<HTMLElement | null>,
-  format: PostSpec["format"],
-  pad = 56,
-) {
+export function useStageFit(ref: RefObject<HTMLElement | null>, format: PostFormat, pad = 56) {
   const { w, h } = FORMATS[format];
   const [size, setSize] = useState({ w: 320, h: 400 });
   useLayoutEffect(() => {

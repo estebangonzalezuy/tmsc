@@ -6,9 +6,10 @@
 // GitHub.
 //
 // The box is the front of it, and it has two speeds. "Make it" never leaves the
-// browser: the words become a sheet and the Note tool opens with them already
-// in, which is the whole distance from a sentence to a post when you already
-// know what you want to say. "Ask the club" hands the same words to the runner,
+// browser: the words become a sheet, built as a small PostGraph (lib/noteGraph.ts)
+// the same way the Post Lab builds any other, and the Post Lab opens with it
+// already in, which is the whole distance from a sentence to a post when you
+// already know what you want to say. "Ask the club" hands the same words to the runner,
 // which writes the angle and the draft and art-directs the visual, and lands a
 // Pipeline row about a minute later. One box, because a second place to type a
 // thought is how you end up with thoughts in two places.
@@ -24,7 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { pillars } from "@/lib/data";
-import { encodeParams, startingParams, toolDef } from "@/lib/tools";
+import { noteLink } from "@/lib/noteGraph";
 
 const GH_REPO = "estebangonzalezuy/tmsc";
 const WORKFLOW = "content-cycle.yml";
@@ -339,14 +340,11 @@ export default function RunsPanel() {
   }
 
   /* The fast half of the box, and the reason it can sit above the setup: this
-     never touches the network. The words go into the Note tool through the
-     same encoder the tool reads them back with, so the handoff can't drift
-     out of step with the field it fills. */
+     never touches the network. The words become a small PostGraph — a sheet
+     with your line on it — through the same encoder the Post Lab reads links
+     back with, so the handoff can't drift out of step with what it opens. */
   function makeIt() {
-    const tool = toolDef("note");
-    if (!tool) return;
-    const params = { ...startingParams(tool), line: thought.trim() };
-    router.push(`/tools/note#p=${encodeParams(tool, params)}`);
+    router.push(noteLink(thought.trim()));
   }
 
   /* The slow half. Same words, handed to the runner, which writes the angle
@@ -436,7 +434,7 @@ export default function RunsPanel() {
               <button
                 onClick={makeIt}
                 disabled={!enough}
-                title="Straight into the Note tool — no waiting, nothing spent"
+                title="Straight into the Post Lab — no waiting, nothing spent"
                 className="border border-line px-4 py-2 text-sm hover:bg-foreground hover:text-background transition-colors disabled:opacity-40"
               >
                 Make it
@@ -650,10 +648,7 @@ export default function RunsPanel() {
               </h2>
               <ul className="mt-4 grid gap-px bg-line border border-line text-sm">
                 {[
-                  ["/tools", "the Tools", "one thing each, no waiting"],
-                  ["/postlab", "the Post Lab", "open a Post link, tweak, export"],
-                  ["/kinetics", "the Kinetics", "type that moves, seven ways"],
-                  ["/tiles", "the Tiles", "a framed square of ornament"],
+                  ["/postlab", "the Post Lab", "nodes in, a post out"],
                   ["/studio", "the Studio", "the site's own words"],
                   ["/hub", "the Hub", "everything tMSC, in one list"],
                 ].map(([href, name, what]) => (
