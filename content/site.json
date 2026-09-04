@@ -1139,6 +1139,8 @@
     "stats",
     "practiceFiles",
     "offerings",
-    "nav:clips"
+    "nav:clips",
+    "nav:learn",
+    "learningPaths"
   ]
 }
