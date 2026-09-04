@@ -117,7 +117,7 @@ export default function NodeCanvas({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden touch-none cursor-grab active:cursor-grabbing"
+      className="tc-canvas-dark absolute inset-0 overflow-hidden touch-none cursor-grab active:cursor-grabbing"
       style={{ background: "var(--tc-page)" }}
       onPointerDown={onBgPointerDown}
     >

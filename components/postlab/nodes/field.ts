@@ -141,7 +141,13 @@ function evaluate(
   const out = makeCanvas(w, h);
   const octx = out.getContext("2d")!;
   octx.imageSmoothingEnabled = false;
-  octx.drawImage(small, 0, 0, cw * cell, ch * cell, 0, 0, w, h);
+  /* The source rect has to match `small`'s actual size (cw x ch, one pixel
+     per grid cell) — asking for cw*cell x ch*cell here (the field's size in
+     output pixels) requests a source rectangle far bigger than the image
+     actually is, which the canvas spec clips to what's really there and
+     shrinks the destination rect by the same proportion: the field rendered
+     into a postage-stamp corner of the box instead of filling it. */
+  octx.drawImage(small, 0, 0, cw, ch, 0, 0, w, h);
   return out;
 }
 

@@ -25,6 +25,7 @@ import { STAGE, TopBar, Panel, Rail, RailItem, Btn, Primary, Segmented, Select, 
 import NodeCanvas from "./canvas/NodeCanvas";
 import Inspector from "./canvas/Inspector";
 import { useExports, type Quality } from "./useExports";
+import { useClockRunning } from "./Stage";
 
 const KIND_ICON: Record<NodeKind, string> = {
   field: "◎",
@@ -46,6 +47,12 @@ export default function PostGraphStudio() {
   const [importText, setImportText] = useState("");
   const loadedFromHash = useRef(false);
   const hashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* Every node's own thumbnail (GraphPoster, live) and the showreel preview
+     are functions of the shared clock — nothing draws a second frame unless
+     something actually advances it. "Nothing shipped is still": the studio
+     always plays, the same as the old model's stage always did. */
+  useClockRunning(true, graph.duration);
 
   const readHash = useCallback(() => {
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));

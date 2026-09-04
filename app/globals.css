@@ -406,3 +406,34 @@ body {
 .tc-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* The node canvas's own dark stage — scoped to that one region rather than
+   reskinning all of Toolcraft, per docs/THE-STUDIO-CHROME.md's own escape
+   hatch: colourful live node previews read better against a dark ground,
+   the way the reference this studio was drawn from does it, and every
+   Toolcraft primitive already reads its colour off these --tc-* custom
+   properties — redefining them on this one wrapper is enough for every
+   node box, wire and port dot drawn inside it to pick up the dark values
+   for free, no component changes needed. The docked rail/inspector/top bar
+   outside this wrapper stay on the club's light ground. */
+.tc-canvas-dark {
+  --tc-page: #0b0b0d;
+  --tc-panel: #1c1c1f;
+  --tc-glass: rgba(28, 28, 31, 0.92);
+  --tc-frame: rgba(255, 255, 255, 0.14);
+  --tc-edge: rgba(255, 255, 255, 0.14);
+  --tc-edge-on: rgba(255, 255, 255, 0.4);
+  --tc-rule: rgba(255, 255, 255, 0.1);
+  --tc-ink: #f4f3ef;
+  --tc-ink-2: #dcdcda;
+  --tc-ink-3: #8f8f93;
+  --tc-field: rgba(255, 255, 255, 0.06);
+  --tc-field-hi: rgba(255, 255, 255, 0.1);
+  --tc-field-on: rgba(255, 255, 255, 0.16);
+  --tc-track: rgba(255, 255, 255, 0.18);
+  --tc-fill: #f4f3ef;
+  --tc-thumb: #f4f3ef;
+  --tc-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    0 20px 40px -16px rgba(0, 0, 0, 0.6);
+}

@@ -4,13 +4,11 @@
 // it: `useStageFit` (fit a format into available room) and `useClockRunning`
 // (the rAF loop that advances clock.set) are both generic over format/
 // duration, never over the old PostSpec/layer-stack shape.
-// `components/learn/ClockRunner.tsx` is the one remaining caller — the
-// Tiles and Kinetics studios that used to share this file (each with its
-// own Stage.tsx hardcoding this path) were retired along with the rest of
-// the old model. The node-graph studio itself doesn't need either hook (the
-// node canvas is a free pan/zoom surface, not a fixed-aspect stage), so
-// nothing here is used by components/postlab/* — this file exists solely
-// for ClockRunner.
+// `components/learn/ClockRunner.tsx` is one caller. `PostGraphStudio.tsx` is
+// the other: `useClockRunning` is what actually drives every node's live
+// GraphPoster thumbnail — without it the clock never advances and every
+// preview holds its first frame forever. The node canvas itself doesn't need
+// `useStageFit` (it's a free pan/zoom surface, not a fixed-aspect stage).
 
 import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 import { FORMATS, type PostFormat } from "@/lib/postgraph";
