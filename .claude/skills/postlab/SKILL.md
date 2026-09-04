@@ -136,12 +136,13 @@ Three Notion databases under the "The Motion Social Club" hub page drive
 the club's content loop:
 
 - **tMSC Pipeline** — `collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d`
-  One row per idea. Status flows `Angle → Chosen → Drafted → Ready →
-  Generated → Scheduled → Posted`. Columns: Name, Angle, Pillar,
+  One row per idea. Status flows `Idea → Borrador → Publicado` — three
+  states, not seven; `Borrador` covers everything from "picked" to
+  "has a draft and a visual", distinguished by which fields are filled
+  rather than by a status of its own. Columns: Name, Angle, Pillar,
   Objective (relation), Source (relation to a library post), Format,
-  Copy, Notes, LinkedIn draft, Post link, Schedule, Instant link
-  (formula, zero-AI). ("Canva link" exists but is unused — Canva is out
-  of the loop; the Post Lab is the club's visual system.)
+  Copy, Notes, LinkedIn draft, Post link, Schedule. ("Instant link", the
+  zero-AI formula link, lives in a secondary view now, not the main one.)
 - **tMSC Content library** — `collection://59421a28-6325-466b-848e-f59b8bcf0986`
   Everything published (seeded with 51 Substack posts). Name, Channel,
   Date, Type, Pillar, Link, How it landed.
@@ -154,27 +155,30 @@ Both jobs below run on a schedule from `.github/workflows/content-cycle.yml`
 Never modify rows in statuses you weren't asked to handle, and never commit
 or push repo code during a content run.
 
-**Job 1 — visuals.** For each Pipeline row with `Status = 'Ready'`:
-distill its body/Copy/Notes into a PostGraph per this skill, encode it,
-set **Post link** to
-`https://themotionsocialclub.vercel.app/postlab#graph=<base64url>`, set
-**Status** to `Generated`.
+**Job 1 — visuals.** For each Pipeline row with `Status = 'Borrador'` and
+an empty **Post link**: distill its body/Copy/Notes into a PostGraph per
+this skill, encode it, set **Post link** to
+`https://themotionsocialclub.vercel.app/postlab#graph=<base64url>`.
+Status stays `Borrador` — it's the field that changed, not the state.
 
-**Job 2 — angles.** Skip if 6+ rows already sit in `Angle`. Otherwise
-read the library (what's over/under-published, what's gone quiet), the
-active objective, and the pillars/threads in `content/site.json`, then
-create exactly 3 rows with `Status = 'Angle'`, each with a Name, a 2-3
+**Job 2 — angles (optional, off by default).** Only run this when asked
+for ideas. Skip if 6+ rows already sit in `Idea`. Otherwise read the
+library (what's over/under-published, what's gone quiet), the active
+objective (also optional — if its Goal is empty, angles are still fine,
+just less aimed), and the pillars/threads in `content/site.json`, then
+create exactly 3 rows with `Status = 'Idea'`, each with a Name, a 2-3
 sentence Angle in the club's voice, a Pillar, the Objective relation,
 and a Source relation to the post it extends. Vary across pillars;
 prefer extending threads that worked over inventing new territory.
 
-**Drafting (on demand).** When a row is `Chosen` and the owner asks,
-write the **LinkedIn draft** — hook line, short paragraphs, no links in
-the body, no hashtag soup — and set Status to `Drafted`. LinkedIn is the
+**Drafting (on demand).** When a row is `Idea` and the owner asks, write
+the **LinkedIn draft** — hook line, short paragraphs, no links in the
+body, no hashtag soup — and set Status to `Borrador`. LinkedIn is the
 club's primary channel (~26k followers); other channels only on request.
 
-**Closing the loop.** When a row reaches `Posted`, add it to the Content
-library (Channel, Date, Type, Pillar) so future angle proposals see it.
+**Closing the loop.** When a row reaches `Publicado`, add it to the
+Content library (Channel, Date, Type, Pillar) so future angle proposals
+see it.
 
 ## Editorial defaults
 

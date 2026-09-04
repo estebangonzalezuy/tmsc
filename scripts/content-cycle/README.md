@@ -17,7 +17,7 @@ from Actions → Run workflow, or from the CLI below.
 | Job | What it does | Model calls |
 |---|---|---|
 | `capture` | a thought typed into the box on the Desk → a finished post | 1, 2 with text |
-| `now` | every `Chosen` row → draft + Post link | 1 per row, 2 with text |
+| `now` | every `Idea` row → draft + Post link | 1 per row, 2 with text |
 | `pull` | new entries from the handwritten Journal → the club's, as `Captured` | none |
 | `journal` | every `Make post` capture → a finished post | 1 per entry |
 | `angles` | three things to write next, aimed at the objective | 1 |
@@ -28,9 +28,10 @@ Every run rolls the objective period over first: one Notion read, no model
 call, idempotent.
 
 **`now` is the one to use when you're actually making a post.** The staged
-path (`Chosen` → draft → you review → `Ready` → visual) costs two polls;
-`now` does both in one run, about a minute end to end. That review gate is
-the point of the slow path, so no schedule ever runs `now` — you ask for it.
+path (`Idea` → draft → you review → visual, both still inside `Borrador`)
+costs two polls; `now` does both in one run, about a minute end to end.
+That review gate is the point of the slow path, so no schedule ever runs
+`now` — you ask for it.
 
 There used to be a cron. Asked for a run every five minutes over a day and
 a half, GitHub delivered 15 out of 347, one to three hours apart, and
@@ -110,8 +111,8 @@ data sources.
 
 ## What this does *not* do
 
-**Publishing.** Nothing posts to LinkedIn. `Scheduled` → `Posted` stays a
-human move; the cycle only files the result back into the library.
+**Publishing.** Nothing posts to LinkedIn. Flipping a row to `Publicado`
+stays a human move; the cycle only files the result back into the library.
 
 **Canva.** Deliberately — the Post Lab is the club's visual system now.
 See "Why Canva is not in the loop" in `docs/CONTENT-SYSTEM.md`.

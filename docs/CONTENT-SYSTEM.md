@@ -21,6 +21,15 @@ scheduled → posting writes it back into the library.**
 
 ## Start here: the box on the Desk
 
+**Sitting down to work, this is the whole instruction:** write what you're
+thinking in the box on [the Desk](https://themotionsocialclub.vercel.app/desk)
+and press **Ask the club** — the rest happens on its own. To check on
+something or actually publish it, open [the Pipeline](https://app.notion.com/p/646f0309b2d34014904569d0ed95ad93)
+and look at the row's `Status`: it's either `Idea` (not started), `Borrador`
+(has a draft and/or a visual, not posted yet) or `Publicado` (done). Nothing
+else below is required reading to use the system day to day — it's here for
+when you want more control, or when something needs fixing.
+
 Everything below is the machinery. The everyday way in is one text field at
 the top of [the Desk](https://themotionsocialclub.vercel.app/desk), and it has
 two speeds:
@@ -28,7 +37,7 @@ two speeds:
 | | what it does | cost | where it lands |
 |---|---|---|---|
 | **Make it** | Builds a small [Post Lab](https://themotionsocialclub.vercel.app/postlab) graph — your words as a sheet — and opens it already in. Never leaves the browser. | instant, nothing | the Post Lab, right now |
-| **Ask the club** | Hands the same words to the runner, which writes the angle and the LinkedIn draft, art-directs the visual, and files the row. | about a minute, one model call | a Pipeline row at `Generated`, with the Post link |
+| **Ask the club** | Hands the same words to the runner, which writes the angle and the LinkedIn draft, art-directs the visual, and files the row. | about a minute, one model call | a Pipeline row at `Borrador`, with the Post link |
 
 Use **Make it** when you already know what you want to say — it is the whole
 distance from a sentence to an exported PNG. Use **Ask the club** when you want
@@ -65,31 +74,30 @@ All Notion databases live under the **The Motion Social Club** hub page.
 
 ## The lifecycle
 
-A Pipeline row's `Status` is the only state that matters. Nothing else is
-remembered between runs.
+A Pipeline row's `Status` is the only state that matters, and there are only
+three of them. Nothing else is remembered between runs.
 
 ```
-Angle → Chosen → Drafted → Ready → Generated → Scheduled → Posted
-  │        │         │        │         │           │          │
-  │        │         │        │         │           │          └─ copy into the Content library
-  │        │         │        │         │           └─ Schedule date set, draft ready to paste
-  │        │         │        │         └─ Post link filled in
-  │        │         │        └─ you asking for a visual
-  │        │         └─ LinkedIn draft written
-  │        └─ you picked this one
-  └─ proposed when you press "Give me three angles"
+Idea → Borrador → Publicado
+  │        │           │
+  │        │           └─ you posted it; copy into the Content library
+  └────────┴─ everything in between: no draft yet, draft but no visual,
+              both done and dated — all of it is Borrador
 ```
 
-`Ready` is the trigger word: it means "make me a visual". Everything else
-moves when a human decides it moves.
+`Borrador` is one bucket for everything between "picked" and "posted": what
+a row still needs is read off which fields are empty (`LinkedIn draft`,
+`Post link`), not off a finer status. That's the trade this simplification
+makes — fewer states to hold in your head, at the cost of a row no longer
+announcing exactly how far along it is; open it and look if you need to know.
 
-**In practice you only walk four of these.** `Angle → Chosen → Generated →
-Posted` is the lived path: "Finish what I chose" takes a `Chosen` row to a
-draft *and* a Post link in one run, and the box skips straight to `Generated`.
-`Drafted`, `Ready` and `Scheduled` stay legal — the `drafts` and `visuals` jobs
-still read them — but they are the slow road, there for when you want to read
-the draft before the visual is designed from it. Don't feel you're skipping
-steps; the staged path is the exception now, not the default.
+**The lived path is `Idea → Borrador → Publicado`, full stop.** "Ask the
+club" on the Desk creates a row already in `Borrador`, finished. "Finish
+what I chose" takes every `Idea` row to a finished `Borrador` in one pass —
+draft and visual, both. There is still a slower way to work a row one piece
+at a time — write the draft, look at it, then ask for the visual — for when
+you want to review before the visual is made (see "The jobs" below), but
+it's an option inside `Borrador` now, not a status of its own.
 
 ## Capture → post, without touching a keyboard properly
 
@@ -103,9 +111,9 @@ than a plan.
    words *on the image*; left off (the default) the visual is a pure
    generative background with no type at all.
 3. The next run reads the capture against the whole library, and creates a
-   Pipeline row already at `Generated`: title, angle, pillar, sources,
-   LinkedIn draft, Post link. The Journal row flips to `Used` and links to
-   the post it became.
+   Pipeline row already at `Borrador`, finished: title, angle, pillar,
+   sources, LinkedIn draft, Post link. The Journal row flips to `Used` and
+   links to the post it became.
 
 One model call for the whole thing. The no-text visual costs nothing extra
 — there is no art direction to do, so the shader, its parameters and the
@@ -147,14 +155,17 @@ turning that into a post because a script found it — deciding which thought
 is worth saying out loud stays a person's job. Costs no model call, so it
 is safe to run whenever.
 
-**Propose angles.** Skip if 6+ rows already sit in `Angle`. Otherwise read
-the Content library (what's over- and under-published, what's gone quiet),
-the `Active` objective, the rows already in flight, and the
-pillars/threads in `content/site.json`. Create exactly 3 rows with
-`Status = Angle`, each with a Name, a 2–3 sentence Angle in the club's
+**Propose angles — optional, off the default path.** Only runs when you ask
+for it ("Give me three angles" on the Desk); nothing schedules it, and you
+never need it to post something. Skip if 6+ rows already sit in `Idea`.
+Otherwise read the Content library (what's over- and under-published,
+what's gone quiet), the `Active` objective, the rows already in flight, and
+the pillars/threads in `content/site.json`. Create exactly 3 rows with
+`Status = Idea`, each with a Name, a 2–3 sentence Angle in the club's
 voice, a Pillar, the Objective relation, and a Source relation to the
-library post it extends. The objective is the brief, not a hint: if the
-month has a Goal written, every angle has to move it. Vary across pillars;
+library post it extends. The objective is the brief when there is one — if
+the month has a Goal written, every angle has to move it, but an empty Goal
+just means less-aimed angles, not a blocked job. Vary across pillars;
 prefer extending threads that worked over inventing new territory, and
 don't repeat a beat that's already sitting in the Pipeline.
 
@@ -168,36 +179,41 @@ and a high engagement rate counts for more than big impressions — those
 are the posts people answered rather than scrolled past. Leave the field
 empty and nothing changes; the jobs simply don't mention it.
 
-**Review the month.** Reads the `Active` objective's Goal, everything
-published since its Start date, and what's still unposted in the Pipeline,
-then writes back a short standing (`on track` / `slipping` / `off track` /
-`too early to tell`), what's working, what's missing, and the next move —
-into the objective row's **Review**, **Standing** and **Reviewed**
-columns. Needs a Goal written on the row; with an empty Goal it says so
-and spends nothing.
+**Review the month — optional.** Reads the `Active` objective's Goal,
+everything published since its Start date, and what's still unposted in
+the Pipeline, then writes back a short standing (`on track` / `slipping` /
+`off track` / `too early to tell`), what's working, what's missing, and
+the next move — into the objective row's **Review**, **Standing** and
+**Reviewed** columns. Needs a Goal written on the row; with an empty Goal
+it says so and spends nothing. The whole Objectives database is optional —
+nothing in the day-to-day path requires it.
 
-**Write the LinkedIn draft.** For a `Chosen` row: hook line first, short
+**Write the LinkedIn draft.** For an `Idea` row: hook line first, short
 paragraphs, no links in the body, no hashtag soup, no em-dash-heavy AI
-cadence. Put it in **LinkedIn draft**, set `Status = Drafted`. LinkedIn is
+cadence. Put it in **LinkedIn draft**, set `Status = Borrador`. LinkedIn is
 the club's primary channel (~26k). Other channels only when asked.
 
-**Make the visual.** For a `Ready` row: build a PostSpec per the postlab
-skill, encode it with
-`Buffer.from(JSON.stringify(spec)).toString('base64url')`, write
-`https://themotionsocialclub.vercel.app/postlab#spec=<encoded>` into
-**Post link**, set `Status = Generated`. The row's **Text on visual**
-checkbox decides the treatment: off (the default) gives a pure generative
-background in the club palette and costs no model call at all, since there
-are no words to art-direct; on puts the headline over it.
+**Make the visual.** For a `Borrador` row with an empty **Post link**:
+build a PostGraph per the postlab skill, encode it, write
+`https://themotionsocialclub.vercel.app/postlab#graph=<encoded>` into
+**Post link**. Status stays `Borrador` — it's the field that changed, not
+the state. The row's **Text on visual** checkbox decides the treatment: off
+(the default) gives a pure generative background in the club palette and
+costs no model call at all, since there are no words to art-direct; on puts
+the headline over it.
 
-**Close the loop.** When a row reaches `Posted`, create a Content library
-entry for it (Channel, Date, Type, Pillar) so future angles can see it.
+**Close the loop.** When a row reaches `Publicado`, create a Content
+library entry for it (Channel, Date, Type, Pillar) so future angles can
+see it.
 
 ## Zero-AI paths
 
-- **Instant link** — a formula column on every Pipeline row builds
-  `…/postlab?title=…&body=…&format=…` from the Name, Copy and Format
-  fields. It works the moment you type. `//` becomes a line break.
+- **Instant link** — a formula column that builds `…/postlab?title=…&body=…&format=…`
+  from the Name, Copy and Format fields. It works the moment you type,
+  `//` becomes a line break, and it's the fastest way to a post when you
+  don't need Claude to write anything — but it lives in a secondary Notion
+  view now, not the main Pipeline view, so it stays out of the way unless
+  you go looking for it.
 
 Use it when you just want a post. Use Claude for the parts that need
 judgment: angles and drafts.
@@ -215,8 +231,8 @@ manual work.
 So Canva is out of the automated path. The two masters still exist if you
 want to make something by hand; duplicating one and typing into it is
 ordinary Canva work and needs nothing from this system. The Pipeline's
-**Canva link** column is now unused — leave it or delete it, nothing reads
-it.
+**Canva link** column was unused — nothing read it — so it was deleted as
+part of the simplification pass in September 2026.
 
 ## The scheduler
 
@@ -242,9 +258,9 @@ and quieter.
 | The box → Make it | none — the browser builds the sheet itself | none |
 | Get my journal | `pull` — new entries from the handwritten Journal, as `Captured` | none |
 | Make the journal posts | `journal` — every `Make post` capture → a finished post | 1 per entry |
-| Give me three angles | `angles` — aimed at the month's objective | 1 |
-| Finish what I chose | `now` — every `Chosen` row → draft + Post link | 1 per row, 2 with text on the visual |
-| How is the month going | `review` — the objective vs. what got published | 1 |
+| Give me three angles (optional) | `angles` — aimed at the month's objective | 1 |
+| Finish what I chose | `now` — every `Idea` row → draft + Post link | 1 per row, 2 with text on the visual |
+| How is the month going (optional) | `review` — the objective vs. what got published | 1 |
 | Catch up | `queue` — journal, drafts, visuals, library | only when a row is waiting |
 
 Every run also rolls the objective period over first — one Notion read, no
@@ -256,18 +272,21 @@ and it must be on `main`, because GitHub only schedules from the default
 branch. The site itself stays untouched: no Vercel env vars, no new
 dependencies in the app's `package.json`.
 
-**Sitting down to make a post: run `now`** — it takes every `Chosen` row to
+**Sitting down to make a post: run `now`** — it takes every `Idea` row to
 a finished draft *and* Post link in a single run, about a minute. Mark
 several rows first and one press finishes them all. The poll costs nothing when the queue
 is empty, because the API is only touched once there's work.
 
 If you want the old background behaviour back — three angles every Monday
 without asking — a `schedule:` block in the workflow restores it, with the
-caveats above.
+caveats above. Remember this is opt-in: nothing about the day-to-day path
+needs angles proposed for you.
 
-The staged statuses exist so you can review the draft before the visual is
-designed from it. `now` skips that gate deliberately — use it when you'd
-rather edit both together than wait between them.
+The staged path (draft first, look at it, then ask for the visual) exists so
+you can review before the visual is designed from it — both steps still
+happen inside `Borrador`, just one at a time. `now` skips that gate
+deliberately — use it when you'd rather edit both together than wait
+between them.
 
 ### Starting a run without opening GitHub
 
@@ -321,27 +340,34 @@ weekly routine back instead of Actions.
 
 #### Weekly content cycle — Mondays, `0 12 * * 1` (UTC) · disabled
 
+Job 1 below still says "build a PostSpec" — that's the pre-rebuild visual
+model; see the note at the top of this document. Rewrite it against
+`lib/postgraph.ts` (a PostGraph, `encodeGraph`, `#graph=`) before reviving
+this routine. Job 2 (angles) is optional in the current system — only
+restore it if you actually want angle suggestions back on a schedule.
+
 > Run the club's content cycle. Two jobs, in order. Never commit or push
 > code, and never touch rows in statuses you weren't asked to handle.
 >
 > JOB 1 — process pending visuals. Query the Pipeline
 > (`collection://de912cbf-c9df-440c-8a17-c1ef8a9c1d1d`) for
-> `Status = 'Ready'`. For each: build a PostSpec per the postlab skill
-> (dithering-only: layers are `dithering` with shape
-> simplex|warp|dots|wave|ripple|swirl|sphere and dtype 4x4|8x8|2x2|random,
-> or `forms` with pattern rings|ramp|bars|letter + word + warp), encode
-> with `Buffer.from(JSON.stringify(spec)).toString('base64url')`, set
-> "Post link" = `https://themotionsocialclub.vercel.app/postlab#spec=<encoded>`,
-> and set Status = 'Generated'.
+> `Status = 'Borrador'` rows with an empty "Post link". For each: build a
+> PostSpec per the postlab skill (dithering-only: layers are `dithering`
+> with shape simplex|warp|dots|wave|ripple|swirl|sphere and dtype
+> 4x4|8x8|2x2|random, or `forms` with pattern rings|ramp|bars|letter +
+> word + warp), encode with
+> `Buffer.from(JSON.stringify(spec)).toString('base64url')`, set
+> "Post link" = `https://themotionsocialclub.vercel.app/postlab#spec=<encoded>`.
+> Status stays 'Borrador'.
 >
 > JOB 2 — propose three angles. First check the Pipeline for rows already
-> in Status 'Angle': if there are 6 or more sitting unactioned, skip this
+> in Status 'Idea': if there are 6 or more sitting unactioned, skip this
 > job entirely. Otherwise read the Content library
 > (`collection://59421a28-6325-466b-848e-f59b8bcf0986`), the Objectives db
 > (`collection://e57499ed-1671-4267-876b-5b9247aef1f3`) row with
 > Status = 'Active', and the pillars and recurring threads in
 > `content/site.json`. Then create exactly 3 new Pipeline rows with
-> Status = 'Angle', each with a Name, an Angle (2-3 sentences on the
+> Status = 'Idea', each with a Name, an Angle (2-3 sentences on the
 > specific take and why now, in the club's honest anti-hype voice), a
 > Pillar, the Objective relation, and a Source relation to the library
 > post it builds on. Prefer angles that extend a thread that worked.

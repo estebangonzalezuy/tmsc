@@ -70,7 +70,7 @@ const JOBS: Job[] = [
     id: "now",
     label: "Finish what I chose",
     blurb:
-      "Every Pipeline row marked “Chosen” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
+      "Every Pipeline row marked “Idea” gets its LinkedIn draft and its Post link, in one pass. Tick “Text on visual” on the row to put words on the image.",
     cost: "one call per row, two with text",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
@@ -78,7 +78,7 @@ const JOBS: Job[] = [
     id: "angles",
     label: "Give me three angles",
     blurb:
-      "Reads everything the club has published and proposes three things to write next, aimed at this month's objective.",
+      "Optional — nothing else needs this. Reads everything the club has published and proposes three things to write next, aimed at this month's objective.",
     cost: "one call",
     lands: { href: NOTION.pipeline, name: "the Pipeline" },
   },
@@ -114,7 +114,7 @@ const JOBS: Job[] = [
     quiet: true,
     label: "How is the month going",
     blurb:
-      "Reads this month's objective against what actually got published and says where it stands, what's working, and what to do next.",
+      "Optional — the whole Objectives database is. Reads this month's objective against what actually got published and says where it stands, what's working, and what to do next.",
     cost: "one call",
     lands: { href: NOTION.objectives, name: "the Objectives" },
   },

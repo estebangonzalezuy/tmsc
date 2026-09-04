@@ -5,7 +5,7 @@
 // job is safe to run twice: it re-reads the pipeline, does whatever the
 // statuses ask for, and stops.
 //
-//   node index.mjs now          every `Chosen` row → draft + visual, one pass
+//   node index.mjs now          every `Idea` row → draft + visual, one pass
 //   node index.mjs capture --text="…"   a thought typed on the site → a post
 //   node index.mjs pull         new entries from the handwritten journal
 //   node index.mjs journal      every "Make post" capture → a finished post
@@ -118,7 +118,7 @@ async function activeObjective() {
    never started — which is exactly the confusion worth spending four lines
    to avoid. */
 async function jobAngles() {
-  const waiting = await notion.byStatus(DB.pipeline, "Angle");
+  const waiting = await notion.byStatus(DB.pipeline, "Idea");
   if (waiting.length >= ANGLE_BACKLOG) {
     say(`angles: skipped — ${waiting.length} already waiting`);
     return;
@@ -139,10 +139,8 @@ async function jobAngles() {
   const objective = await activeObjective();
   /* Everything already moving, so a "new" angle isn't last week's post
      wearing a different hat. */
-  const busy = (await notion.query(DB.pipeline)).filter((r) =>
-    ["Chosen", "Drafted", "Ready", "Generated", "Scheduled"].includes(
-      get.select(r, "Status"),
-    ),
+  const busy = (await notion.query(DB.pipeline)).filter(
+    (r) => get.select(r, "Status") === "Borrador",
   );
   const { angles } = await ai.proposeAngles({
     voice,
@@ -180,7 +178,7 @@ async function jobAngles() {
       Name: put.title(a.name),
       Angle: put.text(angleText),
       Pillar: put.select(PILLARS.includes(a.pillar) ? a.pillar : null),
-      Status: put.select("Angle"),
+      Status: put.select("Idea"),
       Objective: put.relation(objective ? [objective.id] : []),
       Source: put.relation(cited.map((c) => c.id)),
     });
@@ -256,9 +254,9 @@ async function visualFor(row, vocab, schema, draft) {
 }
 
 async function jobDrafts() {
-  const rows = await notion.byStatus(DB.pipeline, "Chosen");
+  const rows = await notion.byStatus(DB.pipeline, "Idea");
   if (!rows.length) {
-    say("drafts: nothing marked Chosen in the Pipeline");
+    say("drafts: nothing waiting in Idea");
     return;
   }
   const objective = await activeObjective();
@@ -272,16 +270,27 @@ async function jobDrafts() {
     }
     await notion.updatePage(row.id, {
       "LinkedIn draft": put.text(draft),
-      Status: put.select("Drafted"),
+      Status: put.select("Borrador"),
     });
     say(`drafts: ✓ ${name}`);
   }
 }
 
+/* The other half of the slow path: a row already in `Borrador` with a draft
+   but no visual yet. Filtered by the field itself rather than a status of
+   its own — `Borrador` covers everything between "picked" and "posted", so
+   what's missing is what decides what a row needs next. */
 async function jobVisuals() {
-  const rows = await notion.byStatus(DB.pipeline, "Ready");
+  const rows = await notion.query(DB.pipeline, {
+    filter: {
+      and: [
+        { property: "Status", select: { equals: "Borrador" } },
+        { property: "Post link", url: { is_empty: true } },
+      ],
+    },
+  });
   if (!rows.length) {
-    say("visuals: nothing marked Ready in the Pipeline");
+    say("visuals: nothing in Borrador waiting on a visual");
     return;
   }
 
@@ -299,10 +308,7 @@ async function jobVisuals() {
       say(`  ${link}`);
       continue;
     }
-    await notion.updatePage(row.id, {
-      "Post link": put.url(link),
-      Status: put.select("Generated"),
-    });
+    await notion.updatePage(row.id, { "Post link": put.url(link) });
     say(
       `visuals: ✓ ${name} — ${spec.slides.length} slide(s), ${spec.format}` +
         (spec.slides[0].text ? "" : ", no text"),
@@ -312,15 +318,15 @@ async function jobVisuals() {
 
 /* ---------------------------------------------------------------- now --- */
 
-/* For sitting down to make a post: takes every row you've marked `Chosen`
-   all the way to `Generated` in one pass — draft and visual, both model
-   calls back to back, no waiting for a second poll. The review gate between
-   them is the whole point of the slow path, so this is a separate job you
-   ask for, never something a schedule does on its own. */
+/* For sitting down to make a post: takes every row waiting in `Idea` all
+   the way to `Borrador`, finished, in one pass — draft and visual, both
+   model calls back to back, no waiting for a second poll. The review gate
+   between them is the whole point of the slow path, so this is a separate
+   job you ask for, never something a schedule does on its own. */
 async function jobNow() {
-  const rows = await notion.byStatus(DB.pipeline, "Chosen");
+  const rows = await notion.byStatus(DB.pipeline, "Idea");
   if (!rows.length) {
-    say("now: nothing marked Chosen");
+    say("now: nothing marked Idea");
     return;
   }
   const objective = await activeObjective();
@@ -345,7 +351,7 @@ async function jobNow() {
     await notion.updatePage(row.id, {
       "LinkedIn draft": put.text(draft),
       "Post link": put.url(link),
-      Status: put.select("Generated"),
+      Status: put.select("Borrador"),
     });
     say(
       `now: ✓ ${name} — draft + ${spec.format} visual` +
@@ -566,7 +572,7 @@ async function jobJournal() {
       Name: put.title(out.name),
       Angle: put.text(angleText),
       Pillar: put.select(PILLARS.includes(out.pillar) ? out.pillar : null),
-      Status: put.select("Generated"),
+      Status: put.select("Borrador"),
       "LinkedIn draft": put.text(out.draft),
       "Post link": put.url(link),
       Format: put.select(vocab.formats.includes(out.format) ? out.format : null),
@@ -624,7 +630,7 @@ async function jobReview() {
 
   const pipeline = (await notion.query(DB.pipeline))
     .map((r) => ({ name: get.title(r), status: get.select(r, "Status") }))
-    .filter((r) => r.status && r.status !== "Posted");
+    .filter((r) => r.status && r.status !== "Publicado");
 
   const out = await ai.reviewObjective({
     voice,
@@ -663,12 +669,12 @@ async function jobReview() {
 
 /* ------------------------------------------------------------ library --- */
 
-/* Closing the loop: a Posted row becomes a library entry, so the next round
-   of angles can see it. Deduped by title, which makes reruns harmless. */
+/* Closing the loop: a Publicado row becomes a library entry, so the next
+   round of angles can see it. Deduped by title, which makes reruns harmless. */
 async function jobLibrary() {
-  const posted = await notion.byStatus(DB.pipeline, "Posted");
+  const posted = await notion.byStatus(DB.pipeline, "Publicado");
   if (!posted.length) {
-    say("library: nothing marked Posted to file away");
+    say("library: nothing marked Publicado to file away");
     return;
   }
 
