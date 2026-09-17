@@ -35,6 +35,16 @@ itself — without it, visitors to `/studio` can only look at the editor.
 In local development the Studio edits `content/site.json` on disk directly,
 no token required.
 
+## The Scheduler
+
+`/schedule` writes and schedules the club's posts to LinkedIn, X, Instagram and
+Substack Notes — a composer with images, GIFs, video and an emoji picker, a
+week calendar, a queue, and the numbers each post pulled. The page is
+zero-config like the Studio (the same GitHub token, pasted in the browser);
+the posting itself runs on GitHub Actions, where the networks' keys live as
+repo secrets. Setup per network: `scripts/post-scheduler/README.md`. Design:
+`docs/THE-SCHEDULER.md`.
+
 ## Development
 
 ```bash

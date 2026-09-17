@@ -197,11 +197,15 @@ export async function commitFiles(
     message,
     text = {},
     binaries = new Map<string, Blob>(),
+    remove = [],
     onProgress,
   }: {
     message: string;
     text?: Record<string, string>;
     binaries?: Map<string, Blob>;
+    /** Repo-relative paths to take out of the tree in the same commit — the
+     *  Scheduler deleting a post takes its media with it. */
+    remove?: string[];
     onProgress?: CommitProgress;
   },
 ): Promise<string> {
@@ -220,7 +224,17 @@ export async function commitFiles(
   );
   tick();
 
-  const tree: { path: string; mode: "100644"; type: "blob"; sha: string }[] = [];
+  const tree: {
+    path: string;
+    mode: "100644";
+    type: "blob";
+    sha: string | null;
+  }[] = [];
+
+  /* A null sha in a tree entry deletes that path from the base tree. */
+  for (const path of remove) {
+    tree.push({ path, mode: "100644", type: "blob", sha: null });
+  }
 
   for (const [path, content] of Object.entries(text)) {
     const blob = await gh<{ sha: string }>(token, "/git/blobs", {

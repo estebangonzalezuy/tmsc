@@ -59,6 +59,8 @@ browser). Therefore:
   (`lib/noteGraph.ts`) and opens it in `/postlab`, never touching the
   network, so it renders above the setup and works on a device that has
   never been set up; "Ask the club" dispatches the `capture` job.
+- `content/posts/` — the Scheduler's data (not copy): `posts.json` written by
+  the page, `log.json` by the runner, never hand-edited. See "the Scheduler".
 - `lib/data.ts` — typed re-exports of the JSON for server components.
 
 ## Design rules
@@ -542,6 +544,39 @@ Same split again: **the clips are data, the framing is copy.** They live in
 `lib/video.ts` and `lib/github.ts` are shared with the Stills — the decoder and
 the seek that cannot hang, and committing from a browser. They were lifted out
 of `components/stills/` when the Clips needed all of them; don't fork either.
+
+## the Scheduler (`/schedule`)
+
+The club's post scheduler — write a post, give it its images / GIFs / video,
+pick LinkedIn, X, Instagram and Substack Notes, pick a time; a calendar, a
+queue, drafts, what went out and how it landed. Documented in
+`docs/THE-SCHEDULER.md`; read that before touching it.
+
+Two halves, and the seam is the design. **The page** is zero-config like the
+Desk and the Cutter: the GitHub token is pasted in the browser, and it writes
+what you *mean* to post into `content/posts/posts.json` plus the media under
+`public/posts/<id>/`, one commit through `commitFiles`. **The runner**
+(`scripts/post-scheduler/`, `.github/workflows/post-scheduler.yml`, every
+fifteen minutes on Actions) is the only place the networks' own keys live —
+repo Actions secrets, never Vercel — and it writes what *happened* into
+`content/posts/log.json`. **Two files, two writers**: the page never writes
+the log, the runner never writes the posts, a post's status is derived from
+both (`statusOf`) and stored in neither, so nothing ever has to merge. A
+metric typed in by hand is the one result-shaped thing on the post, because
+the page wrote it.
+
+- `lib/posts-shared.ts` is the one source of truth for what each network
+  takes (`RULES`) — the runner imports it too, through Node's type stripping,
+  so keep it free of anything Node can't strip (no enums, no namespaces).
+- Adding a network is a file in `scripts/post-scheduler/networks/` exporting
+  `publish`/`metrics`/`check`, a line in `RULES`, and its secrets in `CONNECTED`.
+- The runner never posts late (a post missed by more than two days is skipped
+  and marked) and never retries on its own (a failed network is retried when
+  the post is saved again). Keep both: the alternative is a dead token making
+  an attempt every quarter hour, or a week of posts going out at once.
+- Substack Notes has no API; its adapter uses the site's own endpoints with a
+  session cookie and is expected to break one day. LinkedIn's token dies
+  every 60 days and can't be refreshed by a script. Say so in UI, don't hide it.
 
 ## The content system
 

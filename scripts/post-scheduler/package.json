@@ -1,0 +1,15 @@
+{
+  "name": "tmsc-post-scheduler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The club's posting runner: publishes what the Scheduler (/schedule) queued to LinkedIn, X, Instagram and Substack Notes, and pulls the numbers back. No dependencies — Node's own fetch and crypto are enough — and kept out of the site's package.json on purpose: the deployed app stays dependency- and secret-free.",
+  "scripts": {
+    "publish": "node index.mjs publish",
+    "metrics": "node index.mjs metrics",
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,113 @@
+name: post scheduler
+
+# The back half of the Scheduler (/schedule on the site). The page writes what
+# to post into content/posts/posts.json; this posts it when its time comes and
+# writes where it landed into content/posts/log.json. The networks' own keys
+# live here, in the repo's Actions secrets, and nowhere else — the deployed
+# app keeps needing no environment at all.
+#
+# Runs every fifteen minutes. GitHub's timer is best-effort and slips in a
+# busy hour (the content cycle's own cron was dropped for that reason), so the
+# page's "Post now" and "Post what is due" dispatch a run this minute, and a
+# post that was due is posted at the first tick that actually fires; one
+# missed by more than two days is skipped and said so, rather than sent late.
+#
+# Secrets (Settings → Secrets and variables → Actions), any subset —
+# a network without its secrets is reported as "not connected", not an error:
+#   LINKEDIN_ACCESS_TOKEN
+#   X_API_KEY  X_API_SECRET  X_ACCESS_TOKEN  X_ACCESS_SECRET
+#   INSTAGRAM_ACCESS_TOKEN  INSTAGRAM_USER_ID
+#   SUBSTACK_SID
+# See scripts/post-scheduler/README.md for where each one comes from.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: What to run
+        type: choice
+        default: publish
+        options: [publish, metrics, check]
+      post:
+        description: One post id to publish now, whatever its time
+        type: string
+        required: false
+      dry_run:
+        description: Read-only — print what it would do
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [post-scheduler]
+
+# Two runs at once would each read the same queue and post the same thing.
+concurrency:
+  group: post-scheduler
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run
+        working-directory: scripts/post-scheduler
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          SUBSTACK_SID: ${{ secrets.SUBSTACK_SID }}
+          SITE_ORIGIN: https://themotionsocialclub.vercel.app
+          # A post id typed into the page. It arrives in the environment and
+          # never in the run line: it is text from a browser.
+          ONLY_POST: ${{ inputs.post || github.event.client_payload.post }}
+        run: |
+          node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON index.mjs \
+            ${{ inputs.job || github.event.client_payload.job || 'publish' }} \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
+
+  # Once a day, read the numbers back for everything posted this month.
+  metrics:
+    if: github.event_name == 'schedule'
+    needs: run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull the numbers, at the 06:00 tick only
+        working-directory: scripts/post-scheduler
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          SUBSTACK_SID: ${{ secrets.SUBSTACK_SID }}
+        run: |
+          if [ "$(date -u +%H:%M | cut -c1-4)" = "06:0" ]; then
+            node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON index.mjs metrics
+          else
+            echo "Not the daily tick."
+          fi
