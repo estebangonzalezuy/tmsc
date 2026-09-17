@@ -14,6 +14,7 @@ const allMenuLinks = [
   { label: "Stills", href: "/stills", section: "stills", navId: "stills" },
   { label: "Clips", href: "/clips", section: "clips", navId: "clips" },
   { label: "Learn", href: "/learn", section: "learn", navId: "learn" },
+  { label: "Fundamentals", href: "/fundamentals", section: "fundamentals", navId: "fundamentals" },
   { label: "Practice", href: "/practice", section: "practiceExercises", navId: "practice" },
   { label: "Offerings", href: "/offerings", section: "offerings", navId: "offerings" },
 ];

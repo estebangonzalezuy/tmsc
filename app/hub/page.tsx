@@ -66,6 +66,7 @@ const groups: { title: string; note: string; rows: Row[] }[] = [
       // on it to earn a place in the menu. Flip it back on in the Studio's
       // Navigation panel.
       { href: "/stills", name: "Stills", what: "the wall, link-only for now" },
+      { href: "/fundamentals", name: "Fundamentals", what: "one page per fundamental, with figures to play with" },
       { href: site.substack, name: "the newsletter", what: "Human & Motion", external: true },
       { href: site.linkedin, name: "LinkedIn", what: "the main channel", external: true },
       { href: site.instagram, name: "Instagram", what: "where the posts go", external: true },

@@ -39,7 +39,10 @@ export type Block =
   | { t: "do"; text: Span[]; minutes?: number }
   | { t: "video"; provider: "youtube" | "vimeo"; id: string; caption?: string }
   | { t: "audio"; src: string; seconds?: number }
-  | { t: "spec"; studio: "postlab"; spec: string; caption?: string };
+  | { t: "spec"; studio: "postlab"; spec: string; caption?: string }
+  /** An interactive figure — a component from components/fundamentals/figures/,
+      named by its file, with its starting values. See docs/THE-FUNDAMENTALS.md. */
+  | { t: "figure"; id: string; params: Record<string, string>; caption?: string };
 
 export type PieceCard = {
   slug: string;

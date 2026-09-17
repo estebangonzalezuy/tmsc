@@ -4,6 +4,7 @@ import { learnAsset } from "@/lib/learn";
 import SpecBlock from "./SpecBlock";
 import VideoBlock from "./VideoBlock";
 import AudioBlock from "./AudioBlock";
+import FigureBlock from "@/components/fundamentals/FigureBlock";
 
 /* A piece's body, drawn from the blocks the build script wrote. This is a
    server component on purpose: a plain article is text, and text does not need
@@ -158,6 +159,11 @@ export default function Prose({ blocks }: { blocks: Block[] }) {
 
           case "spec":
             return <SpecBlock key={i} studio={b.studio} spec={b.spec} caption={b.caption} />;
+
+          /* An interactive figure. The Fundamentals' reason to exist; a Learn
+             piece may use one too, since the vocabulary is shared. */
+          case "figure":
+            return <FigureBlock key={i} id={b.id} params={b.params} caption={b.caption} />;
 
           default:
             return null;

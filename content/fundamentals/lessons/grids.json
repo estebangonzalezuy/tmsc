@@ -1,0 +1,205 @@
+{
+  "slug": "grids",
+  "letter": "G",
+  "title": "Grids",
+  "blurb": "The decision you make before anything lands on the page, and why it saves every decision after it.",
+  "minutes": 9,
+  "updated": "2026-09-17",
+  "figures": 3,
+  "blocks": [
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "A grid is a set of promises you make before the first element arrives. Where things may start, where they may stop, where a line of type may sit. Nobody sees the grid. Everybody feels it, because every element on the page agrees with every other one, and the agreement is what reads as calm."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "I suggest treating it as the first thing you draw, not the thing you clean up with at the end. A grid added afterwards is a diet."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "Columns"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Most grids start with columns: a number of them, a gutter between them, a margin around the whole lot. Elements snap to column edges, and a block can span one column or six. That is the whole system."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "The number matters less than you think. Twelve is common because it divides by two, three, four and six. Six is enough for a poster. Four is plenty for a phone. What matters is that a block never lands between two columns, ever, because the one time it does is the one the eye will find."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "grid-columns",
+      "params": {
+        "columns": "6",
+        "gutter": "16",
+        "margin": "48"
+      },
+      "caption": "Three blocks that only ever land on the grid. Change the columns and watch them re-snap; hide the grid and it is still there."
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Try hiding the grid. The layout still holds. That is the test of a grid: it should be invisible and still be the reason the page works."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "The baseline"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Columns are the horizontal promise. The baseline grid is the vertical one: a unit, a few pixels tall, and every line height and every margin is a whole number of those units. Body type on 24px leading, headings on 32, a gap of 8 between them. All multiples of 8."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Why bother? Because a page is rarely one column. Put two side by side and, with a baseline, their lines fall in step no matter what sits above them. A heading in one column, none in the other, and the lines still meet. Without it they slip past each other a pixel at a time, and the page looks tired without anyone being able to say why."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "grid-baseline",
+      "params": {
+        "unit": "12"
+      },
+      "caption": "Two columns over a ruled ground. Snap the leading to the unit and the lines agree across the gap; let it be natural and they drift within a paragraph."
+    },
+    {
+      "t": "note",
+      "text": [
+        {
+          "t": "text",
+          "v": "Software makes this easy to get wrong in a quiet way. \"Auto\" leading is usually 1.2 times the size, which is almost never a whole number of anything. Type the leading yourself. It is one field."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "Margins"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "The margin is the part of the grid people forget is part of the grid. It is the distance from the edge to where anything is allowed to begin, and it does two jobs at once: it keeps the content off the edge, and it sets how much of the frame is frame."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Small margins read loud and a little cheap. Big margins read expensive and, past a point, empty. And there is a practical side for posts: whatever you put inside the margin is what survives when a platform crops, overlays a caption, or puts a button in the corner."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "grid-margins",
+      "params": {
+        "format": "portrait",
+        "margin": "8"
+      },
+      "caption": "The same title in the same frame. Drag the margin to zero and the type touches the edge; drag it up and the margin starts doing the composing."
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "The number I keep coming back to for social work is somewhere around eight percent of the short side. Enough to survive the interface, not so much that the post looks afraid of its own edges."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "What to do with this"
+        }
+      ]
+    },
+    {
+      "t": "do",
+      "text": [
+        {
+          "t": "text",
+          "v": "Take one thing you already designed. Draw the grid it should have been on: columns, a unit, a margin. Then move everything onto it. Do not redesign anything, just snap. Compare the before and after side by side and notice what changed without you touching it."
+        }
+      ],
+      "minutes": 30
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Next: "
+        },
+        {
+          "t": "a",
+          "v": "Typography",
+          "href": "/fundamentals/typography"
+        },
+        {
+          "t": "text",
+          "v": ", because a grid is mostly a place for type to sit."
+        }
+      ]
+    }
+  ]
+}

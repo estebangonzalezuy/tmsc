@@ -1,0 +1,45 @@
+{
+  "lessons": [
+    {
+      "slug": "grids",
+      "letter": "G",
+      "title": "Grids",
+      "blurb": "The decision you make before anything lands on the page, and why it saves every decision after it.",
+      "minutes": 9,
+      "updated": "2026-09-17",
+      "figures": 3
+    },
+    {
+      "slug": "typography",
+      "letter": "T",
+      "title": "Typography",
+      "blurb": "Size, measure, leading and hierarchy. The few numbers that decide whether a page is readable before anyone reads it.",
+      "minutes": 10,
+      "updated": "2026-09-17",
+      "figures": 3
+    },
+    {
+      "slug": "composition",
+      "letter": "C",
+      "title": "Composition",
+      "blurb": "Placement, balance and contrast. Where things go in the frame, and why the frame has opinions about it.",
+      "minutes": 9,
+      "updated": "2026-09-17",
+      "figures": 3
+    },
+    {
+      "slug": "motion-basics",
+      "letter": "M",
+      "title": "Motion basics",
+      "blurb": "Easing, duration and stagger. The three numbers that decide how a move feels, before you touch anything else.",
+      "minutes": 12,
+      "updated": "2026-09-17",
+      "figures": 3
+    }
+  ],
+  "counts": {
+    "lessons": 4,
+    "figures": 12,
+    "minutes": 40
+  }
+}

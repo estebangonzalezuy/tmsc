@@ -53,6 +53,10 @@ export type Post = {
 export type ArchiveYear = { year: string; posts: Post[] };
 
 export const site = content.site;
+/* The words on the Fundamentals. Typed loosely on purpose: an older published
+   site.json may predate the object, and a server component reading it should
+   get undefined rather than a type error at build. */
+export const fundamentals = (content as { fundamentals?: Record<string, string> }).fundamentals;
 export const stats: Stat[] = content.stats;
 export const pillars: Pillar[] = content.pillars;
 export const threads: Thread[] = content.threads;

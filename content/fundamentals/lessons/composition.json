@@ -1,0 +1,179 @@
+{
+  "slug": "composition",
+  "letter": "C",
+  "title": "Composition",
+  "blurb": "Placement, balance and contrast. Where things go in the frame, and why the frame has opinions about it.",
+  "minutes": 9,
+  "updated": "2026-09-17",
+  "figures": 3,
+  "blocks": [
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Composition is the part people call \"having an eye\", which is a way of saying nobody explained it to them. It can be explained. Most of it comes down to three things you can feel with your hands: where the subject sits, whether the frame leans, and how big the gap is between the thing that matters and the things that do not."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "Where the subject sits"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Put the subject dead centre and the frame is calm and a little inert. Nothing pulls the eye anywhere, which is fine for a logo and boring for almost everything else. Put it on a third and the frame has a direction: the empty two-thirds become a place the eye goes next, or a place for the second thing to be."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "The guides are old and they are not rules. The thirds are a coarse version of the golden lines, which sit a little further in. Both are places to start from, and the point of the figure is to feel the difference rather than memorise it."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "comp-placement",
+      "params": {
+        "x": "0.33",
+        "y": "0.66",
+        "thirds": "true"
+      },
+      "caption": "Drag the mark. Notice how the same frame feels centred, then directed, then unbalanced, depending on where the one thing in it sits."
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "Balance is weight times distance"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "A composition can lean. You feel it before you can say why: one side is carrying more. The trick is that \"more\" is not size, it is size times distance from the middle, the way a seesaw works. A big thing near the centre and a small thing far out can balance exactly."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "This is why a large photograph on one side and a small caption on the other can feel right, and why the same caption nudged a little further out tips the whole page."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "comp-balance",
+      "params": {
+        "left": "90",
+        "right": "50",
+        "reach": "200"
+      },
+      "caption": "A seesaw. Grow the small thing, or push it further out, and feel the beam level. Then push past it."
+    },
+    {
+      "t": "note",
+      "text": [
+        {
+          "t": "text",
+          "v": "Balance is a starting point, not a destination. A deliberately unbalanced frame is tense, and tension is a thing you sometimes want. The word is deliberately."
+        }
+      ]
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "Contrast is the size of the gap"
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Hierarchy, from the typography page, said the reader should know what comes first. Contrast is how much you want that to be true. It is the gap between the first thing and everything else, in size, in weight, in presence."
+        }
+      ]
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "At zero contrast you have three equals and the eye has nowhere to land. Long before the slider reaches the end, one thing is clearly first. Past that, the rest start to disappear, which is also a choice."
+        }
+      ]
+    },
+    {
+      "t": "figure",
+      "id": "comp-contrast",
+      "params": {
+        "contrast": "0.6"
+      },
+      "caption": "One slider widens every gap at once. Find the point where one thing is first and the rest still read. That point is usually earlier than you expect."
+    },
+    {
+      "t": "h",
+      "level": 2,
+      "text": [
+        {
+          "t": "text",
+          "v": "What to do with this"
+        }
+      ]
+    },
+    {
+      "t": "do",
+      "text": [
+        {
+          "t": "text",
+          "v": "Take a photo you like, any photo. Put a single word on it. Move the word to the centre, to a third, to the corner. Make it huge, then small. Do not change the photo. Keep the version that made the photo feel different, and write down which of the three things above did it."
+        }
+      ],
+      "minutes": 30
+    },
+    {
+      "t": "p",
+      "text": [
+        {
+          "t": "text",
+          "v": "Next: "
+        },
+        {
+          "t": "a",
+          "v": "Motion basics",
+          "href": "/fundamentals/motion-basics"
+        },
+        {
+          "t": "text",
+          "v": ", where all of this starts to move."
+        }
+      ]
+    }
+  ]
+}

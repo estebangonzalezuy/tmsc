@@ -20,6 +20,7 @@ type Content = {
   resources: Item[];
   directory: Item;
   learn: Item;
+  fundamentals: Item;
   stills: Item;
   clips: Item;
   linkIndex: Item[];
@@ -43,7 +44,7 @@ type ListKey =
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory" | "learn" | "stills" | "clips";
+type ObjectKey = "site" | "directory" | "learn" | "fundamentals" | "stills" | "clips";
 
 /* ---------- section schema ---------- */
 
@@ -239,6 +240,18 @@ const sections: Section[] = [
       { key: "offerNote", label: "Offer: the paragraph under the headline", kind: "textarea" },
       { key: "offerIncludes", label: "Offer: what's included \u2014 one per line", kind: "textarea" },
       { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "fundamentals",
+    title: "Fundamentals",
+    note: "The words on the fundamentals \u2014 the pages themselves are written as files in content/fundamentals/sources/, not here",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      { key: "headline", label: "Headline \u2014 *between asterisks* turns italic", kind: "textarea" },
+      { key: "intro", label: "Intro", kind: "textarea" },
+      { key: "note", label: "The line under the cards", kind: "textarea" },
     ],
   },
   {
@@ -628,6 +641,7 @@ const navItems = [
   { id: "stills", label: "Stills", section: "stills" },
   { id: "clips", label: "Clips", section: "clips" },
   { id: "learn", label: "Learn", section: "learn" },
+  { id: "fundamentals", label: "Fundamentals", section: "fundamentals" },
   { id: "practice", label: "Practice", section: "practiceExercises" },
   { id: "offerings", label: "Offerings", section: "offerings" },
 ];
@@ -772,6 +786,7 @@ const pageTabs = [
   { id: "stills", label: "Stills" },
   { id: "clips", label: "Clips" },
   { id: "learn", label: "Learn" },
+  { id: "fundamentals", label: "Fundamentals" },
   { id: "practice", label: "Practice" },
   { id: "offerings", label: "Offerings" },
   { id: "links", label: "Links" },

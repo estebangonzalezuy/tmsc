@@ -623,6 +623,12 @@
     "offerIncludes": "Every piece in every track, as it is written\nThe seven-day path, in order\nLive examples you can open in the studio and take apart\nEverything added later, at no extra cost",
     "offerCta": ""
   },
+  "fundamentals": {
+    "label": "Fundamentals",
+    "headline": "Four things to *feel* before you learn a tool.",
+    "intro": "Grids, typography, composition and motion, one page each. Every page has figures you can play with, because these are things you learn with your hands. Free, and short enough to read in an afternoon.",
+    "note": "Written by the club. The pages themselves are files in the repo; only these words are edited here."
+  },
   "stills": {
     "label": "Stills",
     "headline": "Style frames from the best projects in *motion design*.",

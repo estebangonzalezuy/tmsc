@@ -90,12 +90,15 @@ Anything richer is a fenced directive, closed by `:::` —
 | `:::video youtube <id>` | A video, loaded on click rather than on load |
 | `:::audio /episodes/one.m4a seconds=1200` | A club episode |
 | `:::spec postlab caption="…"` | A live example — see below |
+| `:::figure <id> key=value caption="…"` | An interactive figure, from `components/fundamentals/figures/` — the Fundamentals' block, usable here too; see `docs/THE-FUNDAMENTALS.md` |
 
 **An unknown directive fails the build with a line number.** That is not
 strictness for its own sake: silently dropping a block is how a published piece
 quietly loses a paragraph, and the failure is also the instruction — come and
-add the block to `DIRECTIVES` in `scripts/learn/build.mjs` and to
-`components/learn/Prose.tsx`, rather than inventing syntax at the page level.
+add the block to `DIRECTIVES` in `scripts/learn/markdown.mjs` (the parser,
+shared with the Fundamentals since that section was written; `build.mjs`
+keeps only what is about the library) and to `components/learn/Prose.tsx`,
+rather than inventing syntax at the page level.
 
 The build also refuses: a slug used twice across tracks, a track or a day
 pointing at a piece that does not exist, a file sitting in a track folder that
