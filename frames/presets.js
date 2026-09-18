@@ -25,8 +25,11 @@
       indigo: "#3d3deb",
       cream: "#fffdf0",
       paper: "#f4f3ef",
-      maroon: "#4b1a10", // the confetti's dark disc
+      maroon: "#4b1a10", // the confetti's dark disc, the polygons' corner blocks
       olive: "#8a8a5a", // the tape's dull dot
+      amber: "#f4a71d", // the rays, the polygons' ground
+      pink: "#f2a1c4", // a disc in the network
+      grey: "#9a9a9a", // a wedge in the burst
     };
     const paper = P.cream;
     const ink = P.black;
@@ -37,6 +40,8 @@
       warm: [P.red, P.maroon, P.white, P.cream, P.red],
       cool: [P.indigo, P.periwinkle, P.white, P.green, P.periwinkle],
       mono: [P.black, P.white, P.paper, P.black],
+      festival: [P.indigo, P.periwinkle, P.cream, P.red, P.green, P.black, P.maroon, P.white, P.grey],
+      garden: [P.indigo, P.red, P.green, P.periwinkle, P.amber, P.black, P.pink, P.maroon, P.olive, P.grey],
     };
     const SET_NAMES = Object.keys(SETS);
 
@@ -95,9 +100,11 @@
         ctx.fillStyle = o.fill;
         ctx.fillRect(x - w * 0.47, y - size * 0.55, w * 0.94, size * 0.9);
       }
-      ctx.strokeStyle = o.color || ink;
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(x - w * 0.47, y - size * 0.55, w * 0.94, size * 0.9);
+      if (o.box !== false) {
+        ctx.strokeStyle = o.color || ink;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x - w * 0.47, y - size * 0.55, w * 0.94, size * 0.9);
+      }
       ctx.fillStyle = o.color || ink;
       ctx.textBaseline = "alphabetic";
       s.rich(text, x, y + size * 0.1, { ...f, align: "center" });
@@ -115,6 +122,19 @@
       box(ctx, cx - size * 0.42, cy - size * 0.86, size * 0.84, size * 1.12, null, color);
       ctx.fillText(text, cx, cy);
       ctx.restore();
+    }
+
+    // Type with hard offset copies behind it, like a misregistered print.
+    // Offsets are in em: { dx, dy, color }.
+    function echo(ctx, s, text, x, y, o) {
+      const offs = o.offsets || [{ dx: -0.035, dy: 0.035, color: P.black }];
+      const f = { size: o.size, family: o.family || sans, weight: o.weight || 700, align: o.align || "center", italic: o.italic };
+      offs.forEach((e) => {
+        ctx.fillStyle = e.color;
+        s.rich(text, x + e.dx * o.size, y + e.dy * o.size, f);
+      });
+      ctx.fillStyle = o.color || P.white;
+      s.rich(text, x, y, f);
     }
 
     /* ---- backgrounds -------------------------------------------------- */
@@ -345,6 +365,307 @@
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x + Math.sin(tilt) * len, y + Math.cos(tilt) * len);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 8 — rays: wedges fanning up from below the bottom edge, the fan
+    //     rocking once per loop, each wedge breathing on its own phase.
+    function rays(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.periwinkle;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const n = o.count || 5;
+      const ox = s.w / 2;
+      const oy = s.h * 1.12;
+      const R = Math.hypot(s.w, s.h) * 1.3;
+      const spread = Math.PI * 0.8;
+      const sway = (o.sway == null ? 1 : o.sway) * 0.05 * Math.sin(s.TAU * t);
+      ctx.fillStyle = o.color || P.amber;
+      for (let i = 0; i < n; i++) {
+        const c = -Math.PI / 2 - spread / 2 + (spread * (i + 0.5)) / n + sway;
+        const half = (spread / n) * 0.26 * (0.85 + 0.3 * s.wave(t - i / n));
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + Math.cos(c - half) * R, oy + Math.sin(c - half) * R);
+        ctx.lineTo(ox + Math.cos(c + half) * R, oy + Math.sin(c + half) * R);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // 9 — burst: a pinwheel of wedges from the centre, turning a whole
+    //     number of times per loop.
+    function burst(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.cream;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || SETS.festival;
+      const n = o.count || 30;
+      const cx = o.cx == null ? s.w / 2 : o.cx;
+      const cy = o.cy == null ? s.h / 2 : o.cy;
+      const R = Math.hypot(s.w, s.h);
+      const rnd = s.rand(o.seed || 21);
+      const widths = [];
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        const w = 0.4 + rnd();
+        widths.push(w);
+        total += w;
+      }
+      let a = s.TAU * t * Math.round(o.spin == null ? 1 : o.spin);
+      let last = -1;
+      for (let i = 0; i < n; i++) {
+        const da = (s.TAU * widths[i]) / total;
+        let k = Math.floor(rnd() * inks.length);
+        if (k === last) k = (k + 1) % inks.length;
+        last = k;
+        ctx.fillStyle = inks[k];
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.lineTo(cx + Math.cos(a + da) * R, cy + Math.sin(a + da) * R);
+        ctx.closePath();
+        ctx.fill();
+        a += da;
+      }
+    }
+
+    // 10 — ribbons: a diagonal band of stripes, each one a wave travelling
+    //      along it once per loop.
+    function ribbons(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.amber;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || [P.indigo, P.red, P.green, P.black, P.cream, P.periwinkle];
+      const n = o.count || 18;
+      const angle = o.angle == null ? -1.15 : o.angle;
+      const width = s.w * (o.width || 0.026);
+      const L = Math.hypot(s.w, s.h) * 1.5;
+      const amp = s.w * 0.05 * (o.wave == null ? 1 : o.wave);
+      ctx.save();
+      ctx.translate(s.w / 2, s.h / 2);
+      ctx.rotate(angle);
+      ctx.lineWidth = width;
+      ctx.lineCap = "butt";
+      const pitch = width * 1.2;
+      const bandW = n * pitch;
+      for (let i = 0; i < n; i++) {
+        const y0 = -bandW / 2 + i * pitch + pitch / 2;
+        ctx.strokeStyle = inks[i % inks.length];
+        ctx.beginPath();
+        for (let k = 0; k <= 48; k++) {
+          const u = k / 48;
+          const x = -L / 2 + L * u;
+          const y = y0 + amp * Math.sin(s.TAU * (u * 2 - t + i * 0.03));
+          if (k === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 11 — polygons: rings of a regular polygon growing out from the centre
+    //      one after another, on a ground with dark blocks in the corners.
+    function polygons(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.amber;
+      ctx.fillRect(0, 0, s.w, s.h);
+      if (o.blocks !== false) {
+        ctx.fillStyle = o.block || P.maroon;
+        const b = s.w * 0.32;
+        const corner = (x, y, rot, w, h, ox, oy) => {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(rot);
+          ctx.fillRect(ox, oy, w, h);
+          ctx.restore();
+        };
+        corner(0, 0, -0.18, b * 1.5, b * 0.9, -b * 0.7, -b * 0.45);
+        corner(s.w, s.h, -0.18, b * 1.5, b * 0.9, -b * 0.8, -b * 0.45);
+        corner(s.w, 0, 0.22, b * 1.1, b * 0.9, -b * 0.55, -b * 0.6);
+        corner(0, s.h, 0.22, b * 1.1, b * 0.9, -b * 0.55, -b * 0.3);
+      }
+      const inks = o.inks || [P.green, P.red, P.cream, P.maroon];
+      const sides = Math.max(3, Math.round(o.sides || 8));
+      const n = o.count || 4;
+      const cx = s.w / 2;
+      const cy = s.h / 2;
+      const Rmax = Math.hypot(s.w, s.h) * 0.6;
+      const items = [];
+      for (let i = 0; i < n; i++) items.push({ p: s.wrap(t + i / n), i });
+      items.sort((a, b) => b.p - a.p);
+      ctx.save();
+      items.forEach(({ p, i }) => {
+        const r = s.ease.quadIn(p) * Rmax;
+        if (r < 1) return;
+        const rot = -Math.PI / sides + 0.15 * Math.sin(s.TAU * t);
+        ctx.beginPath();
+        for (let k = 0; k < sides; k++) {
+          const a = rot + (s.TAU * k) / sides;
+          const x = cx + Math.cos(a) * r;
+          const y = cy + Math.sin(a) * r;
+          if (k) ctx.lineTo(x, y);
+          else ctx.moveTo(x, y);
+        }
+        ctx.closePath();
+        ctx.globalAlpha = 1 - s.span(p, 0.8, 1);
+        ctx.strokeStyle = inks[i % inks.length];
+        ctx.lineWidth = r * 0.22;
+        ctx.lineJoin = "miter";
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    // 12 — strings: thin spokes from a centre with a leaf at the end of
+    //      each, the whole turning once per loop while the spokes breathe.
+    function strings(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.cream;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || [P.indigo, P.red, P.green, P.periwinkle, P.amber, P.black, P.pink];
+      const n = o.count || 40;
+      const cx = o.cx == null ? s.w / 2 : o.cx;
+      const cy = o.cy == null ? s.h / 2 : o.cy;
+      const R = Math.min(s.w, s.h) * (o.radius || 0.48);
+      const rnd = s.rand(o.seed || 29);
+      ctx.save();
+      ctx.lineWidth = Math.max(1.5, s.w * 0.0025);
+      ctx.strokeStyle = o.line || P.black;
+      const spin = s.TAU * t * Math.round(o.spin == null ? 1 : o.spin);
+      for (let i = 0; i < n; i++) {
+        const a = spin + (s.TAU * i) / n + (rnd() - 0.5) * 0.12;
+        const ph = rnd();
+        const len = R * (0.35 + 0.65 * rnd()) * (0.85 + 0.15 * s.wave(t - ph));
+        const color = inks[Math.floor(rnd() * inks.length)];
+        const leaf = s.w * (0.012 + 0.022 * rnd());
+        const ex = cx + Math.cos(a) * len;
+        const ey = cy + Math.sin(a) * len;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(ex, ey);
+        ctx.rotate(a);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, leaf * 2.2, leaf, 0, 0, s.TAU);
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    // 13 — bricks: rows of bands in a running bond, every other row sliding
+    //      the other way. A row's colours repeat every two or three bricks
+    //      and it slides that many per loop, so the bond is seamless.
+    function bricks(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.cream;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || [P.periwinkle, P.indigo, P.white, P.green, P.black];
+      const rowH = s.h / (o.rows || 30);
+      const brickW = s.w / (o.cols || 6);
+      const rows = Math.ceil(s.h / rowH);
+      const rnd = s.rand(o.seed || 33);
+      for (let j = 0; j < rows; j++) {
+        const per = 2 + (j % 2);
+        const dir = j % 2 ? 1 : -1;
+        const off = ((j % 2) * brickW) / 2 + s.wrap(t) * brickW * per * dir;
+        const rowInks = [];
+        for (let k = 0; k < per; k++) {
+          let c = inks[Math.floor(rnd() * inks.length)];
+          if (k && c === rowInks[k - 1]) c = inks[(inks.indexOf(c) + 1) % inks.length];
+          rowInks.push(c);
+        }
+        for (let i = -4; i <= Math.ceil(s.w / brickW) + 3; i++) {
+          ctx.fillStyle = rowInks[((i % per) + per) % per];
+          ctx.fillRect(i * brickW + off, j * rowH, brickW - s.w * 0.004, rowH * 0.78);
+        }
+      }
+    }
+
+    // 14 — network: discs joined to a centre by thin lines, each disc
+    //      drifting round its home once per loop.
+    function network(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.white;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || SETS.garden;
+      const n = o.count || 26;
+      const cx = o.cx == null ? s.w / 2 : o.cx;
+      const cy = o.cy == null ? s.h / 2 : o.cy;
+      const R = Math.min(s.w, s.h) * (o.radius || 0.3);
+      const rnd = s.rand(o.seed || 37);
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const a = rnd() * s.TAU;
+        const d = Math.sqrt(rnd()) * R;
+        const ph = rnd();
+        const orbit = s.w * 0.012 * (0.5 + rnd());
+        const ang = s.TAU * (t * (i % 2 ? 1 : -1) + ph);
+        pts.push({
+          x: cx + Math.cos(a) * d + Math.cos(ang) * orbit,
+          y: cy + Math.sin(a) * d + Math.sin(ang) * orbit,
+          r: s.w * (0.02 + 0.022 * rnd()),
+          color: inks[Math.floor(rnd() * inks.length)],
+        });
+      }
+      ctx.save();
+      ctx.strokeStyle = o.line || P.black;
+      ctx.lineWidth = Math.max(1.5, s.w * 0.002);
+      pts.forEach((p) => {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      });
+      pts.forEach((p) => {
+        ctx.fillStyle = p.color;
+        s.circle(p.x, p.y, p.r);
+        ctx.fill();
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    // 15 — blobs: thin outlines of soft shapes drifting over the ground,
+    //      each one wobbling a whole cycle per loop.
+    function blobs(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.indigo;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const n = o.count || 7;
+      const rnd = s.rand(o.seed || 41);
+      ctx.save();
+      ctx.strokeStyle = o.line || P.red;
+      ctx.lineWidth = Math.max(1.5, s.w * 0.0025);
+      for (let i = 0; i < n; i++) {
+        const bx = rnd() * s.w;
+        const by = rnd() * s.h;
+        const br = s.w * (0.12 + 0.2 * rnd());
+        const h1 = 2 + Math.floor(rnd() * 2);
+        const h2 = 3 + Math.floor(rnd() * 3);
+        const a1 = rnd() * s.TAU;
+        const a2 = rnd() * s.TAU;
+        const ph = rnd();
+        const drift = s.TAU * (t * (i % 2 ? 1 : -1) + ph);
+        const x = bx + Math.cos(drift) * s.w * 0.02;
+        const y = by + Math.sin(drift) * s.w * 0.02;
+        ctx.beginPath();
+        for (let k = 0; k <= 72; k++) {
+          const a = (s.TAU * k) / 72;
+          const r = br * (1 + 0.18 * Math.sin(h1 * a + a1 + s.TAU * t) + 0.1 * Math.sin(h2 * a + a2 - s.TAU * t));
+          const px = x + Math.cos(a) * r;
+          const py = y + Math.sin(a) * r;
+          if (k) ctx.lineTo(px, py);
+          else ctx.moveTo(px, py);
+        }
+        ctx.closePath();
         ctx.stroke();
       }
       ctx.restore();
@@ -679,6 +1000,340 @@
       },
     },
 
+
+    rays: {
+      label: "Rays — Lora over a fan of wedges",
+      name: "Rays",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.periwinkle);
+        const color = s.color("Rays", P.amber);
+        const inkC = s.color("Ink", P.black);
+        const count = s.range("Wedges", 5, 2, 12, 1);
+        const sway = s.range("Sway", 1, 0, 2, 0.1);
+        const kicker = s.text("Kicker", "Starting in motion series.");
+        const head = s.text("Headline", "3 exercises\n*to finish*\n__this week.__");
+        const entrance = s.pick("Entrance", "rise", s.ENTRANCES);
+        const showFooter = s.toggle("Footer", true);
+
+        rays(ctx, s, t, { ground, color, count, sway });
+        const cx = s.w / 2;
+        ctx.fillStyle = inkC;
+        ctx.textBaseline = "alphabetic";
+
+        ctx.globalAlpha = s.span(t, 0.02, 0.25);
+        s.rich(kicker, cx, s.h * 0.1, { size: Math.round(s.w * 0.036), family: serif, weight: 400, align: "center" });
+        ctx.globalAlpha = 1;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.115);
+        const lh = size * 1.05;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        lines.forEach((line, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.05, to: 0.5, overlap: 0.6, ease: s.ease.expoOut });
+          const fx = s.enter(entrance, p, size * 0.6);
+          fx.alpha *= 1 - leave;
+          s.place(cx, y0 + i * lh, fx, () => {
+            ctx.fillStyle = inkC;
+            s.rich(line, 0, 0, { size, family: serif, weight: 700, align: "center" });
+          });
+        });
+
+        if (showFooter) footer(ctx, s, { color: inkC, box: false });
+      },
+    },
+
+    burst: {
+      label: "Burst — a pinwheel turning behind Lora",
+      name: "Burst",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.cream);
+        const wedges = s.pick("Wedges", "festival", SET_NAMES);
+        const count = s.range("Count", 30, 8, 60, 1);
+        const spin = s.range("Turns per loop", 1, 0, 3, 1);
+        const inkC = s.color("Ink", P.black);
+        const knock = s.color("Knockout", P.cream);
+        const head = s.text("Headline", "Build\nyour path.");
+        const showFooter = s.toggle("Footer", false);
+
+        burst(ctx, s, t, { ground, inks: SETS[wedges], count, spin });
+        const cx = s.w / 2;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.17);
+        const lh = size * 1.0;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        ctx.lineJoin = "round";
+        lines.forEach((line, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.05, to: 0.45, overlap: 0.5, ease: s.ease.backOut });
+          const fx = s.enter("pop", p, size);
+          fx.alpha *= 1 - leave;
+          const f = { size, family: serif, weight: 700, align: "center" };
+          s.place(cx, y0 + i * lh, fx, () => {
+            // a knockout stroke behind the type keeps it legible on any wedge
+            ctx.strokeStyle = knock;
+            ctx.lineWidth = size * 0.12;
+            ctx.font = s.font({ size, weight: 700, family: serif });
+            ctx.textAlign = "center";
+            ctx.strokeText(line.replace(/[*_]/g, ""), 0, 0);
+            ctx.fillStyle = inkC;
+            s.rich(line, 0, 0, f);
+          });
+        });
+
+        if (showFooter) footer(ctx, s, { color: inkC, fill: knock });
+      },
+    },
+
+    ribbons: {
+      label: "Ribbons — Archivo with a print echo over flowing stripes",
+      name: "Ribbons",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.amber);
+        const bands = s.pick("Stripes", "festival", SET_NAMES);
+        const count = s.range("Stripes count", 18, 6, 36, 1);
+        const wave = s.range("Wave", 1, 0, 2, 0.1);
+        const type = s.color("Type", P.white);
+        const echoA = s.color("Echo", P.black);
+        const echoB = s.color("Echo 2", P.red);
+        const head = s.text("Headline", "Taller para\nempezar\nen *Motion*\nhoy");
+        const kicker = s.text("Kicker", "Con *Superlocal.uy*");
+        const shake = s.range("Shake", 0.4, 0, 1);
+
+        ribbons(ctx, s, t, { ground, inks: SETS[bands], count, wave });
+        const cx = s.w / 2;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.16);
+        const lh = size * 0.98;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.3;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        lines.forEach((line, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.03, to: 0.45, overlap: 0.6, ease: s.ease.expoOut });
+          const fx = s.enter("rise", p, size * 0.5);
+          fx.alpha *= 1 - leave;
+          const sh = s.shake(t, i, 4);
+          s.place(cx + sh.x * shake * size * 0.06, y0 + i * lh + sh.y * shake * size * 0.06, fx, () => {
+            echo(ctx, s, line, 0, 0, {
+              size,
+              family: sans,
+              weight: 700,
+              color: type,
+              offsets: [
+                { dx: -0.05, dy: 0.05, color: echoB },
+                { dx: -0.025, dy: 0.025, color: echoA },
+              ],
+            });
+          });
+        });
+
+        ctx.globalAlpha = s.span(t, 0.45, 0.65) * (1 - leave);
+        ctx.fillStyle = type;
+        s.rich(kicker, cx, s.h - s.w * 0.09, { size: Math.round(s.w * 0.04), family: serif, weight: 400, align: "center" });
+        ctx.globalAlpha = 1;
+      },
+    },
+
+    polygons: {
+      label: "Polygons — a sticker of Lora inside growing rings",
+      name: "Polygons",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.amber);
+        const block = s.color("Blocks", P.maroon);
+        const ringA = s.color("Ring A", P.green);
+        const ringB = s.color("Ring B", P.red);
+        const sides = s.range("Sides", 8, 3, 12, 1);
+        const count = s.range("Rings", 4, 1, 8, 1);
+        const paperC = s.color("Sticker", P.white);
+        const inkC = s.color("Ink", P.black);
+        const head = s.text("Headline", "You don't need\nmore options.\nYou need *fewer.*");
+        const shake = s.range("Wobble", 0.5, 0, 1);
+
+        polygons(ctx, s, t, { ground, block, inks: [ringA, ringB, paperC, block], sides, count });
+        const cx = s.w / 2;
+        const cy = s.h / 2;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.07);
+        const lh = size * 1.15;
+        const f = { size, family: serif, weight: 700, italic: true, align: "center" };
+        let widest = 0;
+        lines.forEach((line) => (widest = Math.max(widest, s.measure(line, f))));
+        const bw = widest + size * 1.2;
+        const bh = lines.length * lh + size * 0.6;
+        const inP = s.span(t, 0.05, 0.4, s.ease.backOut);
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        const rot = 0.04 * shake * Math.sin(s.TAU * 2 * t);
+        s.place(cx, cy, { dx: 0, dy: 0, scale: inP * (1 - leave), rot, alpha: 1 }, () => {
+          ctx.fillStyle = paperC;
+          s.roundRect(-bw / 2, -bh / 2, bw, bh, size * 0.9);
+          ctx.fill();
+          ctx.fillStyle = inkC;
+          ctx.textBaseline = "alphabetic";
+          const y0 = -((lines.length - 1) * lh) / 2 + size * 0.35;
+          lines.forEach((line, i) => s.rich(line, 0, y0 + i * lh, f));
+        });
+      },
+    },
+
+    strings: {
+      label: "Strings — boxed Lora over a turning starburst of lines",
+      name: "Strings",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.cream);
+        const line = s.color("Lines", P.black);
+        const leaves = s.pick("Leaves", "garden", SET_NAMES);
+        const count = s.range("Spokes", 40, 8, 80, 1);
+        const inkC = s.color("Ink", P.black);
+        const head = s.text("Headline", "Don't just follow\nthe tutorial.\n*Modify it* and\nmake it yours.");
+        const entrance = s.pick("Entrance", "pop", s.ENTRANCES);
+        const showFooter = s.toggle("Footer", true);
+
+        strings(ctx, s, t, { ground, line, inks: SETS[leaves], count });
+        const cx = s.w / 2;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.08);
+        const lh = size * 1.12;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        lines.forEach((ln, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.04, to: 0.5, overlap: 0.6, ease: s.ease.backOut });
+          const fx = s.enter(entrance, p, size);
+          fx.alpha *= 1 - leave;
+          const f = { size, family: serif, weight: 700, align: "center" };
+          const w = s.measure(ln, f);
+          s.place(cx, y0 + i * lh, fx, () => {
+            box(ctx, -w / 2 - size * 0.15, -size * 0.8, w + size * 0.3, size * 1.05, ground, inkC);
+            ctx.fillStyle = inkC;
+            s.rich(ln, 0, 0, f);
+          });
+        });
+
+        if (showFooter) footer(ctx, s, { color: inkC, fill: ground });
+      },
+    },
+
+    bricks: {
+      label: "Bricks — justified Archivo over a sliding bond",
+      name: "Bricks",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.cream);
+        const bond = s.pick("Bricks", "cool", SET_NAMES);
+        const rows = s.range("Rows", 30, 10, 60, 1);
+        const paperC = s.color("Box", P.white);
+        const inkC = s.color("Ink", P.black);
+        const copy = s.text("Headline", "You don't learn motion design by (only) watching. You learn by doing.");
+        const jitterAmt = s.range("Jitter", 0.15, 0, 1);
+
+        bricks(ctx, s, t, { ground, inks: SETS[bond], rows });
+        const cx = s.w / 2;
+
+        ctx.fillStyle = inkC;
+        ctx.textBaseline = "alphabetic";
+        const size = Math.round(s.w * 0.085);
+        ctx.font = s.font({ size, weight: 400, family: sans });
+        const bw = s.w * 0.56;
+        const lines = s.lines(copy, bw);
+        const lh = size * 0.86;
+        const spread = s.span(t, 0.05, 0.5, s.ease.expoOut) * (1 - s.span(t, 0.88, 1, s.ease.inOut));
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.3;
+        const inP = s.span(t, 0.02, 0.3, s.ease.expoOut);
+        const bh = (lines.length - 1) * lh + size * 1.1;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(cx - bw / 2 - size * 0.3, s.h / 2 - (bh / 2) * inP, bw + size * 0.6, bh * inP);
+        ctx.clip();
+        box(ctx, cx - bw / 2 - size * 0.3, y0 - size * 0.8, bw + size * 0.6, bh, paperC, inkC);
+        const j = s.jitter(t, 0, 24);
+        ctx.fillStyle = inkC;
+        lines.forEach((line, i) => s.justify(line, cx - bw / 2 + j.x * jitterAmt * size * 0.05, y0 + i * lh + j.y * jitterAmt * size * 0.05, bw, spread));
+        ctx.restore();
+      },
+    },
+
+    network: {
+      label: "Network — Lora around a cluster of joined discs",
+      name: "Network",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.white);
+        const discs = s.pick("Discs", "garden", SET_NAMES);
+        const count = s.range("Discs count", 26, 6, 60, 1);
+        const line = s.color("Lines", P.black);
+        const inkC = s.color("Ink", P.black);
+        const top = s.text("Top", "Make");
+        const bottom = s.text("Bottom", "Genuine\nConnections");
+        const entrance = s.pick("Entrance", "fade", s.ENTRANCES);
+
+        network(ctx, s, t, { ground, inks: SETS[discs], count, line, cy: s.h * 0.47 });
+        const cx = s.w / 2;
+        const size = Math.round(s.w * 0.11);
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        const f = { size, family: serif, weight: 700, align: "center" };
+
+        const draw = (text, y, i) => {
+          const lines = text.split("\n").filter(Boolean);
+          lines.forEach((ln, k) => {
+            const p = s.stagger(t, i + k, 3, { from: 0.05, to: 0.5, overlap: 0.5, ease: s.ease.expoOut });
+            const fx = s.enter(entrance, p, size * 0.5);
+            fx.alpha *= 1 - leave;
+            s.place(cx, y + k * size * 1.05, fx, () => {
+              ctx.fillStyle = inkC;
+              s.rich(ln, 0, 0, f);
+            });
+          });
+        };
+        draw(top, s.h * 0.17, 0);
+        draw(bottom, s.h * 0.78, 1);
+      },
+    },
+
+    blobs: {
+      label: "Blobs — chunky Lora scrambling in over outlined shapes",
+      name: "Blobs",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.indigo);
+        const line = s.color("Outlines", P.red);
+        const count = s.range("Shapes", 7, 2, 16, 1);
+        const type = s.color("Type", P.red);
+        const echoC = s.color("Echo", P.amber);
+        const head = s.text("Headline", "You need\nmore\npractice");
+        const scrambleOn = s.toggle("Scramble", true);
+        const shake = s.range("Shake", 0.3, 0, 1);
+
+        blobs(ctx, s, t, { ground, line, count });
+        const cx = s.w / 2;
+
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.16);
+        const lh = size * 0.95;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.32;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        lines.forEach((ln, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.02, to: 0.55, overlap: 0.4 });
+          const text = scrambleOn ? s.scramble(ln, p, t, i) : ln;
+          const sh = s.jitter(t, i, 12);
+          const amt = shake * size * 0.03 * (1 - s.span(p, 0.95, 1));
+          ctx.globalAlpha = s.span(p, 0, 0.1) * (1 - leave);
+          echo(ctx, s, text, cx + sh.x * amt, y0 + i * lh + sh.y * amt, {
+            size,
+            family: serif,
+            weight: 700,
+            italic: true,
+            color: type,
+            offsets: [{ dx: 0.05, dy: 0.05, color: echoC }],
+          });
+        });
+        ctx.globalAlpha = 1;
+      },
+    },
+
     headline: {
       label: "Headline — Lora words rise in",
       name: "Headline",
@@ -995,7 +1650,7 @@
   }
 
   F.SHARED_DEFAULT = body(SHARED);
-  F.SWATCHES = ["#000000", "#ffffff", "#fffdf0", "#f4f3ef", "#adb4f5", "#3d3deb", "#2e7d46", "#ee4b2b", "#4b1a10", "#8a8a5a"];
+  F.SWATCHES = ["#000000", "#ffffff", "#fffdf0", "#f4f3ef", "#adb4f5", "#3d3deb", "#2e7d46", "#ee4b2b", "#f4a71d", "#4b1a10", "#f2a1c4", "#8a8a5a", "#9a9a9a"];
   F.STARTERS = Object.keys(SLIDES).map((id) => ({
     id,
     label: SLIDES[id].label,

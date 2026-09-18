@@ -261,15 +261,17 @@
 
   /* ------------------------------------------------------------- rich -- */
 
-  // "*word*" marks an italic span; "**word**" a bold one.
+  // "*word*" marks an italic span, "**word**" a bold one, "__word__" an
+  // underlined one.
   function richSpans(text) {
     const spans = [];
-    const re = /\*\*([^*]+)\*\*|\*([^*]+)\*|([^*]+)/g;
+    const re = /\*\*([^*]+)\*\*|\*([^*]+)\*|__([^_]+)__|([^*_]+|[*_])/g;
     let m;
     while ((m = re.exec(String(text)))) {
       if (m[1] != null) spans.push({ text: m[1], bold: true });
       else if (m[2] != null) spans.push({ text: m[2], italic: true });
-      else spans.push({ text: m[3] });
+      else if (m[3] != null) spans.push({ text: m[3], underline: true });
+      else spans.push({ text: m[4] });
     }
     return spans;
   }
@@ -298,10 +300,28 @@
     richSpans(text).forEach((sp) => {
       ctx.font = fontString({ ...o, italic: sp.italic || o.italic, weight: sp.bold ? o.boldWeight || 700 : o.weight });
       ctx.fillText(sp.text, cx, y);
-      cx += ctx.measureText(sp.text).width;
+      const sw = ctx.measureText(sp.text).width;
+      if (sp.underline) ctx.fillRect(cx, y + o.size * 0.1, sw, Math.max(2, o.size * 0.07));
+      cx += sw;
     });
     ctx.textAlign = wasAlign;
     return w;
+  }
+
+  // The first p of `text` settled, the rest churning through random
+  // letters, a new set every 1/steps of the loop.
+  function scramble(text, p, t, seed = 0, steps = 24) {
+    const chars = String(text).split("");
+    const settle = Math.floor(clamp(p) * chars.length);
+    const k = Math.floor(wrap(t) * steps);
+    const pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    return chars
+      .map((ch, i) => {
+        if (i < settle || ch === " " || ch === "\n") return ch;
+        const r = pool[Math.floor(hash(i * 131 + k * 17, seed) * pool.length)];
+        return ch === ch.toLowerCase() ? r.toLowerCase() : r;
+      })
+      .join("");
   }
 
   // Draws a line's words spread to fill `width` (a single word is centred).
@@ -386,6 +406,7 @@
     s.rich = (text, x, y, o) => fillRich(ctx, text, x, y, o);
     s.measure = (text, o) => measureRich(ctx, text, o);
     s.justify = (text, x, y, width, spread) => fillJustified(ctx, text, x, y, width, spread);
+    s.scramble = scramble;
     s.layer = (name) => layer(name, info.w, info.h);
     s.warp = (source, o) => warp(ctx, source, info.w, info.h, o);
     return s;

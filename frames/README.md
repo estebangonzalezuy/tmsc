@@ -63,6 +63,7 @@ carousel starter does. **Reset** returns a slide to its own defaults.
 | `shake(t, seed, cycles)`      | a smooth seeded shake, `{x, y}` in about −1..1, whole cycles per loop     |
 | `jitter(t, i, steps)`         | a stepped random offset per item, new every 1/steps of the loop           |
 | `step(t, n)`                  | `t` in n steps                                                             |
+| `scramble(text, p, t, seed)`  | the first `p` of the text settled, the rest churning through random letters |
 
 Stagger with `s.stagger`, ease the result, hand it to `s.enter`, draw inside
 `s.place`. Add `s.shake` or `s.jitter` to the position for a shake.
@@ -72,8 +73,8 @@ Stagger with `s.stagger`, ease the result, hand it to `s.enter`, draw inside
 Two faces, loaded from Google Fonts and nothing else: **Archivo** (`sans`,
 weights 100–900, with italics) and **Lora** (`serif`, 400–700, with italics).
 The default Shared block declares them, the club's colours as `P`, named ink
-sets as `SETS` (`club warm cool mono`), and seven background systems, each a
-seamless loop:
+sets as `SETS` (`club warm cool mono festival garden`), and fifteen background
+systems, each a seamless loop:
 
 - `confetti(ctx, s, t, {ground, inks, radius, swing, seed})` — a packed field
   of discs, each circling its home once per loop.
@@ -89,18 +90,42 @@ seamless loop:
   growing from the centre, a bead orbiting each.
 - `dashes(ctx, s, t, {ground, inks, count, tilt, seed})` — slanted strokes
   falling a whole number of heights per loop.
+- `rays(ctx, s, t, {ground, color, count, sway})` — wedges fanning up from
+  below the bottom edge, the fan rocking once per loop.
+- `burst(ctx, s, t, {ground, inks, count, spin, seed})` — a pinwheel of wedges
+  from the centre, turning a whole number of times per loop.
+- `ribbons(ctx, s, t, {ground, inks, count, width, angle, wave})` — a diagonal
+  band of stripes, each a wave travelling along it.
+- `polygons(ctx, s, t, {ground, block, inks, sides, count})` — rings of a
+  polygon growing from the centre one after another, dark blocks in the corners.
+- `strings(ctx, s, t, {ground, line, inks, count, spin, seed})` — spokes from
+  a centre with a leaf at the end of each, turning once per loop.
+- `bricks(ctx, s, t, {ground, inks, rows, cols, seed})` — a running bond of
+  bands, every other row sliding the other way.
+- `network(ctx, s, t, {ground, inks, count, line, radius, seed})` — discs
+  joined to a centre by thin lines, drifting.
+- `blobs(ctx, s, t, {ground, line, count, seed})` — thin outlines of soft
+  shapes drifting and wobbling.
+
+The last eight were read off the club's own Instagram (the "3 exercises",
+"Build your path", "Taller para empezar", "You don't need more options",
+"Don't just follow the tutorial", "You don't learn motion design", "Make
+Genuine Connections" and "You need more practice" posts).
 
 Over them, boxed type: `box(ctx, x, y, w, h, fill?, stroke?)` is the hairline
 frame the type overhangs, `pill(ctx, s, text, cx, cy, {size, fx, …})` a line
 of Lora in a pill under an entrance, `tag(ctx, s, text, cx, cy)` a small
-numbered box, and `footer(ctx, s, {text, color, fill, alpha})` the boxed
-"the Motion Social Club" line.
+numbered box, `echo(ctx, s, text, x, y, {size, color, offsets})` type with
+hard offset copies behind it like a misregistered print, and
+`footer(ctx, s, {text, color, fill, alpha, box})` the "the Motion Social
+Club" line. Rich text also takes `__word__` for an underline, and
+`s.scramble(text, p, t)` churns the unsettled part of a line through random
+letters.
 
 The starters: Confetti, Tape and Stripes are the three references, animated;
-Checker (outlined Archivo letters shaking in), Crosses (Lora lines sliding in
-from alternate sides), Rings (a number pulsing with the rings) and Dashes (a
-list of rows) extend the family. Every one declares its colours, copy, an
-entrance and a shake as options.
+Checker, Crosses, Rings and Dashes extend the family; Rays, Burst, Ribbons,
+Polygons, Strings, Bricks, Network and Blobs are the Instagram posts. Every
+one declares its colours, copy, an entrance and a shake as options.
 
 ## The stage `s`
 
