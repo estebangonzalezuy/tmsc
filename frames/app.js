@@ -9,7 +9,9 @@
 
   let state = null; // { v, name, format, seconds, fps, shared, slides: [{ id, name, code }] }
   let current = 0; // index of the selected slide
-  let tab = "slide"; // "slide" | "shared"
+  let tab = "options"; // "options" | "code" | "shared"
+  let declared = []; // the current slide's declared options, from its last stage draw
+  let declaredSig = ""; // so the panel is rebuilt only when the declarations change
   let playing = false;
   let head = 0; // loop progress 0..1
   let lastNow = 0;
@@ -28,7 +30,7 @@
       seconds: 6,
       fps: 30,
       shared: F.SHARED_DEFAULT,
-      slides: [{ id: uid(), name: starter.name, code: starter.code }],
+      slides: [{ id: uid(), name: starter.name, code: starter.code, opts: {} }],
     };
   }
 
@@ -40,7 +42,7 @@
       seconds: 6,
       fps: 30,
       shared: F.SHARED_DEFAULT,
-      slides: F.CAROUSEL.map((s) => ({ id: uid(), name: s.name, code: s.code })),
+      slides: F.CAROUSEL.map((s) => ({ id: uid(), name: s.name, code: s.code, opts: Object.assign({}, s.opts || {}) })),
     };
   }
 
@@ -58,9 +60,10 @@
             id: typeof s.id === "string" ? s.id : uid(),
             name: typeof s.name === "string" ? s.name : `Slide ${i + 1}`,
             code: typeof s.code === "string" ? s.code : "",
+            opts: s.opts && typeof s.opts === "object" ? Object.assign({}, s.opts) : {},
           }))
       : [];
-    if (!slides.length) slides.push({ id: uid(), name: "Slide 1", code: "" });
+    if (!slides.length) slides.push({ id: uid(), name: "Slide 1", code: "", opts: {} });
     return {
       v: 1,
       name: typeof p.name === "string" && p.name.trim() ? p.name : "untitled",
@@ -133,8 +136,9 @@
     return result;
   }
 
-  // Draw slide `index` at loop progress `t` into ctx at `scale`.
-  function drawSlide(ctx, index, t, scale, frame) {
+  // Draw slide `index` at loop progress `t` into ctx at `scale`. With
+  // `declare`, the slide's option declarations are collected into it.
+  function drawSlide(ctx, index, t, scale, frame, declare) {
     const s = state.slides[index];
     const { w, h } = fmt();
     const info = {
@@ -145,6 +149,8 @@
       frame: frame == null ? Math.floor(t * state.seconds * state.fps) : frame,
       index,
       count: state.slides.length,
+      opts: s.opts || {},
+      declare,
     };
     return F.render(ctx, compiledFor(s), t, info, scale);
   }
@@ -171,9 +177,12 @@
   }
 
   function drawStage() {
-    const error = drawSlide(stageCtx, current, head, stageScale);
+    const declare = [];
+    const error = drawSlide(stageCtx, current, head, stageScale, null, declare);
     showError(error);
     updateReadout();
+    declared = declare;
+    syncOptions();
   }
 
   function updateReadout() {
@@ -257,21 +266,175 @@
   const slideName = $("slide-name");
 
   function loadEditor() {
-    if (tab === "slide") {
-      code.value = slide().code;
-      slideName.value = slide().name;
-      slideName.disabled = false;
-      $("signature").textContent = "function (ctx, t, s) {";
-      $("closer").textContent = "}";
-    } else {
+    const opts = $("options");
+    opts.hidden = tab !== "options";
+    code.hidden = tab === "options";
+    $("btn-reset").hidden = tab !== "options";
+    if (tab === "shared") {
       code.value = state.shared;
       slideName.value = "";
       slideName.disabled = true;
       $("signature").textContent = "// shared — runs before every slide";
       $("closer").textContent = "";
+    } else {
+      code.value = slide().code;
+      slideName.value = slide().name;
+      slideName.disabled = false;
+      $("signature").textContent = tab === "code" ? "function (ctx, t, s) {" : "what this slide lets you change";
+      $("closer").textContent = tab === "code" ? "}" : "";
+    }
+    if (tab === "options") {
+      declaredSig = "";
+      syncOptions();
     }
     showError(null);
   }
+
+  /* ---------------------------------------------------------- options -- */
+
+  // Rebuilds the Options panel from the current slide's declarations, only
+  // when the set of declarations changes, so a control keeps focus while
+  // it is being used.
+  function syncOptions() {
+    if (tab !== "options") return;
+    const sig = JSON.stringify(declared.map((d) => [d.key, d.kind, d.choices, d.min, d.max, d.multi])) + "|" + slide().id;
+    if (sig === declaredSig) {
+      refreshOptionValues();
+      return;
+    }
+    declaredSig = sig;
+    const panel = $("options");
+    panel.innerHTML = "";
+    if (!declared.length) {
+      const p = document.createElement("div");
+      p.className = "opt-empty";
+      p.innerHTML =
+        "This slide declares no options yet. In its code, ask for a value with " +
+        "<code>s.color(\"Ink\", \"#000000\")</code>, <code>s.text(\"Headline\", \"…\")</code>, " +
+        "<code>s.range(\"Shake\", 0.3, 0, 1)</code>, <code>s.pick(\"Entrance\", \"rise\", s.ENTRANCES)</code> " +
+        "or <code>s.toggle(\"Footer\", true)</code> and a control appears here.";
+      panel.appendChild(p);
+      return;
+    }
+    declared.forEach((d) => {
+      const label = document.createElement("div");
+      label.className = "opt-label";
+      label.textContent = d.key;
+      label.title = d.key;
+      const cell = document.createElement("div");
+      cell.className = "opt";
+      cell.dataset.key = d.key;
+      cell.appendChild(controlFor(d));
+      panel.append(label, cell);
+    });
+  }
+
+  const valueOf = (d) => (slide().opts && slide().opts[d.key] != null ? slide().opts[d.key] : d.def);
+
+  function setOption(key, value) {
+    if (!slide().opts) slide().opts = {};
+    slide().opts[key] = value;
+    save();
+    drawStage();
+    drawThumbs();
+  }
+
+  function controlFor(d) {
+    const frag = document.createDocumentFragment();
+    const v = valueOf(d);
+    if (d.kind === "color") {
+      const input = document.createElement("input");
+      input.type = "color";
+      input.value = /^#[0-9a-f]{6}$/i.test(v) ? v : "#000000";
+      input.addEventListener("input", () => setOption(d.key, input.value));
+      frag.appendChild(input);
+      const row = document.createElement("div");
+      row.className = "swatches";
+      (F.SWATCHES || []).forEach((hex) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "swatch" + (hex.toLowerCase() === String(v).toLowerCase() ? " on" : "");
+        b.style.background = hex;
+        b.title = hex;
+        b.addEventListener("click", () => setOption(d.key, hex));
+        row.appendChild(b);
+      });
+      frag.appendChild(row);
+    } else if (d.kind === "range") {
+      const input = document.createElement("input");
+      input.type = "range";
+      input.min = d.min;
+      input.max = d.max;
+      input.step = d.step;
+      input.value = v;
+      const val = document.createElement("span");
+      val.className = "val";
+      val.textContent = Number(v).toFixed(2).replace(/\.?0+$/, "");
+      input.addEventListener("input", () => setOption(d.key, Number(input.value)));
+      frag.append(input, val);
+    } else if (d.kind === "pick") {
+      const sel = document.createElement("select");
+      d.choices.forEach((c) => {
+        const o = document.createElement("option");
+        o.value = c;
+        o.textContent = c;
+        sel.appendChild(o);
+      });
+      sel.value = v;
+      sel.addEventListener("change", () => setOption(d.key, sel.value));
+      frag.appendChild(sel);
+    } else if (d.kind === "toggle") {
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = !!v;
+      input.addEventListener("change", () => setOption(d.key, input.checked));
+      frag.appendChild(input);
+    } else {
+      const input = document.createElement(d.multi ? "textarea" : "input");
+      if (!d.multi) input.type = "text";
+      input.value = v;
+      input.spellcheck = false;
+      input.addEventListener("input", () => setOption(d.key, input.value));
+      frag.appendChild(input);
+    }
+    return frag;
+  }
+
+  // Updates control values in place (after Reset, or when the slide's own
+  // defaults changed), without rebuilding.
+  function refreshOptionValues() {
+    declared.forEach((d) => {
+      const cell = $("options").querySelector(`.opt[data-key="${CSS.escape(d.key)}"]`);
+      if (!cell) return;
+      const v = valueOf(d);
+      if (d.kind === "color") {
+        const input = cell.querySelector("input[type=color]");
+        if (input && document.activeElement !== input && /^#[0-9a-f]{6}$/i.test(v)) input.value = v;
+        cell.querySelectorAll(".swatch").forEach((b) => b.classList.toggle("on", b.title.toLowerCase() === String(v).toLowerCase()));
+      } else if (d.kind === "range") {
+        const input = cell.querySelector("input[type=range]");
+        if (input && document.activeElement !== input) input.value = v;
+        const val = cell.querySelector(".val");
+        if (val) val.textContent = Number(v).toFixed(2).replace(/\.?0+$/, "");
+      } else if (d.kind === "pick") {
+        const sel = cell.querySelector("select");
+        if (sel && document.activeElement !== sel) sel.value = v;
+      } else if (d.kind === "toggle") {
+        const input = cell.querySelector("input[type=checkbox]");
+        if (input) input.checked = !!v;
+      } else {
+        const input = cell.querySelector("textarea, input");
+        if (input && document.activeElement !== input) input.value = v;
+      }
+    });
+  }
+
+  $("btn-reset").addEventListener("click", () => {
+    slide().opts = {};
+    save();
+    drawStage();
+    drawThumbs();
+  });
 
   function showError(err) {
     const el = $("error");
@@ -284,8 +447,8 @@
     clearTimeout(applyTimer);
     if (!dirty) return;
     dirty = false;
-    if (tab === "slide") slide().code = code.value;
-    else state.shared = code.value;
+    if (tab === "code") slide().code = code.value;
+    else if (tab === "shared") state.shared = code.value;
     save();
     drawStage();
     drawThumbs();
@@ -396,8 +559,8 @@
     compiled.clear();
     current = 0;
     head = 0;
-    tab = "slide";
-    tabButtons.forEach((x) => x.classList.toggle("on", x.dataset.tab === "slide"));
+    tab = "options";
+    tabButtons.forEach((x) => x.classList.toggle("on", x.dataset.tab === "options"));
     save();
     loadHeader();
     renderRail();
@@ -463,7 +626,7 @@
     starterSel.value = "";
     if (!st) return;
     applyEditor();
-    state.slides.splice(current + 1, 0, { id: uid(), name: st.name, code: st.code });
+    state.slides.splice(current + 1, 0, { id: uid(), name: st.name, code: st.code, opts: {} });
     save();
     renderRail();
     select(current + 1);
@@ -472,7 +635,7 @@
   $("btn-dup").addEventListener("click", () => {
     applyEditor();
     const s = slide();
-    state.slides.splice(current + 1, 0, { id: uid(), name: s.name + " copy", code: s.code });
+    state.slides.splice(current + 1, 0, { id: uid(), name: s.name + " copy", code: s.code, opts: Object.assign({}, s.opts || {}) });
     save();
     renderRail();
     select(current + 1);

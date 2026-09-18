@@ -63,7 +63,8 @@
 
     <section class="editor">
       <div class="tabs">
-        <button data-tab="slide" class="on">Slide</button>
+        <button data-tab="options" class="on">Options</button>
+        <button data-tab="code">Code</button>
         <button data-tab="shared">Shared</button>
         <div class="spacer"></div>
         <button id="btn-help" title="The stage API">Help</button>
@@ -71,8 +72,11 @@
       <div class="editor-head">
         <input id="slide-name" type="text" placeholder="Slide name" spellcheck="false" />
         <span class="mono muted" id="signature">function (ctx, t, s) {</span>
+        <span class="spacer"></span>
+        <button id="btn-reset" title="Back to the slide's own defaults" hidden>Reset</button>
       </div>
-      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div id="options" class="options"></div>
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" hidden></textarea>
       <div class="editor-foot">
         <span class="mono muted" id="closer">}</span>
         <span id="error" class="error mono"></span>
@@ -120,9 +124,26 @@
         <dt><code>s.layer(name)</code></dt><dd>A cleared offscreen <code>{canvas, ctx}</code> the size of the post, for something you will warp or mask.</dd>
         <dt><code>s.warp(canvas, {slice, dx: v =&gt; …, sx: v =&gt; …})</code></dt><dd>Draws a layer in horizontal slices, each shifted and stretched, <code>v</code> = 0 at the top, 1 at the bottom.</dd>
       </dl>
+      <h3>Options</h3>
+      <p>A slide declares what can be changed from the Options tab by asking for the value as it draws. Each call returns the current value, and the panel builds a control for it:</p>
+      <dl>
+        <dt><code>s.color("Ink", "#000000")</code></dt><dd>A colour, with the club's swatches.</dd>
+        <dt><code>s.range("Shake", 0.3, 0, 1)</code></dt><dd>A slider.</dd>
+        <dt><code>s.pick("Entrance", "rise", s.ENTRANCES)</code></dt><dd>A choice.</dd>
+        <dt><code>s.toggle("Footer", true)</code></dt><dd>On or off.</dd>
+        <dt><code>s.text("Headline", "…")</code></dt><dd>Copy. A default with line breaks gets a multi-line field.</dd>
+      </dl>
+      <h3>Motion</h3>
+      <dl>
+        <dt><code>s.enter(name, p, size)</code></dt><dd>A named entrance (<code>rise drop pop slide spin fade none</code>, listed in <code>s.ENTRANCES</code>) at progress <code>p</code>, as <code>{dx, dy, scale, rot, alpha}</code>.</dd>
+        <dt><code>s.place(x, y, fx, () =&gt; …)</code></dt><dd>Draws under that transform, at (x, y).</dd>
+        <dt><code>s.shake(t, seed, cycles)</code></dt><dd>A smooth seeded shake, <code>{x, y}</code> in about −1..1, a whole number of cycles per loop.</dd>
+        <dt><code>s.jitter(t, i, steps)</code></dt><dd>A stepped random offset per item, new every 1/steps of the loop.</dd>
+        <dt><code>s.step(t, n)</code></dt><dd><code>t</code> in n steps.</dd>
+      </dl>
       <h3>Fonts and Shared</h3>
       <p>Two faces, loaded from Google Fonts: <b>Archivo</b> (<code>sans</code>, weights 100–900, with italics) and <b>Lora</b> (<code>serif</code>, 400–700, with italics). Nothing else.</p>
-      <p>The Shared tab runs before every slide, so its <code>const</code>s and functions are in scope in each one. The default one carries the palette, the two faces, the three backgrounds (<code>confetti</code>, <code>tape</code>, <code>stripes</code>) and the boxed type helpers (<code>box</code>, <code>pill</code>, <code>footer</code>).</p>
+      <p>The Shared tab runs before every slide, so its <code>const</code>s and functions are in scope in each one. The default one carries the palette, the two faces, the seven backgrounds (<code>confetti</code>, <code>tape</code>, <code>stripes</code>, <code>checker</code>, <code>crosses</code>, <code>rings</code>, <code>dashes</code>) and the boxed type helpers (<code>box</code>, <code>pill</code>, <code>footer</code>).</p>
       <h3>Files</h3>
       <p>The post autosaves in this browser. <b>Save</b> writes it as a <code>.json</code> file, <b>Open…</b> reads one back, <b>Copy link</b> puts the whole post in the URL. <b>PNG</b> and <b>All PNGs</b> take the current instant of the scrubber. <b>Video</b> records one loop of this slide; <b>Reel</b> records every slide in order, one loop each, into one file. Recording runs in real time.</p>
       <p><button id="btn-help-close">Close</button></p>

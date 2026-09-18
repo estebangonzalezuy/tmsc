@@ -154,6 +154,111 @@
   }
 
 
+
+  /* ----------------------------------------------------------- motion -- */
+
+  // Stepped time: n steps per loop, so a value can change in jumps.
+  function step(t, n) {
+    return Math.floor(wrap(t) * n) / n;
+  }
+  // A smooth seeded shake: two whole-cycle sines per axis, in about -1..1.
+  function shake(t, seed = 0, cycles = 6) {
+    const r = rand(seed * 31 + 7);
+    const a = r(), b = r(), c = r(), d = r();
+    const k = Math.max(1, Math.round(cycles));
+    return {
+      x: (Math.sin(TAU * (k * t + a)) + 0.5 * Math.sin(TAU * (2 * k * t + b))) / 1.5,
+      y: (Math.sin(TAU * (k * t + c)) + 0.5 * Math.sin(TAU * (2 * k * t + d))) / 1.5,
+    };
+  }
+  // A stepped random jitter per item: a new offset every 1/steps of the
+  // loop, in -1..1, stable for the same t.
+  function jitter(t, i = 0, steps = 12, seed = 0) {
+    const k = Math.floor(wrap(t) * steps);
+    return { x: hash(k * 977 + i, seed) * 2 - 1, y: hash(k * 977 + i, seed + 1) * 2 - 1 };
+  }
+  // Named entrances. p is 0..1 (ease it first); size sets the travel.
+  // Returns { dx, dy, scale, rot, alpha } for place().
+  const ENTRANCES = ["rise", "drop", "pop", "slide", "spin", "fade", "none"];
+  function enter(name, p, size = 100) {
+    const q = clamp(p);
+    const fx = { dx: 0, dy: 0, scale: 1, rot: 0, alpha: 1 };
+    switch (name) {
+      case "rise":
+        fx.dy = (1 - q) * size;
+        fx.alpha = q;
+        break;
+      case "drop":
+        fx.dy = -(1 - q) * size;
+        fx.alpha = q;
+        break;
+      case "pop":
+        fx.scale = p; // unclamped: a backOut overshoot shows
+        fx.alpha = q;
+        break;
+      case "slide":
+        fx.dx = (1 - q) * size * 2;
+        fx.alpha = q;
+        break;
+      case "spin":
+        fx.rot = (1 - q) * 0.6;
+        fx.scale = 0.6 + 0.4 * q;
+        fx.alpha = q;
+        break;
+      case "fade":
+        fx.alpha = q;
+        break;
+      default:
+        break;
+    }
+    return fx;
+  }
+  // Draws `fn` at (x, y) under an entrance's transform.
+  function place(ctx, x, y, fx, fn) {
+    if (fx.scale <= 0 || fx.alpha <= 0) return;
+    ctx.save();
+    ctx.translate(x + fx.dx, y + fx.dy);
+    if (fx.rot) ctx.rotate(fx.rot);
+    if (fx.scale !== 1) ctx.scale(fx.scale, fx.scale);
+    ctx.globalAlpha *= clamp(fx.alpha);
+    fn();
+    ctx.restore();
+  }
+
+  /* ---------------------------------------------------------- options -- */
+
+  // A slide declares what can be changed from the Options panel by calling
+  // these as it draws: s.color("Ink", "#000"), s.range("Shake", 0.3, 0, 1),
+  // s.pick("Entrance", "rise", s.ENTRANCES), s.toggle("Footer", true),
+  // s.text("Headline", "…"). The call returns the current value; the first
+  // render after a compile also records the declaration for the panel.
+  function optionsFor(s, info) {
+    const values = info.opts || {};
+    const declare = info.declare;
+    const read = (key, kind, fallback, meta) => {
+      if (declare && !declare.some((d) => d.key === key)) declare.push(Object.assign({ key, kind, def: fallback }, meta));
+      const v = values[key];
+      return v == null ? fallback : v;
+    };
+    s.color = (key, fb) => {
+      const v = read(key, "color", fb);
+      return typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v : fb;
+    };
+    s.range = (key, fb, min = 0, max = 1, stp) => {
+      const v = Number(read(key, "range", fb, { min, max, step: stp || (max - min) / 100 }));
+      return Number.isFinite(v) ? clamp(v, min, max) : fb;
+    };
+    s.pick = (key, fb, choices) => {
+      const v = read(key, "pick", fb, { choices });
+      return choices.includes(v) ? v : fb;
+    };
+    s.toggle = (key, fb) => !!read(key, "toggle", !!fb);
+    s.text = (key, fb) => {
+      const v = read(key, "text", fb, { multi: /\n/.test(fb) });
+      return typeof v === "string" ? v : fb;
+    };
+  }
+
   /* ------------------------------------------------------------- rich -- */
 
   // "*word*" marks an italic span; "**word**" a bold one.
@@ -266,9 +371,13 @@
   // `info` carries w, h, seconds, fps, frame, index, count.
   function makeStage(ctx, info) {
     const s = Object.assign(
-      { TAU, ease: EASE, clamp, lerp, map, wrap, span, stagger, ping, wave, rand, hash },
+      { TAU, ease: EASE, clamp, lerp, map, wrap, span, stagger, ping, wave, rand, hash, step, shake, jitter, enter, ENTRANCES },
       info,
     );
+    delete s.opts;
+    delete s.declare;
+    optionsFor(s, info);
+    s.place = (x, y, fx, fn) => place(ctx, x, y, fx, fn);
     s.lines = (text, maxWidth) => wrapText(ctx, text, maxWidth);
     s.fit = (text, maxWidth, opts) => fitFont(ctx, text, maxWidth, opts);
     s.circle = (x, y, r) => circle(ctx, x, y, r);
@@ -366,6 +475,7 @@
   }
 
   F.EASE = EASE;
+  F.ENTRANCES = ENTRANCES;
   F.compile = compile;
   F.render = render;
   F.makeStage = makeStage;

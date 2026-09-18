@@ -36,25 +36,71 @@ A single post is one slide. A carousel is several. The **Shared** tab is code
 that runs before every slide, so colours, the faces and any helper you want in
 all of them go there.
 
+## Options
+
+A slide declares what can be changed from the **Options** tab by asking for
+the value as it draws. Each call returns the current value, and the panel
+builds a control for it:
+
+```js
+const ground = s.color("Ground", "#fffdf0");          // a colour, with the club swatches
+const copy = s.text("Headline", "Question\nourselves"); // copy; a default with line breaks gets a multi-line field
+const shake = s.range("Shake", 0.3, 0, 1);             // a slider
+const entrance = s.pick("Entrance", "rise", s.ENTRANCES); // a choice
+const showFooter = s.toggle("Footer", true);           // on or off
+```
+
+Values live on the slide (`opts` in the JSON and the link), so a carousel can
+run the same code on every point with different copy, which is what the
+carousel starter does. **Reset** returns a slide to its own defaults.
+
+## Motion
+
+| name                          | what it is                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `enter(name, p, size)`        | a named entrance at progress `p`: `rise drop pop slide spin fade none` (in `s.ENTRANCES`), as `{dx, dy, scale, rot, alpha}` |
+| `place(x, y, fx, () => …)`    | draws under that transform at (x, y)                                       |
+| `shake(t, seed, cycles)`      | a smooth seeded shake, `{x, y}` in about −1..1, whole cycles per loop     |
+| `jitter(t, i, steps)`         | a stepped random offset per item, new every 1/steps of the loop           |
+| `step(t, n)`                  | `t` in n steps                                                             |
+
+Stagger with `s.stagger`, ease the result, hand it to `s.enter`, draw inside
+`s.place`. Add `s.shake` or `s.jitter` to the position for a shake.
+
 ## Faces, colours, backgrounds
 
 Two faces, loaded from Google Fonts and nothing else: **Archivo** (`sans`,
 weights 100–900, with italics) and **Lora** (`serif`, 400–700, with italics).
-The default Shared block declares them, the club's colours as `P`, and three
-background systems, each a seamless loop:
+The default Shared block declares them, the club's colours as `P`, named ink
+sets as `SETS` (`club warm cool mono`), and seven background systems, each a
+seamless loop:
 
-- `confetti(ctx, s, t, {ground, inks, radius, seed})` — a packed field of discs
-  on green, each circling its home once per loop.
-- `tape(ctx, s, t, {columns, inks, seed})` — columns of dots and stacked bars
-  scrolling like punched tape, a whole number of repeats per loop.
-- `stripes(ctx, s, t, {count, dir})` — faint pale rules drifting one pitch per
-  loop, with small dots breathing between them.
+- `confetti(ctx, s, t, {ground, inks, radius, swing, seed})` — a packed field
+  of discs, each circling its home once per loop.
+- `tape(ctx, s, t, {ground, columns, inks, speed, seed})` — columns of dots and
+  stacked bars scrolling like punched tape, a whole number of repeats per loop.
+- `stripes(ctx, s, t, {ground, rule, ink, count, dir})` — faint pale rules
+  drifting one pitch per loop, with small dots breathing between them.
+- `checker(ctx, s, t, {a, b, cells})` — coarse cells in two tints, flipped by
+  a wave crossing the diagonal.
+- `crosses(ctx, s, t, {ground, ink, cols, size})` — a grid of registration
+  marks drifting a cell per loop, each blinking on its own phase.
+- `rings(ctx, s, t, {ground, ink, bead, count})` — concentric hairlines
+  growing from the centre, a bead orbiting each.
+- `dashes(ctx, s, t, {ground, inks, count, tilt, seed})` — slanted strokes
+  falling a whole number of heights per loop.
 
-Over them, boxed type: `box(ctx, x, y, w, h, fill?)` is the hairline frame the
-type overhangs, `pill(ctx, s, text, cx, cy, {size, scale, …})` is a line of
-Lora in a white pill, and `footer(ctx, s, {text, color, alpha})` is the boxed
-"the Motion Social Club" line. The Confetti, Tape and Stripes starters are the
-three references, animated; the carousel uses all three.
+Over them, boxed type: `box(ctx, x, y, w, h, fill?, stroke?)` is the hairline
+frame the type overhangs, `pill(ctx, s, text, cx, cy, {size, fx, …})` a line
+of Lora in a pill under an entrance, `tag(ctx, s, text, cx, cy)` a small
+numbered box, and `footer(ctx, s, {text, color, fill, alpha})` the boxed
+"the Motion Social Club" line.
+
+The starters: Confetti, Tape and Stripes are the three references, animated;
+Checker (outlined Archivo letters shaking in), Crosses (Lora lines sliding in
+from alternate sides), Rings (a number pulsing with the rings) and Dashes (a
+list of rows) extend the family. Every one declares its colours, copy, an
+entrance and a shake as options.
 
 ## The stage `s`
 
