@@ -177,7 +177,7 @@
     border-radius: 9px;
     margin-bottom: 8px;
   }
-  .dump-item .text { font-size: 14px; }
+  .dump-item .text { font-size: 14px; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
   .icon-btn {
     background: none;
     border: none;
@@ -195,6 +195,76 @@
     color: var(--muted);
     padding: 18px 4px;
     text-align: center;
+  }
+
+  .sugg-panel {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .sugg-panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .sugg-group { margin-top: 14px; }
+  .sugg-group h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 2px;
+  }
+  .sugg-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+  .sugg-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sugg-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 6px 6px 6px 14px;
+    font-size: 13px;
+  }
+  .sugg-chip.added { opacity: 0.6; }
+  .sugg-add {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .sugg-add:hover { border-color: var(--ink); }
+  .sugg-added {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--known);
+    padding: 4px 8px;
+  }
+
+  .res-sugg {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 6px 0 0;
+  }
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    font-family: inherit;
   }
 
   .cat-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
@@ -441,6 +511,38 @@
     { key: "known", label: "Already know" }
   ];
 
+  // A short starting curriculum pulled from the Motion Social Club's own
+  // guides (the Fundamentals, Learn) and its Directory of verified
+  // channels and courses. "first" seeds Must-know, "then" seeds
+  // Nice-to-know -- both stay fully editable at every later step, and the
+  // attached link is a starting point the person can replace with their
+  // own at Attach resources.
+  var STARTER_SUGGESTIONS = [
+    { id: "s-grids", tier: "first", text: "Grids", category: "Theoretical",
+      resourceLabel: "tMSC Fundamentals — Grids", resourceUrl: "/fundamentals/grids" },
+    { id: "s-type", tier: "first", text: "Typography fundamentals", category: "Theoretical",
+      resourceLabel: "tMSC Fundamentals — Typography", resourceUrl: "/fundamentals/typography" },
+    { id: "s-comp", tier: "first", text: "Composition: placement, balance, contrast", category: "Theoretical",
+      resourceLabel: "tMSC Fundamentals — Composition", resourceUrl: "/fundamentals/composition" },
+    { id: "s-motion", tier: "first", text: "Motion basics: easing, duration, stagger", category: "Theoretical",
+      resourceLabel: "tMSC Fundamentals — Motion basics", resourceUrl: "/fundamentals/motion-basics" },
+    { id: "s-whatis", tier: "first", text: "What motion design actually is", category: "Theoretical",
+      resourceLabel: "tMSC Learn — Foundations", resourceUrl: "/learn/foundations/what-motion-design-is" },
+    { id: "s-easing", tier: "first", text: "Easing, past the default curve", category: "Practical",
+      resourceLabel: "tMSC Learn — Craft", resourceUrl: "/learn/craft/easing-past-easy-ease" },
+    { id: "s-ae-course", tier: "then", text: "After Effects, from zero", category: "Practical",
+      resourceLabel: "The Beginner's Guide to After Effects (Skillshare)",
+      resourceUrl: "https://www.skillshare.com/classes/The-Beginners-Guide-to-Adobe-After-Effects/1758053045" },
+    { id: "s-easyae", tier: "then", text: "Follow a beginner-friendly After Effects channel", category: "Practical",
+      resourceLabel: "Easy After Effects (YouTube)", resourceUrl: "https://www.youtube.com/@EasyAfterEffects" },
+    { id: "s-som", tier: "then", text: "General motion graphics workflow", category: "Practical",
+      resourceLabel: "School of Motion (YouTube)", resourceUrl: "https://www.youtube.com/channel/UCAhdxqdrDN3gWJkaUFl9G-Q" },
+    { id: "s-mds", tier: "then", text: "Character animation & rigging", category: "Practical",
+      resourceLabel: "Motion Design School (YouTube)", resourceUrl: "https://www.youtube.com/channel/UC-L0yvYPpGQZD3PHDLKiUpg" },
+    { id: "s-glossary", tier: "then", text: "Learn the vocabulary", category: "Theoretical",
+      resourceLabel: "tMSC Directory — Glossary", resourceUrl: "/directory/glossary" }
+  ];
+
   function uid() {
     return "id" + Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
@@ -478,6 +580,26 @@
   function categoryById(id) {
     for (var i = 0; i < state.categories.length; i++) if (state.categories[i].id === id) return state.categories[i];
     return null;
+  }
+  function categoryIdByName(name) {
+    for (var i = 0; i < state.categories.length; i++) if (state.categories[i].name === name) return state.categories[i].id;
+    return state.categories[0] ? state.categories[0].id : null;
+  }
+  function suggestionAdded(suggId) {
+    return state.items.some(function (it) { return it.sourceId === suggId; });
+  }
+  function addSuggestion(sugg) {
+    if (suggestionAdded(sugg.id)) return;
+    var id = uid();
+    state.items.push({
+      id: id,
+      text: sugg.text,
+      categoryId: categoryIdByName(sugg.category),
+      priority: sugg.tier === "first" ? "must" : "nice",
+      sourceId: sugg.id,
+      suggestion: { label: sugg.resourceLabel, url: sugg.resourceUrl }
+    });
+    state.resources[id] = { type: "link", value: sugg.resourceUrl };
   }
   function priorityMeta(key) {
     for (var i = 0; i < PRIORITIES.length; i++) if (PRIORITIES[i].key === key) return PRIORITIES[i];
@@ -616,10 +738,30 @@
 
   // ---------- step 1: brain dump ----------
 
+  function renderSuggestionGroup(tier, label, hint) {
+    var items = STARTER_SUGGESTIONS.filter(function (s) { return s.tier === tier; });
+    var chips = items.map(function (s) {
+      var added = suggestionAdded(s.id);
+      return '<li class="sugg-chip' + (added ? " added" : "") + '">' +
+        '<span class="sugg-text" title="' + escapeHtml(s.resourceLabel) + '">' + escapeHtml(s.text) + '</span>' +
+        (added
+          ? '<span class="sugg-added">Added &#10003;</span>'
+          : '<button type="button" class="sugg-add" data-suggest="' + s.id + '">+ Add</button>') +
+        '</li>';
+    }).join("");
+    return '<div class="sugg-group">' +
+      '<h3>' + label + '</h3>' +
+      '<p class="sugg-hint">' + hint + '</p>' +
+      '<ul class="plain sugg-list">' + chips + '</ul>' +
+      '</div>';
+  }
+
   function renderStep1() {
     var card = document.getElementById("stepCard");
     var list = state.items.map(function (it) {
-      return '<li class="dump-item"><span class="text">' + escapeHtml(it.text) + '</span>' +
+      return '<li class="dump-item"><span class="text">' + escapeHtml(it.text) +
+        (it.suggestion ? '<span class="tag cat" title="' + escapeHtml(it.suggestion.label) + '">tMSC</span>' : '') +
+        '</span>' +
         '<button class="icon-btn" data-remove="' + it.id + '" title="Remove" type="button">&times;</button></li>';
     }).join("");
     card.innerHTML =
@@ -630,7 +772,13 @@
         '<button class="btn" type="submit">Add</button>' +
       '</form>' +
       '<ul class="plain" id="dumpList">' + list + '</ul>' +
-      (state.items.length === 0 ? '<p class="empty-note">Nothing yet &mdash; add your first item above.</p>' : '') +
+      (state.items.length === 0 ? '<p class="empty-note">Nothing yet &mdash; add your first item above, or borrow from the club’s own guides below.</p>' : '') +
+      '<div class="sugg-panel">' +
+        '<h3 class="sugg-panel-title">Suggested by the Motion Social Club</h3>' +
+        '<p class="step-hint">A starting curriculum pulled from tMSC’s own Fundamentals, Learn and Directory. Adding one pre-fills its category, priority and a linked resource &mdash; all still yours to change, and you can swap in your own link at Attach resources.</p>' +
+        renderSuggestionGroup("first", "Learn first", "Foundations — added as Must-know.") +
+        renderSuggestionGroup("then", "Then go deeper", "Practical follow-ups — added as Nice-to-know.") +
+      '</div>' +
       renderNavBar({ warning: state.items.length === 0 ? "Add at least one item to continue." : "" });
 
     document.getElementById("addForm").addEventListener("submit", function (e) {
@@ -638,7 +786,7 @@
       var input = document.getElementById("itemInput");
       var text = input.value.trim();
       if (!text) return;
-      state.items.push({ id: uid(), text: text, categoryId: null, priority: null });
+      state.items.push({ id: uid(), text: text, categoryId: null, priority: null, sourceId: null, suggestion: null });
       input.value = "";
       render();
       var refocus = document.getElementById("itemInput");
@@ -650,6 +798,13 @@
         state.items = state.items.filter(function (it) { return it.id !== id; });
         delete state.resources[id];
         state.sequence = state.sequence.filter(function (x) { return x !== id; });
+        render();
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-suggest]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var sugg = STARTER_SUGGESTIONS.filter(function (s) { return s.id === btn.getAttribute("data-suggest"); })[0];
+        if (sugg) addSuggestion(sugg);
         render();
       });
     });
@@ -952,17 +1107,26 @@
       }).join("");
       var inputType = res.type === "link" ? "url" : "text";
       var placeholder = res.type === "link" ? "https://&hellip;" : (res.type === "course" ? "Name of a course you already have" : "A quick note to yourself");
+      var suggNote = "";
+      if (it.suggestion) {
+        var stillSuggested = res.type === "link" && res.value === it.suggestion.url;
+        suggNote = '<p class="res-sugg">' +
+          (stillSuggested
+            ? 'Suggested by tMSC: ' + escapeHtml(it.suggestion.label) + ' &mdash; edit or replace it with your own.'
+            : 'tMSC suggested ' + escapeHtml(it.suggestion.label) + '. <button type="button" class="link-btn" data-res-restore="' + id + '">Use it</button>') +
+          '</p>';
+      }
       return '<div class="res-row">' +
         '<div class="head"><span class="order-num">' + (idx + 1) + '.</span><span class="text">' + escapeHtml(it.text) + '</span></div>' +
         '<div class="res-fields">' +
           '<select data-res-type="' + id + '">' + options + '</select>' +
           '<input type="' + inputType + '" data-res-value="' + id + '" placeholder="' + placeholder + '" value="' + escapeHtml(res.value) + '" />' +
-        '</div></div>';
+        '</div>' + suggNote + '</div>';
     }).join("");
 
     card.innerHTML =
       '<h2 class="step-title">Attach your resources</h2>' +
-      '<p class="step-hint">Add a link, a note, or the name of a course you already have for each step. Nothing is suggested for you &mdash; only what you add here goes into the calendar.</p>' +
+      '<p class="step-hint">Add a link, a note, or the name of a course you already have for each step. Items you borrowed from tMSC’s guides already carry a suggested link &mdash; swap in your own any time.</p>' +
       rows +
       (state.sequence.length === 0 ? '<p class="empty-note">Your path is empty &mdash; go back and sequence some items first.</p>' : "") +
       renderNavBar();
@@ -978,6 +1142,16 @@
       input.addEventListener("input", function () {
         var id = input.getAttribute("data-res-value");
         state.resources[id].value = input.value;
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-res-restore]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-res-restore");
+        var it = itemById(id);
+        if (it && it.suggestion) {
+          state.resources[id] = { type: "link", value: it.suggestion.url };
+          render();
+        }
       });
     });
 
