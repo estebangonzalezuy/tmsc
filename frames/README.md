@@ -71,27 +71,32 @@ Stagger with `s.stagger`, ease the result, hand it to `s.enter`, draw inside
 ## Grit
 
 The rough type on the club's posts is a fragment shader, `s.grit`, run over
-a layer the type was drawn on (WebGL; a browser without it gets the layer
-back untouched):
+a layer the type was drawn on, in the manner of a screen or offset print
+(WebGL; a browser without it gets the layer back untouched):
 
 ```js
 const L = s.layer("type");          // a post-sized offscreen canvas
 const g = s.on(L.ctx);              // the same stage, drawing into it
 g.rich("Rough is a *choice.*", s.w / 2, s.h / 2, { size: 200, family: serif, weight: 700, align: "center" });
-s.grit(L.canvas, { rough: 12, grain: 0.9, chunk: 4, bleed: 3, chroma: 8, boil: 10, t });
+s.grit(L.canvas, { texture: 1, grain: 0.6, chunk: 4, rough: 2, bleed: 3, chroma: 8, boil: 10, t });
 ```
 
-| knob     | what it does                                                                  |
-| -------- | ----------------------------------------------------------------------------- |
-| `rough`  | tears the edges: a slow wobble plus a per-cell jag, in px                      |
-| `grain`  | bites noise into the edges, 0..1.5; past 1 it punches holes through the shape |
-| `chunk`  | the noise cell in px; bigger is chunkier, like torn paper                     |
-| `bleed`  | thickens (+) or thins (−) the shape by that many px, like ink on soft paper   |
-| `chroma` | misregisters the red and blue channels by that many px                        |
-| `boil`   | re-rolls the noise that many times per loop, so the roughness boils           |
-| `hard`   | `false` keeps soft edges; the default snaps them                              |
+A tooth field eats into the ink everywhere, so the inside of a letter goes
+uneven and speckled and its edge breaks up where the field bites through,
+rather than the outline being pushed about.
 
-`gritOptions(s, t, defaults)` in the Shared block declares all six as
+| knob      | what it does                                                                    |
+| --------- | ------------------------------------------------------------------------------- |
+| `texture` | how much the tooth eats into the ink, 0..1.5; past 1 the letters fall apart     |
+| `grain`   | what the tooth is: coarse mottle at 0, fine per-cell speckle at 1               |
+| `chunk`   | the speckle cell in px; the mottle scales with it                               |
+| `rough`   | a small wobble of the outline, in px                                            |
+| `bleed`   | thickens (+) or thins (−) the shape by that many px, like ink on soft paper     |
+| `chroma`  | misregisters the colour plates by that many px, each plate on its own tooth     |
+| `boil`    | re-rolls the noise that many times per loop, so the print boils                 |
+| `hard`    | `false` keeps soft coverage; the default snaps it, like a stencil               |
+
+`gritOptions(s, t, defaults)` in the Shared block declares all seven as
 options in one go and returns what `s.grit` takes. Blobs, Tape, Polygons and
 Ribbons carry them, with a Grit switch; **Torn** is the shader on its own, at
 full strength, and its paper tooth is the same shader over a faint rectangle.

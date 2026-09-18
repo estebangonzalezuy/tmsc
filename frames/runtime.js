@@ -389,11 +389,14 @@
 
   /* ------------------------------------------------------------- grit -- */
 
-  // A fragment shader over a layer: tears the edges with two scales of
-  // noise, bites grain into them, bleeds or erodes the shape, misregisters
-  // the colour channels, and re-rolls its noise a few times per loop so
-  // the roughness boils like hand-drawn frames. WebGL, one draw per call;
-  // a browser without WebGL gets the layer back untouched.
+  // A fragment shader over a layer, in the manner of a screen or offset
+  // print: a tooth field (coarse mottle blended toward fine speckle) eats
+  // into the ink everywhere, so the interior goes uneven and the edges
+  // break up where the field bites through; each colour plate sits on its
+  // own tooth slightly out of register; the shape can bleed or erode; a
+  // small wobble unstraightens the outline; and the noise re-rolls a few
+  // times per loop so it boils like hand-pulled frames. WebGL, one draw per
+  // call; a browser without WebGL gets the layer back untouched.
   const VERT = `
 attribute vec2 a_pos;
 varying vec2 v_uv;
@@ -403,7 +406,7 @@ void main() { v_uv = a_pos * 0.5 + 0.5; gl_Position = vec4(a_pos, 0.0, 1.0); }`;
 precision highp float;
 uniform sampler2D u_src;
 uniform vec2 u_res;
-uniform float u_rough, u_grain, u_chunk, u_bleed, u_chroma, u_seed, u_hard;
+uniform float u_rough, u_texture, u_grain, u_chunk, u_bleed, u_chroma, u_seed, u_hard;
 varying vec2 v_uv;
 
 float hash(vec2 p) {
@@ -418,18 +421,32 @@ float vnoise(vec2 p) {
   float a = hash(i), b = hash(i + vec2(1.0, 0.0)), c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
   return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+// Three octaves: the mottle of ink laid down unevenly.
+float fbm(vec2 p) {
+  return vnoise(p) * 0.5 + vnoise(p * 2.03 + 7.7) * 0.3 + vnoise(p * 4.11 + 19.1) * 0.2;
+}
 vec4 samp(vec2 px) { return texture2D(u_src, px / u_res); }
 
-// The displaced sample point for a pixel: a slow wobble plus a per-cell jag.
-vec2 torn(vec2 px) {
-  vec2 cell = floor(px / u_chunk) + u_seed * 7.0;
-  vec2 wob = vec2(vnoise(px / (u_chunk * 6.0) + u_seed * 3.1), vnoise(px / (u_chunk * 6.0) + 50.0 + u_seed * 3.1)) - 0.5;
-  vec2 jag = vec2(hash(cell), hash(cell + 17.0)) - 0.5;
-  return px + (wob * 2.0 + jag) * u_rough;
+// A small wobble of the sample point, so the outline is not ruler-straight.
+vec2 wobble(vec2 px, float seed) {
+  vec2 wob = vec2(vnoise(px / (u_chunk * 6.0) + seed * 3.1), vnoise(px / (u_chunk * 6.0) + 50.0 + seed * 3.1)) - 0.5;
+  return px + wob * 2.0 * u_rough;
 }
 
-// Alpha after bleed and grain at a displaced point.
-float alphaAt(vec2 p, vec2 cell) {
+// The tooth of the paper for one plate: coarse mottle blended toward fine
+// per-cell speckle by u_grain. 0 is a clean spot, 1 is where ink fails.
+float tooth(vec2 px, float seed) {
+  vec2 cell = floor(px / u_chunk) + seed * 7.0;
+  float mottle = clamp((fbm(px / (u_chunk * 12.0) + seed * 5.3) - 0.5) * 2.6 + 0.5, 0.0, 1.0);
+  float speck = hash(cell + 99.0);
+  return mix(mottle, speck, u_grain);
+}
+
+// Ink coverage for one plate at a pixel: the shape's alpha, bled or
+// eroded, then eaten by the tooth. Where the tooth wins the ground shows
+// through, inside the shape as much as at its edge.
+float ink(vec2 px, float seed) {
+  vec2 p = wobble(px, seed);
   float a = samp(p).a;
   if (u_bleed != 0.0) {
     float r = abs(u_bleed);
@@ -441,26 +458,25 @@ float alphaAt(vec2 p, vec2 cell) {
     }
     a = m;
   }
-  if (a <= 0.002) return 0.0; // empty stays empty, whatever the noise says
-  if (u_grain > 0.0) a = step(u_grain * hash(cell + 99.0), a);
-  if (u_hard > 0.0) a = smoothstep(0.35, 0.65, a);
-  return a;
+  if (a <= 0.002) return 0.0; // empty stays empty, whatever the tooth says
+  float t = tooth(px, seed);
+  a = a - u_texture * (t - 0.3);
+  return u_hard > 0.0 ? smoothstep(0.42, 0.58, a) : clamp(a, 0.0, 1.0);
 }
 
 void main() {
   vec2 px = v_uv * u_res;
-  vec2 cell = floor(px / u_chunk) + u_seed * 7.0;
-  vec2 p = torn(px);
-  vec3 col = samp(p).rgb;
+  vec3 col = samp(wobble(px, u_seed)).rgb;
   if (u_chroma > 0.0) {
+    // three plates, each on its own tooth and slightly out of register
     vec2 off = vec2(u_chroma, u_chroma * 0.35);
-    float ar = alphaAt(p + off, cell);
-    float ag = alphaAt(p, cell);
-    float ab = alphaAt(p - off, cell);
-    vec3 cr = samp(p + off).rgb, cb = samp(p - off).rgb;
+    float ar = ink(px + off, u_seed + 11.0);
+    float ag = ink(px, u_seed);
+    float ab = ink(px - off, u_seed + 23.0);
+    vec3 cr = samp(px + off).rgb, cb = samp(px - off).rgb;
     gl_FragColor = vec4(cr.r * ar, col.g * ag, cb.b * ab, max(ar, max(ag, ab)));
   } else {
-    float a = alphaAt(p, cell);
+    float a = ink(px, u_seed);
     gl_FragColor = vec4(col * a, a);
   }
 }`;
@@ -508,7 +524,7 @@ void main() {
     gl.disable(gl.BLEND);
     gl.viewport(0, 0, w, h);
     const u = {};
-    ["u_res", "u_rough", "u_grain", "u_chunk", "u_bleed", "u_chroma", "u_seed", "u_hard", "u_src"].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
+    ["u_res", "u_rough", "u_texture", "u_grain", "u_chunk", "u_bleed", "u_chroma", "u_seed", "u_hard", "u_src"].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
     gl.uniform2f(u.u_res, w, h);
     gl.uniform1i(u.u_src, 0);
     g = { canvas, gl, u };
@@ -528,8 +544,9 @@ void main() {
     const seed = (o.seed || 0) * 13 + (boil ? Math.floor(wrap(o.t || 0) * boil) : 0);
     gl.bindTexture(gl.TEXTURE_2D, gl.getParameter(gl.TEXTURE_BINDING_2D));
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-    gl.uniform1f(u.u_rough, o.rough == null ? 3 : o.rough);
-    gl.uniform1f(u.u_grain, o.grain == null ? 0.6 : o.grain);
+    gl.uniform1f(u.u_rough, o.rough == null ? 2 : o.rough);
+    gl.uniform1f(u.u_texture, o.texture == null ? 0.8 : o.texture);
+    gl.uniform1f(u.u_grain, clamp(o.grain == null ? 0.5 : o.grain, 0, 1));
     gl.uniform1f(u.u_chunk, Math.max(1, o.chunk == null ? 3 : o.chunk));
     gl.uniform1f(u.u_bleed, o.bleed || 0);
     gl.uniform1f(u.u_chroma, o.chroma || 0);

@@ -140,13 +140,14 @@
     // The grit knobs, declared as options in one go. Returns what s.grit takes.
     function gritOptions(s, t, d) {
       d = d || {};
-      const rough = s.range("Rough", d.rough == null ? 0.3 : d.rough, 0, 1);
-      const grain = s.range("Grain", d.grain == null ? 0.6 : d.grain, 0, 1.5);
+      const texture = s.range("Texture", d.texture == null ? 0.8 : d.texture, 0, 1.5);
+      const grain = s.range("Grain", d.grain == null ? 0.5 : d.grain, 0, 1);
       const chunk = s.range("Chunk", d.chunk == null ? 3 : d.chunk, 1, 10, 1);
+      const rough = s.range("Wobble", d.rough == null ? 0.15 : d.rough, 0, 1);
       const bleed = s.range("Bleed", d.bleed == null ? 0 : d.bleed, -1, 1);
       const chroma = s.range("Chroma", d.chroma == null ? 0 : d.chroma, 0, 1);
       const boil = s.range("Boil", d.boil == null ? 8 : d.boil, 0, 24, 1);
-      return { rough: rough * s.w * 0.012, grain, chunk, bleed: bleed * s.w * 0.008, chroma: chroma * s.w * 0.012, boil, t };
+      return { texture, grain, chunk, rough: rough * s.w * 0.012, bleed: bleed * s.w * 0.008, chroma: chroma * s.w * 0.012, boil, t };
     }
 
     /* ---- backgrounds -------------------------------------------------- */
@@ -738,7 +739,7 @@
         const columns = s.range("Columns", 11, 5, 17, 1);
         const showFooter = s.toggle("Footer", true);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { rough: 0.25, grain: 0.5, chunk: 4, bleed: 0, chroma: 0, boil: 6 });
+        const go = gritOptions(s, t, { texture: 0.7, grain: 0.4, chunk: 4, rough: 0.15, bleed: 0, chroma: 0, boil: 6 });
 
         tape(ctx, s, t, { ground, columns, speed: Number(speed) });
         const cx = s.w / 2;
@@ -1122,7 +1123,7 @@
         const kicker = s.text("Kicker", "Con *Superlocal.uy*");
         const shake = s.range("Shake", 0.4, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { rough: 0.2, grain: 0.4, chunk: 3, bleed: 0, chroma: 0.1, boil: 8 });
+        const go = gritOptions(s, t, { texture: 0.6, grain: 0.45, chunk: 3, rough: 0.1, bleed: 0, chroma: 0.12, boil: 8 });
 
         ribbons(ctx, s, t, { ground, inks: SETS[bands], count, wave });
         const cx = s.w / 2;
@@ -1178,7 +1179,7 @@
         const head = s.text("Headline", "You don't need\nmore options.\nYou need *fewer.*");
         const shake = s.range("Wobble", 0.5, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { rough: 0.2, grain: 0.5, chunk: 3, bleed: 0.15, chroma: 0, boil: 6 });
+        const go = gritOptions(s, t, { texture: 0.75, grain: 0.5, chunk: 3, rough: 0.1, bleed: 0.15, chroma: 0, boil: 6 });
 
         polygons(ctx, s, t, { ground, block, inks: [ringA, ringB, paperC, block], sides, count });
         const cx = s.w / 2;
@@ -1341,7 +1342,7 @@
         const scrambleOn = s.toggle("Scramble", true);
         const shake = s.range("Shake", 0.3, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { rough: 0.35, grain: 0.7, chunk: 3, bleed: 0.1, chroma: 0.15, boil: 8 });
+        const go = gritOptions(s, t, { texture: 0.9, grain: 0.55, chunk: 3, rough: 0.2, bleed: 0.1, chroma: 0.2, boil: 8 });
 
         blobs(ctx, s, t, { ground, line, count });
         const cx = s.w / 2;
@@ -1383,7 +1384,7 @@
         const inkC = s.color("Ink", P.black);
         const echoC = s.color("Echo", P.red);
         const head = s.text("Headline", "Rough\nis a\n*choice.*");
-        const go = gritOptions(s, t, { rough: 0.5, grain: 0.9, chunk: 4, bleed: 0.2, chroma: 0.25, boil: 10 });
+        const go = gritOptions(s, t, { texture: 1.0, grain: 0.6, chunk: 4, rough: 0.2, bleed: 0.2, chroma: 0.3, boil: 10 });
         const shake = s.range("Shake", 0.3, 0, 1);
         const entrance = s.pick("Entrance", "pop", s.ENTRANCES);
         const showFooter = s.toggle("Footer", true);
@@ -1396,10 +1397,10 @@
         if (tooth > 0) {
           const T = s.layer("tooth");
           T.ctx.fillStyle = inkC;
-          T.ctx.globalAlpha = 0.04;
+          T.ctx.globalAlpha = 0.3;
           T.ctx.fillRect(0, 0, s.w, s.h);
           ctx.globalAlpha = tooth * 0.5;
-          s.grit(T.canvas, { rough: 0, grain: 1.5, chunk: 2, bleed: 0, chroma: 0, boil: go.boil, t, hard: false });
+          s.grit(T.canvas, { texture: 1.3, grain: 1, chunk: 2, rough: 0, bleed: 0, chroma: 0, boil: go.boil, t, hard: false });
           ctx.globalAlpha = 1;
         }
 
