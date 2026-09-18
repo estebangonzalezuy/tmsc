@@ -386,6 +386,161 @@
     }
   }
 
+
+  /* ------------------------------------------------------------- grit -- */
+
+  // A fragment shader over a layer: tears the edges with two scales of
+  // noise, bites grain into them, bleeds or erodes the shape, misregisters
+  // the colour channels, and re-rolls its noise a few times per loop so
+  // the roughness boils like hand-drawn frames. WebGL, one draw per call;
+  // a browser without WebGL gets the layer back untouched.
+  const VERT = `
+attribute vec2 a_pos;
+varying vec2 v_uv;
+void main() { v_uv = a_pos * 0.5 + 0.5; gl_Position = vec4(a_pos, 0.0, 1.0); }`;
+
+  const FRAG = `
+precision highp float;
+uniform sampler2D u_src;
+uniform vec2 u_res;
+uniform float u_rough, u_grain, u_chunk, u_bleed, u_chroma, u_seed, u_hard;
+varying vec2 v_uv;
+
+float hash(vec2 p) {
+  p = fract(p * vec2(0.1031, 0.1030));
+  p += dot(p, p.yx + 33.33);
+  return fract((p.x + p.y) * p.x);
+}
+float vnoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash(i), b = hash(i + vec2(1.0, 0.0)), c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+vec4 samp(vec2 px) { return texture2D(u_src, px / u_res); }
+
+// The displaced sample point for a pixel: a slow wobble plus a per-cell jag.
+vec2 torn(vec2 px) {
+  vec2 cell = floor(px / u_chunk) + u_seed * 7.0;
+  vec2 wob = vec2(vnoise(px / (u_chunk * 6.0) + u_seed * 3.1), vnoise(px / (u_chunk * 6.0) + 50.0 + u_seed * 3.1)) - 0.5;
+  vec2 jag = vec2(hash(cell), hash(cell + 17.0)) - 0.5;
+  return px + (wob * 2.0 + jag) * u_rough;
+}
+
+// Alpha after bleed and grain at a displaced point.
+float alphaAt(vec2 p, vec2 cell) {
+  float a = samp(p).a;
+  if (u_bleed != 0.0) {
+    float r = abs(u_bleed);
+    float m = a;
+    for (int i = 0; i < 8; i++) {
+      float ang = float(i) * 0.785398;
+      float s = samp(p + vec2(cos(ang), sin(ang)) * r).a;
+      m = u_bleed > 0.0 ? max(m, s) : min(m, s);
+    }
+    a = m;
+  }
+  if (a <= 0.002) return 0.0; // empty stays empty, whatever the noise says
+  if (u_grain > 0.0) a = step(u_grain * hash(cell + 99.0), a);
+  if (u_hard > 0.0) a = smoothstep(0.35, 0.65, a);
+  return a;
+}
+
+void main() {
+  vec2 px = v_uv * u_res;
+  vec2 cell = floor(px / u_chunk) + u_seed * 7.0;
+  vec2 p = torn(px);
+  vec3 col = samp(p).rgb;
+  if (u_chroma > 0.0) {
+    vec2 off = vec2(u_chroma, u_chroma * 0.35);
+    float ar = alphaAt(p + off, cell);
+    float ag = alphaAt(p, cell);
+    float ab = alphaAt(p - off, cell);
+    vec3 cr = samp(p + off).rgb, cb = samp(p - off).rgb;
+    gl_FragColor = vec4(cr.r * ar, col.g * ag, cb.b * ab, max(ar, max(ag, ab)));
+  } else {
+    float a = alphaAt(p, cell);
+    gl_FragColor = vec4(col * a, a);
+  }
+}`;
+
+  const gritGL = new Map();
+  function gritContext(w, h) {
+    const key = `${w}x${h}`;
+    let g = gritGL.get(key);
+    if (g) return g;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const gl = canvas.getContext("webgl", { premultipliedAlpha: true, preserveDrawingBuffer: true, antialias: false, alpha: true });
+    if (!gl) {
+      gritGL.set(key, null);
+      return null;
+    }
+    const shader = (type, src) => {
+      const sh = gl.createShader(type);
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error("grit shader: " + gl.getShaderInfoLog(sh));
+      return sh;
+    };
+    const program = gl.createProgram();
+    gl.attachShader(program, shader(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(program, shader(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error("grit program: " + gl.getProgramInfoLog(program));
+    gl.useProgram(program);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(program, "a_pos");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.disable(gl.BLEND);
+    gl.viewport(0, 0, w, h);
+    const u = {};
+    ["u_res", "u_rough", "u_grain", "u_chunk", "u_bleed", "u_chroma", "u_seed", "u_hard", "u_src"].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
+    gl.uniform2f(u.u_res, w, h);
+    gl.uniform1i(u.u_src, 0);
+    g = { canvas, gl, u };
+    gritGL.set(key, g);
+    return g;
+  }
+
+  // Runs the grit pass over `source` (a post-sized canvas) and returns the
+  // processed canvas, or the source itself when WebGL is unavailable.
+  function grit(source, o = {}) {
+    const w = source.width;
+    const h = source.height;
+    const g = gritContext(w, h);
+    if (!g) return source;
+    const { gl, u } = g;
+    const boil = Math.max(0, Math.round(o.boil == null ? 8 : o.boil));
+    const seed = (o.seed || 0) * 13 + (boil ? Math.floor(wrap(o.t || 0) * boil) : 0);
+    gl.bindTexture(gl.TEXTURE_2D, gl.getParameter(gl.TEXTURE_BINDING_2D));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    gl.uniform1f(u.u_rough, o.rough == null ? 3 : o.rough);
+    gl.uniform1f(u.u_grain, o.grain == null ? 0.6 : o.grain);
+    gl.uniform1f(u.u_chunk, Math.max(1, o.chunk == null ? 3 : o.chunk));
+    gl.uniform1f(u.u_bleed, o.bleed || 0);
+    gl.uniform1f(u.u_chroma, o.chroma || 0);
+    gl.uniform1f(u.u_seed, seed % 1000);
+    gl.uniform1f(u.u_hard, o.hard === false ? 0 : 1);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    return g.canvas;
+  }
+
   /* ------------------------------------------------------------ stage -- */
 
   // `info` carries w, h, seconds, fps, frame, index, count.
@@ -409,6 +564,8 @@
     s.scramble = scramble;
     s.layer = (name) => layer(name, info.w, info.h);
     s.warp = (source, o) => warp(ctx, source, info.w, info.h, o);
+    s.grit = (source, o) => ctx.drawImage(grit(source, o), 0, 0);
+    s.on = (ctx2) => makeStage(ctx2, info); // the same stage, drawing into another context (a layer)
     return s;
   }
 
@@ -497,6 +654,7 @@
 
   F.EASE = EASE;
   F.ENTRANCES = ENTRANCES;
+  F.grit = grit;
   F.compile = compile;
   F.render = render;
   F.makeStage = makeStage;

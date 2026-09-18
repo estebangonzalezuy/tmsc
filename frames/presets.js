@@ -137,6 +137,18 @@
       s.rich(text, x, y, f);
     }
 
+    // The grit knobs, declared as options in one go. Returns what s.grit takes.
+    function gritOptions(s, t, d) {
+      d = d || {};
+      const rough = s.range("Rough", d.rough == null ? 0.3 : d.rough, 0, 1);
+      const grain = s.range("Grain", d.grain == null ? 0.6 : d.grain, 0, 1.5);
+      const chunk = s.range("Chunk", d.chunk == null ? 3 : d.chunk, 1, 10, 1);
+      const bleed = s.range("Bleed", d.bleed == null ? 0 : d.bleed, -1, 1);
+      const chroma = s.range("Chroma", d.chroma == null ? 0 : d.chroma, 0, 1);
+      const boil = s.range("Boil", d.boil == null ? 8 : d.boil, 0, 24, 1);
+      return { rough: rough * s.w * 0.012, grain, chunk, bleed: bleed * s.w * 0.008, chroma: chroma * s.w * 0.012, boil, t };
+    }
+
     /* ---- backgrounds -------------------------------------------------- */
 
     // 1 — confetti: a packed field of discs, each one circling its home once
@@ -725,6 +737,8 @@
         const speed = s.pick("Tape speed", "1", ["1", "2"]);
         const columns = s.range("Columns", 11, 5, 17, 1);
         const showFooter = s.toggle("Footer", true);
+        const gritOn = s.toggle("Grit", true);
+        const go = gritOptions(s, t, { rough: 0.25, grain: 0.5, chunk: 4, bleed: 0, chroma: 0, boil: 6 });
 
         tape(ctx, s, t, { ground, columns, speed: Number(speed) });
         const cx = s.w / 2;
@@ -757,7 +771,13 @@
         const bw = s.w * 0.9;
         box(ctx, cx - bw / 2, hy - hSize * 0.9, bw, hSize * (0.92 * (hLines.length - 1) + 1.13), ground, inkC);
         const amp = s.w * 0.018 * warpAmt * s.span(t, 0.1, 0.5, s.ease.inOut);
-        s.warp(L.canvas, {
+        let src = L.canvas;
+        if (gritOn) {
+          const G = s.layer("gritted");
+          s.on(G.ctx).grit(L.canvas, go);
+          src = G.canvas;
+        }
+        s.warp(src, {
           slice: 9,
           dx: (v) => amp * Math.sin(s.TAU * (v * 2.5 - t)),
           sx: (v) => 1 + 0.05 * warpAmt * Math.sin(s.TAU * (v * 4 + t)),
@@ -1101,23 +1121,27 @@
         const head = s.text("Headline", "Taller para\nempezar\nen *Motion*\nhoy");
         const kicker = s.text("Kicker", "Con *Superlocal.uy*");
         const shake = s.range("Shake", 0.4, 0, 1);
+        const gritOn = s.toggle("Grit", true);
+        const go = gritOptions(s, t, { rough: 0.2, grain: 0.4, chunk: 3, bleed: 0, chroma: 0.1, boil: 8 });
 
         ribbons(ctx, s, t, { ground, inks: SETS[bands], count, wave });
         const cx = s.w / 2;
 
+        const L = s.layer("type");
+        const g = s.on(L.ctx);
         const lines = head.split("\n").filter(Boolean);
         const size = Math.round(s.w * 0.16);
         const lh = size * 0.98;
         const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.3;
         const leave = s.span(t, 0.9, 1, s.ease.in);
-        ctx.textBaseline = "alphabetic";
+        L.ctx.textBaseline = "alphabetic";
         lines.forEach((line, i) => {
           const p = s.stagger(t, i, lines.length, { from: 0.03, to: 0.45, overlap: 0.6, ease: s.ease.expoOut });
           const fx = s.enter("rise", p, size * 0.5);
           fx.alpha *= 1 - leave;
           const sh = s.shake(t, i, 4);
-          s.place(cx + sh.x * shake * size * 0.06, y0 + i * lh + sh.y * shake * size * 0.06, fx, () => {
-            echo(ctx, s, line, 0, 0, {
+          g.place(cx + sh.x * shake * size * 0.06, y0 + i * lh + sh.y * shake * size * 0.06, fx, () => {
+            echo(L.ctx, g, line, 0, 0, {
               size,
               family: sans,
               weight: 700,
@@ -1129,6 +1153,8 @@
             });
           });
         });
+        if (gritOn) s.grit(L.canvas, go);
+        else ctx.drawImage(L.canvas, 0, 0);
 
         ctx.globalAlpha = s.span(t, 0.45, 0.65) * (1 - leave);
         ctx.fillStyle = type;
@@ -1151,6 +1177,8 @@
         const inkC = s.color("Ink", P.black);
         const head = s.text("Headline", "You don't need\nmore options.\nYou need *fewer.*");
         const shake = s.range("Wobble", 0.5, 0, 1);
+        const gritOn = s.toggle("Grit", true);
+        const go = gritOptions(s, t, { rough: 0.2, grain: 0.5, chunk: 3, bleed: 0.15, chroma: 0, boil: 6 });
 
         polygons(ctx, s, t, { ground, block, inks: [ringA, ringB, paperC, block], sides, count });
         const cx = s.w / 2;
@@ -1167,14 +1195,21 @@
         const inP = s.span(t, 0.05, 0.4, s.ease.backOut);
         const leave = s.span(t, 0.9, 1, s.ease.in);
         const rot = 0.04 * shake * Math.sin(s.TAU * 2 * t);
+        // the type is drawn on a layer at the post's centre, gritted, then
+        // carried into the sticker's transform
+        const L = s.layer("type");
+        const g = s.on(L.ctx);
+        L.ctx.fillStyle = inkC;
+        L.ctx.textBaseline = "alphabetic";
+        const y0 = cy - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        lines.forEach((line, i) => g.rich(line, cx, y0 + i * lh, f));
         s.place(cx, cy, { dx: 0, dy: 0, scale: inP * (1 - leave), rot, alpha: 1 }, () => {
           ctx.fillStyle = paperC;
           s.roundRect(-bw / 2, -bh / 2, bw, bh, size * 0.9);
           ctx.fill();
-          ctx.fillStyle = inkC;
-          ctx.textBaseline = "alphabetic";
-          const y0 = -((lines.length - 1) * lh) / 2 + size * 0.35;
-          lines.forEach((line, i) => s.rich(line, 0, y0 + i * lh, f));
+          ctx.translate(-cx, -cy);
+          if (gritOn) s.grit(L.canvas, go);
+          else ctx.drawImage(L.canvas, 0, 0);
         });
       },
     },
@@ -1305,23 +1340,28 @@
         const head = s.text("Headline", "You need\nmore\npractice");
         const scrambleOn = s.toggle("Scramble", true);
         const shake = s.range("Shake", 0.3, 0, 1);
+        const gritOn = s.toggle("Grit", true);
+        const go = gritOptions(s, t, { rough: 0.35, grain: 0.7, chunk: 3, bleed: 0.1, chroma: 0.15, boil: 8 });
 
         blobs(ctx, s, t, { ground, line, count });
         const cx = s.w / 2;
 
+        // the type goes on a layer, so the shader can tear it
+        const L = s.layer("type");
+        const g = s.on(L.ctx);
         const lines = head.split("\n").filter(Boolean);
         const size = Math.round(s.w * 0.16);
         const lh = size * 0.95;
         const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.32;
         const leave = s.span(t, 0.9, 1, s.ease.in);
-        ctx.textBaseline = "alphabetic";
+        L.ctx.textBaseline = "alphabetic";
         lines.forEach((ln, i) => {
           const p = s.stagger(t, i, lines.length, { from: 0.02, to: 0.55, overlap: 0.4 });
           const text = scrambleOn ? s.scramble(ln, p, t, i) : ln;
           const sh = s.jitter(t, i, 12);
           const amt = shake * size * 0.03 * (1 - s.span(p, 0.95, 1));
-          ctx.globalAlpha = s.span(p, 0, 0.1) * (1 - leave);
-          echo(ctx, s, text, cx + sh.x * amt, y0 + i * lh + sh.y * amt, {
+          L.ctx.globalAlpha = s.span(p, 0, 0.1) * (1 - leave);
+          echo(L.ctx, g, text, cx + sh.x * amt, y0 + i * lh + sh.y * amt, {
             size,
             family: serif,
             weight: 700,
@@ -1330,7 +1370,66 @@
             offsets: [{ dx: 0.05, dy: 0.05, color: echoC }],
           });
         });
-        ctx.globalAlpha = 1;
+        if (gritOn) s.grit(L.canvas, go);
+        else ctx.drawImage(L.canvas, 0, 0);
+      },
+    },
+
+    torn: {
+      label: "Torn — gritty Lora, every knob of the shader",
+      name: "Torn",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.cream);
+        const inkC = s.color("Ink", P.black);
+        const echoC = s.color("Echo", P.red);
+        const head = s.text("Headline", "Rough\nis a\n*choice.*");
+        const go = gritOptions(s, t, { rough: 0.5, grain: 0.9, chunk: 4, bleed: 0.2, chroma: 0.25, boil: 10 });
+        const shake = s.range("Shake", 0.3, 0, 1);
+        const entrance = s.pick("Entrance", "pop", s.ENTRANCES);
+        const showFooter = s.toggle("Footer", true);
+
+        ctx.fillStyle = ground;
+        ctx.fillRect(0, 0, s.w, s.h);
+        // a paper tooth on the ground, from the same shader: a faint wide
+        // rectangle with heavy grain reads as fibre
+        const tooth = s.range("Tooth", 0.3, 0, 1);
+        if (tooth > 0) {
+          const T = s.layer("tooth");
+          T.ctx.fillStyle = inkC;
+          T.ctx.globalAlpha = 0.04;
+          T.ctx.fillRect(0, 0, s.w, s.h);
+          ctx.globalAlpha = tooth * 0.5;
+          s.grit(T.canvas, { rough: 0, grain: 1.5, chunk: 2, bleed: 0, chroma: 0, boil: go.boil, t, hard: false });
+          ctx.globalAlpha = 1;
+        }
+
+        const cx = s.w / 2;
+        const L = s.layer("type");
+        const g = s.on(L.ctx);
+        const lines = head.split("\n").filter(Boolean);
+        const size = Math.round(s.w * 0.22);
+        const lh = size * 0.92;
+        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.33;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        L.ctx.textBaseline = "alphabetic";
+        lines.forEach((ln, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.03, to: 0.5, overlap: 0.6, ease: s.ease.backOut });
+          const fx = s.enter(entrance, p, size * 0.5);
+          fx.alpha *= 1 - leave;
+          const sh = s.jitter(t, i, go.boil || 8);
+          g.place(cx + sh.x * shake * size * 0.03, y0 + i * lh + sh.y * shake * size * 0.03, fx, () => {
+            echo(L.ctx, g, ln, 0, 0, {
+              size,
+              family: serif,
+              weight: 700,
+              color: inkC,
+              offsets: [{ dx: -0.04, dy: 0.04, color: echoC }],
+            });
+          });
+        });
+        s.grit(L.canvas, go);
+
+        if (showFooter) footer(ctx, s, { color: inkC, box: false });
       },
     },
 

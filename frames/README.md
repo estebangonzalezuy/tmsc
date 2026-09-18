@@ -68,6 +68,35 @@ carousel starter does. **Reset** returns a slide to its own defaults.
 Stagger with `s.stagger`, ease the result, hand it to `s.enter`, draw inside
 `s.place`. Add `s.shake` or `s.jitter` to the position for a shake.
 
+## Grit
+
+The rough type on the club's posts is a fragment shader, `s.grit`, run over
+a layer the type was drawn on (WebGL; a browser without it gets the layer
+back untouched):
+
+```js
+const L = s.layer("type");          // a post-sized offscreen canvas
+const g = s.on(L.ctx);              // the same stage, drawing into it
+g.rich("Rough is a *choice.*", s.w / 2, s.h / 2, { size: 200, family: serif, weight: 700, align: "center" });
+s.grit(L.canvas, { rough: 12, grain: 0.9, chunk: 4, bleed: 3, chroma: 8, boil: 10, t });
+```
+
+| knob     | what it does                                                                  |
+| -------- | ----------------------------------------------------------------------------- |
+| `rough`  | tears the edges: a slow wobble plus a per-cell jag, in px                      |
+| `grain`  | bites noise into the edges, 0..1.5; past 1 it punches holes through the shape |
+| `chunk`  | the noise cell in px; bigger is chunkier, like torn paper                     |
+| `bleed`  | thickens (+) or thins (−) the shape by that many px, like ink on soft paper   |
+| `chroma` | misregisters the red and blue channels by that many px                        |
+| `boil`   | re-rolls the noise that many times per loop, so the roughness boils           |
+| `hard`   | `false` keeps soft edges; the default snaps them                              |
+
+`gritOptions(s, t, defaults)` in the Shared block declares all six as
+options in one go and returns what `s.grit` takes. Blobs, Tape, Polygons and
+Ribbons carry them, with a Grit switch; **Torn** is the shader on its own, at
+full strength, and its paper tooth is the same shader over a faint rectangle.
+The shader is deterministic: the same frame renders byte-identical.
+
 ## Faces, colours, backgrounds
 
 Two faces, loaded from Google Fonts and nothing else: **Archivo** (`sans`,
@@ -124,8 +153,9 @@ letters.
 
 The starters: Confetti, Tape and Stripes are the three references, animated;
 Checker, Crosses, Rings and Dashes extend the family; Rays, Burst, Ribbons,
-Polygons, Strings, Bricks, Network and Blobs are the Instagram posts. Every
-one declares its colours, copy, an entrance and a shake as options.
+Polygons, Strings, Bricks, Network and Blobs are the Instagram posts; Torn is
+the grit shader alone. Every one declares its colours, copy, an entrance and a
+shake as options.
 
 ## The stage `s`
 
@@ -151,6 +181,7 @@ one declares its colours, copy, an entrance and a shake as options.
 | `justify(text, x, y, width, spread)`   | spreads a line's words across `width`; `spread` 0 packs, 1 justifies |
 | `layer(name)`                          | a cleared offscreen `{canvas, ctx}` the size of the post              |
 | `warp(canvas, {slice, dx, sx})`        | draws a layer in horizontal slices, each shifted by `dx(v)` and stretched by `sx(v)`, `v` = 0 top, 1 bottom |
+| `grit(canvas, {…})`, `on(ctx2)`        | the grit shader (see above); the same stage bound to another context      |
 
 Anything that spins, scrolls or ripples should do so a whole number of times
 per loop, so `t = 1` lands on `t = 0`. The starters show the idiom.
