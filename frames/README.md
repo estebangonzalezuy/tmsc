@@ -33,8 +33,28 @@ live preview, the thumbnails in the rail and every exported frame come out of
 the same function, and two exports of the same post byte-identical.
 
 A single post is one slide. A carousel is several. The **Shared** tab is code
-that runs before every slide, so colours, the font and any helper you want in
+that runs before every slide, so colours, the faces and any helper you want in
 all of them go there.
+
+## Faces, colours, backgrounds
+
+Two faces, loaded from Google Fonts and nothing else: **Archivo** (`sans`,
+weights 100–900, with italics) and **Lora** (`serif`, 400–700, with italics).
+The default Shared block declares them, the club's colours as `P`, and three
+background systems, each a seamless loop:
+
+- `confetti(ctx, s, t, {ground, inks, radius, seed})` — a packed field of discs
+  on green, each circling its home once per loop.
+- `tape(ctx, s, t, {columns, inks, seed})` — columns of dots and stacked bars
+  scrolling like punched tape, a whole number of repeats per loop.
+- `stripes(ctx, s, t, {count, dir})` — faint pale rules drifting one pitch per
+  loop, with small dots breathing between them.
+
+Over them, boxed type: `box(ctx, x, y, w, h, fill?)` is the hairline frame the
+type overhangs, `pill(ctx, s, text, cx, cy, {size, scale, …})` is a line of
+Lora in a white pill, and `footer(ctx, s, {text, color, alpha})` is the boxed
+"the Motion Social Club" line. The Confetti, Tape and Stripes starters are the
+three references, animated; the carousel uses all three.
 
 ## The stage `s`
 
@@ -55,6 +75,11 @@ all of them go there.
 | `lines(text, maxWidth)`                | word-wrap with the current `ctx.font`; `\n` forces a break           |
 | `fit(text, maxWidth, {max,min,weight,family})` | largest size that fits one line; sets `ctx.font`, returns the size |
 | `circle(x, y, r)`, `roundRect(x, y, w, h, r)` | begin a path; you fill or stroke it                           |
+| `font({size, weight, italic, family})` | builds a `ctx.font` string                                           |
+| `rich(text, x, y, {size, weight, family, align})` | one line where `*word*` is italic and `**word**` bold; returns its width. `measure(text, o)` measures without drawing |
+| `justify(text, x, y, width, spread)`   | spreads a line's words across `width`; `spread` 0 packs, 1 justifies |
+| `layer(name)`                          | a cleared offscreen `{canvas, ctx}` the size of the post              |
+| `warp(canvas, {slice, dx, sx})`        | draws a layer in horizontal slices, each shifted by `dx(v)` and stretched by `sx(v)`, `v` = 0 top, 1 bottom |
 
 Anything that spins, scrolls or ripples should do so a whole number of times
 per loop, so `t = 1` lands on `t = 0`. The starters show the idiom.
@@ -78,6 +103,6 @@ per loop, so `t = 1` lands on `t = 0`. The starters show the idiom.
 - `index.html`, `style.css` — the shell.
 - `formats.js` — the four formats.
 - `runtime.js` — compiles a slide, the helper kit, renders one frame.
-- `presets.js` — the starters and the carousel, written as real functions.
+- `presets.js` — the Shared block, the starters and the carousel, written as real functions.
 - `exporter.js` — PNG, and frame-by-frame video through MediaRecorder.
 - `app.js` — the UI: rail, stage, transport, editor, files, links, export.

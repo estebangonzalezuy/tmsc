@@ -153,6 +153,114 @@
     ctx.closePath();
   }
 
+
+  /* ------------------------------------------------------------- rich -- */
+
+  // "*word*" marks an italic span; "**word**" a bold one.
+  function richSpans(text) {
+    const spans = [];
+    const re = /\*\*([^*]+)\*\*|\*([^*]+)\*|([^*]+)/g;
+    let m;
+    while ((m = re.exec(String(text)))) {
+      if (m[1] != null) spans.push({ text: m[1], bold: true });
+      else if (m[2] != null) spans.push({ text: m[2], italic: true });
+      else spans.push({ text: m[3] });
+    }
+    return spans;
+  }
+
+  function fontString(o) {
+    const italic = o.italic ? "italic " : "";
+    return `${italic}${o.weight || 400} ${o.size}px ${o.family || "sans-serif"}`;
+  }
+
+  function measureRich(ctx, text, o) {
+    let w = 0;
+    richSpans(text).forEach((sp) => {
+      ctx.font = fontString({ ...o, italic: sp.italic || o.italic, weight: sp.bold ? o.boldWeight || 700 : o.weight });
+      w += ctx.measureText(sp.text).width;
+    });
+    return w;
+  }
+
+  // Draws one line of rich text. `align` is left | center | right around x.
+  // Uses the current fillStyle and textBaseline. Returns the line's width.
+  function fillRich(ctx, text, x, y, o) {
+    const w = measureRich(ctx, text, o);
+    let cx = o.align === "center" ? x - w / 2 : o.align === "right" ? x - w : x;
+    const wasAlign = ctx.textAlign;
+    ctx.textAlign = "left";
+    richSpans(text).forEach((sp) => {
+      ctx.font = fontString({ ...o, italic: sp.italic || o.italic, weight: sp.bold ? o.boldWeight || 700 : o.weight });
+      ctx.fillText(sp.text, cx, y);
+      cx += ctx.measureText(sp.text).width;
+    });
+    ctx.textAlign = wasAlign;
+    return w;
+  }
+
+  // Draws a line's words spread to fill `width` (a single word is centred).
+  // `spread` 0..1 scales the gaps, so 0 packs the words and 1 justifies.
+  function fillJustified(ctx, text, x, y, width, spread = 1) {
+    const words = String(text).split(/\s+/).filter(Boolean);
+    const widths = words.map((wd) => ctx.measureText(wd).width);
+    const total = widths.reduce((a, b) => a + b, 0);
+    const space = ctx.measureText(" ").width;
+    const wasAlign = ctx.textAlign;
+    ctx.textAlign = "left";
+    if (words.length === 1) {
+      ctx.fillText(words[0], x + (width - total) / 2, y);
+    } else {
+      const gapMax = (width - total) / (words.length - 1);
+      const gap = space + (gapMax - space) * spread;
+      const lineW = total + gap * (words.length - 1);
+      let cx = x + (width - lineW) / 2;
+      words.forEach((wd, i) => {
+        ctx.fillText(wd, cx, y);
+        cx += widths[i] + gap;
+      });
+    }
+    ctx.textAlign = wasAlign;
+  }
+
+  /* ----------------------------------------------------------- layers -- */
+
+  // Offscreen canvases the size of the post, reused between frames and
+  // cleared on each request, for drawing something you will warp, mask or
+  // composite. Deterministic: a layer never carries anything over.
+  const layers = new Map();
+  function layer(name, w, h) {
+    const key = `${name}:${w}x${h}`;
+    let l = layers.get(key);
+    if (!l) {
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      l = { canvas, ctx: canvas.getContext("2d") };
+      layers.set(key, l);
+    }
+    l.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    l.ctx.clearRect(0, 0, w, h);
+    l.ctx.globalAlpha = 1;
+    l.ctx.textAlign = "left";
+    l.ctx.textBaseline = "alphabetic";
+    return l;
+  }
+
+  // Draws a post-sized canvas onto ctx in horizontal slices, each shifted
+  // by dx(v) and stretched by sx(v) about the centre, v = y / h in 0..1.
+  function warp(ctx, source, w, h, o = {}) {
+    const slice = Math.max(1, o.slice || 12);
+    const dx = o.dx || (() => 0);
+    const sx = o.sx || (() => 1);
+    for (let y = 0; y < h; y += slice) {
+      const sh = Math.min(slice, h - y);
+      const v = (y + sh / 2) / h;
+      const k = sx(v);
+      ctx.drawImage(source, 0, y, w, sh, (w - w * k) / 2 + dx(v), y, w * k, sh);
+    }
+  }
+
   /* ------------------------------------------------------------ stage -- */
 
   // `info` carries w, h, seconds, fps, frame, index, count.
@@ -165,6 +273,12 @@
     s.fit = (text, maxWidth, opts) => fitFont(ctx, text, maxWidth, opts);
     s.circle = (x, y, r) => circle(ctx, x, y, r);
     s.roundRect = (x, y, w, h, r) => roundRect(ctx, x, y, w, h, r);
+    s.font = fontString;
+    s.rich = (text, x, y, o) => fillRich(ctx, text, x, y, o);
+    s.measure = (text, o) => measureRich(ctx, text, o);
+    s.justify = (text, x, y, width, spread) => fillJustified(ctx, text, x, y, width, spread);
+    s.layer = (name) => layer(name, info.w, info.h);
+    s.warp = (source, o) => warp(ctx, source, info.w, info.h, o);
     return s;
   }
 

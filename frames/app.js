@@ -543,10 +543,12 @@
   }
 
   const fullDraw = (ctx, index, t, frame) => drawSlide(ctx, index, t, 1, frame);
+  const fontsReady = () => (document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => null) : Promise.resolve());
   const frameOfHead = () => Math.floor(head * state.seconds * state.fps);
 
   $("btn-png").addEventListener("click", async () => {
     applyEditor();
+    await fontsReady();
     const { w, h } = fmt();
     const blob = await F.renderPng({ w, h, draw: fullDraw, slideIndex: current, t: head, frame: frameOfHead() });
     F.download(blob, `${slug(state.name)}-${pad2(current + 1)}.png`);
@@ -555,6 +557,7 @@
 
   $("btn-png-all").addEventListener("click", async () => {
     applyEditor();
+    await fontsReady();
     const { w, h } = fmt();
     setExporting(true);
     for (let i = 0; i < state.slides.length; i++) {
@@ -573,6 +576,7 @@
       alert("This browser cannot record video. Chrome or Edge can.");
       return;
     }
+    await fontsReady();
     const wasPlaying = playing;
     setPlaying(false);
     setExporting(true);
@@ -639,6 +643,19 @@
   });
   setPlaying(true);
   requestAnimationFrame(tick);
+
+  // Canvas text does not trigger a web font's download by itself, so ask
+  // for every face the starters use, then redraw once they are in.
+  if (document.fonts && document.fonts.load) {
+    const faces = [];
+    ["Archivo", "Lora"].forEach((family) =>
+      ["400", "700", "900", "italic 400", "italic 700"].forEach((face) => faces.push(`${face} 16px ${family}`)),
+    );
+    Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null))).then(() => {
+      drawStage();
+      drawThumbs();
+    });
+  }
 
   // For a script driving the page (tests), not for slides.
   F.app = {

@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Frames</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -111,9 +114,15 @@
         <dt><code>s.lines(text, maxWidth)</code></dt><dd>Word-wraps with the current <code>ctx.font</code>; returns lines. <code>\n</code> forces a break.</dd>
         <dt><code>s.fit(text, maxWidth, {max, min, weight, family})</code></dt><dd>Largest size at which the text fits one line. Sets <code>ctx.font</code>, returns the size.</dd>
         <dt><code>s.circle(x, y, r)</code>, <code>s.roundRect(x, y, w, h, r)</code></dt><dd>Begin a path; you fill or stroke it.</dd>
+        <dt><code>s.font({size, weight, italic, family})</code></dt><dd>Builds a <code>ctx.font</code> string.</dd>
+        <dt><code>s.rich(text, x, y, {size, weight, family, align})</code></dt><dd>One line where <code>*word*</code> is italic and <code>**word**</code> bold, mixing faces in a line. Returns its width; <code>s.measure</code> measures without drawing.</dd>
+        <dt><code>s.justify(text, x, y, width, spread)</code></dt><dd>Spreads a line's words across <code>width</code>; <code>spread</code> 0 packs them, 1 justifies.</dd>
+        <dt><code>s.layer(name)</code></dt><dd>A cleared offscreen <code>{canvas, ctx}</code> the size of the post, for something you will warp or mask.</dd>
+        <dt><code>s.warp(canvas, {slice, dx: v =&gt; …, sx: v =&gt; …})</code></dt><dd>Draws a layer in horizontal slices, each shifted and stretched, <code>v</code> = 0 at the top, 1 at the bottom.</dd>
       </dl>
-      <h3>Shared</h3>
-      <p>The Shared tab runs before every slide, so its <code>const</code>s and functions are in scope in each one. Colours, the font, a helper for the page number — that is where they go.</p>
+      <h3>Fonts and Shared</h3>
+      <p>Two faces, loaded from Google Fonts: <b>Archivo</b> (<code>sans</code>, weights 100–900, with italics) and <b>Lora</b> (<code>serif</code>, 400–700, with italics). Nothing else.</p>
+      <p>The Shared tab runs before every slide, so its <code>const</code>s and functions are in scope in each one. The default one carries the palette, the two faces, the three backgrounds (<code>confetti</code>, <code>tape</code>, <code>stripes</code>) and the boxed type helpers (<code>box</code>, <code>pill</code>, <code>footer</code>).</p>
       <h3>Files</h3>
       <p>The post autosaves in this browser. <b>Save</b> writes it as a <code>.json</code> file, <b>Open…</b> reads one back, <b>Copy link</b> puts the whole post in the URL. <b>PNG</b> and <b>All PNGs</b> take the current instant of the scrubber. <b>Video</b> records one loop of this slide; <b>Reel</b> records every slide in order, one loop each, into one file. Recording runs in real time.</p>
       <p><button id="btn-help-close">Close</button></p>

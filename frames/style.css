@@ -7,7 +7,7 @@
   --stage: #dcdcd8;
   --focus: #141414;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --sans: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --sans: Archivo, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
