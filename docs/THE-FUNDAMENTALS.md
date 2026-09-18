@@ -165,7 +165,9 @@ Four is the number on purpose — a fifth has to earn its place against these.
 
 ## Navigation
 
-The link ships visible in the header and the footer. `nav:fundamentals` in
-`hidden[]` (the Studio's Navigation panel) takes it out of the menus; the
-pages stay reachable by URL. Hiding the `fundamentals` section itself also
-drops the link, the way it does for every other page.
+The header and footer carry the link, and `nav:fundamentals` in `hidden[]`
+(the Studio's Navigation panel) takes it out of the menus while the pages
+stay reachable by URL. It is hidden for now, the owner's call until the
+section is ready to be pointed at from the menu; flipping it back on is one
+toggle in the Studio. Hiding the `fundamentals` section itself also drops
+the link, the way it does for every other page.
