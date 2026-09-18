@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Frames (frames/) is a standalone tool beside the site: plain browser
+    // scripts with no build step, deliberately outside the site's toolchain.
+    "frames/**",
   ]),
 ]);
 

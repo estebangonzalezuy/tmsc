@@ -302,6 +302,18 @@ grammar never became a node kind and has no replacement in the graph model,
 a real capability loss rather than a rename. `docs/THE-TILES.md` is kept for
 its design history, marked retired at the top.
 
+## Frames (`frames/`) — beside the site, not in it
+
+A standalone tool for making posts and carousels as JavaScript animations:
+plain `index.html` + a few browser scripts, no Next, React, Tailwind, build
+step or dependency, opened straight from the folder. It shares nothing with
+the site or the Posts Studio except the four formats, copied into
+`frames/formats.js`. A slide is the body of `function (ctx, t, s)`, a pure
+function of loop progress, so preview and export are one render path. It is
+ignored by the site's ESLint on purpose and has no route; `frames/README.md`
+is its documentation. Keep it that way: don't wire it into `app/`, and don't
+pull site modules into it.
+
 ## the Tools (`/tools`) — retired
 
 The everyday front door to the studio (a note, a countdown, a quote card, a
