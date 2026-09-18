@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { accentHoverText } from "@/components/Motifs";
+import { accentHoverText, CircleLetter, Label } from "@/components/Motifs";
 
 const allColumns = [
   {
@@ -46,39 +46,43 @@ export default function SiteFooter() {
     }))
     .filter((c) => c.links.length > 0);
   return (
+    /* Four columns under a hairline, then the legal line. The card is gone
+       with every other floating surface; the rule across the top is what
+       separates the footer from the page now. */
     <footer
       {...studioSection("site", "Site & links")}
-      className="px-4 md:px-6 pb-4"
+      className="border-t border-line px-5 md:px-6 pt-14"
     >
-      <div className="card px-6 md:px-10 py-12 grid gap-10 md:grid-cols-3">
+      <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
-          <p>{site.name}</p>
+          <p className="flex items-center gap-2.5 font-medium">
+            <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
+            {site.name}
+          </p>
           <p className="mt-4 max-w-xs text-sm text-muted leading-relaxed">
             {site.description}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-6 text-sm">
-          {columns.map((c) => (
-            <div key={c.title}>
-              <p className="text-muted">{c.title}</p>
-              <ul className="mt-3 space-y-2">
-                {c.links.map((l) => (
-                  <li key={l.href}>
-                    <Link
-                      href={l.href}
-                      className="accent-hover-text transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="text-sm md:justify-self-end">
-          <p className="text-muted">Elsewhere</p>
-          <ul className="mt-3 space-y-2">
+        {columns.map((c) => (
+          <div key={c.title} className="text-sm">
+            <Label>{c.title}</Label>
+            <ul className="mt-3.5 space-y-2 text-muted">
+              {c.links.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="accent-hover-text transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div className="text-sm">
+          <Label>Elsewhere</Label>
+          <ul className="mt-3.5 space-y-2 text-muted">
             <li>
               <a
                 href={site.substack}
@@ -120,12 +124,12 @@ export default function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="px-6 md:px-10 py-6 flex flex-wrap gap-x-6 gap-y-2 items-center justify-between text-xs text-muted">
+      <div className="mt-12 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-7 text-xs text-faint">
         <span>
           {site.name} © {new Date().getFullYear()}
         </span>
-        {/* The two faces the site is set in. Pirata One is Post Lab material,
-            not the site's, so it stays out of this. */}
+        {/* The two faces the site is set in. Pirata One is Posts Studio
+            material, not the site's, so it stays out of this. */}
         <span className="flex flex-wrap items-center gap-x-1.5">
           Set in
           {typefaces.map((f, i) => (

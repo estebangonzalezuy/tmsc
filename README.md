@@ -3,13 +3,16 @@
 Website for the Motion Social Club — the side companion on your motion design
 path. Built with Next.js (App Router), React, TypeScript, and Tailwind CSS v4.
 
-Black-and-white identity, set in Archivo (sans) and Lora (serif), using the
-club's poster motifs: circled letters, orbital rings, and boxed headlines.
+White editorial identity, set in Archivo (sans) and Lora (serif): hairlines
+rather than shadows, the club's palette used at rest on the index's room
+cards and one block per page, and every illustration drawn and animated in
+code from the club's own motifs (`lib/illus/drawers.ts`). See "Design rules"
+in `AGENTS.md`.
 
 ## Pages
 
-- `/` — homepage: manifesto hero, club intro, editorial pillars, newsletter,
-  Practice File, learn/resources previews, offerings
+- `/` — the index: the hero, the rooms (one card per thing the club holds),
+  the walls (real stills and clips), the latest letters, the library offer
 - `/about` — what the club is, the editorial spine, recurring threads
 - `/newsletter` — full Substack archive (2024–2026)
 - `/resources` — curated resources and worksheets

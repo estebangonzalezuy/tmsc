@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
+import { CircleLetter } from "@/components/Motifs";
 
 // A link disappears when the section powering its page is hidden, or when
 // the link itself is hidden from the Navigation panel in the Studio.
@@ -31,18 +32,21 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    /* The bar floats over the page as its own capsule instead of being ruled
-       off from it, and sticks so it stays reachable down a long index. */
+    /* A bar, not a capsule. The site stopped floating things off the page, so
+       the header is a hairline across the top and the wordmark, the links and
+       the one button sit on the page itself. It still sticks: the index is
+       long and the way back has to stay reachable. */
     <header
       {...studioSection("nav", "Navigation")}
-      className="sticky top-0 z-20 px-4 md:px-6 pt-4 pb-2"
+      className="sticky top-0 z-20 border-b border-line bg-background/85 backdrop-blur"
     >
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center justify-between gap-6 card rounded-full px-6 py-3 text-sm backdrop-blur">
-        <Link href="/" className="shrink-0">
+      <nav className="hidden h-[3.75rem] items-center justify-between gap-6 px-5 text-[13.5px] md:flex md:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5 font-medium">
+          <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
           {site.name}
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 text-muted">
           {menuLinks.slice(1).map((l) => (
             <Link
               key={l.href}
@@ -57,15 +61,20 @@ export default function SiteHeader() {
           href={site.subscribe}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 rounded-full px-4 py-1.5 bg-foreground text-background accent-hover transition-colors"
+          className="btn shrink-0 accent-hover"
         >
           Join the club
         </a>
       </nav>
 
       {/* Mobile nav */}
-      <nav className="md:hidden flex items-center justify-between card rounded-full px-5 py-3 text-sm">
-        <Link href="/" onClick={() => setOpen(false)}>
+      <nav className="flex h-[3.5rem] items-center justify-between px-5 text-sm md:hidden">
+        <Link
+          href="/"
+          onClick={() => setOpen(false)}
+          className="flex items-center gap-2.5 font-medium"
+        >
+          <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
           {site.short}
         </Link>
         <button

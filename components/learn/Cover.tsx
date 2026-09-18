@@ -1,24 +1,37 @@
-// The title card. It used to be a generated PostSpec sheet — ruled paper, an
-// editorial headline — drawn through the old studio's renderer. That renderer
-// (lib/learnCover.ts) is retired with the rest of the PostSpec model
-// (AGENTS.md, Workstream 4); this is the plain fallback the task calls for
-// rather than a port onto the new node-graph model, since a static server
-// component needs no live renderer at all for a card that never animated in
-// the first place.
-//
-// A seeded neutral ground (the same "stable per slug" rule accentHover
-// follows) keeps the grid from reading as one flat colour, and the title is
-// real text — a heading, not pixels — so it costs nothing for a11y or search.
+import Illustration from "@/components/Illustration";
+import { hash01, type IllusKind } from "@/lib/illus/drawers";
 
-const GROUNDS = ["#ffffff", "#f4f3ef", "#e6e5e1", "#fffdf0"];
+/* The title card.
+ *
+ * It used to be a generated PostSpec sheet drawn through the old studio's
+ * renderer; that renderer retired with the rest of the PostSpec model, and
+ * this became a flat neutral square with the title on it. Now the site draws
+ * its own pictures (lib/illus/drawers.ts), so a cover is one of those —
+ * stopped at an instant the piece's own slug puts it at, on one of the club's
+ * colours picked the same way.
+ *
+ * The title is still real text over the drawing rather than pixels in it, so
+ * it costs nothing for a11y or search and a long one just wraps.
+ */
 
-function seedOf(key: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < key.length; i++) {
-    h = Math.imul(h ^ key.charCodeAt(i), 16777619) >>> 0;
-  }
-  return h;
-}
+const GROUNDS: { block: string; ink: string; type: string }[] = [
+  { block: "bg-accent", ink: "rgba(255,255,255,.55)", type: "text-white" },
+  { block: "bg-accent-warm", ink: "rgba(255,255,255,.55)", type: "text-white" },
+  { block: "bg-accent-soft", ink: "rgba(13,13,13,.45)", type: "text-foreground" },
+  { block: "bg-accent-green", ink: "rgba(255,255,255,.55)", type: "text-white" },
+  { block: "bg-accent-cream", ink: "rgba(13,13,13,.4)", type: "text-foreground" },
+  { block: "bg-inset", ink: "rgba(13,13,13,.4)", type: "text-foreground" },
+];
+
+const KINDS: IllusKind[] = [
+  "letters",
+  "frames",
+  "sheet",
+  "grid",
+  "path",
+  "lines",
+  "orbit",
+];
 
 export default function Cover({
   slug,
@@ -29,13 +42,20 @@ export default function Cover({
   title: string;
   className?: string;
 }) {
-  const ground = GROUNDS[seedOf(slug) % GROUNDS.length];
+  const n = Math.floor(hash01(slug) * 42);
+  const { block, ink, type } = GROUNDS[n % GROUNDS.length];
+  const kind = KINDS[Math.floor(n / 6) % KINDS.length];
   return (
     <div
-      className={`aspect-square overflow-hidden flex items-end p-5 ${className}`}
-      style={{ background: ground }}
+      className={`relative aspect-square overflow-hidden flex items-end p-5 ${block} ${type} ${className}`}
     >
-      <p className="font-serif text-lg leading-snug">{title}</p>
+      <Illustration
+        kind={kind}
+        ink={ink}
+        still={slug}
+        className="absolute inset-x-0 top-0 h-[68%] w-full"
+      />
+      <p className="relative font-serif text-lg leading-snug">{title}</p>
     </div>
   );
 }

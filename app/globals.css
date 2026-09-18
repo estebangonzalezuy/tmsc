@@ -1,46 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  /* The ground the modules float on, and the modules themselves. White on
-     white can't float, so the page steps back to a warm off-white and the
-     cards keep the white — that separation is what replaces the hairline
-     grid the site used to be drawn with. */
-  --background: #f3f1ec;
+  /* White, and one step of paper under it.
+     The site used to float white cards on a warm ground; that separation is
+     gone. The page is white, a block that needs to be told apart is either
+     drawn with a hairline or filled with a colour that means something, and
+     `--inset` is the single neutral fill left — the one quiet block on a
+     page, and the ground a figure or an illustration sits on. */
+  --background: #ffffff;
   --surface: #ffffff;
+  --inset: #f5f4f0;
   --foreground: #0d0d0d;
   --muted: #6b6b6b;
-  /* Was near-black, which is what made every edge a drawn line. Now a
-     whisper, for the few dividers that still earn their place. */
-  --line: #e4e1d9;
+  --faint: #9a9a96;
+  /* Hairlines are back, and they are the only thing that separates. Two
+     strengths: `--line` for a divider between rows or sections, `--line-2`
+     for the edge of something you can press. */
+  --line: rgba(13, 13, 13, 0.1);
+  --line-2: rgba(13, 13, 13, 0.25);
 
-  --radius: 1.25rem;
-  --radius-sm: 0.75rem;
-  /* Two shadows, close together: a contact shadow to seat the card and a
-     wide soft one to lift it. Both near-black at low alpha so they read as
-     shade on the warm ground rather than as gray. */
-  --shadow:
-    0 1px 2px rgba(13, 13, 13, 0.04), 0 10px 26px -14px rgba(13, 13, 13, 0.12);
-  --shadow-lift:
-    0 2px 6px rgba(13, 13, 13, 0.05), 0 22px 46px -18px rgba(13, 13, 13, 0.2);
+  --radius: 14px;
+  --radius-sm: 8px;
 
-  /* The club's accents, the same values the Post Lab paints its posts with
-     (PALETTE in lib/postlab.ts). Nothing is coloured until it is hovered or
-     focused, so colour only ever answers a pointer. Keep the two lists in
-     step by hand: the palette is a design decision, not an import, and the
-     Post Lab needs its copy at module scope for the exporter. */
-  --accent: #3d3deb; /* indigo, every interactive state */
-  --accent-warm: #ee4b2b; /* orange red, small marks */
-  --accent-soft: #adb4f5; /* periwinkle, washes behind hovers */
-  --accent-green: #2e7d46;
+  /* The club's accents, the same values the Posts Studio paints with
+     (PALETTE in lib/palette.ts). They no longer wait for a pointer: colour
+     has four jobs at rest — the rooms, one block per page, a state, and the
+     marquee — and everything else on the page stays black on white. Keep the
+     two lists in step by hand: the palette is a design decision, not an
+     import, and the Posts Studio needs its copy at module scope. */
+  --accent: #3d3deb; /* indigo: the primary action, the offer block */
+  --accent-warm: #ee4b2b; /* orange red */
+  --accent-soft: #adb4f5; /* periwinkle: the quote band, the notion pill */
+  --accent-green: #2e7d46; /* green: a free/live state, the do block */
   --accent-cream: #fffdf0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-inset: var(--inset);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-line-2: var(--line-2);
   --color-accent: var(--accent);
   --color-accent-warm: var(--accent-warm);
   --color-accent-soft: var(--accent-soft);
@@ -113,57 +116,198 @@ body {
   font-family: var(--font-archivo), sans-serif;
 }
 
-/* ---------- floating modules ----------
+/* ---------- the pieces ----------
 
-   The site used to be drawn: 1px near-black borders around everything and
-   `gap-px bg-line` grids whose "lines" were the ground showing through the
-   cracks. Modules now sit on the ground as their own surfaces instead, so
-   a grid is real gaps between real cards rather than a hairline table.
-   .card is the surface; .card-lift adds the hover rise. Keep them off
-   anything already filled by .accent-hover on its own. */
+   Nothing is lifted off the page any more: there is one ground, and a block
+   is separated by a hairline, by a colour that means something, or by the
+   space around it. `.card` is a hairline box; `.inset` is the one neutral
+   fill; `.row-divide` rules between rows, which is where most of the site's
+   structure now lives. */
 .card {
   background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
 }
 
 .card-sm {
   border-radius: var(--radius-sm);
 }
 
+/* A card that is itself a link: the edge sharpens rather than the card
+   rising, because there is no shadow left to rise out of. */
 .card-lift {
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
+    border-color 0.2s ease,
     background-color 0.2s,
     color 0.2s;
 }
 .card-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
+  border-color: var(--line-2);
 }
 
-/* A pill: the small tag/count/filter control both references lean on.
-   Filled rather than outlined, so it reads as a chip on the surface. */
+/* The kicker over a section, the date on a letter, a count, a duration: one
+   small caps label in the body face, since the site has two typefaces and
+   this is not a third. */
+/* Inside a filled block the label takes that block's own muted step, which
+   .block-colour/.block-pale have already redefined — otherwise it keeps the
+   page's grey and goes muddy on indigo. */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* A pill: the small tag, count or filter chip. Outlined by default; the
+   three filled variants are the "a state has a colour" job. */
 .pill {
-  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--line-2);
   border-radius: 9999px;
-  padding: 0.15rem 0.65rem;
+  padding: 0.25rem 0.55rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.pill-fill {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+.pill-free {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #ffffff;
+}
+.pill-notion {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--foreground);
 }
 .accent-hover:hover .pill {
-  background: color-mix(in srgb, var(--hover-type) 18%, transparent);
+  border-color: color-mix(in srgb, var(--hover-type) 45%, transparent);
+  color: inherit;
+}
+/* On a room, a count sits on the room's own colour, so it takes that block's
+   type colour rather than the page's muted grey — which on indigo is a pill
+   you cannot read. */
+.pill-on-colour {
+  color: currentColor;
+  border-color: currentColor;
+  opacity: 0.75;
+}
+/* Same job for the small print on a room card. */
+.label-on-colour {
+  color: currentColor;
+  opacity: 0.78;
 }
 
-/* A block nested inside a card: white on white reads as nothing, so it
-   takes a faint tint of the foreground rather than a second surface. */
+/* A block nested inside a card, and the ground an illustration is drawn on. */
 .inset {
-  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  background: var(--inset);
   border-radius: var(--radius-sm);
 }
 
-/* The rare divider that survives: inside a card, between rows. */
+/* Rows inside one list: the divider that does most of the work now. */
 .row-divide > * + * {
   border-top: 1px solid var(--line);
+}
+
+/* A button. Ink by default, indigo when it is the one thing to press on the
+   page, outlined when it follows something else. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.55rem 1rem;
+  font-size: 13.5px;
+  font-weight: 500;
+  background: var(--foreground);
+  color: var(--background);
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.btn-lg {
+  padding: 0.8rem 1.35rem;
+  font-size: 14.5px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--line-2);
+}
+.btn-ghost:hover {
+  border-color: var(--foreground);
+}
+/* The button inside a filled block. `.block-colour` makes --foreground white,
+   which would otherwise give .btn white type on a white ground, so the pair is
+   set here rather than left to a utility class — plain CSS beats a layered
+   utility, and this is the kind of thing that is only noticed in a
+   screenshot. */
+.btn-on-colour {
+  background: #ffffff;
+  color: var(--accent);
+}
+.block-green .btn-on-colour {
+  color: var(--accent-green);
+}
+
+/* A link that carries a rule under it, the site's quiet "more this way". */
+.textlink {
+  font-size: 14px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 1px;
+  transition: color 0.2s;
+}
+.textlink:hover {
+  color: var(--foreground);
+}
+
+/* A block filled with one of the palette's saturated colours. It redefines
+   the tokens its children read rather than every child special-casing
+   itself: muted type inside indigo is a white tint, not --muted, and the
+   hairlines inside it are white too. */
+.block-colour {
+  --line: rgba(255, 255, 255, 0.22);
+  --line-2: rgba(255, 255, 255, 0.45);
+  --muted: rgba(255, 255, 255, 0.75);
+  --foreground: #ffffff;
+  color: #ffffff;
+  border-radius: var(--radius);
+}
+.block-indigo {
+  background: var(--accent);
+}
+.block-green {
+  background: var(--accent-green);
+}
+/* Periwinkle and cream carry near-black type, so they keep the page's own
+   ink and only soften the muted step. */
+.block-pale {
+  --muted: rgba(13, 13, 13, 0.6);
+  --line: rgba(13, 13, 13, 0.14);
+  --line-2: rgba(13, 13, 13, 0.3);
+  color: var(--foreground);
+}
+.block-peri {
+  background: var(--accent-soft);
+}
+.block-cream {
+  background: var(--accent-cream);
 }
 
 /* A figure's slider, on the Fundamentals pages: the site's own control, not
@@ -209,9 +353,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card-lift:hover {
-    transform: none;
-  }
   .animate-marquee,
   .animate-orbit,
   .animate-orbit-reverse {
@@ -266,18 +407,18 @@ body {
      the club's own two grounds — the warm page a shade under the panel's
      white — so the instrument reads as part of the site instead of a booth
      bolted onto it. */
-  --tc-page: var(--background);
-  --tc-panel: var(--surface);
+  --tc-page: #f3f1ec;
+  --tc-panel: #ffffff;
   /* Still used by transient floating things — the menu, the drawer, a
      popover toolbar — which stay glass over whatever they sit on. */
   --tc-glass: rgba(255, 255, 255, 0.94);
-  --tc-glass-solid: var(--background);
+  --tc-glass-solid: #f3f1ec;
   --tc-blur: 20px;
   /* A panel's own edge is the club's hairline at full strength; everything
      inside it is that same ink, quieter, so one colour makes every rule. */
-  --tc-frame: var(--line);
+  --tc-frame: #e4e1d9;
   --tc-edge: rgba(13, 13, 13, 0.18);
-  --tc-edge-on: var(--line);
+  --tc-edge-on: #e4e1d9;
   --tc-rule: rgba(13, 13, 13, 0.12);
   --tc-ink: var(--foreground);
   --tc-ink-2: #2f2f2f;
@@ -308,7 +449,9 @@ body {
   --tc-h: 34px;
   /* A light panel on a light page needs the site's own shadow to separate —
      the club's --shadow, the same lift a .card gets. */
-  --tc-shadow: var(--shadow);
+  --tc-shadow:
+    0 1px 2px rgba(13, 13, 13, 0.04),
+    0 10px 26px -14px rgba(13, 13, 13, 0.12);
   /* Instrument furniture, not the club's typefaces: a post set in Lora
      sitting inside a panel also set in Lora is a post you cannot see. */
   font-family:

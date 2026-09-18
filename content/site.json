@@ -12,6 +12,43 @@
     "instagram": "https://www.instagram.com/themotionsocialclub/",
     "linkedin": "https://www.linkedin.com/in/estebangonzalezuy/"
   },
+  "rooms": [
+    {
+      "id": "directory",
+      "name": "the Directory",
+      "line": "Every answer to every beginner question, in one place."
+    },
+    {
+      "id": "stills",
+      "name": "Stills",
+      "line": "Style frames, credited and linked back to the second."
+    },
+    {
+      "id": "clips",
+      "name": "Clips",
+      "line": "How a brand introduces itself, a few seconds at a time."
+    },
+    {
+      "id": "fundamentals",
+      "name": "the Fundamentals",
+      "line": "Four things to feel before you learn a tool."
+    },
+    {
+      "id": "learn",
+      "name": "Learn",
+      "line": "Seven days everyone walks, then a shelf you pick from."
+    },
+    {
+      "id": "newsletter",
+      "name": "the Newsletter",
+      "line": "One honest letter, twice a month."
+    },
+    {
+      "id": "practice",
+      "name": "the Practice File",
+      "line": "Your creative gym: one exercise, one constraint, one week."
+    }
+  ],
   "stats": [
     {
       "value": "6,000+",
@@ -638,6 +675,11 @@
     "label": "Clips",
     "headline": "How a brand or a product *introduces itself*, a few seconds at a time.",
     "note": "Launch films, identity in motion, product reveals, keynote and site work — cut into the few seconds that actually do the presenting. Each one is filed by what it is, how it moves and how it lands, and by who was presenting: a seed-stage company and one that has already gone public are not solving the same problem, and it shows in the frames. Every clip steps frame by frame, because a three-frame stagger is not something you can see at speed. Nothing here was made by the club; it is cited, credited and linked back to the second it came from."
+  },
+  "walls": {
+    "label": "The walls",
+    "headline": "What good looks like, and *how it moves*.",
+    "note": "Frames and clips from real work, indexed and credited. Nothing here was made by the club."
   },
   "worksheets": [
     {

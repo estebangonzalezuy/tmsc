@@ -63,65 +63,79 @@ browser). Therefore:
   (`lib/noteGraph.ts`) and opens it in `/postlab`, never touching the
   network, so it renders above the setup and works on a device that has
   never been set up; "Ask the club" dispatches the `capture` job.
+- `lib/illus/drawers.ts` + `components/Illustration.tsx` — the club's drawn
+  illustrations: seven pure periodic drawers and the one canvas (and one
+  animation frame) that runs them. See Design rules.
+- `lib/rooms.ts` — the rooms on the index: where each one goes, its colour and
+  its drawing. The names and lines are copy (`rooms` in `content/site.json`);
+  the counts are read off the walls and manifests in `app/(site)/page.tsx`.
 - `lib/data.ts` — typed re-exports of the JSON for server components.
 
 ## Design rules
 
-- **Black and white by default.** `--background` white, `--foreground`
-  near-black, grays for hierarchy. Every surface, every block of type and
-  every border stays monochrome.
-- **Colour only ever answers a pointer.** At rest a page is black, white and
-  gray — nothing on the site is coloured until it is hovered or focused. The
-  palette lives in two places kept in step by hand: `PALETTE` in
-  `lib/palette.ts` (the studio's exporter needs it at module scope) and the
-  `--accent*` variables in `app/globals.css`.
-- **A hover picks its colour from the whole palette**, so a grid lights up
-  differently as you cross it. Don't write hover colours by hand: use
-  `accentHover(key)` for anything that fills (cards, rows) and
-  `accentHoverText(key)` for a link that only recolours its type, both from
-  `Motifs.tsx` (which re-exports them from `lib/accent.ts` — they live outside
-  the `"use client"` module so a server-rendered page can call them too). The
-  key is something stable about the item, not its index, so a card keeps its
-  colour between visits. Green is the default the bare
-  `.accent-hover` class falls back to, and the focus ring.
-- **Fill and type are paired, never mixed.** Each `.accent-*-hover` class in
-  globals.css sets `--hover-fill` *and* `--hover-type` together; periwinkle
-  carries near-black type, the saturated ones carry white, and it never
-  appears as type on white. A child inside a filled block needs
-  `accent-hover-sub` to follow that pairing — plain `text-muted` would
-  survive the fill and go unreadable.
-- Anything with its own ground inside a hovering block must pin its own
-  colour (see `CircleLetter`'s `text-foreground`), or the glyph inherits the
-  block's hover type and disappears.
-- Never colour body copy, a heading, a border or a section background, and
-  never introduce a hex outside the palette. the Posts Studio is still the one
-  place colour can fill a surface without being asked — and the one place with
-  a second list of hexes: `GROUNDS` in `lib/palette.ts`, the neutral papers a
-  *post* is printed on. They are not accents and they never touch the site.
-- **Fonts:** Archivo (sans, UI/body) and Lora (serif, display/italic
-  emphasis) via `next/font`, both loaded with their real italics — the studio
-  mixes roman and italic inside one headline, and a browser-slanted roman
-  gives that away immediately. No other fonts.
-- **Motifs:** circled letters, orbital rings, the letter marquee, the
-  `Boxed` pill, underlined section kickers — the components in `Motifs.tsx`.
-  Don't introduce new decorative elements (gradients, icon sets); extend the
-  existing motif language instead.
-- **Modules float; nothing is drawn.** The site used to be ruled with 1px
-  near-black borders and `gap-px bg-line` hairline tables. It isn't any
-  more. A block of content is a `.card`: the white `--surface` on the warm
-  `--background`, `--radius` corners, `--shadow` to seat it. A grid is real
-  `gap-3` between real cards, never a hairline table, and a section is
-  separated by its own padding, not a rule. Add `.card-lift` when the whole
-  card is a link.
-  - `.pill` for a tag, count or filter chip; `.inset` for a block nested
-    inside a card (a second `.card` in there is white on white and reads as
-    nothing); `.row-divide` for rows inside one card, the only place
-    `--line` still draws.
-  - `--line` is now a whisper, not near-black. If something needs to be
-    told apart, give it a surface, not a border.
-  - The header is a floating sticky capsule, the footer a card. Full-bleed
-    rows that used to run edge to edge need the `px-5 md:px-6` gutter now
-    that they are cards.
+The site was redesigned in September 2026, in the register of
+`interfacecraft.dev`: a white editorial page, one serif doing the talking,
+hairlines instead of shadows, and a small number of flat coloured blocks
+carrying all the energy. What follows replaces the old "black and white,
+modules float, colour only ever answers a pointer" system outright — if you
+find a floating white card on a warm ground, a 1px near-black border or an
+underlined section kicker, it is a leftover, not the standard.
+
+- **White, and one step of paper.** `--background` and `--surface` are both
+  `#ffffff`; `--inset` (`#f5f4f0`) is the *one* neutral fill left, for the
+  quiet block on a page and the ground a drawing sits on. Ink is `#0d0d0d`,
+  muted `#6b6b6b`, faint `#9a9a96`. There is no dark theme.
+- **Hairlines are back, shadows are gone.** `--line` (10% ink) separates rows
+  and sections; `--line-2` (25%) is the edge of something you can press.
+  `.card` is a white box with a hairline and `--radius` (14px) corners — no
+  `box-shadow` anywhere on the public site, and `--shadow` no longer exists.
+  `.card-lift` sharpens the edge on hover rather than lifting the card.
+  `.row-divide` between rows is where most of the structure now lives.
+- **Two typefaces, and a label is not a third.** Archivo (sans, body and UI)
+  and Lora (serif, every heading), both with their real italics. A kicker, a
+  date, a count, a duration is `.label`: Archivo 11px/600, uppercase, `.14em`.
+  Display sizes are tight — an `h1` is `clamp(42px,6.4vw,78px)` at 1.02 and
+  `-.025em`, a section `h2` 40px at 1.08. No monospace, no third family.
+- **Colour has four jobs, and they are all at rest.** The palette is unchanged
+  (`PALETTE` in `lib/palette.ts`, the `--accent*` variables in
+  `app/globals.css`, kept in step by hand), but it no longer waits for a
+  pointer:
+  1. **The rooms** on the index — one card per thing the club holds, each
+     filled with its own accent (`components/Motifs.tsx`, `lib/rooms.ts`).
+  2. **One block per page**: the primary button and the library offer in
+     indigo, the quote band in periwinkle, a Learn track in green/indigo/
+     orange, a `:::do` in green. One, not three.
+  3. **A state**: `.pill-free` (green) for free or live, `.pill-notion`
+     (periwinkle) for a checked source, `.pill-fill` for a selected filter.
+  4. **The footer marquee**, cycling the palette because it is pleasant.
+
+  Everything else stays black on white. Never colour body copy, a heading, a
+  border or a section background, and never introduce a hex outside the
+  palette.
+- **A filled block redefines its own tokens, it does not special-case its
+  children.** Put `.block-colour` (white type) or `.block-pale` (near-black
+  type) on the fill and `--foreground`, `--muted` and `--line` are corrected
+  inside it, so a `.label` or a `.pill` in there needs nothing. Two traps,
+  both of which have already caught somebody: a Tailwind utility loses to
+  these plain-CSS classes, so use `.btn-on-colour` rather than `bg-white`;
+  and `bg-foreground` inside `.block-colour` resolves to *white*, so a
+  near-black fill has to be a literal.
+- **Hover still answers the pointer.** `accentHover(key)` and
+  `accentHoverText(key)` from `Motifs.tsx` are unchanged and still pick from
+  the whole palette on a stable key. Green is the fallback and the focus ring.
+- **The drawings are code, and they move.** Nothing on this site is a stock
+  illustration, an icon set or a gradient. `lib/illus/drawers.ts` holds seven
+  drawers — `letters`, `frames`, `sheet`, `grid`, `path`, `lines`, `orbit`,
+  plus `hero` — each a pure, periodic function of `t` in seconds that draws
+  one of the club's own motifs with a single ink. `<Illustration>` runs them:
+  **one requestAnimationFrame for the whole page**, a canvas joins it only
+  while on screen, and `still="<key>"` freezes one at a seeded instant, which
+  is what a newsletter or Learn cover is. It deliberately does not touch
+  `components/postlab/clock.ts`, so no public page needs a `<ClockRunner />`.
+  Extend the club's drawn language rather than adding a new decorative kind.
+- **Motifs:** circled letters (`CircleLetter`, a hairline circle now), the
+  letter marquee, the `Boxed` pill, `.label` kickers, `PageHeader` at the top
+  of every interior page, `Room` on the index.
 
 ## the Posts Studio (`/postlab`)
 
@@ -640,7 +654,12 @@ profile: they're appended to every system prompt for recency.
    the owner can hide the link), and a wrapper under `app/(site)/`.
 
 Grids are real gaps between cards, so an odd number of cards just leaves a
-gap — no filler cell needed (the old `gap-px bg-line` tables did need one).
+gap — no filler cell needed, and the rooms grid is expected to show four or
+seven depending on what is hidden.
+
+An interior page opens with `<PageHeader label title intro>` and nothing else:
+that is how `/directory`, `/learn` and `/fundamentals` all start, and a page
+that rolls its own kicker and `h1` will drift from them within a month.
 
 ## Verify before pushing
 

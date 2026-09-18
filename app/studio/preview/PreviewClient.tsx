@@ -5,7 +5,7 @@ import { ContentContext, type SiteContent } from "@/components/content";
 import defaultContent from "@/content/site.json";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import HomePage from "@/components/pages/HomePage";
+import HomePage, { type WallPick } from "@/components/pages/HomePage";
 import AboutPage from "@/components/pages/AboutPage";
 import NewsletterPage from "@/components/pages/NewsletterPage";
 import DirectoryPage from "@/components/pages/DirectoryPage";
@@ -18,6 +18,7 @@ import ClipsPage from "@/components/pages/ClipsPage";
 import LinksPage from "@/components/pages/LinksPage";
 import type { WallData } from "@/lib/stills-shared";
 import type { ClipWall } from "@/lib/clips-shared";
+import type { RoomCounts } from "@/lib/rooms";
 
 const pages: Record<string, React.ComponentType> = {
   home: HomePage,
@@ -61,9 +62,13 @@ type ParentMessage =
 export default function PreviewClient({
   stillsWall,
   clipsWall,
+  homeCounts,
+  homeWalls,
 }: {
   stillsWall?: WallData;
   clipsWall?: ClipWall;
+  homeCounts?: RoomCounts;
+  homeWalls?: WallPick[];
 }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [page, setPage] = useState("home");
@@ -137,6 +142,8 @@ export default function PreviewClient({
           <StillsPage wall={stillsWall} />
         ) : page === "clips" ? (
           <ClipsPage wall={clipsWall} />
+        ) : page === "home" ? (
+          <HomePage counts={homeCounts} walls={homeWalls} />
         ) : (
           <Page />
         )}

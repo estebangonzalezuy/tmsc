@@ -1,7 +1,7 @@
 "use client";
 
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { SectionHeading } from "@/components/Motifs";
+import { PageHeader, SectionHeading } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function AboutPage() {
@@ -11,15 +11,19 @@ export default function AboutPage() {
 
   return (
     <>
+      <PageHeader
+        label="About the club"
+        title={
+          <>
+            A place to <em>question ourselves</em>
+          </>
+        }
+      />
       <section
         {...studioSection("site", "Site & links")}
-        className="px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 pb-20 md:pb-28"
       >
-        <p className="text-sm underline underline-offset-4">About the club</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          A place to <em>question ourselves</em>
-        </h1>
-        <div className="mt-12 grid gap-10 md:grid-cols-2 text-sm leading-relaxed">
+        <div className="grid gap-10 md:grid-cols-2 text-[15px] leading-relaxed">
           <p>
             {site.positioning} Founded by Esteban González, a self-taught
             motion designer from Montevideo, the club started as an excuse to

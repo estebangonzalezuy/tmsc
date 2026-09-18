@@ -1,7 +1,7 @@
 "use client";
 
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { Boxed } from "@/components/Motifs";
+import { Boxed, PageHeader } from "@/components/Motifs";
 import Cta from "@/components/Cta";
 
 export default function OfferingsPage() {
@@ -11,31 +11,29 @@ export default function OfferingsPage() {
 
   return (
     <>
-      <section
-        {...studioSection("offerings", "Offerings")}
-        className="px-5 md:px-6 py-24 md:py-32"
-      >
-        <p className="text-sm underline underline-offset-4">Offerings</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          Ways to practice <em>with the club</em>, honestly labeled.
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          Some things are live, some are resting, some are still being
-          designed. The club would rather tell you which is which.
-        </p>
-      </section>
+      <PageHeader
+        label="Offerings"
+        title={
+          <>
+            Ways to practice <em>with the club</em>, honestly labeled.
+          </>
+        }
+        intro="Some things are live, some are resting, some are still being designed. The club would rather tell you which is which."
+      />
 
       {!hidden.has("offerings") && (
       <section
         {...studioSection("offerings", "Offerings")}
-        className="px-5 md:px-6 grid gap-3"
+        className="px-5 md:px-6"
       >
         {offerings.map((o) => (
           <article
             key={o.name}
-            className="card grid gap-6 px-8 py-10 md:grid-cols-[8rem_1fr_auto] md:items-start"
+            className="grid gap-6 border-t border-line py-8 md:grid-cols-[8rem_1fr_auto] md:items-start"
           >
-            <p className="text-xs text-muted pill self-start justify-self-start">
+            <p
+              className={`pill self-start justify-self-start ${o.status === "Live" ? "pill-free" : ""}`}
+            >
               {o.status}
             </p>
             <div>

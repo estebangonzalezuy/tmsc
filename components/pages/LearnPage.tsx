@@ -2,10 +2,26 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, SectionHeading, Emphasize } from "@/components/Motifs";
+import Illustration from "@/components/Illustration";
+import {
+  CircleLetter,
+  PageHeader,
+  SectionHeading,
+  Emphasize,
+} from "@/components/Motifs";
+import type { IllusKind } from "@/lib/illus/drawers";
+
+/* The three tracks, in the order the manifest lists them. Fixed rather than
+   hashed, for the same reason a room's colour is: a shelf should look like
+   itself between visits. */
+const TRACK_COLOURS = [
+  { block: "block-colour bg-accent-green", ink: "rgba(255,255,255,.55)" },
+  { block: "block-colour bg-accent", ink: "rgba(255,255,255,.55)" },
+  { block: "block-colour bg-accent-warm", ink: "rgba(255,255,255,.55)" },
+];
+const TRACK_KINDS: IllusKind[] = ["path", "orbit", "lines"];
 import { accentHover } from "@/lib/accent";
 import Cta from "@/components/Cta";
-import Cover from "@/components/learn/Cover";
 import PieceGrid from "@/components/learn/PieceGrid";
 import OfferBlock from "@/components/learn/OfferBlock";
 import { useProgress } from "@/components/learn/useProgress";
@@ -42,9 +58,9 @@ const fallback = {
 
 function Stat({ n, label }: { n: number | string; label: string }) {
   return (
-    <div className="card px-5 md:px-6 py-8">
-      <p className="font-serif text-4xl">{n}</p>
-      <p className="mt-3 text-xs text-muted leading-relaxed">{label}</p>
+    <div className="border-t border-line py-7 md:border-l md:border-t-0 md:pl-7 md:first:border-l-0 md:first:pl-0">
+      <p className="font-serif text-[2.5rem] leading-none tracking-tight">{n}</p>
+      <p className="mt-2.5 text-xs leading-relaxed text-muted">{label}</p>
     </div>
   );
 }
@@ -60,20 +76,12 @@ export default function LearnPage() {
 
   return (
     <>
-      <section
-        {...studioSection("learn", "Learn")}
-        className="px-5 md:px-6 py-24 md:py-32"
-      >
-        <p className="text-sm underline underline-offset-4">
-          {learn?.label ?? fallback.label}
-        </p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          <Emphasize text={learn?.headline ?? fallback.headline} />
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          {learn?.intro ?? fallback.intro}
-        </p>
-      </section>
+      <PageHeader
+        label={learn?.label ?? fallback.label}
+        title={<Emphasize text={learn?.headline ?? fallback.headline} />}
+        intro={learn?.intro ?? fallback.intro}
+      />
+      <div {...studioSection("learn", "Learn")} />
 
       {/* What's inside, counted from the library itself, so the numbers can
           never drift from what was actually built. */}
@@ -82,7 +90,7 @@ export default function LearnPage() {
           label="What's inside"
           title={<>{learn?.inside ?? fallback.inside}</>}
         />
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-4">
           <Stat n={counts.total} label={`pieces, ${counts.published} written so far`} />
           <Stat n={counts.tracks} label="tracks, in the order they get useful" />
           <Stat n={counts.days} label="days on the path, start to finish" />
@@ -104,30 +112,39 @@ export default function LearnPage() {
             </>
           }
         />
-        <div className="mt-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {tracks.map((t) => (
-            <Link
-              key={t.id}
-              href={`/learn/${t.id}`}
-              className={`group card card-lift overflow-hidden ${accentHover(t.id)}`}
-            >
-              <Cover slug={`track-${t.id}`} title={t.name} />
-              <div className="p-6">
-                {/* The card says the name; this keeps it as text for a screen
-                    reader, for search, and for find-on-page. */}
-                <h3 className="sr-only">{t.name}</h3>
-                <div className="flex items-baseline justify-between gap-4">
-                  <CircleLetter>{t.letter}</CircleLetter>
-                  <span className="text-xs text-muted accent-hover-sub">
-                    {t.published} of {t.count}
-                  </span>
-                </div>
-                <p className="mt-5 text-sm text-muted accent-hover-sub leading-relaxed">
+        {/* A track is a room of its own, so it is built like one: the club's
+            colour at rest, a drawing running in it, the name on the type it
+            is set in everywhere else. */}
+        <div className="mt-10 grid gap-3.5 md:grid-cols-3">
+          {tracks.map((t, i) => {
+            const { block, ink } = TRACK_COLOURS[i % TRACK_COLOURS.length];
+            return (
+              <Link
+                key={t.id}
+                href={`/learn/${t.id}`}
+                className={`group relative flex min-h-[18rem] flex-col overflow-hidden rounded-[var(--radius)] border border-black/10 p-6 ${block}`}
+              >
+                <Illustration
+                  kind={TRACK_KINDS[i % TRACK_KINDS.length]}
+                  ink={ink}
+                  seed={t.id}
+                  className="absolute inset-x-0 top-0 h-[58%] w-full"
+                />
+                <CircleLetter size="size-8 text-sm" className="relative">
+                  {t.letter}
+                </CircleLetter>
+                <h3 className="relative mt-auto pt-7 font-serif text-2xl leading-tight tracking-tight group-hover:underline underline-offset-4 decoration-1">
+                  {t.name}
+                </h3>
+                <p className="relative mt-2 text-sm leading-snug text-muted">
                   {t.blurb}
                 </p>
-              </div>
-            </Link>
-          ))}
+                <p className="label relative mt-4">
+                  {t.count} pieces · {t.published} written
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

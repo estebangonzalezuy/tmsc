@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { studioSection, useContent } from "@/components/content";
-import { CircleLetter, Emphasize } from "@/components/Motifs";
+import { CircleLetter, Emphasize, PageHeader } from "@/components/Motifs";
 import { accentHover } from "@/lib/accent";
 import Cta from "@/components/Cta";
 import Cover from "@/components/learn/Cover";
@@ -32,22 +32,19 @@ export default function FundamentalsPage() {
 
   return (
     <>
-      <section
-        {...studioSection("fundamentals", "Fundamentals")}
-        className="px-5 md:px-6 py-24 md:py-32"
+      <PageHeader
+        label={copy.label}
+        title={<Emphasize text={copy.headline} />}
+        intro={copy.intro}
       >
-        <p className="text-sm underline underline-offset-4">{copy.label}</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          <Emphasize text={copy.headline} />
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">{copy.intro}</p>
-        <p className="mt-6 flex flex-wrap items-center gap-2 text-xs text-muted">
+        <p className="flex flex-wrap items-center gap-2">
           <span className="pill">{counts.lessons} pages</span>
           <span className="pill">{counts.figures} figures to play with</span>
           <span className="pill">{counts.minutes} min in all</span>
-          <span className="pill">Free</span>
+          <span className="pill pill-free">Free</span>
         </p>
-      </section>
+      </PageHeader>
+      <div {...studioSection("fundamentals", "Fundamentals")} />
 
       <section className="px-5 md:px-6 pb-16">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
