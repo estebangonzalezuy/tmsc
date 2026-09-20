@@ -1,32 +1,49 @@
 "use client";
 
+// The families the poster's type is set in.
+//
+// next/font hashes its family names, so they are only knowable in the
+// browser: the answer is read off the live page once per document by probing
+// an element, and shared, because a wall of covers asking twenty times is
+// silly. Until it resolves, the renderer falls back to generic families —
+// the poster draws either way rather than waiting.
+
 import { useEffect, useState } from "react";
-import { loadFonts, type Fonts } from "./nodes/type";
+import type { TypeFaces } from "@/lib/poster";
 
-/* loadFonts() reads the hashed next/font family names off the live page, and it
-   does that by appending a probe element and reading it back. That is cheap once
-   and silly twenty times, which is what a wall of covers would do if every tile
-   asked for itself.
-   
-   The answer can't change while the page is open, so it is fetched once per
-   document and shared. Additive on purpose: nothing that already calls
-   loadFonts directly had to change. */
+let cache: TypeFaces | null = null;
+let pending: Promise<TypeFaces> | null = null;
 
-let pending: Promise<Fonts> | null = null;
+function probe(className: string): string {
+  const el = document.createElement("span");
+  el.className = className;
+  el.textContent = "x";
+  document.body.appendChild(el);
+  const family = getComputedStyle(el).fontFamily;
+  el.remove();
+  return family;
+}
 
-export function useSharedFonts(): Fonts | null {
-  const [fonts, setFonts] = useState<Fonts | null>(null);
+export function loadFaces(): Promise<TypeFaces> {
+  if (cache) return Promise.resolve(cache);
+  pending ??= document.fonts.ready.then(() => {
+    cache = {
+      sans: getComputedStyle(document.body).fontFamily,
+      serif: probe("font-serif"),
+    };
+    return cache;
+  });
+  return pending;
+}
 
+export function useFaces(): TypeFaces | null {
+  const [faces, setFaces] = useState<TypeFaces | null>(cache);
   useEffect(() => {
     let alive = true;
-    pending ??= loadFonts();
-    pending.then((f) => {
-      if (alive) setFonts(f);
-    });
+    loadFaces().then((f) => alive && setFaces(f));
     return () => {
       alive = false;
     };
   }, []);
-
-  return fonts;
+  return faces;
 }

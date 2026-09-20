@@ -5,7 +5,7 @@ import Figure from "./Figure";
 import { Chips, Replay } from "./controls";
 import { useLoop } from "./useLoop";
 import { pick, type Params } from "./params";
-import { ease } from "@/components/postlab/nodes/kinetic/easing";
+import { ease } from "@/lib/easing";
 
 /* Easing. The same mark travels the same distance in the same time, and the
    only thing that changes is how it spends that time — the curve on the

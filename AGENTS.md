@@ -63,6 +63,7 @@ browser). Therefore:
   (`lib/noteGraph.ts`) and opens it in `/postlab`, never touching the
   network, so it renders above the setup and works on a device that has
   never been set up; "Ask the club" dispatches the `capture` job.
+- `lib/poster.ts` — the Posts Studio's whole model and renderer. See below.
 - `lib/illus/drawers.ts` + `components/Illustration.tsx` — the club's drawn
   illustrations: seven pure periodic drawers and the one canvas (and one
   animation frame) that runs them. See Design rules.
@@ -139,201 +140,130 @@ underlined section kicker, it is a leftover, not the standard.
 
 ## the Posts Studio (`/postlab`)
 
-An internal design tool (like `/studio`, not in the nav) for generating the
-club's Instagram posts, carousels, and reels, with PNG, video, and GIF export.
-Rebuilt from scratch in September 2026 as a node-graph editor, replacing the
-earlier layer-stack model (`PostSpec`, dithering/trails/clean shaders) named
-after the same owner reference that shaped `docs/THE-STUDIO-CHROME.md` a
-month earlier — a canvas of connected nodes rather than a stack of layers
-behind one panel. Nothing about that old model was migrated: every shared
-link built against it (`#spec=…`), the `/tools` wall of eight PostSpec-built
-tools, and `/api/postlab/schema` are retired with no replacement, a
-deliberate, disclosed cost of the rebuild rather than an oversight — see
-"What's retired" below.
+The club's one post creator. Internal, like `/studio`, not in the nav.
 
-**The model is a graph, not a stack.** A post is a `PostGraph`
-(`lib/postgraph.ts`): nodes and edges, where an edge carries an *image* —
-one node's rendered canvas — into another node's input port. Every node
-still animates its own numeric params through the same `MotionMap`/`waveAt`
-machinery the old model used (`to`, `wave`, whole-number `cycles`, `phase`),
-so **the loop is still a contract**: every node's `evaluate(params, inputs,
-p, w, h)` is a pure, periodic function of `p ∈ [0,1]`, cycle counts are
-always forced to whole numbers, and preview and export call the exact same
-function at different resolutions/instants — a recording is still produced
-frame-by-frame, never screen-captured, and two exports of the same graph are
-byte-identical.
+Rebuilt in September 2026 around a single graphic language — vertical totems
+on a sheet of paper — replacing the node-graph editor that replaced the
+`PostSpec` layer stack before it. **There is now exactly one way to make a
+post**, which is the point: the graph asked you to build a pipeline before
+you could see anything, and the eight `/tools` before it asked you to pick a
+tool first. This shows a finished poster on the first paint and lets you
+disagree with it.
 
-- **Nine node kinds**, the whole vocabulary (`NodeKind` in `lib/postgraph.ts`):
-  `field`, `photo`, `type`, `shape`, `kinetic` compose an image (`kinetic` is
-  a source like `field`/`photo` — it has no input port; see below), `filter`
-  and `mix` combine or alter one, `frame` and `showreel` are how a graph
-  becomes a post.
-- **A carousel is structural, not a second list.** Several parallel branches
-  (`field`/`photo` → `filter`(s) → `type`/`shape` → `mix`) each end in their
-  own `frame` node — one slide, with its own live thumbnail. A single
-  `showreel` node takes every `frame` it needs as **ordered input ports**
-  (`in-1`, `in-2`, …) and is the thing that gets exported; slide order is
-  which port a wire lands on, not a flat array kept in step by hand.
-- **`renderFrame(graph, targetId, p, w, h)`** (`lib/postgraph.ts`) is the
-  whole render path: walk backward from `targetId` to its ancestor subgraph,
-  topologically sort it, evaluate each node in order feeding it its
-  already-rendered inputs. The live preview, a node's own thumbnail, and
-  every exported frame all call exactly this — one function, not three.
-- **A link is `/postlab#graph=<encoded>`.** `encodeGraph`/`decodeGraph`/
-  `normalizeGraph`/`minifyGraph` mirror the old spec's base64url mechanism
-  exactly (`minifyGraph` diffs each node's params against that kind's
-  defaults, so a link stays short and a node picks up a new field for free
-  at its default).
-- **Colour lives on the graph, not a site-wide switch.** `lib/palette.ts`
-  keeps `PALETTE`/`GROUNDS` (the club's own colours, still the values
-  `--accent*` in `app/globals.css` is kept in step with by hand) plus
-  `FIELD_PRESET_RAMPS` — named, ordered starting ramps for a `field` node's
-  ink list. A `field` node's `inks: string[]` is a **free ramp per post**;
-  the club palette is one selectable preset among others, not the only
-  source. `rerollInks(seed, source)` picks a seeded subset and always
-  re-sorts it deepest-to-palest by luminance before assigning outward, so a
-  reroll changes *which* colours and how they're arranged without ever
-  breaking the ramp's own direction.
+**The model is a poster** (`lib/poster.ts`). A **totem** is a vertical bar
+with a **silhouette** (its mask) and one or more **segments** stacked inside
+it, each segment filled with a **pattern** in colours from a **palette**. A
+**poster** is a few of those laid across a sheet, plus a line of type. Three
+rules hold it up, and they are the whole contract:
 
-**`field` is the new visual identity** — a dithered, radially-lobed ring
-field, replacing the old dithering/trails/clean-shader families outright
-(`components/postlab/nodes/field.ts`). For each grid cell (sized off
-`pixelsAcross`, always inscribing a full circle on the format's short axis,
-so every aspect preset is free): the angle and radius are read, the radius
-is perturbed by a small sum of seeded low-integer angular harmonics at
-*every* ring (not just the outer edge, which is what makes the whole field
-read organic rather than only its silhouette), the perturbed radius picks a
-position along the ink ramp, a `quietCentre` disc is tested against the
-*undistorted* radius so it reads as a deliberate flat circle in contrast to
-the organic field around it, `grain` perturbs that ramp position with the
-club's own ordered-dither `screenAt` (extracted to
-`components/postlab/nodes/dither.ts`, the same `hash01`/Bayer toolkit the
-old dithering used) rather than generic noise, and `quantize` steps the
-ramp independently of the ring count. Two movement modes, both whole-cycle
-forced like every other `Motion`: `ripple` reuses the seamless
-`sin(TAU·(r·rings − cycles·p))` idiom the old `rings` form already proved;
-`breathe` scales the whole field via `waveAt`. `rotate` is a discrete param
-bump, not animation.
+- **Everything is a pure periodic function of `p ∈ [0,1]`.** Hand a
+  silhouette, a fill or the whole poster the same `p` and it draws the same
+  picture. That is what makes the preview, a Learn embed and an exported
+  frame the same code at different sizes, and what closes a loop without
+  anybody easing it by hand. A recording is produced frame by frame at
+  exactly `p = i/n`, never screen-captured, so two exports of one poster are
+  byte-identical.
+- **Type never sits on a shape.** The totems get the field; the words get a
+  band of the sheet's own paper. Nothing is set over a pattern, so nothing
+  has to be checked for contrast. `fitTitle` steps the line down a size
+  rather than offering a control for it.
+- **A segment's ground is never the sheet's paper**, and two neighbouring
+  columns never share a ground. Both were bugs first: the first draft drew
+  half its totems invisible, and the second read as one wide bar.
 
-**The canvas is hand-rolled — no graph library.** Consistent with every
-other studio here, `components/postlab/canvas/` builds pan/zoom, drag, and
-drag-to-connect from scratch: `viewport.ts` is an external pan/zoom store
-shaped exactly like `clock.ts` (`get/set/watch`, written imperatively via
-`requestAnimationFrame`, never through React state, for the same reason
-`clock.ts` exists — a re-render on every pointer move is the mistake this
-codebase already made once). `NodeCanvas.tsx` is the world transform;
-`NodeBox.tsx` is one node (title bar, a live thumbnail via `GraphPoster`,
-port dots) — dragging writes position imperatively and only commits `x,y`
-to graph state on `pointerup`; `Wire.tsx` is an SVG bezier between ports,
-with the same imperative-during-the-gesture, commit-on-release discipline
-for a pending connection. `Inspector.tsx` renders a selected node's controls
-generically from its `NodeDef` (`controls`/`choices`/`texts` — the direct
-generalization of the old `ShaderDef`/`FilterDef`) over the *existing*
-Toolcraft primitives; `field`'s ramp editor (presets, per-swatch hex,
-reroll, rotate) is the one genuinely bespoke inspector section. Two new
-Toolcraft primitives back the node/wire chrome itself — `NodeShell` and
-`WirePath`/`PortDot` in `components/postlab/toolcraft.tsx` — token-driven
-off `.toolcraft`'s existing `--tc-*` set in `app/globals.css`, same as
-everything else in that file. The canvas stays on the club's light
-Toolcraft ground (not a dark stage) per `docs/THE-STUDIO-CHROME.md`'s
-already-settled direction; it is single-player, no realtime collaboration.
+**The vocabulary is small and closed**, and that is what makes the posts look
+like a family:
 
-**What ports over almost unchanged**, because the engineering underneath
-the old model was sound even though its data shape wasn't: `clock.ts`; the
-`type` and `shape` node kinds, which port `overlay.ts`'s word-level
-typographic engine (`Word`/`Face`/`wrap`/`drawWords`/`fitSize`, the
-mid-sentence `*emphasis*` markup, the shapes/deformers system) almost
-verbatim behind a trimmed, colour-agnostic (`ink`/`ground` hex params, no
-slide `theme`) param set; the `filter` node kind, wrapping
-`components/postlab/filters.ts`'s pure per-filter functions unchanged (a
-filter chain is now several `filter` nodes wired in series — the graph does
-the chaining a flat array used to); `photo`, wrapping `photos.ts`/`clips.ts`
-unchanged (neither ever depended on the old spec); `exporter.ts` (same
-`canRenderDirectly`/`pickMime`/hand-driven MediaRecorder-and-GIF frame
-loop, its compositing internals now calling `renderFrame` per exported
-frame instead of iterating a layer array).
+- **Eight silhouettes** (`SILHOUETTES`): `stadium`, `capsule`, `block`,
+  `octagon`, `beads` (a metaball chain, breathing one bead at a time),
+  `ziggurat` (the pagoda), `hourglass`, `scallop`.
+- **Eight fills** (`FILLS`): `solid`, `stripes`, `waves`, `blobs`, `chain`,
+  `clover`, `camo`, `dots`. Each animates in its own way and all of them
+  scroll or swell by whole cycles so the loop closes.
+- **Two joints** between segments: a straight `cut` or a `scallop`.
+- **Five palettes** (`PALETTES`), each keeping `grounds` and `marks` apart
+  because they are different jobs. The club's own is one of them, not the
+  only one — a post may use colour the site never would.
 
-**What's retired, disclosed rather than silently dropped:** every `/tools/*`
-tool and the `/tools` wall (`lib/tools.ts`, `components/tools/*` — a tool
-built a `PostSpec`, and rebuilding all eight against the graph model wasn't
-in scope for this pass); `/api/postlab/schema` (no replacement — the schema
-now lives in the repo itself, `lib/postgraph.ts` and each node kind's
-`NodeDef`, not at a fetchable URL, which is a real capability loss for a
-Claude session generating links from outside a checkout); the WebGL "clean"
-Paper Shaders family, which never got a node kind of its own and has no
-replacement; a recipe/preset rail for the graph model; per-mark shape motion
-(only a node-level numeric param travels, not each mark's own). Two whole
-studios were later retired into this same rebuild rather than out of scope
-of it — see "What became of the Kinetics and the Tiles" at the end of this
-section. The Desk's "Make it" fast path (see
-`docs/CONTENT-SYSTEM.md`/`components/runs/RunsPanel.tsx`) used to hand a
-thought straight to `/tools/note`; it now builds a small `PostGraph` by hand
-via `lib/noteGraph.ts` (a `type` node → `frame` → `showreel`) using the same
-`makeNode`/`addEdge`/`encodeGraph` the studio itself uses, so the fast path
-keeps its promise — no network, no token — without the tool it used to open.
+Extend by adding to one of those lists. A new decorative kind that is not a
+silhouette or a fill does not belong here.
+
+- `lib/poster.ts` — the model, the drawing, `makeTotems` (deterministic from
+  the seed), `drawPoster`, and `encodePoster`/`decodePoster`. Pure and
+  canvas-only: no React, no DOM beyond the 2D context. **`decodePoster`
+  validates every field against what it is allowed to be** rather than
+  spreading the JSON over the defaults — a link from the retired graph model
+  decodes into perfectly valid JSON of the wrong shape, and trusting it put
+  an unknown format on a poster and took a build down.
+- `components/postlab/PostStudio.tsx` — the tool: a rail of selectors, the
+  poster running in the middle, export on the right. Built on the existing
+  Toolcraft primitives (`docs/THE-STUDIO-CHROME.md`), which are unchanged.
+- `components/postlab/PosterCanvas.tsx` — the live canvas, used by the
+  studio's preview and by `SpecBlock`'s running example inside a Learn piece.
+  One component, not two.
+- `components/postlab/exporter.ts` — PNG, video and GIF. It knows nothing
+  about posters: it takes a `Sheet` (a size, a duration, the colours it can
+  use, and one `paint(ctx, w, h, p)`), which is the same function the preview
+  calls. `gif.ts` is unchanged.
+- `components/postlab/Stage.tsx` — `useStageFit` and `useClockRunning`. **One
+  clock runner per page, always**: a second one does not animate a second
+  thing, it advances the same number twice a frame and runs the page at
+  double speed. The club has shipped that bug once already.
+- `lib/notePoster.ts` — the Desk's "Make it" fast path, which turns the box's
+  words straight into a poster link with no network and no token.
+- `lib/easing.ts` — the club's acceleration menu, pure math. It came from the
+  Kinetics, went through the node graph, and is now what the Fundamentals'
+  motion figures are drawn with; it outlived two studios because it never
+  depended on either.
+
+**One creator means one value.** The club has had three post creators: a
+wall of eight one-function tools (`build(params) → PostSpec`), then the node
+graph, then this. The discipline that survives all three is that **no way of
+making a post may produce one the studio cannot reopen**: a poster is a
+value, it encodes into its own link, and everything that makes one — the
+studio, the Desk's box (`lib/notePoster.ts`), whatever comes next — builds
+that same value rather than a private shape of its own.
+
+**A link is `/postlab#poster=<encoded>`** — base64url, the same mechanism
+every model here has used, because a poster is small enough to live in a URL
+and "send me that post" should be a link rather than a file.
+
+### What this replaced, disclosed rather than silently dropped
+
+The whole node-graph model is gone: `lib/postgraph.ts`, the nine node kinds
+(`field`, `photo`, `type`, `shape`, `kinetic`, `filter`, `mix`, `frame`,
+`showreel`), the hand-rolled node canvas, and `GraphPoster`. With them go
+real capabilities that this pass does not replace and should not be assumed
+to still exist:
+
+- **Photos and clips in a post.** `photos.ts`/`clips.ts` are deleted; a
+  poster is drawn, never composited over an image.
+- **The `field` node** — the dithered radially-lobed ring field that was the
+  studio's previous visual identity — and the ordered-dither toolkit under
+  it.
+- **The `kinetic` node** and its seven scenes, which had already absorbed the
+  retired Kinetics studio. Its easing survives in `lib/easing.ts`; its type
+  layout and mask engine do not.
+- **The `type` node's typographic engine** (word-level wrapping, mid-sentence
+  `*emphasis*`, shapes and deformers). A poster's type is a kicker and a
+  line, deliberately.
+- **Carousels.** A `showreel` took several `frame` nodes as ordered ports; a
+  poster is one sheet. Several posts is several posters.
+- **Filters**, which were a chain of pure per-filter functions over a
+  rendered canvas.
+
+Every `#graph=` link ever shared is dead. `decodePoster` opens one as the
+nearest real poster rather than failing, which is forgiveness, not
+compatibility. `/api/postlab/schema` was already retired.
+
 `scripts/content-cycle/`'s automated posting (Job 1/2 in
-`docs/CONTENT-SYSTEM.md`) built its links against `/api/postlab/schema` and
-the old `PostSpec`; it is not adapted to the graph model in this pass and
-will fail until it is — flagged here so it isn't mistaken for a flake.
+`docs/CONTENT-SYSTEM.md`) has been broken since the graph rebuild and is
+still broken: `postspec.mjs` builds links against a model that has now been
+retired twice. Rewriting it against `lib/poster.ts` is small and real work —
+`makeTotems` and `encodePoster` are the whole surface it needs — but it is
+not done here. Treat a failure there as this, not as GitHub or Notion
+flaking.
 
-- `components/postlab/nodes/*.ts` — the nine node kind implementations
-  (`kinetic.ts` splits its own ported machinery into a `kinetic/` subfolder —
-  easing, stagger timing, the type layout/mask engine, the seven scenes),
-  plus `dither.ts` (the extracted ordered-dither toolkit) and `util.ts`
-  (shared param-reading helpers, and a local copy of `WAVES`/`waveAt` —
-  every node file may only ever `import type` from `lib/postgraph.ts` in
-  return, since that file imports the node registry at its own bottom; a
-  real *value* import back would be a circular import that throws
-  "Cannot access before initialization" on first load).
-- `components/postlab/canvas/*` — `NodeCanvas.tsx`, `NodeBox.tsx`,
-  `Wire.tsx`, `Inspector.tsx`, `viewport.ts`, `layout.ts`/`positions.ts`
-  (where a new node drops).
-- `components/postlab/PostGraphStudio.tsx` — the shell: top bar, an
-  add-node rail (one `RailItem` per `NodeKind`), the canvas, the Inspector,
-  an export footer.
-- `components/postlab/GraphPoster.tsx` — the throttled, clock-driven live
-  thumbnail (redraws at a few fps, only while something is actually
-  animating), used both by a node's own preview and by `SpecBlock.tsx`'s
-  live example inside a Learn piece (see "Learn" below) — one shared
-  component rather than the same throttle logic twice.
-
-### What became of the Kinetics and the Tiles
-
-Both of the club's other two studios were retired in this same rebuild,
-disclosed here rather than silently dropped. **The Kinetics** (`/kinetics`,
-"the type is the graphic" — no background layer in any scene, because the
-words were the picture) had its whole argument folded into this studio as
-the `kinetic` node kind: the easing library, the stagger timing model
-(`presence`/`queue`), the type layout/mask engine and all seven scene
-renderers ported into `components/postlab/nodes/kinetic/`, reading flat
-`${scene}_${key}`-prefixed params instead of a `KineticSpec`, with its own
-colour ramp following `field`'s preset-ramp convention
-(`KINETIC_PRESET_PALETTES` in `lib/palette.ts`). Nothing about it was lost —
-see the node's own doc comment in `components/postlab/nodes/kinetic.ts` for
-what ported and what changed shape. **The Tiles** (`/tiles`, hand-cut folk
-ornament — frame, panel, guides, arms, centre) did not port anywhere: its
-grammar never became a node kind and has no replacement in the graph model,
-a real capability loss rather than a rename. `docs/THE-TILES.md` is kept for
-its design history, marked retired at the top.
-
-## the Tools (`/tools`) — retired
-
-The everyday front door to the studio (a note, a countdown, a quote card, a
-monthly round-up, a number, a practice card, a pixel note, a tile — each one
-function, `build(params) → PostSpec`, inheriting the renderer/exporter/link
-for free) was retired with the rest of the `PostSpec` model in the Posts
-Studio's September 2026 rebuild (see "What's retired" up there) rather than
-rebuilt against the graph model — out of scope for that pass, not forgotten.
-`lib/tools.ts` and `components/tools/*` are gone; the Desk's "Make it" fast
-path, the one thing that depended on it beyond its own wall, was given its
-own small graph-builder instead (`lib/noteGraph.ts`). Rebuilding the wall
-against `PostGraph` is future work, not designed here. If it is rebuilt, the
-old shape is worth keeping: a tool was one function
-(`build(params) → PostSpec`, now `→ PostGraph`) deciding only the few
-questions that actually differed between two of its posts, so it inherited
-the renderer/exporter/shareable-link for free and "open in the studio" was
-never a separate integration — the same discipline "**No tool may produce a
-post the studio can't reopen**" should still hold for whatever replaces it.
 
 ## Learn (`/learn`)
 
@@ -405,11 +335,11 @@ manifest directly.
   thing: it advances the clock twice a frame and runs the page at double speed.
   The hub and the track pages start no clock at all now; the piece page does,
   because a `:::spec` example animates.
-- **`:::spec` is the whole point.** It renders a Posts Studio graph *running*
-  inside the article — `components/learn/SpecBlock.tsx` decodes it and hands
-  it to `GraphPoster` (the Posts Studio's own live node-thumbnail component,
-  reused rather than forked) with `live`. No second renderer, and the loop
-  closes for free because every graph is periodic in its own duration.
+- **`:::spec` is the whole point.** It renders a Posts Studio poster
+  *running* inside the article — `components/learn/SpecBlock.tsx` decodes it
+  and hands it to `PosterCanvas` (the studio's own live canvas, reused rather
+  than forked) with `live`. No second renderer, and the loop closes for free
+  because every poster is periodic in its own loop.
 - **Progress is `useSyncExternalStore`, not an effect.** The server renders
   nothing ticked and the browser renders what it remembers, and that has to
   differ without being a hydration mismatch. See `components/learn/useProgress.ts`.
@@ -626,15 +556,14 @@ chat session involved. It keeps its own `package.json` on purpose: the
 deployed app must stay dependency- and secret-free, so never move those
 dependencies into the root manifest or add env vars to Vercel for it.
 
-**Currently broken, not a flake.** It read the Posts Studio's vocabulary
-from the live `/api/postlab/schema` and built links against the old
-`PostSpec`; both retired with that studio's September 2026 rebuild (see
-"What's retired" under "the Posts Studio") and this automation was not
-adapted to the graph model in the same pass. `postspec.mjs`'s
-`assembleSpec`/`encodeSpec` need rewriting against `lib/postgraph.ts` (node
-kinds, `NodeDef`s, `encodeGraph`) before Job 1/2 can post a working link
-again — treat any failure here as this, not as GitHub/Notion flaking, until
-that adaptation lands.
+**Currently broken, not a flake**, and now for the second time. It read the
+Posts Studio's vocabulary from the live `/api/postlab/schema` and built
+links against `PostSpec`; that model was retired for the node graph, and the
+graph has since been retired for the poster. `postspec.mjs`'s
+`assembleSpec`/`encodeSpec` need rewriting against `lib/poster.ts`, which is
+a much smaller surface than either of the models it missed — `makeTotems`
+and `encodePoster` are the whole of it. Until that lands, treat a failure
+here as this rather than as GitHub or Notion flaking.
 
 The writing voice lives in `docs/voice/` — `PROFILE.md` (how Esteban
 writes, ending in the hard rules) and `EXAMPLES.md` (twenty published

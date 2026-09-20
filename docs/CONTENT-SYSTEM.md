@@ -8,15 +8,15 @@ The loop, in one line: **the library of what's been published feeds the
 angles → an angle becomes a draft → the draft gets a visual → it gets
 scheduled → posting writes it back into the library.**
 
-> **The scheduled half is currently broken.** The Posts Studio was rebuilt
-> as a node graph in September 2026 (`AGENTS.md`, "the Posts Studio", "What's
-> retired") and `/api/postlab/schema` — what `scripts/content-cycle/
-> postspec.mjs` reads to build a visual — no longer exists; every "build a
-> PostSpec" instruction below is the pre-rebuild routine, not yet adapted.
-> `postspec.mjs`'s `assembleSpec`/`encodeSpec` need rewriting against
-> `lib/postgraph.ts` (node kinds, `NodeDef`s, `encodeGraph`) before Job 1/2
-> can post a working link again. The Desk's manual "Make it" path (below) is
-> unaffected — it builds its own small graph directly, no schema fetch
+> **The scheduled half is currently broken.** The Posts Studio has been
+> rebuilt twice since this routine was written — as a node graph, then as the
+> poster studio it is now (`AGENTS.md`, "the Posts Studio"). Both
+> `/api/postlab/schema` and `PostSpec` are long gone, so every "build a
+> PostSpec" instruction below is the pre-rebuild routine. `postspec.mjs`'s
+> `assembleSpec`/`encodeSpec` need rewriting against `lib/poster.ts`, whose
+> whole surface is `makeTotems` and `encodePoster`, before Job 1/2 can post a
+> working link again. The Desk's manual "Make it" path (below) is unaffected:
+> it builds a poster directly (`lib/notePoster.ts`), no schema fetch
 > involved.
 
 ## Start here: the box on the Desk

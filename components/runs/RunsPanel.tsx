@@ -6,7 +6,7 @@
 // GitHub.
 //
 // The box is the front of it, and it has two speeds. "Make it" never leaves the
-// browser: the words become a sheet, built as a small PostGraph (lib/noteGraph.ts)
+// browser: the words become a sheet, built as a small Poster (lib/notePoster.ts)
 // the same way the Post Lab builds any other, and the Post Lab opens with it
 // already in, which is the whole distance from a sentence to a post when you
 // already know what you want to say. "Ask the club" hands the same words to the runner,
@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { pillars } from "@/lib/data";
-import { noteLink } from "@/lib/noteGraph";
+import { noteLink } from "@/lib/notePoster";
 
 const GH_REPO = "estebangonzalezuy/tmsc";
 const WORKFLOW = "content-cycle.yml";

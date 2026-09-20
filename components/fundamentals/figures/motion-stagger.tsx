@@ -5,7 +5,7 @@ import Figure from "./Figure";
 import { Chips, Replay, Slider } from "./controls";
 import { useLoop } from "./useLoop";
 import { num, pick, type Params } from "./params";
-import { ease, type Dir, type Ease } from "@/components/postlab/nodes/kinetic/easing";
+import { ease, type Dir, type Ease } from "@/lib/easing";
 
 /* Stagger. Several things arriving, and the gap between one starting and
    the next. At zero they are one thing. A few dozen milliseconds and they

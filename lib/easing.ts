@@ -1,6 +1,7 @@
-// The acceleration menu the old Kinetics used, ported verbatim (pure math,
-// no spec dependency) — a family and a direction rather than thirty named
-// curves. `bounce` and `elastic` overshoot on purpose; they're the two that
+// The club's acceleration menu: a family and a direction rather than thirty
+// named curves. Pure math with no model behind it, which is why it outlived
+// two studios — it came from the Kinetics, went through the node graph, and
+// is now what the Fundamentals' motion figures are drawn with. `bounce` and `elastic` overshoot on purpose; they're the two that
 // make type feel thrown rather than moved.
 
 export type Ease = "linear" | "sine" | "quad" | "cubic" | "quart" | "expo" | "circ" | "back" | "bounce" | "elastic";

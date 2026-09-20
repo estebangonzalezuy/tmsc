@@ -5,7 +5,7 @@ import Figure from "./Figure";
 import { Replay, Slider } from "./controls";
 import { useLoop } from "./useLoop";
 import { num, type Params } from "./params";
-import { ease } from "@/components/postlab/nodes/kinetic/easing";
+import { ease } from "@/lib/easing";
 
 /* Duration. Two identical moves, same curve, same distance, and the top
    one is always 300 ms. Drag the bottom one shorter and it starts to feel
