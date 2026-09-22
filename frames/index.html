@@ -6,7 +6,7 @@
   <title>Frames</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -118,7 +118,7 @@
         <dt><code>s.lines(text, maxWidth)</code></dt><dd>Word-wraps with the current <code>ctx.font</code>; returns lines. <code>\n</code> forces a break.</dd>
         <dt><code>s.fit(text, maxWidth, {max, min, weight, family})</code></dt><dd>Largest size at which the text fits one line. Sets <code>ctx.font</code>, returns the size.</dd>
         <dt><code>s.circle(x, y, r)</code>, <code>s.roundRect(x, y, w, h, r)</code></dt><dd>Begin a path; you fill or stroke it.</dd>
-        <dt><code>s.font({size, weight, italic, family})</code></dt><dd>Builds a <code>ctx.font</code> string.</dd>
+        <dt><code>s.font({size, weight, italic, family})</code></dt><dd>Builds a <code>ctx.font</code> string. Archivo also has a width axis: set <code>ctx.fontStretch = "condensed"</code>, or pass <code>stretch</code> to <code>s.rich</code>.</dd>
         <dt><code>s.rich(text, x, y, {size, weight, family, align})</code></dt><dd>One line where <code>*word*</code> is italic, <code>**word**</code> bold and <code>__word__</code> underlined, mixing faces in a line. Returns its width; <code>s.measure</code> measures without drawing.</dd>
         <dt><code>s.justify(text, x, y, width, spread)</code></dt><dd>Spreads a line's words across <code>width</code>; <code>spread</code> 0 packs them, 1 justifies.</dd>
         <dt><code>s.layer(name)</code></dt><dd>A cleared offscreen <code>{canvas, ctx}</code> the size of the post, for something you will warp or mask.</dd>

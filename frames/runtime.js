@@ -267,9 +267,14 @@
     const spans = [];
     const re = /\*\*([^*]+)\*\*|\*([^*]+)\*|__([^_]+)__|([^*_]+|[*_])/g;
     let m;
+    // "**__word__**" nests an underline inside bold or italic.
+    const inner = (str, flags) => {
+      const u = /^__(.+)__$/.exec(str);
+      return u ? Object.assign({ text: u[1], underline: true }, flags) : Object.assign({ text: str }, flags);
+    };
     while ((m = re.exec(String(text)))) {
-      if (m[1] != null) spans.push({ text: m[1], bold: true });
-      else if (m[2] != null) spans.push({ text: m[2], italic: true });
+      if (m[1] != null) spans.push(inner(m[1], { bold: true }));
+      else if (m[2] != null) spans.push(inner(m[2], { italic: true }));
       else if (m[3] != null) spans.push({ text: m[3], underline: true });
       else spans.push({ text: m[4] });
     }
@@ -281,7 +286,13 @@
     return `${italic}${o.weight || 400} ${o.size}px ${o.family || "sans-serif"}`;
   }
 
+  // Archivo carries a width axis; the canvas exposes it as fontStretch.
+  function setStretch(ctx, o) {
+    if ("fontStretch" in ctx) ctx.fontStretch = o.stretch || "normal";
+  }
+
   function measureRich(ctx, text, o) {
+    setStretch(ctx, o);
     let w = 0;
     richSpans(text).forEach((sp) => {
       ctx.font = fontString({ ...o, italic: sp.italic || o.italic, weight: sp.bold ? o.boldWeight || 700 : o.weight });
@@ -293,6 +304,7 @@
   // Draws one line of rich text. `align` is left | center | right around x.
   // Uses the current fillStyle and textBaseline. Returns the line's width.
   function fillRich(ctx, text, x, y, o) {
+    setStretch(ctx, o);
     const w = measureRich(ctx, text, o);
     let cx = o.align === "center" ? x - w / 2 : o.align === "right" ? x - w : x;
     const wasAlign = ctx.textAlign;
@@ -301,7 +313,7 @@
       ctx.font = fontString({ ...o, italic: sp.italic || o.italic, weight: sp.bold ? o.boldWeight || 700 : o.weight });
       ctx.fillText(sp.text, cx, y);
       const sw = ctx.measureText(sp.text).width;
-      if (sp.underline) ctx.fillRect(cx, y + o.size * 0.1, sw, Math.max(2, o.size * 0.07));
+      if (sp.underline) ctx.fillRect(cx, y + o.size * 0.13, sw, Math.max(2, o.size * 0.07));
       cx += sw;
     });
     ctx.textAlign = wasAlign;

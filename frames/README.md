@@ -124,27 +124,34 @@ systems, each a seamless loop:
   growing from the centre, a bead orbiting each.
 - `dashes(ctx, s, t, {ground, inks, count, tilt, seed})` — slanted strokes
   falling a whole number of heights per loop.
-- `rays(ctx, s, t, {ground, color, count, sway})` — wedges fanning up from
-  below the bottom edge, the fan rocking once per loop.
-- `burst(ctx, s, t, {ground, inks, count, spin, seed})` — a pinwheel of wedges
-  from the centre, turning a whole number of times per loop.
-- `ribbons(ctx, s, t, {ground, inks, count, width, angle, wave})` — a diagonal
-  band of stripes, each a wave travelling along it.
-- `polygons(ctx, s, t, {ground, block, inks, sides, count})` — rings of a
-  polygon growing from the centre one after another, dark blocks in the corners.
+- `rays(ctx, s, t, {ground, color, count, width, origin, sway})` — a fan of
+  amber bands from a point below the frame, rocking once per loop.
+- `burst(ctx, s, t, {ground, inks, count, span, spin, seed})` — two fans of
+  outlined wedges, up and down from a point, rocking once per loop.
+- `ribbons(ctx, s, t, {ground, inks, count, width, angle, fan, wave, cross})`
+  — a bundle of upright stripes converging downward, each swaying.
+- `polygons(ctx, s, t, {ground, block, inks, sides, count})` — thick polygon
+  rings growing from the centre one after another, dark slabs at the edges.
 - `strings(ctx, s, t, {ground, line, inks, count, spin, seed})` — spokes from
   a centre with a leaf at the end of each, turning once per loop.
-- `bricks(ctx, s, t, {ground, inks, rows, cols, seed})` — a running bond of
-  bands, every other row sliding the other way.
-- `network(ctx, s, t, {ground, inks, count, line, radius, seed})` — discs
-  joined to a centre by thin lines, drifting.
+- `bricks(ctx, s, t, {ground, pairs, rows, cols, inset, seed})` — an inset
+  running bond of two-colour rows, every other row sliding the other way.
+- `network(ctx, s, t, {ground, inks, count, line, radius, seed})` — a cluster
+  of overlapping discs, each on a thin pin, sliding a little.
 - `blobs(ctx, s, t, {ground, line, count, seed})` — thin outlines of soft
   shapes drifting and wobbling.
+- `sweep(ctx, s, t, {ground, band, pale, stripe, tape, swing})` — a thick
+  black band curving up through the frame with a pale one beside it, striped
+  tape on both edges.
 
-The last eight were read off the club's own Instagram (the "3 exercises",
-"Build your path", "Taller para empezar", "You don't need more options",
-"Don't just follow the tutorial", "You don't learn motion design", "Make
-Genuine Connections" and "You need more practice" posts).
+The last nine were read off the club's own Instagram, frame by frame from a
+screen recording, and matched against those frames side by side: the "3
+exercises", "Build your path", "Taller para empezar", "You don't need more
+options", "Don't just follow the tutorial", "You don't learn motion design",
+"Make Genuine Connections", "You need more practice" and "Job titles are
+getting abstract" posts. Their colours are sampled from the frames, so the
+palette carries a few hexes beyond the site's (`orange`, `violet`, `sky`,
+`forest`, `brown`, `hotpink`).
 
 Over them, boxed type: `box(ctx, x, y, w, h, fill?, stroke?)` is the hairline
 frame the type overhangs, `pill(ctx, s, text, cx, cy, {size, fx, …})` a line
@@ -158,8 +165,8 @@ letters.
 
 The starters: Confetti, Tape and Stripes are the three references, animated;
 Checker, Crosses, Rings and Dashes extend the family; Rays, Burst, Ribbons,
-Polygons, Strings, Bricks, Network and Blobs are the Instagram posts; Torn is
-the grit shader alone. Every one declares its colours, copy, an entrance and a
+Polygons, Strings, Bricks, Network, Blobs and Sweep are the Instagram posts;
+Torn is the grit shader alone. Every one declares its colours, copy, an entrance and a
 shake as options.
 
 ## The stage `s`
@@ -181,7 +188,7 @@ shake as options.
 | `lines(text, maxWidth)`                | word-wrap with the current `ctx.font`; `\n` forces a break           |
 | `fit(text, maxWidth, {max,min,weight,family})` | largest size that fits one line; sets `ctx.font`, returns the size |
 | `circle(x, y, r)`, `roundRect(x, y, w, h, r)` | begin a path; you fill or stroke it                           |
-| `font({size, weight, italic, family})` | builds a `ctx.font` string                                           |
+| `font({size, weight, italic, family})` | builds a `ctx.font` string. Archivo has a width axis too: `ctx.fontStretch = "condensed"`, or `stretch` on `rich` |
 | `rich(text, x, y, {size, weight, family, align})` | one line where `*word*` is italic and `**word**` bold; returns its width. `measure(text, o)` measures without drawing |
 | `justify(text, x, y, width, spread)`   | spreads a line's words across `width`; `spread` 0 packs, 1 justifies |
 | `layer(name)`                          | a cleared offscreen `{canvas, ctx}` the size of the post              |

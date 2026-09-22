@@ -26,10 +26,16 @@
       cream: "#fffdf0",
       paper: "#f4f3ef",
       maroon: "#4b1a10", // the confetti's dark disc, the polygons' corner blocks
-      olive: "#8a8a5a", // the tape's dull dot
-      amber: "#f4a71d", // the rays, the polygons' ground
-      pink: "#f2a1c4", // a disc in the network
-      grey: "#9a9a9a", // a wedge in the burst
+      amber: "#f8ab00", // the rays, the polygons' ground
+      orange: "#f6881a", // the "Taller" ground, a warmer amber
+      violet: "#5c48fe", // the "You need more practice" ground
+      sky: "#95aeff", // the rays' periwinkle, lighter than the site's
+      forest: "#20512f", // the polygon ring, the bricks' dark row
+      brown: "#34210f", // the polygons' corner blocks
+      pink: "#f6c0dc", // a plate behind the practice type
+      hotpink: "#ff4fa3", // a disc in the network
+      grey: "#d9d9d9", // a wedge in the burst
+      olive: "#8a8a5a",
     };
     const paper = P.cream;
     const ink = P.black;
@@ -40,8 +46,9 @@
       warm: [P.red, P.maroon, P.white, P.cream, P.red],
       cool: [P.indigo, P.periwinkle, P.white, P.green, P.periwinkle],
       mono: [P.black, P.white, P.paper, P.black],
-      festival: [P.indigo, P.periwinkle, P.cream, P.red, P.green, P.black, P.maroon, P.white, P.grey],
-      garden: [P.indigo, P.red, P.green, P.periwinkle, P.amber, P.black, P.pink, P.maroon, P.olive, P.grey],
+      festival: [P.white, P.grey, P.red, P.indigo, P.sky, P.cream, P.black, P.forest, P.brown, P.cream, P.indigo, P.grey, P.red, P.sky],
+      garden: [P.forest, P.white, P.amber, P.hotpink, P.brown, P.black, P.red, P.cream, P.sky, P.indigo, P.olive, P.grey],
+      taller: [P.indigo, P.red, P.forest, P.black, P.white, P.sky, P.red, P.indigo, P.white, P.forest, P.indigo, P.black],
     };
     const SET_NAMES = Object.keys(SETS);
 
@@ -128,7 +135,7 @@
     // Offsets are in em: { dx, dy, color }.
     function echo(ctx, s, text, x, y, o) {
       const offs = o.offsets || [{ dx: -0.035, dy: 0.035, color: P.black }];
-      const f = { size: o.size, family: o.family || sans, weight: o.weight || 700, align: o.align || "center", italic: o.italic };
+      const f = { size: o.size, family: o.family || sans, weight: o.weight || 700, align: o.align || "center", italic: o.italic, stretch: o.stretch };
       offs.forEach((e) => {
         ctx.fillStyle = e.color;
         s.rich(text, x + e.dx * o.size, y + e.dy * o.size, f);
@@ -383,22 +390,23 @@
       ctx.restore();
     }
 
-    // 8 — rays: wedges fanning up from below the bottom edge, the fan
-    //     rocking once per loop, each wedge breathing on its own phase.
+    // 8 — rays: a fan of amber wedges from a point far below the frame, so
+    //     the middle one reads as a near-vertical band and only its
+    //     neighbours' tips show in the lower corners. Rocks once per loop.
     function rays(ctx, s, t, o) {
       o = o || {};
-      ctx.fillStyle = o.ground || P.periwinkle;
+      ctx.fillStyle = o.ground || P.sky;
       ctx.fillRect(0, 0, s.w, s.h);
       const n = o.count || 5;
       const ox = s.w / 2;
-      const oy = s.h * 1.12;
-      const R = Math.hypot(s.w, s.h) * 1.3;
-      const spread = Math.PI * 0.8;
-      const sway = (o.sway == null ? 1 : o.sway) * 0.05 * Math.sin(s.TAU * t);
+      const oy = s.h * (o.origin == null ? 1.55 : o.origin);
+      const R = s.h * 5;
+      const spread = o.spread || 2.4;
+      const sway = (o.sway == null ? 1 : o.sway) * 0.025 * Math.sin(s.TAU * t);
       ctx.fillStyle = o.color || P.amber;
       for (let i = 0; i < n; i++) {
         const c = -Math.PI / 2 - spread / 2 + (spread * (i + 0.5)) / n + sway;
-        const half = (spread / n) * 0.26 * (0.85 + 0.3 * s.wave(t - i / n));
+        const half = (spread / n) * (o.width || 0.13) * (0.92 + 0.16 * s.wave(t - i / n));
         ctx.beginPath();
         ctx.moveTo(ox, oy);
         ctx.lineTo(ox + Math.cos(c - half) * R, oy + Math.sin(c - half) * R);
@@ -408,105 +416,124 @@
       }
     }
 
-    // 9 — burst: a pinwheel of wedges from the centre, turning a whole
-    //     number of times per loop.
+    // 9 — burst: two fans of wedges, up and down from the centre, each
+    //     wedge outlined by a hairline, cream left and right. The fans rock
+    //     once per loop and the wedges breathe on their own phase.
     function burst(ctx, s, t, o) {
       o = o || {};
       ctx.fillStyle = o.ground || P.cream;
       ctx.fillRect(0, 0, s.w, s.h);
       const inks = o.inks || SETS.festival;
-      const n = o.count || 30;
+      const n = o.count || 15;
       const cx = o.cx == null ? s.w / 2 : o.cx;
-      const cy = o.cy == null ? s.h / 2 : o.cy;
-      const R = Math.hypot(s.w, s.h);
+      const cy = o.cy == null ? s.h * 0.42 : o.cy;
+      const R = Math.hypot(s.w, s.h) * 1.2;
+      const span = o.span || 1.7;
       const rnd = s.rand(o.seed || 21);
-      const widths = [];
-      let total = 0;
-      for (let i = 0; i < n; i++) {
-        const w = 0.4 + rnd();
-        widths.push(w);
-        total += w;
-      }
-      let a = s.TAU * t * Math.round(o.spin == null ? 1 : o.spin);
-      let last = -1;
-      for (let i = 0; i < n; i++) {
-        const da = (s.TAU * widths[i]) / total;
-        let k = Math.floor(rnd() * inks.length);
-        if (k === last) k = (k + 1) % inks.length;
-        last = k;
-        ctx.fillStyle = inks[k];
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
-        ctx.lineTo(cx + Math.cos(a + da) * R, cy + Math.sin(a + da) * R);
-        ctx.closePath();
-        ctx.fill();
-        a += da;
-      }
-    }
-
-    // 10 — ribbons: a diagonal band of stripes, each one a wave travelling
-    //      along it once per loop.
-    function ribbons(ctx, s, t, o) {
-      o = o || {};
-      ctx.fillStyle = o.ground || P.amber;
-      ctx.fillRect(0, 0, s.w, s.h);
-      const inks = o.inks || [P.indigo, P.red, P.green, P.black, P.cream, P.periwinkle];
-      const n = o.count || 18;
-      const angle = o.angle == null ? -1.15 : o.angle;
-      const width = s.w * (o.width || 0.026);
-      const L = Math.hypot(s.w, s.h) * 1.5;
-      const amp = s.w * 0.05 * (o.wave == null ? 1 : o.wave);
+      const rock = (o.spin == null ? 1 : o.spin) * 0.1 * Math.sin(s.TAU * t);
       ctx.save();
-      ctx.translate(s.w / 2, s.h / 2);
-      ctx.rotate(angle);
-      ctx.lineWidth = width;
-      ctx.lineCap = "butt";
-      const pitch = width * 1.2;
-      const bandW = n * pitch;
-      for (let i = 0; i < n; i++) {
-        const y0 = -bandW / 2 + i * pitch + pitch / 2;
-        ctx.strokeStyle = inks[i % inks.length];
-        ctx.beginPath();
-        for (let k = 0; k <= 48; k++) {
-          const u = k / 48;
-          const x = -L / 2 + L * u;
-          const y = y0 + amp * Math.sin(s.TAU * (u * 2 - t + i * 0.03));
-          if (k === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+      ctx.lineWidth = Math.max(1.5, s.w * 0.0015);
+      ctx.strokeStyle = o.line || P.black;
+      ctx.lineJoin = "miter";
+      [-Math.PI / 2, Math.PI / 2].forEach((centre, f) => {
+        const widths = [];
+        let total = 0;
+        for (let i = 0; i < n; i++) {
+          const w = 0.5 + rnd() * (0.6 + 0.5 * s.wave(t - rnd()));
+          widths.push(w);
+          total += w;
         }
-        ctx.stroke();
-      }
+        let a = centre - span / 2 + rock;
+        for (let i = 0; i < n; i++) {
+          const da = (span * widths[i]) / total;
+          ctx.fillStyle = inks[(i + f * 5) % inks.length];
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+          ctx.lineTo(cx + Math.cos(a + da) * R, cy + Math.sin(a + da) * R);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          a += da;
+        }
+      });
       ctx.restore();
     }
 
-    // 11 — polygons: rings of a regular polygon growing out from the centre
-    //      one after another, on a ground with dark blocks in the corners.
+    // 10 — ribbons: a bundle of straight stripes standing nearly upright,
+    //      fanning slightly so they cross near the bottom, each swaying on
+    //      its own phase. The bundle leans in and back once per loop.
+    function ribbons(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.orange;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const inks = o.inks || SETS.taller;
+      const n = o.count || 18;
+      const width = s.w * (o.width || 0.048);
+      const lean = (o.angle == null ? -0.12 : o.angle) + 0.08 * Math.sin(s.TAU * t);
+      const fan = o.fan == null ? -0.012 : o.fan;
+      const sway = s.w * 0.02 * (o.wave == null ? 1 : o.wave);
+      const rnd = s.rand(o.seed || 19);
+      const L = s.h * 2.8;
+      const bundle = (count, ox, oy, base, spacing) => {
+        ctx.save();
+        ctx.translate(ox, oy);
+        ctx.lineWidth = width;
+        ctx.lineCap = "butt";
+        for (let i = 0; i < count; i++) {
+          const x = (i - (count - 1) / 2) * width * spacing + (rnd() - 0.5) * width * 0.4;
+          const ph = rnd();
+          const a = base + (i - (count - 1) / 2) * fan + Math.sin(s.TAU * (t + ph)) * 0.025;
+          ctx.save();
+          ctx.rotate(a);
+          ctx.strokeStyle = inks[i % inks.length];
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x + Math.sin(s.TAU * (t + ph)) * sway, -L);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      };
+      // a few stripes crossing low from the right, then the main bundle over them
+      if (o.cross) bundle(6, s.w * 1.15, s.h * 0.78, lean - 1.15, 1.05);
+      bundle(n, s.w * 0.5, s.h * 1.25, lean, 1.02);
+    }
+
+    // 11 — polygons: thick polygon rings growing out of the centre one
+    //      after another, on amber with dark slabs in the corners.
     function polygons(ctx, s, t, o) {
       o = o || {};
       ctx.fillStyle = o.ground || P.amber;
       ctx.fillRect(0, 0, s.w, s.h);
       if (o.blocks !== false) {
-        ctx.fillStyle = o.block || P.maroon;
-        const b = s.w * 0.32;
-        const corner = (x, y, rot, w, h, ox, oy) => {
+        ctx.fillStyle = o.block || P.brown;
+        const slab = (x, y, rot, w, h) => {
           ctx.save();
           ctx.translate(x, y);
           ctx.rotate(rot);
-          ctx.fillRect(ox, oy, w, h);
+          ctx.fillRect(-w / 2, -h / 2, w, h);
           ctx.restore();
         };
-        corner(0, 0, -0.18, b * 1.5, b * 0.9, -b * 0.7, -b * 0.45);
-        corner(s.w, s.h, -0.18, b * 1.5, b * 0.9, -b * 0.8, -b * 0.45);
-        corner(s.w, 0, 0.22, b * 1.1, b * 0.9, -b * 0.55, -b * 0.6);
-        corner(0, s.h, 0.22, b * 1.1, b * 0.9, -b * 0.55, -b * 0.3);
+        // a wide wedge hanging from the top edge, and smaller slabs at the
+        // other corners
+        ctx.beginPath();
+        ctx.moveTo(s.w * 0.1, -s.h * 0.05);
+        ctx.lineTo(s.w * 0.92, -s.h * 0.05);
+        ctx.lineTo(s.w * 0.68, s.h * 0.2);
+        ctx.lineTo(s.w * 0.36, s.h * 0.22);
+        ctx.closePath();
+        ctx.fill();
+        slab(s.w * 1.04, s.h * 0.56, 0.18, s.w * 0.22, s.w * 0.4);
+        slab(-s.w * 0.04, s.h * 0.98, 0.14, s.w * 0.44, s.w * 0.24);
+        slab(s.w * 0.9, s.h * 1.03, -0.2, s.w * 0.4, s.w * 0.2);
       }
-      const inks = o.inks || [P.green, P.red, P.cream, P.maroon];
+      const inks = o.inks || [P.forest, P.red, P.forest, P.brown];
       const sides = Math.max(3, Math.round(o.sides || 8));
-      const n = o.count || 4;
+      const n = o.count || 3;
       const cx = s.w / 2;
       const cy = s.h / 2;
-      const Rmax = Math.hypot(s.w, s.h) * 0.6;
+      const Rmax = Math.hypot(s.w, s.h) * 0.7;
       const items = [];
       for (let i = 0; i < n; i++) items.push({ p: s.wrap(t + i / n), i });
       items.sort((a, b) => b.p - a.p);
@@ -514,7 +541,7 @@
       items.forEach(({ p, i }) => {
         const r = s.ease.quadIn(p) * Rmax;
         if (r < 1) return;
-        const rot = -Math.PI / sides + 0.15 * Math.sin(s.TAU * t);
+        const rot = 0.12 + 0.08 * Math.sin(s.TAU * t);
         ctx.beginPath();
         for (let k = 0; k < sides; k++) {
           const a = rot + (s.TAU * k) / sides;
@@ -524,9 +551,8 @@
           else ctx.moveTo(x, y);
         }
         ctx.closePath();
-        ctx.globalAlpha = 1 - s.span(p, 0.8, 1);
         ctx.strokeStyle = inks[i % inks.length];
-        ctx.lineWidth = r * 0.22;
+        ctx.lineWidth = r * 0.3;
         ctx.lineJoin = "miter";
         ctx.stroke();
       });
@@ -539,7 +565,7 @@
       o = o || {};
       ctx.fillStyle = o.ground || P.cream;
       ctx.fillRect(0, 0, s.w, s.h);
-      const inks = o.inks || [P.indigo, P.red, P.green, P.periwinkle, P.amber, P.black, P.pink];
+      const inks = o.inks || [P.indigo, P.red, P.forest, P.sky, P.amber, P.black, P.hotpink];
       const n = o.count || 40;
       const cx = o.cx == null ? s.w / 2 : o.cx;
       const cy = o.cy == null ? s.h / 2 : o.cy;
@@ -573,68 +599,77 @@
       ctx.restore();
     }
 
-    // 13 — bricks: rows of bands in a running bond, every other row sliding
-    //      the other way. A row's colours repeat every two or three bricks
-    //      and it slides that many per loop, so the bond is seamless.
+    // 13 — bricks: a running bond of wide bands, each row two colours
+    //      alternating, every other row sliding the other way. A row slides
+    //      two bricks per loop, so the bond is seamless.
     function bricks(ctx, s, t, o) {
       o = o || {};
       ctx.fillStyle = o.ground || P.cream;
       ctx.fillRect(0, 0, s.w, s.h);
-      const inks = o.inks || [P.periwinkle, P.indigo, P.white, P.green, P.black];
-      const rowH = s.h / (o.rows || 30);
-      const brickW = s.w / (o.cols || 6);
+      const pairs = o.pairs || [
+        [P.white, P.sky],
+        [P.indigo, P.white],
+        [P.forest, P.sky],
+        [P.white, P.indigo],
+        [P.sky, P.forest],
+        [P.indigo, P.cream],
+      ];
+      const inset = s.w * (o.inset == null ? 0.14 : o.inset);
+      const span = s.w - 2 * inset;
+      const rowH = s.h / (o.rows || 36);
+      const brickW = span / (o.cols || 7);
       const rows = Math.ceil(s.h / rowH);
       const rnd = s.rand(o.seed || 33);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(inset, 0, span, s.h);
+      ctx.clip();
       for (let j = 0; j < rows; j++) {
-        const per = 2 + (j % 2);
         const dir = j % 2 ? 1 : -1;
-        const off = ((j % 2) * brickW) / 2 + s.wrap(t) * brickW * per * dir;
-        const rowInks = [];
-        for (let k = 0; k < per; k++) {
-          let c = inks[Math.floor(rnd() * inks.length)];
-          if (k && c === rowInks[k - 1]) c = inks[(inks.indexOf(c) + 1) % inks.length];
-          rowInks.push(c);
-        }
-        for (let i = -4; i <= Math.ceil(s.w / brickW) + 3; i++) {
-          ctx.fillStyle = rowInks[((i % per) + per) % per];
-          ctx.fillRect(i * brickW + off, j * rowH, brickW - s.w * 0.004, rowH * 0.78);
+        const off = inset + ((j % 2) * brickW) / 2 + s.wrap(t) * brickW * 2 * dir;
+        const pair = pairs[Math.floor(rnd() * pairs.length)];
+        for (let i = -4; i <= Math.ceil(span / brickW) + 3; i++) {
+          ctx.fillStyle = pair[((i % 2) + 2) % 2];
+          ctx.fillRect(i * brickW + off, j * rowH + rowH * 0.12, brickW - s.w * 0.005, rowH * 0.76);
         }
       }
+      ctx.restore();
     }
 
-    // 14 — network: discs joined to a centre by thin lines, each disc
-    //      drifting round its home once per loop.
+    // 14 — network: a cluster of overlapping discs, each hanging on a thin
+    //      pin, sliding a little along it once per loop.
     function network(ctx, s, t, o) {
       o = o || {};
       ctx.fillStyle = o.ground || P.white;
       ctx.fillRect(0, 0, s.w, s.h);
       const inks = o.inks || SETS.garden;
-      const n = o.count || 26;
+      const n = o.count || 40;
       const cx = o.cx == null ? s.w / 2 : o.cx;
       const cy = o.cy == null ? s.h / 2 : o.cy;
-      const R = Math.min(s.w, s.h) * (o.radius || 0.3);
+      const R = Math.min(s.w, s.h) * (o.radius || 0.33);
       const rnd = s.rand(o.seed || 37);
       const pts = [];
       for (let i = 0; i < n; i++) {
         const a = rnd() * s.TAU;
-        const d = Math.sqrt(rnd()) * R;
+        const d = Math.pow(rnd(), 0.6) * R;
         const ph = rnd();
-        const orbit = s.w * 0.012 * (0.5 + rnd());
-        const ang = s.TAU * (t * (i % 2 ? 1 : -1) + ph);
+        const up = rnd() < 0.5;
+        const slide = Math.sin(s.TAU * (t + ph)) * s.w * 0.012;
         pts.push({
-          x: cx + Math.cos(a) * d + Math.cos(ang) * orbit,
-          y: cy + Math.sin(a) * d + Math.sin(ang) * orbit,
-          r: s.w * (0.02 + 0.022 * rnd()),
-          color: inks[Math.floor(rnd() * inks.length)],
+          x: cx + Math.cos(a) * d * 1.05,
+          y: cy + Math.sin(a) * d * 0.95 + slide,
+          r: s.w * (0.04 + 0.018 * rnd()),
+          pin: s.w * (0.06 + 0.12 * rnd()) * (up ? -1 : 1),
+          color: inks[i % inks.length],
         });
       }
       ctx.save();
       ctx.strokeStyle = o.line || P.black;
-      ctx.lineWidth = Math.max(1.5, s.w * 0.002);
+      ctx.lineWidth = Math.max(1.5, s.w * 0.0018);
       pts.forEach((p) => {
         ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(p.x, p.y);
+        ctx.moveTo(p.x + p.r * 0.2, p.y);
+        ctx.lineTo(p.x + p.r * 0.2, p.y + p.pin);
         ctx.stroke();
       });
       pts.forEach((p) => {
@@ -650,17 +685,17 @@
     //      each one wobbling a whole cycle per loop.
     function blobs(ctx, s, t, o) {
       o = o || {};
-      ctx.fillStyle = o.ground || P.indigo;
+      ctx.fillStyle = o.ground || P.violet;
       ctx.fillRect(0, 0, s.w, s.h);
       const n = o.count || 7;
       const rnd = s.rand(o.seed || 41);
       ctx.save();
       ctx.strokeStyle = o.line || P.red;
-      ctx.lineWidth = Math.max(1.5, s.w * 0.0025);
+      ctx.lineWidth = Math.max(1.5, s.w * 0.002);
       for (let i = 0; i < n; i++) {
         const bx = rnd() * s.w;
         const by = rnd() * s.h;
-        const br = s.w * (0.12 + 0.2 * rnd());
+        const br = s.w * (0.14 + 0.24 * rnd());
         const h1 = 2 + Math.floor(rnd() * 2);
         const h2 = 3 + Math.floor(rnd() * 3);
         const a1 = rnd() * s.TAU;
@@ -682,6 +717,39 @@
         ctx.stroke();
       }
       ctx.restore();
+    }
+
+    // 16 — sweep: a thick black band curving up through the frame with a
+    //      pale one beside it, and striped tape along the left and right
+    //      edges. The band swings once per loop.
+    function sweep(ctx, s, t, o) {
+      o = o || {};
+      ctx.fillStyle = o.ground || P.indigo;
+      ctx.fillRect(0, 0, s.w, s.h);
+      const k = Math.sin(s.TAU * t) * s.h * 0.08 * (o.swing == null ? 1 : o.swing);
+      const band = (color, width, dy) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = "butt";
+        ctx.beginPath();
+        ctx.moveTo(-s.w * 0.1, s.h * 1.0 + dy + k);
+        ctx.bezierCurveTo(s.w * 0.55, s.h * 0.98 + dy + k, s.w * 0.85, s.h * 0.78 + dy - k, s.w * 1.08, s.h * 0.22 + dy - k);
+        ctx.stroke();
+      };
+      band(o.pale || P.sky, s.w * 0.1, s.w * 0.15);
+      band(o.band || P.black, s.w * 0.16, 0);
+      // striped tape on the two edges, sliding one stripe per loop
+      const tw = s.w * (o.tape == null ? 0.028 : o.tape);
+      if (tw > 0) {
+        const step = tw * 1.1;
+        const off = s.wrap(t) * step * 2;
+        [0, s.w - tw].forEach((x, side) => {
+          ctx.fillStyle = P.white;
+          ctx.fillRect(x, 0, tw, s.h);
+          ctx.fillStyle = o.stripe || P.red;
+          for (let y = -step * 2; y < s.h + step * 2; y += step * 2) ctx.fillRect(x, y + off * (side ? -1 : 1), tw, step);
+        });
+      }
     }
   };
 
@@ -1023,32 +1091,33 @@
 
 
     rays: {
-      label: "Rays — Lora over a fan of wedges",
+      label: "Rays — Lora over a fan of amber bands",
       name: "Rays",
       fn: function (ctx, t, s) {
-        const ground = s.color("Ground", P.periwinkle);
+        const ground = s.color("Ground", P.sky);
         const color = s.color("Rays", P.amber);
         const inkC = s.color("Ink", P.black);
         const count = s.range("Wedges", 5, 2, 12, 1);
         const sway = s.range("Sway", 1, 0, 2, 0.1);
         const kicker = s.text("Kicker", "Starting in motion series.");
-        const head = s.text("Headline", "3 exercises\n*to finish*\n__this week.__");
+        const head = s.text("Headline", "**3 exercises**\nto *finish*\n**__this week.__**");
+        const width = s.range("Band width", 0.16, 0.05, 0.3);
         const entrance = s.pick("Entrance", "rise", s.ENTRANCES);
         const showFooter = s.toggle("Footer", true);
 
-        rays(ctx, s, t, { ground, color, count, sway });
+        rays(ctx, s, t, { ground, color, count, sway, width });
         const cx = s.w / 2;
         ctx.fillStyle = inkC;
         ctx.textBaseline = "alphabetic";
 
         ctx.globalAlpha = s.span(t, 0.02, 0.25);
-        s.rich(kicker, cx, s.h * 0.1, { size: Math.round(s.w * 0.036), family: serif, weight: 400, align: "center" });
+        s.rich(kicker, cx, s.h * 0.085, { size: Math.round(s.w * 0.05), family: serif, weight: 400, align: "center" });
         ctx.globalAlpha = 1;
 
         const lines = head.split("\n").filter(Boolean);
-        const size = Math.round(s.w * 0.115);
-        const lh = size * 1.05;
-        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        const size = Math.round(s.w * 0.168);
+        const lh = size * 0.93;
+        const y0 = s.h * 0.5 - ((lines.length - 1) * lh) / 2 + size * 0.3;
         const leave = s.span(t, 0.9, 1, s.ease.in);
         lines.forEach((line, i) => {
           const p = s.stagger(t, i, lines.length, { from: 0.05, to: 0.5, overlap: 0.6, ease: s.ease.expoOut });
@@ -1056,7 +1125,7 @@
           fx.alpha *= 1 - leave;
           s.place(cx, y0 + i * lh, fx, () => {
             ctx.fillStyle = inkC;
-            s.rich(line, 0, 0, { size, family: serif, weight: 700, align: "center" });
+            s.rich(line, 0, 0, { size, family: serif, weight: 400, align: "center" });
           });
         });
 
@@ -1065,65 +1134,72 @@
     },
 
     burst: {
-      label: "Burst — a pinwheel turning behind Lora",
+      label: "Burst — two fans of outlined wedges behind Lora",
       name: "Burst",
       fn: function (ctx, t, s) {
         const ground = s.color("Ground", P.cream);
         const wedges = s.pick("Wedges", "festival", SET_NAMES);
-        const count = s.range("Count", 30, 8, 60, 1);
-        const spin = s.range("Turns per loop", 1, 0, 3, 1);
+        const count = s.range("Per fan", 15, 6, 30, 1);
+        const rock = s.range("Rock", 1, 0, 3, 0.1);
         const inkC = s.color("Ink", P.black);
-        const knock = s.color("Knockout", P.cream);
-        const head = s.text("Headline", "Build\nyour path.");
+        const left = s.text("Left", "Build");
+        const right = s.text("Right", "your path.");
         const showFooter = s.toggle("Footer", false);
 
-        burst(ctx, s, t, { ground, inks: SETS[wedges], count, spin });
+        burst(ctx, s, t, { ground, inks: SETS[wedges], count, spin: rock });
         const cx = s.w / 2;
+        const cy = s.h * 0.42;
 
-        const lines = head.split("\n").filter(Boolean);
-        const size = Math.round(s.w * 0.17);
-        const lh = size * 1.0;
-        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.35;
-        const leave = s.span(t, 0.9, 1, s.ease.in);
+        // the two halves converge on the vanishing point: each is skewed
+        // toward it, the near end tall and the far end small
+        ctx.fillStyle = inkC;
         ctx.textBaseline = "alphabetic";
-        ctx.lineJoin = "round";
-        lines.forEach((line, i) => {
-          const p = s.stagger(t, i, lines.length, { from: 0.05, to: 0.45, overlap: 0.5, ease: s.ease.backOut });
-          const fx = s.enter("pop", p, size);
-          fx.alpha *= 1 - leave;
-          const f = { size, family: serif, weight: 700, align: "center" };
-          s.place(cx, y0 + i * lh, fx, () => {
-            // a knockout stroke behind the type keeps it legible on any wedge
-            ctx.strokeStyle = knock;
-            ctx.lineWidth = size * 0.12;
-            ctx.font = s.font({ size, weight: 700, family: serif });
-            ctx.textAlign = "center";
-            ctx.strokeText(line.replace(/[*_]/g, ""), 0, 0);
-            ctx.fillStyle = inkC;
-            s.rich(line, 0, 0, f);
-          });
-        });
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        const pL = s.span(t, 0.05, 0.4, s.ease.expoOut);
+        const pR = s.span(t, 0.15, 0.5, s.ease.expoOut);
+        const size = Math.round(s.w * 0.15);
+        ctx.save();
+        ctx.globalAlpha = pL * (1 - leave);
+        ctx.translate(s.w * 0.06 - (1 - pL) * s.w * 0.2, cy + s.h * 0.26);
+        ctx.transform(1, -0.2, 0, 1, 0, 0);
+        s.rich(left, 0, 0, { size, family: serif, weight: 700, align: "left" });
+        ctx.restore();
+        // the right half: its first word small, the rest at size, both
+        // skewed the other way toward the vanishing point
+        const words = right.split(" ");
+        const first = words.length > 1 ? words[0] : "";
+        const rest = words.length > 1 ? words.slice(1).join(" ") : right;
+        const fRest = { size: Math.round(size * 0.85), family: serif, weight: 700, align: "right" };
+        const fFirst = { size: Math.round(size * 0.48), family: serif, weight: 700, align: "right" };
+        ctx.save();
+        ctx.globalAlpha = pR * (1 - leave);
+        ctx.translate(s.w * 0.94 + (1 - pR) * s.w * 0.2, cy + s.h * 0.2);
+        ctx.transform(1, 0.22, 0, 1, 0, 0);
+        const restW = s.measure(rest, fRest);
+        s.rich(rest, 0, 0, fRest);
+        if (first) s.rich(first, -restW - size * 0.12, -size * 0.06, fFirst);
+        ctx.restore();
 
-        if (showFooter) footer(ctx, s, { color: inkC, fill: knock });
+        if (showFooter) footer(ctx, s, { color: inkC, fill: ground });
       },
     },
 
     ribbons: {
-      label: "Ribbons — Archivo with a print echo over flowing stripes",
+      label: "Ribbons — condensed Archivo with a print echo over a bundle of stripes",
       name: "Ribbons",
       fn: function (ctx, t, s) {
-        const ground = s.color("Ground", P.amber);
-        const bands = s.pick("Stripes", "festival", SET_NAMES);
-        const count = s.range("Stripes count", 18, 6, 36, 1);
-        const wave = s.range("Wave", 1, 0, 2, 0.1);
+        const ground = s.color("Ground", P.orange);
+        const bands = s.pick("Stripes", "taller", SET_NAMES);
+        const count = s.range("Stripes count", 18, 6, 40, 1);
+        const wave = s.range("Sway", 1, 0, 2, 0.1);
         const type = s.color("Type", P.white);
         const echoA = s.color("Echo", P.black);
         const echoB = s.color("Echo 2", P.red);
         const head = s.text("Headline", "Taller para\nempezar\nen *Motion*\nhoy");
         const kicker = s.text("Kicker", "Con *Superlocal.uy*");
-        const shake = s.range("Shake", 0.4, 0, 1);
+        const shake = s.range("Shake", 0.3, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { texture: 0.6, grain: 0.45, chunk: 3, rough: 0.1, bleed: 0, chroma: 0.12, boil: 8 });
+        const go = gritOptions(s, t, { texture: 0.25, grain: 0.9, chunk: 2, rough: 0.12, bleed: 0, chroma: 0, boil: 8 });
 
         ribbons(ctx, s, t, { ground, inks: SETS[bands], count, wave });
         const cx = s.w / 2;
@@ -1131,25 +1207,27 @@
         const L = s.layer("type");
         const g = s.on(L.ctx);
         const lines = head.split("\n").filter(Boolean);
-        const size = Math.round(s.w * 0.16);
-        const lh = size * 0.98;
-        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.3;
+        const size = Math.round(s.w * 0.215);
+        const lh = size * 0.8;
+        const y0 = s.h * 0.45 - ((lines.length - 1) * lh) / 2 + size * 0.3;
         const leave = s.span(t, 0.9, 1, s.ease.in);
         L.ctx.textBaseline = "alphabetic";
+        if ("letterSpacing" in L.ctx) L.ctx.letterSpacing = `${-size * 0.045}px`; // tight, like the poster
         lines.forEach((line, i) => {
           const p = s.stagger(t, i, lines.length, { from: 0.03, to: 0.45, overlap: 0.6, ease: s.ease.expoOut });
           const fx = s.enter("rise", p, size * 0.5);
           fx.alpha *= 1 - leave;
           const sh = s.shake(t, i, 4);
-          g.place(cx + sh.x * shake * size * 0.06, y0 + i * lh + sh.y * shake * size * 0.06, fx, () => {
+          g.place(cx + sh.x * shake * size * 0.05, y0 + i * lh + sh.y * shake * size * 0.05, fx, () => {
             echo(L.ctx, g, line, 0, 0, {
               size,
               family: sans,
               weight: 700,
+              stretch: "condensed",
               color: type,
               offsets: [
-                { dx: -0.05, dy: 0.05, color: echoB },
-                { dx: -0.025, dy: 0.025, color: echoA },
+                { dx: 0.075, dy: 0.06, color: echoB },
+                { dx: 0.04, dy: 0.035, color: echoA },
               ],
             });
           });
@@ -1159,55 +1237,56 @@
 
         ctx.globalAlpha = s.span(t, 0.45, 0.65) * (1 - leave);
         ctx.fillStyle = type;
-        s.rich(kicker, cx, s.h - s.w * 0.09, { size: Math.round(s.w * 0.04), family: serif, weight: 400, align: "center" });
+        s.rich(kicker, cx, s.h - s.w * 0.08, { size: Math.round(s.w * 0.045), family: serif, weight: 400, italic: true, align: "center" });
         ctx.globalAlpha = 1;
       },
     },
 
     polygons: {
-      label: "Polygons — a sticker of Lora inside growing rings",
+      label: "Polygons — a hand-cut sticker of Lora inside growing rings",
       name: "Polygons",
       fn: function (ctx, t, s) {
         const ground = s.color("Ground", P.amber);
-        const block = s.color("Blocks", P.maroon);
-        const ringA = s.color("Ring A", P.green);
+        const block = s.color("Blocks", P.brown);
+        const ringA = s.color("Ring A", P.forest);
         const ringB = s.color("Ring B", P.red);
         const sides = s.range("Sides", 8, 3, 12, 1);
-        const count = s.range("Rings", 4, 1, 8, 1);
+        const count = s.range("Rings", 3, 1, 8, 1);
         const paperC = s.color("Sticker", P.white);
         const inkC = s.color("Ink", P.black);
-        const head = s.text("Headline", "You don't need\nmore options.\nYou need *fewer.*");
+        const head = s.text("Headline", "You don't need\nmore options.\nYou need fewer.");
         const shake = s.range("Wobble", 0.5, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { texture: 0.75, grain: 0.5, chunk: 3, rough: 0.1, bleed: 0.15, chroma: 0, boil: 6 });
+        const go = gritOptions(s, t, { texture: 0.5, grain: 0.7, chunk: 3, rough: 0.2, bleed: 0.25, chroma: 0, boil: 6 });
 
-        polygons(ctx, s, t, { ground, block, inks: [ringA, ringB, paperC, block], sides, count });
+        polygons(ctx, s, t, { ground, block, inks: [ringA, ringA, ringB, block], sides, count });
         const cx = s.w / 2;
         const cy = s.h / 2;
 
         const lines = head.split("\n").filter(Boolean);
-        const size = Math.round(s.w * 0.07);
-        const lh = size * 1.15;
+        const size = Math.round(s.w * 0.088);
+        const lh = size * 1.02;
         const f = { size, family: serif, weight: 700, italic: true, align: "center" };
         let widest = 0;
         lines.forEach((line) => (widest = Math.max(widest, s.measure(line, f))));
-        const bw = widest + size * 1.2;
-        const bh = lines.length * lh + size * 0.6;
         const inP = s.span(t, 0.05, 0.4, s.ease.backOut);
         const leave = s.span(t, 0.9, 1, s.ease.in);
-        const rot = 0.04 * shake * Math.sin(s.TAU * 2 * t);
-        // the type is drawn on a layer at the post's centre, gritted, then
-        // carried into the sticker's transform
-        const L = s.layer("type");
+        const rot = 0.03 * shake * Math.sin(s.TAU * 2 * t);
+        // sticker and type on one layer, so the sticker's edge is hand-cut
+        // by the same pass that roughens the letters
+        const L = s.layer("sticker");
         const g = s.on(L.ctx);
+        const y0 = cy - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        L.ctx.fillStyle = paperC;
+        lines.forEach((line, i) => {
+          const w = s.measure(line, f);
+          g.roundRect(cx - w / 2 - size * 0.3, y0 + i * lh - size * 0.92, w + size * 0.6, size * 1.22, size * 0.5);
+          L.ctx.fill();
+        });
         L.ctx.fillStyle = inkC;
         L.ctx.textBaseline = "alphabetic";
-        const y0 = cy - ((lines.length - 1) * lh) / 2 + size * 0.35;
         lines.forEach((line, i) => g.rich(line, cx, y0 + i * lh, f));
         s.place(cx, cy, { dx: 0, dy: 0, scale: inP * (1 - leave), rot, alpha: 1 }, () => {
-          ctx.fillStyle = paperC;
-          s.roundRect(-bw / 2, -bh / 2, bw, bh, size * 0.9);
-          ctx.fill();
           ctx.translate(-cx, -cy);
           if (gritOn) s.grit(L.canvas, go);
           else ctx.drawImage(L.canvas, 0, 0);
@@ -1255,124 +1334,192 @@
     },
 
     bricks: {
-      label: "Bricks — justified Archivo over a sliding bond",
+      label: "Bricks — justified Archivo in a box over a sliding bond",
       name: "Bricks",
       fn: function (ctx, t, s) {
         const ground = s.color("Ground", P.cream);
-        const bond = s.pick("Bricks", "cool", SET_NAMES);
-        const rows = s.range("Rows", 30, 10, 60, 1);
+        const rows = s.range("Rows", 36, 10, 60, 1);
+        const cols = s.range("Bricks across", 7, 2, 12, 1);
+        const inset = s.range("Inset", 0.14, 0, 0.3);
         const paperC = s.color("Box", P.white);
         const inkC = s.color("Ink", P.black);
         const copy = s.text("Headline", "You don't learn motion design by (only) watching. You learn by doing.");
         const jitterAmt = s.range("Jitter", 0.15, 0, 1);
+        const gritOn = s.toggle("Grit", true);
+        const go = gritOptions(s, t, { texture: 0.1, grain: 0.8, chunk: 2, rough: 0.3, bleed: 0, chroma: 0, boil: 8 });
 
-        bricks(ctx, s, t, { ground, inks: SETS[bond], rows });
+        bricks(ctx, s, t, { ground, rows, cols, inset });
         const cx = s.w / 2;
 
-        ctx.fillStyle = inkC;
-        ctx.textBaseline = "alphabetic";
-        const size = Math.round(s.w * 0.085);
-        ctx.font = s.font({ size, weight: 400, family: sans });
-        const bw = s.w * 0.56;
-        const lines = s.lines(copy, bw);
+        const L = s.layer("type");
+        const g = s.on(L.ctx);
+        L.ctx.fillStyle = inkC;
+        L.ctx.textBaseline = "alphabetic";
+        const size = Math.round(s.w * 0.088);
+        L.ctx.font = s.font({ size, weight: 400, family: sans });
+        if ("fontStretch" in L.ctx) L.ctx.fontStretch = "normal";
+        const bw = s.w * 0.42;
+        const lines = g.lines(copy, bw);
         const lh = size * 0.86;
         const spread = s.span(t, 0.05, 0.5, s.ease.expoOut) * (1 - s.span(t, 0.88, 1, s.ease.inOut));
-        const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.3;
+        const bh = (lines.length - 1) * lh + size * 1.15;
+        const y0 = s.h * 0.55 - bh / 2 + size * 0.85;
         const inP = s.span(t, 0.02, 0.3, s.ease.expoOut);
-        const bh = (lines.length - 1) * lh + size * 1.1;
         ctx.save();
         ctx.beginPath();
-        ctx.rect(cx - bw / 2 - size * 0.3, s.h / 2 - (bh / 2) * inP, bw + size * 0.6, bh * inP);
+        ctx.rect(cx - bw / 2 - size * 0.7, s.h * 0.55 - (bh / 2) * inP, bw + size * 1.4, bh * inP);
         ctx.clip();
-        box(ctx, cx - bw / 2 - size * 0.3, y0 - size * 0.8, bw + size * 0.6, bh, paperC, inkC);
+        box(ctx, cx - bw / 2 - size * 0.7, y0 - size * 0.85, bw + size * 1.4, bh, paperC, inkC);
         const j = s.jitter(t, 0, 24);
-        ctx.fillStyle = inkC;
-        lines.forEach((line, i) => s.justify(line, cx - bw / 2 + j.x * jitterAmt * size * 0.05, y0 + i * lh + j.y * jitterAmt * size * 0.05, bw, spread));
+        lines.forEach((line, i) => g.justify(line, cx - bw / 2 + j.x * jitterAmt * size * 0.05, y0 + i * lh + j.y * jitterAmt * size * 0.05, bw, spread));
+        if (gritOn) s.grit(L.canvas, go);
+        else ctx.drawImage(L.canvas, 0, 0);
         ctx.restore();
       },
     },
 
     network: {
-      label: "Network — Lora around a cluster of joined discs",
+      label: "Network — Lora above and below a cluster of pinned discs",
       name: "Network",
       fn: function (ctx, t, s) {
         const ground = s.color("Ground", P.white);
         const discs = s.pick("Discs", "garden", SET_NAMES);
-        const count = s.range("Discs count", 26, 6, 60, 1);
-        const line = s.color("Lines", P.black);
+        const count = s.range("Discs count", 40, 6, 60, 1);
+        const line = s.color("Pins", P.black);
         const inkC = s.color("Ink", P.black);
         const top = s.text("Top", "Make");
         const bottom = s.text("Bottom", "Genuine\nConnections");
         const entrance = s.pick("Entrance", "fade", s.ENTRANCES);
 
-        network(ctx, s, t, { ground, inks: SETS[discs], count, line, cy: s.h * 0.47 });
         const cx = s.w / 2;
-        const size = Math.round(s.w * 0.11);
+        const longest = [top, bottom].join("\n").split("\n").reduce((a, b) => (b.length > a.length ? b : a), "");
+        const size = Math.min(Math.round(s.w * 0.19), s.fit(longest, s.w * 0.92, { max: 400, min: 40, weight: 700, family: serif }));
         const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.fillStyle = ground;
+        ctx.fillRect(0, 0, s.w, s.h);
         ctx.textBaseline = "alphabetic";
         const f = { size, family: serif, weight: 700, align: "center" };
-
         const draw = (text, y, i) => {
-          const lines = text.split("\n").filter(Boolean);
-          lines.forEach((ln, k) => {
+          text.split("\n").filter(Boolean).forEach((ln, k) => {
             const p = s.stagger(t, i + k, 3, { from: 0.05, to: 0.5, overlap: 0.5, ease: s.ease.expoOut });
             const fx = s.enter(entrance, p, size * 0.5);
             fx.alpha *= 1 - leave;
-            s.place(cx, y + k * size * 1.05, fx, () => {
+            s.place(cx, y + k * size * 1.0, fx, () => {
               ctx.fillStyle = inkC;
               s.rich(ln, 0, 0, f);
             });
           });
         };
-        draw(top, s.h * 0.17, 0);
-        draw(bottom, s.h * 0.78, 1);
+        // the words sit behind the cluster, which is drawn over them
+        draw(top, s.h * 0.26, 0);
+        draw(bottom, s.h * 0.82, 1);
+        ctx.save();
+        ctx.globalAlpha = s.span(t, 0.1, 0.35) * (1 - leave);
+        const N = s.layer("cluster");
+        const gn = s.on(N.ctx);
+        network(N.ctx, gn, t, { ground: "rgba(0,0,0,0)", inks: SETS[discs], count, line, cy: s.h * 0.53 });
+        ctx.drawImage(N.canvas, 0, 0);
+        ctx.restore();
       },
     },
 
     blobs: {
-      label: "Blobs — chunky Lora scrambling in over outlined shapes",
+      label: "Blobs — chunky Lora with converging plates over outlined shapes",
       name: "Blobs",
       fn: function (ctx, t, s) {
-        const ground = s.color("Ground", P.indigo);
+        const ground = s.color("Ground", P.violet);
         const line = s.color("Outlines", P.red);
         const count = s.range("Shapes", 7, 2, 16, 1);
         const type = s.color("Type", P.red);
-        const echoC = s.color("Echo", P.amber);
+        const plateA = s.color("Plate A", P.amber);
+        const plateB = s.color("Plate B", P.pink);
         const head = s.text("Headline", "You need\nmore\npractice");
-        const scrambleOn = s.toggle("Scramble", true);
+        const other = s.text("Mixes with", "You don't\nneed more\ntutorials");
+        const offset = s.range("Plate offset", 0.3, 0, 1);
+        const fatten = s.range("Fatten", 0.5, 0, 1);
         const shake = s.range("Shake", 0.3, 0, 1);
         const gritOn = s.toggle("Grit", true);
-        const go = gritOptions(s, t, { texture: 0.9, grain: 0.55, chunk: 3, rough: 0.2, bleed: 0.1, chroma: 0.2, boil: 8 });
+        const go = gritOptions(s, t, { texture: 0.4, grain: 0.9, chunk: 2, rough: 0.15, bleed: 0.05, chroma: 0, boil: 8 });
 
         blobs(ctx, s, t, { ground, line, count });
         const cx = s.w / 2;
 
-        // the type goes on a layer, so the shader can tear it
+        // the type: three plates that start apart and converge, the letters
+        // of the other phrase showing through until each settles
         const L = s.layer("type");
-        const g = s.on(L.ctx);
         const lines = head.split("\n").filter(Boolean);
-        const size = Math.round(s.w * 0.16);
-        const lh = size * 0.95;
+        const alt = other.split("\n");
+        const size = Math.round(s.w * 0.21);
+        const lh = size * 0.8;
         const y0 = s.h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.32;
         const leave = s.span(t, 0.9, 1, s.ease.in);
         L.ctx.textBaseline = "alphabetic";
+        L.ctx.textAlign = "center";
+        L.ctx.font = s.font({ size, weight: 700, family: serif });
+        L.ctx.lineJoin = "round";
+        L.ctx.lineWidth = size * 0.05 * fatten;
+        // a stroke of the same colour fattens the face toward the poster's
+        const plate = (text, x, y, color) => {
+          L.ctx.fillStyle = color;
+          L.ctx.strokeStyle = color;
+          if (fatten > 0) L.ctx.strokeText(text, x, y);
+          L.ctx.fillText(text, x, y);
+        };
         lines.forEach((ln, i) => {
-          const p = s.stagger(t, i, lines.length, { from: 0.02, to: 0.55, overlap: 0.4 });
-          const text = scrambleOn ? s.scramble(ln, p, t, i) : ln;
+          const p = s.stagger(t, i, lines.length, { from: 0.02, to: 0.55, overlap: 0.5, ease: s.ease.out });
+          const b = (alt[i] || "").padEnd(ln.length, " ");
+          const text = ln
+            .split("")
+            .map((ch, k) => (s.hash(k * 7 + i * 31, 5) < p * 1.15 || ch === " " ? ch : b[k] === " " ? ch : b[k]))
+            .join("");
           const sh = s.jitter(t, i, 12);
-          const amt = shake * size * 0.03 * (1 - s.span(p, 0.95, 1));
+          const amt = shake * size * 0.02 * (1 - s.span(p, 0.9, 1));
+          const apart = (1 - p) * offset * size;
+          const x = cx + sh.x * amt;
+          const y = y0 + i * lh + sh.y * amt;
           L.ctx.globalAlpha = s.span(p, 0, 0.1) * (1 - leave);
-          echo(L.ctx, g, text, cx + sh.x * amt, y0 + i * lh + sh.y * amt, {
-            size,
-            family: serif,
-            weight: 700,
-            italic: true,
-            color: type,
-            offsets: [{ dx: 0.05, dy: 0.05, color: echoC }],
-          });
+          plate(text, x - apart * 0.9, y - apart * 0.5, plateB);
+          plate(text, x + apart * 0.7, y + apart * 0.35, plateA);
+          plate(text, x, y, type);
         });
         if (gritOn) s.grit(L.canvas, go);
         else ctx.drawImage(L.canvas, 0, 0);
+      },
+    },
+
+    sweep: {
+      label: "Sweep — three colours of Lora over a curving black band",
+      name: "Sweep",
+      fn: function (ctx, t, s) {
+        const ground = s.color("Ground", P.indigo);
+        const band = s.color("Band", P.black);
+        const pale = s.color("Beside it", P.sky);
+        const stripe = s.color("Tape", P.red);
+        const swing = s.range("Swing", 1, 0, 2, 0.1);
+        const a = s.color("Line 1", P.red);
+        const b = s.color("Line 2", P.white);
+        const c = s.color("Line 3", P.amber);
+        const head = s.text("Headline", "Job titles\nare getting\nabstract.");
+        const entrance = s.pick("Entrance", "rise", s.ENTRANCES);
+
+        sweep(ctx, s, t, { ground, band, pale, stripe, swing });
+        const cx = s.w / 2;
+        const lines = head.split("\n").filter(Boolean);
+        const colors = [a, b, c];
+        const size = Math.round(s.w * 0.145);
+        const lh = size * 0.88;
+        const y0 = s.h * 0.5 - ((lines.length - 1) * lh) / 2 + size * 0.35;
+        const leave = s.span(t, 0.9, 1, s.ease.in);
+        ctx.textBaseline = "alphabetic";
+        lines.forEach((ln, i) => {
+          const p = s.stagger(t, i, lines.length, { from: 0.05, to: 0.5, overlap: 0.6, ease: s.ease.expoOut });
+          const fx = s.enter(entrance, p, size * 0.5);
+          fx.alpha *= 1 - leave;
+          s.place(cx, y0 + i * lh, fx, () => {
+            ctx.fillStyle = colors[i % colors.length];
+            s.rich(ln, 0, 0, { size, family: serif, weight: 700, align: "center" });
+          });
+        });
       },
     },
 
@@ -1750,7 +1897,7 @@
   }
 
   F.SHARED_DEFAULT = body(SHARED);
-  F.SWATCHES = ["#000000", "#ffffff", "#fffdf0", "#f4f3ef", "#adb4f5", "#3d3deb", "#2e7d46", "#ee4b2b", "#f4a71d", "#4b1a10", "#f2a1c4", "#8a8a5a", "#9a9a9a"];
+  F.SWATCHES = ["#000000", "#ffffff", "#fffdf0", "#f4f3ef", "#adb4f5", "#95aeff", "#3d3deb", "#5c48fe", "#2e7d46", "#20512f", "#ee4b2b", "#f8ab00", "#f6881a", "#4b1a10", "#34210f", "#f6c0dc", "#ff4fa3", "#8a8a5a", "#d9d9d9"];
   F.STARTERS = Object.keys(SLIDES).map((id) => ({
     id,
     label: SLIDES[id].label,

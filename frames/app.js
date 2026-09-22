@@ -812,7 +812,7 @@
   if (document.fonts && document.fonts.load) {
     const faces = [];
     ["Archivo", "Lora"].forEach((family) =>
-      ["400", "700", "900", "italic 400", "italic 700"].forEach((face) => faces.push(`${face} 16px ${family}`)),
+      ["400", "700", "900", "italic 400", "italic 700", "condensed 700", "condensed 900"].forEach((face) => faces.push(`${face} 16px ${family}`)),
     );
     Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null))).then(() => {
       drawStage();
