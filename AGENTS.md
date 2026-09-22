@@ -316,17 +316,24 @@ grammar never became a node kind and has no replacement in the graph model,
 a real capability loss rather than a rename. `docs/THE-TILES.md` is kept for
 its design history, marked retired at the top.
 
-## Frames (`frames/`) — beside the site, not in it
+## Frames (`public/frames/`) — beside the site, not in it
 
 A standalone tool for making posts and carousels as JavaScript animations:
 plain `index.html` + a few browser scripts, no Next, React, Tailwind, build
-step or dependency, opened straight from the folder. It shares nothing with
-the site or the Posts Studio except the four formats, copied into
-`frames/formats.js`. A slide is the body of `function (ctx, t, s)`, a pure
-function of loop progress, so preview and export are one render path. It is
-ignored by the site's ESLint on purpose and has no route; `frames/README.md`
-is its documentation. Keep it that way: don't wire it into `app/`, and don't
-pull site modules into it.
+step or dependency. It shares nothing with the site or the Posts Studio
+except the four formats, copied into `public/frames/formats.js`. A slide is
+the body of `function (ctx, t, s)`, a pure function of loop progress, so
+preview and export are one render path.
+
+It sits in `public/` so Vercel serves it verbatim, at `/frames/index.html`
+(the trailing-slash form has no page: `public/` is copied as-is and does no
+directory-index resolution). That is the same road
+`public/tools/learning-path-builder.html` already takes, and like the Studio
+and the Desk it is unlisted rather than protected — anyone with the path can
+open it. Being under `public/` does not put it in the toolchain: nothing
+there is compiled, it has no route, and it is ignored by the site's ESLint on
+purpose. `public/frames/README.md` is its documentation. Keep it that way:
+don't wire it into `app/`, and don't pull site modules into it.
 
 ## the Tools (`/tools`) — retired
 

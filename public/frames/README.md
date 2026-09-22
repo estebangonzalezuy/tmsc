@@ -2,8 +2,18 @@
 
 A small tool for making the club's posts and carousels as JavaScript
 animations. It lives beside the site, not in it: no Next, no React, no
-Tailwind, no build step, no dependencies. Open `index.html` in Chrome or
-Edge (double-click it, or serve the folder with anything) and it works.
+Tailwind, no build step, no dependencies.
+
+Open it two ways. Double-click `index.html` in this folder, in Chrome or
+Edge, and it works with no server. Or reach the deployed copy at
+`/frames/index.html` on the site: this folder sits in `public/`, which Vercel
+serves verbatim, so a push to `main` publishes it a minute later. Use the
+full file name, since `public/` does no directory-index resolution and
+`/frames/` alone has no page. It is unlisted, not protected, the way the
+Studio and the Desk are.
+
+Either way the fonts come from Google Fonts, so the first load wants a
+connection; after that the browser has them.
 
 The one thing it takes from the Posts Studio is the four formats, copied
 into `formats.js`:
