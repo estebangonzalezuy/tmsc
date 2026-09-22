@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter, SectionHeading, accentHover } from "@/components/Motifs";
+import {
+  CircleLetter,
+  Label,
+  PageHeader,
+  SectionHeading,
+} from "@/components/Motifs";
 import Cta from "@/components/Cta";
 import manifest from "@/content/directory/manifest.json";
 
@@ -21,70 +26,65 @@ export default function DirectoryPage() {
 
   return (
     <>
-      <section
-        {...studioSection("directory", "the Directory")}
-        className="px-5 md:px-6 py-24 md:py-32"
-      >
-        <p className="text-sm underline underline-offset-4">
-          {directory?.label ?? "the Directory"}
-        </p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          It all already exists. The problem is that it&apos;s{" "}
-          <em>scattered</em>.
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          {directory?.intro ??
-            "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place: organised, filterable, and honest about where each entry came from."}
-        </p>
-      </section>
+      <PageHeader
+        label={`${directory?.label ?? "the Directory"} · ${manifest.total} entries · ${collections.length} collections`}
+        title={
+          <>
+            It all already exists. The problem is that it&apos;s{" "}
+            <em>scattered</em>.
+          </>
+        }
+        intro={
+          directory?.intro ??
+          "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place: organised, filterable, and honest about where each entry came from."
+        }
+      />
+      <div {...studioSection("directory", "the Directory")} />
 
-      <section className="px-5 md:px-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { value: String(manifest.total), label: "entries indexed" },
-          { value: String(collections.length), label: "collections" },
-          { value: "5", label: "shelves" },
-          { value: "0", label: "opinions offered" },
-        ].map((s) => (
-          <div key={s.label} className="card px-5 md:px-6 py-10">
-            <p className="font-serif text-3xl md:text-4xl">{s.value}</p>
-            <p className="mt-2 text-xs text-muted">{s.label}</p>
-          </div>
-        ))}
-      </section>
-
+      {/* A shelf is a heading and its collections as rows. The cards this used
+          to be were four to a screen and told you less: a row fits the letter,
+          the name, what is in it, how much of it there is and where it came
+          from on one line, which is what you are actually comparing. */}
       {shelves.map((shelf) => {
         const shelved = collections.filter((c) => c.shelf === shelf.id);
         if (!shelved.length) return null;
         return (
-          <section
-            key={shelf.id}
-            className="px-5 md:px-6 py-20 md:py-24"
-          >
-            <SectionHeading label={shelf.name} title={<em>{shelf.note}</em>} />
-            <div className="mt-12 grid gap-3 md:grid-cols-2">
+          <section key={shelf.id} className="px-5 md:px-6 pb-14">
+            <div className="grid gap-x-6 gap-y-1 pb-4 md:grid-cols-[6rem_1fr]">
+              <Label>Shelf</Label>
+              <div>
+                <h2 className="font-serif text-[1.4rem] leading-tight tracking-tight">
+                  {shelf.name}
+                </h2>
+                <p className="mt-1 text-sm text-muted">{shelf.note}</p>
+              </div>
+            </div>
+            <div className="row-divide border-t border-line">
               {shelved.map((c) => (
                 <Link
                   key={c.id}
                   href={`/directory/${c.id}`}
-                  className={`group card card-lift p-8 ${accentHover(c.id)}`}
+                  className="group grid grid-cols-[2rem_1fr_auto] items-center gap-x-5 gap-y-1.5 py-4 md:grid-cols-[6rem_1.1fr_1.9fr_auto_5.5rem]"
                 >
-                  <div className="flex items-baseline justify-between gap-4">
-                    <CircleLetter>{c.letter}</CircleLetter>
-                    <span className="text-xs text-muted accent-hover-sub">
-                      {c.count} entries
-                    </span>
-                  </div>
-                  <h3 className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">
+                  <CircleLetter size="size-[30px] text-[13px]">
+                    {c.letter}
+                  </CircleLetter>
+                  <h3 className="font-serif text-xl leading-tight tracking-tight group-hover:underline underline-offset-4 decoration-1">
                     {c.name}
                   </h3>
-                  <p className="mt-4 text-sm text-muted accent-hover-sub leading-relaxed">
+                  <p className="col-span-2 text-sm leading-snug text-muted md:col-span-1 md:col-start-3">
                     {c.blurb}
                   </p>
-                  {c.facets.length > 0 && (
-                    <p className="mt-6 text-xs text-muted accent-hover-sub">
-                      Filter by {c.facets.join(", ").toLowerCase()}
-                    </p>
-                  )}
+                  <span className="label col-start-3 row-start-1 justify-self-end md:col-start-4 md:row-start-auto">
+                    {c.count} entries
+                  </span>
+                  <span
+                    className={`pill hidden justify-self-end md:inline-block ${
+                      c.source === "notion" ? "pill-notion" : ""
+                    }`}
+                  >
+                    {c.source}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -95,7 +95,7 @@ export default function DirectoryPage() {
       {!hidden.has("directoryNote") && (
         <section
           {...studioSection("directoryNote", "Directory: how it's kept")}
-          className="px-5 md:px-6 py-20 md:py-24"
+          className="px-5 md:px-6 py-16 md:py-20"
         >
           <SectionHeading
             label="How it's kept"
@@ -114,7 +114,7 @@ export default function DirectoryPage() {
             isn&apos;t?{" "}
             <a
               href={`mailto:${site.email}?subject=the%20Directory`}
-              className="underline underline-offset-4"
+              className="underline underline-offset-4 accent-hover-text"
             >
               Tell us
             </a>

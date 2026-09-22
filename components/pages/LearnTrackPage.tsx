@@ -27,7 +27,7 @@ export default function LearnTrackPage({
         </p>
         <div className="mt-8 flex items-center gap-4">
           <CircleLetter>{track.letter}</CircleLetter>
-          <h1 className="font-serif text-4xl md:text-6xl leading-tight">
+          <h1 className="font-serif text-[2.5rem] md:text-[3.4rem] leading-[1.05] tracking-tight">
             {track.name}
           </h1>
         </div>

@@ -42,7 +42,7 @@ export default function LearnUpdatesPage({ updates }: { updates: Update[] }) {
           </Link>
           <span className="text-muted"> / Updates</span>
         </p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-3xl">
+        <h1 className="mt-5 font-serif text-[2.5rem] md:text-[3.4rem] leading-[1.05] tracking-tight max-w-3xl">
           What&apos;s been <em>added</em>.
         </h1>
         <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
@@ -57,7 +57,7 @@ export default function LearnUpdatesPage({ updates }: { updates: Update[] }) {
         ) : (
           months.map((group) => (
             <div key={group.month} className="mb-12">
-              <p className="text-sm underline underline-offset-4">{group.month}</p>
+              <p className="label">{group.month}</p>
               <ul className="mt-6 card row-divide px-6">
                 {group.items.map((u) => (
                   <li key={u.slug}>

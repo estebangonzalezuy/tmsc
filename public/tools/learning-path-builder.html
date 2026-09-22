@@ -1,0 +1,1183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personal Learning Path Builder</title>
+<meta name="robots" content="noindex" />
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --ink: #1c1b19;
+    --muted: #6b6862;
+    --line: #e4e1da;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(28,27,25,0.04), 0 8px 24px rgba(28,27,25,0.06);
+    --must: #3b6fd6;
+    --must-bg: #e9f0fd;
+    --nice: #b8860b;
+    --nice-bg: #fbf1d9;
+    --notnow: #8a8781;
+    --notnow-bg: #eeece7;
+    --known: #2f8f5b;
+    --known-bg: #e5f5ec;
+    --danger: #b3402f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 96px;
+  }
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .reset-link {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px;
+  }
+  .reset-link:hover { color: var(--danger); }
+
+  nav.progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 32px;
+  }
+  .progress-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: default;
+    padding: 4px 2px;
+    font-family: inherit;
+  }
+  .progress-step.clickable { cursor: pointer; }
+  .progress-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .progress-step.done .progress-dot {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  .progress-step.current .progress-dot {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .progress-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .progress-step.current .progress-label { color: var(--ink); font-weight: 600; }
+  .progress-line {
+    height: 1px;
+    background: var(--line);
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: -22px;
+    position: relative;
+    z-index: -1;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 24px;
+  }
+  .step-title { font-size: 21px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .step-hint { font-size: 14px; color: var(--muted); margin: 0 0 22px; max-width: 52ch; }
+
+  input[type="text"], input[type="url"], input[type="date"], input[type="number"], select, textarea {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 9px 11px;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--ink); }
+
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 18px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn.secondary { background: transparent; color: var(--ink); }
+  .btn.small { padding: 6px 12px; font-size: 13px; }
+  .btn.ghost {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .add-row { display: flex; gap: 8px; margin-bottom: 18px; }
+  .add-row input[type="text"] { flex: 1; }
+
+  ul.plain { list-style: none; margin: 0; padding: 0; }
+
+  .dump-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 9px;
+    margin-bottom: 8px;
+  }
+  .dump-item .text { font-size: 14px; }
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 6px;
+  }
+  .icon-btn:hover { color: var(--danger); background: rgba(179,64,47,0.08); }
+
+  .empty-note {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 18px 4px;
+    text-align: center;
+  }
+
+  .cat-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .cat-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 6px 4px 12px;
+  }
+  .cat-chip input {
+    border: none;
+    background: none;
+    padding: 2px 0;
+    width: 110px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .cat-chip .icon-btn { padding: 2px 6px; }
+  .add-cat-btn {
+    border: 1px dashed var(--line);
+    background: none;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .add-cat-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 9px;
+    margin-bottom: 8px;
+  }
+  .item-row .text { font-size: 14px; flex: 1; min-width: 0; }
+  .item-row select { min-width: 140px; }
+
+  .prio-choices { display: flex; gap: 6px; flex-wrap: wrap; }
+  .prio-btn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 6px 12px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    color: var(--ink);
+    opacity: 0.55;
+  }
+  .prio-btn.active { opacity: 1; border-color: currentColor; }
+  .prio-btn[data-p="must"] { background: var(--must-bg); color: var(--must); }
+  .prio-btn[data-p="nice"] { background: var(--nice-bg); color: var(--nice); }
+  .prio-btn[data-p="notnow"] { background: var(--notnow-bg); color: var(--notnow); }
+  .prio-btn[data-p="known"] { background: var(--known-bg); color: var(--known); }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+  .tag.must { background: var(--must-bg); color: var(--must); }
+  .tag.nice { background: var(--nice-bg); color: var(--nice); }
+  .tag.notnow { background: var(--notnow-bg); color: var(--notnow); }
+  .tag.known { background: var(--known-bg); color: var(--known); }
+  .tag.cat { background: var(--line); color: var(--muted); }
+
+  .trim-summary {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .trim-group h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 18px 0 10px;
+  }
+  .trim-group:first-of-type h3 { margin-top: 0; }
+  .trim-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 9px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .trim-row .text { flex: 1; }
+
+  .seq-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 620px) {
+    .seq-columns { grid-template-columns: 1fr; }
+  }
+  .seq-col h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .seq-dropzone {
+    min-height: 60px;
+    border-radius: 10px;
+    padding: 2px;
+  }
+  .seq-dropzone.pool { }
+  .seq-li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border-radius: 9px;
+    padding: 9px 10px;
+    margin-bottom: 6px;
+    cursor: grab;
+  }
+  .seq-li.dragging { opacity: 0.35; }
+  .seq-li .handle { color: var(--muted); font-size: 13px; user-select: none; }
+  .seq-li .text { flex: 1; font-size: 13px; min-width: 0; }
+  .seq-li .mini-btns { display: flex; gap: 2px; }
+  .seq-li .mini-btns button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 3px 5px;
+    border-radius: 5px;
+  }
+  .seq-li .mini-btns button:hover { color: var(--ink); background: var(--line); }
+  .seq-li .order-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    width: 16px;
+    text-align: right;
+  }
+
+  .res-row {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .res-row .head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .res-row .head .order-num { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .res-row .head .text { font-size: 14px; font-weight: 600; }
+  .res-fields { display: flex; gap: 8px; flex-wrap: wrap; }
+  .res-fields select { flex: 0 0 auto; }
+  .res-fields input { flex: 1; min-width: 180px; }
+
+  .export-config {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-group label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .preset-row { display: flex; gap: 6px; margin-top: 4px; }
+
+  .export-preview { margin-bottom: 20px; }
+  .export-preview h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .export-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 9px;
+    margin-bottom: 6px;
+  }
+  .export-row .date { color: var(--muted); white-space: nowrap; }
+
+  .success-note {
+    font-size: 13px;
+    color: var(--known);
+    margin-top: 10px;
+  }
+
+  footer.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .step-warning {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <h1>Personal Learning Path Builder</h1>
+    <button class="reset-link" id="resetBtn" type="button">Start over</button>
+  </header>
+  <nav class="progress" id="progressNav"></nav>
+  <main class="card" id="stepCard"></main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STEP_LABELS = ["Dump", "Categorize", "Prioritize", "Trim", "Sequence", "Resources", "Export"];
+  var PRIORITIES = [
+    { key: "must", label: "Must-know" },
+    { key: "nice", label: "Nice-to-know" },
+    { key: "notnow", label: "Not now" },
+    { key: "known", label: "Already know" }
+  ];
+
+  function uid() {
+    return "id" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function freshState() {
+    return {
+      step: 1,
+      maxStepReached: 1,
+      items: [],
+      categories: [
+        { id: uid(), name: "Practical" },
+        { id: uid(), name: "Theoretical" }
+      ],
+      sequence: [],
+      resources: {},
+      exportStartDate: todayInputValue(),
+      exportIntervalDays: 7,
+      exportDone: false
+    };
+  }
+
+  var state = freshState();
+  var dragInfo = null;
+
+  function todayInputValue() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function pad2(n) { return String(n).padStart(2, "0"); }
+
+  function itemById(id) {
+    for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) return state.items[i];
+    return null;
+  }
+  function categoryById(id) {
+    for (var i = 0; i < state.categories.length; i++) if (state.categories[i].id === id) return state.categories[i];
+    return null;
+  }
+  function priorityMeta(key) {
+    for (var i = 0; i < PRIORITIES.length; i++) if (PRIORITIES[i].key === key) return PRIORITIES[i];
+    return null;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // ---------- validation / navigation ----------
+
+  function canProceedFrom(step) {
+    if (step === 1) return state.items.length > 0;
+    if (step === 2) return state.items.every(function (it) { return !!it.categoryId; });
+    if (step === 3) return state.items.every(function (it) { return !!it.priority; });
+    if (step === 4) return true;
+    if (step === 5) return state.sequence.length > 0;
+    if (step === 6) return true;
+    return true;
+  }
+
+  function goToStep(n) {
+    if (n < 1 || n > 7) return;
+    if (n > state.maxStepReached) return;
+    if (n === 5 || (state.step < 5 && n >= 5)) syncSequence();
+    state.step = n;
+    render();
+  }
+
+  function nextStep() {
+    if (!canProceedFrom(state.step)) return;
+    var n = state.step + 1;
+    if (n > 7) return;
+    if (n === 5) syncSequence();
+    if (n > state.maxStepReached) state.maxStepReached = n;
+    state.step = n;
+    render();
+  }
+
+  function prevStep() {
+    if (state.step <= 1) return;
+    state.step -= 1;
+    render();
+  }
+
+  // ---------- sequence sync ----------
+
+  function syncSequence() {
+    var validIds = {};
+    state.items.forEach(function (it) {
+      if (it.priority === "must" || it.priority === "nice") validIds[it.id] = it.priority;
+    });
+    state.sequence = state.sequence.filter(function (id) { return !!validIds[id]; });
+    var inSeq = {};
+    state.sequence.forEach(function (id) { inSeq[id] = true; });
+    state.items.forEach(function (it) {
+      if (it.priority === "must" && !inSeq[it.id]) {
+        state.sequence.push(it.id);
+        inSeq[it.id] = true;
+      }
+    });
+  }
+
+  function poolItems() {
+    var inSeq = {};
+    state.sequence.forEach(function (id) { inSeq[id] = true; });
+    return state.items.filter(function (it) { return it.priority === "nice" && !inSeq[it.id]; });
+  }
+
+  function moveIntoSequence(id, beforeId) {
+    var idx = state.sequence.indexOf(id);
+    if (idx !== -1) state.sequence.splice(idx, 1);
+    if (beforeId === null || beforeId === undefined) {
+      state.sequence.push(id);
+    } else {
+      var bIdx = state.sequence.indexOf(beforeId);
+      if (bIdx === -1) state.sequence.push(id);
+      else state.sequence.splice(bIdx, 0, id);
+    }
+  }
+
+  function removeFromSequence(id) {
+    var idx = state.sequence.indexOf(id);
+    if (idx !== -1) state.sequence.splice(idx, 1);
+  }
+
+  // ---------- rendering: progress ----------
+
+  function renderProgress() {
+    var nav = document.getElementById("progressNav");
+    var html = "";
+    for (var i = 1; i <= 7; i++) {
+      var cls = "progress-step";
+      if (i < state.step) cls += " done";
+      if (i === state.step) cls += " current";
+      if (i <= state.maxStepReached) cls += " clickable";
+      html += '<button type="button" class="' + cls + '" data-goto="' + i + '"' +
+        (i <= state.maxStepReached ? "" : " disabled") + '>' +
+        '<span class="progress-dot">' + (i < state.step ? "&#10003;" : i) + '</span>' +
+        '<span class="progress-label">' + STEP_LABELS[i - 1] + '</span>' +
+        '</button>';
+    }
+    nav.innerHTML = html;
+    Array.prototype.forEach.call(nav.querySelectorAll("[data-goto]"), function (btn) {
+      btn.addEventListener("click", function () { goToStep(parseInt(btn.getAttribute("data-goto"), 10)); });
+    });
+  }
+
+  // ---------- rendering: nav bar ----------
+
+  function renderNavBar(opts) {
+    opts = opts || {};
+    var backDisabled = state.step === 1;
+    var nextLabel = opts.nextLabel || "Continue";
+    var nextDisabled = !canProceedFrom(state.step);
+    var warning = opts.warning || "";
+    var html =
+      '<footer class="nav-bar">' +
+        '<button class="btn ghost" id="backBtn" type="button"' + (backDisabled ? " disabled" : "") + '>Back</button>' +
+        (state.step < 7
+          ? '<button class="btn" id="nextBtn" type="button"' + (nextDisabled ? " disabled" : "") + '>' + nextLabel + '</button>'
+          : '') +
+      '</footer>' +
+      (warning ? '<p class="step-warning">' + warning + '</p>' : '');
+    return html;
+  }
+
+  function bindNavBar() {
+    var back = document.getElementById("backBtn");
+    var next = document.getElementById("nextBtn");
+    if (back) back.addEventListener("click", prevStep);
+    if (next) next.addEventListener("click", nextStep);
+  }
+
+  // ---------- step 1: brain dump ----------
+
+  function renderStep1() {
+    var card = document.getElementById("stepCard");
+    var list = state.items.map(function (it) {
+      return '<li class="dump-item"><span class="text">' + escapeHtml(it.text) + '</span>' +
+        '<button class="icon-btn" data-remove="' + it.id + '" title="Remove" type="button">&times;</button></li>';
+    }).join("");
+    card.innerHTML =
+      '<h2 class="step-title">What do you want to learn?</h2>' +
+      '<p class="step-hint">Add anything &mdash; skills, tools, topics. One at a time, no limit, no need to organize yet.</p>' +
+      '<form class="add-row" id="addForm">' +
+        '<input type="text" id="itemInput" placeholder="e.g. Figma auto-layout" autocomplete="off" />' +
+        '<button class="btn" type="submit">Add</button>' +
+      '</form>' +
+      '<ul class="plain" id="dumpList">' + list + '</ul>' +
+      (state.items.length === 0 ? '<p class="empty-note">Nothing yet &mdash; add your first item above.</p>' : '') +
+      renderNavBar({ warning: state.items.length === 0 ? "Add at least one item to continue." : "" });
+
+    document.getElementById("addForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById("itemInput");
+      var text = input.value.trim();
+      if (!text) return;
+      state.items.push({ id: uid(), text: text, categoryId: null, priority: null });
+      input.value = "";
+      render();
+      var refocus = document.getElementById("itemInput");
+      if (refocus) refocus.focus();
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-remove]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-remove");
+        state.items = state.items.filter(function (it) { return it.id !== id; });
+        delete state.resources[id];
+        state.sequence = state.sequence.filter(function (x) { return x !== id; });
+        render();
+      });
+    });
+    bindNavBar();
+  }
+
+  // ---------- step 2: categorize ----------
+
+  function renderStep2() {
+    var card = document.getElementById("stepCard");
+
+    state.items.forEach(function (it) {
+      if (!it.categoryId || !categoryById(it.categoryId)) {
+        it.categoryId = state.categories[0] ? state.categories[0].id : null;
+      }
+    });
+
+    var catChips = state.categories.map(function (c) {
+      return '<span class="cat-chip">' +
+        '<input type="text" data-catname="' + c.id + '" value="' + escapeHtml(c.name) + '" />' +
+        (state.categories.length > 1
+          ? '<button class="icon-btn" data-catremove="' + c.id + '" type="button" title="Remove category">&times;</button>'
+          : '') +
+        '</span>';
+    }).join("");
+
+    var rows = state.items.map(function (it) {
+      var options = state.categories.map(function (c) {
+        return '<option value="' + c.id + '"' + (c.id === it.categoryId ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
+      }).join("");
+      return '<li class="item-row"><span class="text">' + escapeHtml(it.text) + '</span>' +
+        '<select data-item-cat="' + it.id + '">' + options + '</select></li>';
+    }).join("");
+
+    card.innerHTML =
+      '<h2 class="step-title">Group them</h2>' +
+      '<p class="step-hint">Sort into a few categories of your own. Rename, add, or remove any of them &mdash; these are just a starting suggestion.</p>' +
+      '<div class="cat-row" id="catRow">' + catChips +
+        '<button class="add-cat-btn" id="addCatBtn" type="button">+ Add category</button>' +
+      '</div>' +
+      '<ul class="plain">' + rows + '</ul>' +
+      renderNavBar();
+
+    Array.prototype.forEach.call(card.querySelectorAll("[data-catname]"), function (input) {
+      input.addEventListener("input", function () {
+        var cat = categoryById(input.getAttribute("data-catname"));
+        if (cat) cat.name = input.value;
+      });
+      input.addEventListener("blur", function () {
+        var cat = categoryById(input.getAttribute("data-catname"));
+        if (cat && !cat.name.trim()) cat.name = "Untitled";
+        render();
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-catremove]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-catremove");
+        if (state.categories.length <= 1) return;
+        state.categories = state.categories.filter(function (c) { return c.id !== id; });
+        var fallback = state.categories[0].id;
+        state.items.forEach(function (it) { if (it.categoryId === id) it.categoryId = fallback; });
+        render();
+      });
+    });
+    document.getElementById("addCatBtn").addEventListener("click", function () {
+      state.categories.push({ id: uid(), name: "New category" });
+      render();
+      var inputs = card.querySelectorAll("[data-catname]");
+      var last = inputs[inputs.length - 1];
+      if (last) { last.focus(); last.select(); }
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-item-cat]"), function (sel) {
+      sel.addEventListener("change", function () {
+        var it = itemById(sel.getAttribute("data-item-cat"));
+        if (it) it.categoryId = sel.value;
+      });
+    });
+    bindNavBar();
+  }
+
+  // ---------- step 3: prioritize ----------
+
+  function renderStep3() {
+    var card = document.getElementById("stepCard");
+    var remaining = state.items.filter(function (it) { return !it.priority; }).length;
+
+    var rows = state.items.map(function (it) {
+      var buttons = PRIORITIES.map(function (p) {
+        return '<button type="button" class="prio-btn' + (it.priority === p.key ? " active" : "") + '" data-p="' + p.key +
+          '" data-prio-item="' + it.id + '">' + p.label + '</button>';
+      }).join("");
+      return '<li class="item-row"><span class="text">' + escapeHtml(it.text) + '</span>' +
+        '<span class="prio-choices">' + buttons + '</span></li>';
+    }).join("");
+
+    card.innerHTML =
+      '<h2 class="step-title">Prioritize</h2>' +
+      '<p class="step-hint">Tag every item so the list can be trimmed down to what actually matters right now.</p>' +
+      '<ul class="plain">' + rows + '</ul>' +
+      renderNavBar({ warning: remaining > 0 ? remaining + " item" + (remaining === 1 ? "" : "s") + " still need" + (remaining === 1 ? "s" : "") + " a priority." : "" });
+
+    Array.prototype.forEach.call(card.querySelectorAll("[data-prio-item]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var it = itemById(btn.getAttribute("data-prio-item"));
+        if (it) it.priority = btn.getAttribute("data-p");
+        render();
+      });
+    });
+    bindNavBar();
+  }
+
+  // ---------- step 4: trim ----------
+
+  function renderStep4() {
+    var card = document.getElementById("stepCard");
+    var must = state.items.filter(function (it) { return it.priority === "must"; });
+    var nice = state.items.filter(function (it) { return it.priority === "nice"; });
+    var hiddenCount = state.items.length - must.length - nice.length;
+
+    function group(list, label, tagClass) {
+      if (list.length === 0) return "";
+      var rows = list.map(function (it) {
+        var cat = categoryById(it.categoryId);
+        return '<li class="trim-row"><span class="text">' + escapeHtml(it.text) + '</span>' +
+          (cat ? '<span class="tag cat">' + escapeHtml(cat.name) + '</span>' : "") +
+          '<span class="tag ' + tagClass + '">' + label + '</span></li>';
+      }).join("");
+      return '<div class="trim-group"><h3>' + label + ' &middot; ' + list.length + '</h3><ul class="plain">' + rows + '</ul></div>';
+    }
+
+    card.innerHTML =
+      '<h2 class="step-title">Lighter already</h2>' +
+      '<p class="step-hint">Not-now and Already-know items are set aside. What is left is what is worth sequencing.</p>' +
+      '<p class="trim-summary">' + (must.length + nice.length) + ' kept &middot; ' + hiddenCount + ' hidden</p>' +
+      group(must, "Must-know", "must") +
+      group(nice, "Nice-to-know", "nice") +
+      (must.length + nice.length === 0
+        ? '<p class="empty-note">Nothing tagged Must-know or Nice-to-know yet. Go back and prioritize at least one item.</p>'
+        : "") +
+      renderNavBar();
+
+    bindNavBar();
+  }
+
+  // ---------- step 5: sequence ----------
+
+  function getDragAfterElement(container, y) {
+    var els = Array.prototype.slice.call(container.querySelectorAll(".seq-li:not(.dragging)"));
+    var closest = { offset: -Infinity, element: null };
+    els.forEach(function (child) {
+      var box = child.getBoundingClientRect();
+      var offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) closest = { offset: offset, element: child };
+    });
+    return closest.element;
+  }
+
+  function renderStep5() {
+    var card = document.getElementById("stepCard");
+    var pool = poolItems();
+
+    var poolHtml = pool.map(function (it) {
+      return '<li class="seq-li" draggable="true" data-id="' + it.id + '" data-from="pool">' +
+        '<span class="handle">&#8942;&#8942;</span>' +
+        '<span class="text">' + escapeHtml(it.text) + '</span>' +
+        '<span class="mini-btns"><button type="button" data-addtoseq="' + it.id + '" title="Add to path">+</button></span>' +
+        '</li>';
+    }).join("");
+
+    var seqHtml = state.sequence.map(function (id, idx) {
+      var it = itemById(id);
+      if (!it) return "";
+      var removable = it.priority === "nice";
+      return '<li class="seq-li" draggable="true" data-id="' + id + '" data-from="sequence">' +
+        '<span class="order-num">' + (idx + 1) + '</span>' +
+        '<span class="handle">&#8942;&#8942;</span>' +
+        '<span class="text">' + escapeHtml(it.text) + '</span>' +
+        '<span class="mini-btns">' +
+          (idx > 0 ? '<button type="button" data-up="' + id + '" title="Move up">&#8593;</button>' : "") +
+          (idx < state.sequence.length - 1 ? '<button type="button" data-down="' + id + '" title="Move down">&#8595;</button>' : "") +
+          (removable ? '<button type="button" data-removeseq="' + id + '" title="Remove from path">&times;</button>' : "") +
+        '</span></li>';
+    }).join("");
+
+    card.innerHTML =
+      '<h2 class="step-title">Sequence your path</h2>' +
+      '<p class="step-hint">Drag to reorder. Must-know items are already on your path; add Nice-to-know items if you want them in too.</p>' +
+      '<div class="seq-columns">' +
+        '<div class="seq-col">' +
+          '<h3>Optional &middot; Nice-to-know</h3>' +
+          '<ul class="plain seq-dropzone pool" id="poolList">' + poolHtml + '</ul>' +
+          (pool.length === 0 ? '<p class="empty-note">None left &mdash; all added to your path.</p>' : "") +
+        '</div>' +
+        '<div class="seq-col">' +
+          '<h3>Your path</h3>' +
+          '<ul class="plain seq-dropzone" id="seqList">' + seqHtml + '</ul>' +
+          (state.sequence.length === 0 ? '<p class="empty-note">Nothing sequenced yet.</p>' : "") +
+        '</div>' +
+      '</div>' +
+      renderNavBar({ warning: state.sequence.length === 0 ? "Add at least one item to your path to continue." : "" });
+
+    var seqList = document.getElementById("seqList");
+    var poolList = document.getElementById("poolList");
+
+    function onDragStart(e) {
+      var li = e.currentTarget;
+      dragInfo = { id: li.getAttribute("data-id"), from: li.getAttribute("data-from") };
+      li.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", dragInfo.id); } catch (err) {}
+    }
+    function onDragEnd(e) { e.currentTarget.classList.remove("dragging"); dragInfo = null; }
+
+    Array.prototype.forEach.call(card.querySelectorAll(".seq-li"), function (li) {
+      li.addEventListener("dragstart", onDragStart);
+      li.addEventListener("dragend", onDragEnd);
+    });
+
+    seqList.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    });
+    seqList.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (!dragInfo) return;
+      var after = getDragAfterElement(seqList, e.clientY);
+      var beforeId = after ? after.getAttribute("data-id") : null;
+      moveIntoSequence(dragInfo.id, beforeId);
+      dragInfo = null;
+      render();
+    });
+
+    poolList.addEventListener("dragover", function (e) { e.preventDefault(); });
+    poolList.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (!dragInfo) return;
+      var it = itemById(dragInfo.id);
+      if (it && it.priority === "nice") removeFromSequence(dragInfo.id);
+      dragInfo = null;
+      render();
+    });
+
+    Array.prototype.forEach.call(card.querySelectorAll("[data-addtoseq]"), function (btn) {
+      btn.addEventListener("click", function () {
+        moveIntoSequence(btn.getAttribute("data-addtoseq"), null);
+        render();
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-removeseq]"), function (btn) {
+      btn.addEventListener("click", function () {
+        removeFromSequence(btn.getAttribute("data-removeseq"));
+        render();
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-up]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-up");
+        var idx = state.sequence.indexOf(id);
+        if (idx > 0) {
+          var tmp = state.sequence[idx - 1];
+          state.sequence[idx - 1] = state.sequence[idx];
+          state.sequence[idx] = tmp;
+          render();
+        }
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-down]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-down");
+        var idx = state.sequence.indexOf(id);
+        if (idx !== -1 && idx < state.sequence.length - 1) {
+          var tmp = state.sequence[idx + 1];
+          state.sequence[idx + 1] = state.sequence[idx];
+          state.sequence[idx] = tmp;
+          render();
+        }
+      });
+    });
+
+    bindNavBar();
+  }
+
+  // ---------- step 6: resources ----------
+
+  function renderStep6() {
+    var card = document.getElementById("stepCard");
+
+    var rows = state.sequence.map(function (id, idx) {
+      var it = itemById(id);
+      if (!it) return "";
+      var res = state.resources[id] || { type: "link", value: "" };
+      state.resources[id] = res;
+      var types = [
+        { key: "link", label: "Link" },
+        { key: "note", label: "Note" },
+        { key: "course", label: "Course name" }
+      ];
+      var options = types.map(function (t) {
+        return '<option value="' + t.key + '"' + (t.key === res.type ? " selected" : "") + '>' + t.label + '</option>';
+      }).join("");
+      var inputType = res.type === "link" ? "url" : "text";
+      var placeholder = res.type === "link" ? "https://&hellip;" : (res.type === "course" ? "Name of a course you already have" : "A quick note to yourself");
+      return '<div class="res-row">' +
+        '<div class="head"><span class="order-num">' + (idx + 1) + '.</span><span class="text">' + escapeHtml(it.text) + '</span></div>' +
+        '<div class="res-fields">' +
+          '<select data-res-type="' + id + '">' + options + '</select>' +
+          '<input type="' + inputType + '" data-res-value="' + id + '" placeholder="' + placeholder + '" value="' + escapeHtml(res.value) + '" />' +
+        '</div></div>';
+    }).join("");
+
+    card.innerHTML =
+      '<h2 class="step-title">Attach your resources</h2>' +
+      '<p class="step-hint">Add a link, a note, or the name of a course you already have for each step. Nothing is suggested for you &mdash; only what you add here goes into the calendar.</p>' +
+      rows +
+      (state.sequence.length === 0 ? '<p class="empty-note">Your path is empty &mdash; go back and sequence some items first.</p>' : "") +
+      renderNavBar();
+
+    Array.prototype.forEach.call(card.querySelectorAll("[data-res-type]"), function (sel) {
+      sel.addEventListener("change", function () {
+        var id = sel.getAttribute("data-res-type");
+        state.resources[id].type = sel.value;
+        render();
+      });
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-res-value]"), function (input) {
+      input.addEventListener("input", function () {
+        var id = input.getAttribute("data-res-value");
+        state.resources[id].value = input.value;
+      });
+    });
+
+    bindNavBar();
+  }
+
+  // ---------- step 7: export ----------
+
+  function escapeICS(str) {
+    return String(str)
+      .replace(/\\/g, "\\\\")
+      .replace(/;/g, "\\;")
+      .replace(/,/g, "\\,")
+      .replace(/\n/g, "\\n");
+  }
+
+  function foldLine(line) {
+    var maxBytes = 75;
+    var encoder = new TextEncoder();
+    var result = [];
+    var current = "";
+    var currentBytes = 0;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      var chBytes = encoder.encode(ch).length;
+      if (currentBytes + chBytes > maxBytes) {
+        result.push(current);
+        current = " " + ch;
+        currentBytes = 1 + chBytes;
+      } else {
+        current += ch;
+        currentBytes += chBytes;
+      }
+    }
+    result.push(current);
+    return result.join("\r\n");
+  }
+
+  function formatICSDateTimeUTC(date) {
+    return date.getUTCFullYear() + pad2(date.getUTCMonth() + 1) + pad2(date.getUTCDate()) +
+      "T" + pad2(date.getUTCHours()) + pad2(date.getUTCMinutes()) + pad2(date.getUTCSeconds()) + "Z";
+  }
+  function formatICSDate(date) {
+    return date.getFullYear() + pad2(date.getMonth() + 1) + pad2(date.getDate());
+  }
+  function parseDateInput(str) {
+    var parts = str.split("-").map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+  function addDays(date, n) {
+    var d = new Date(date.getTime());
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+  function formatDisplayDate(date) {
+    return date.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+  }
+
+  function planRows() {
+    var start = parseDateInput(state.exportStartDate);
+    var interval = Math.max(1, parseInt(state.exportIntervalDays, 10) || 7);
+    return state.sequence.map(function (id, idx) {
+      var it = itemById(id);
+      var date = addDays(start, idx * interval);
+      return { id: id, item: it, date: date };
+    }).filter(function (r) { return !!r.item; });
+  }
+
+  function buildDescription(it, cat, res) {
+    var lines = [];
+    if (cat) lines.push("Category: " + cat.name);
+    var pm = priorityMeta(it.priority);
+    if (pm) lines.push("Priority: " + pm.label);
+    if (res && res.value) {
+      var label = res.type === "link" ? "Link" : res.type === "course" ? "Course" : "Note";
+      lines.push(label + ": " + res.value);
+    }
+    return lines.join("\n");
+  }
+
+  function generateICS(rows) {
+    var lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Personal Learning Path Builder//EN",
+      "CALSCALE:GREGORIAN",
+      "X-WR-CALNAME:My Learning Path"
+    ];
+    var dtstamp = formatICSDateTimeUTC(new Date());
+    rows.forEach(function (row) {
+      var it = row.item;
+      var cat = categoryById(it.categoryId);
+      var res = state.resources[it.id];
+      var dtstart = formatICSDate(row.date);
+      var dtend = formatICSDate(addDays(row.date, 1));
+      lines.push("BEGIN:VEVENT");
+      lines.push("UID:" + uid() + "-" + it.id + "@learning-path-builder");
+      lines.push("DTSTAMP:" + dtstamp);
+      lines.push("DTSTART;VALUE=DATE:" + dtstart);
+      lines.push("DTEND;VALUE=DATE:" + dtend);
+      lines.push(foldLine("SUMMARY:" + escapeICS(it.text)));
+      var desc = buildDescription(it, cat, res);
+      if (desc) lines.push(foldLine("DESCRIPTION:" + escapeICS(desc)));
+      lines.push("END:VEVENT");
+    });
+    lines.push("END:VCALENDAR");
+    return lines.join("\r\n") + "\r\n";
+  }
+
+  function downloadICS() {
+    var rows = planRows();
+    var ics = generateICS(rows);
+    var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "learning-path.ics";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    state.exportDone = true;
+    render();
+  }
+
+  function renderStep7() {
+    var card = document.getElementById("stepCard");
+    var rows = planRows();
+
+    var previewHtml = rows.map(function (r) {
+      return '<div class="export-row"><span class="text">' + escapeHtml(r.item.text) + '</span>' +
+        '<span class="date">' + formatDisplayDate(r.date) + '</span></div>';
+    }).join("");
+
+    card.innerHTML =
+      '<h2 class="step-title">Export to your calendar</h2>' +
+      '<p class="step-hint">One item per interval, starting from a date you choose. Download the file and import it into whatever calendar app you use.</p>' +
+      '<div class="export-config">' +
+        '<div class="field-group"><label for="startDate">Start date</label>' +
+          '<input type="date" id="startDate" value="' + state.exportStartDate + '" /></div>' +
+        '<div class="field-group"><label for="intervalDays">Days between items</label>' +
+          '<input type="number" id="intervalDays" min="1" value="' + state.exportIntervalDays + '" />' +
+          '<div class="preset-row">' +
+            '<button class="btn ghost small" type="button" data-preset="1">Daily</button>' +
+            '<button class="btn ghost small" type="button" data-preset="7">Weekly</button>' +
+            '<button class="btn ghost small" type="button" data-preset="14">Biweekly</button>' +
+            '<button class="btn ghost small" type="button" data-preset="30">Monthly</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="export-preview"><h3>' + rows.length + ' item' + (rows.length === 1 ? "" : "s") + ' scheduled</h3>' + previewHtml + '</div>' +
+      '<button class="btn" id="downloadBtn" type="button"' + (rows.length === 0 ? " disabled" : "") + '>Download .ics</button>' +
+      (state.exportDone ? '<p class="success-note">Downloaded &mdash; import learning-path.ics into your calendar app.</p>' : "") +
+      renderNavBar();
+
+    document.getElementById("startDate").addEventListener("change", function (e) {
+      state.exportStartDate = e.target.value || todayInputValue();
+      state.exportDone = false;
+      render();
+    });
+    document.getElementById("intervalDays").addEventListener("input", function (e) {
+      var v = parseInt(e.target.value, 10);
+      state.exportIntervalDays = v > 0 ? v : 1;
+      state.exportDone = false;
+      render();
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("[data-preset]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.exportIntervalDays = parseInt(btn.getAttribute("data-preset"), 10);
+        state.exportDone = false;
+        render();
+      });
+    });
+    document.getElementById("downloadBtn").addEventListener("click", downloadICS);
+
+    bindNavBar();
+  }
+
+  // ---------- root render ----------
+
+  function render() {
+    renderProgress();
+    if (state.step === 1) renderStep1();
+    else if (state.step === 2) renderStep2();
+    else if (state.step === 3) renderStep3();
+    else if (state.step === 4) renderStep4();
+    else if (state.step === 5) renderStep5();
+    else if (state.step === 6) renderStep6();
+    else if (state.step === 7) renderStep7();
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (state.items.length === 0 || confirm("Start over? Everything you've entered will be cleared.")) {
+      state = freshState();
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

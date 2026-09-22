@@ -109,7 +109,7 @@ export default function DirectoryCollectionPage({
         <div className="mt-8 flex items-start gap-5">
           <CircleLetter size="size-11 shrink-0">{collection.letter}</CircleLetter>
           <div>
-            <h1 className="font-serif text-4xl md:text-6xl leading-tight">
+            <h1 className="font-serif text-[2.5rem] md:text-[3.4rem] leading-[1.05] tracking-tight">
               {collection.name}
             </h1>
             <p className="mt-6 max-w-xl text-sm text-muted leading-relaxed">

@@ -1,7 +1,7 @@
 "use client";
 
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { Boxed } from "@/components/Motifs";
+import { PageHeader } from "@/components/Motifs";
 import PostList from "@/components/PostList";
 import Cta from "@/components/Cta";
 
@@ -12,23 +12,27 @@ export default function NewsletterPage() {
 
   return (
     <>
+      <PageHeader
+        label="The newsletter"
+        title={
+          <>
+            Every letter the club has sent, <em>since day one</em>.
+          </>
+        }
+        intro="Essays, exercises, interviews, and honest check-ins, published on Substack, free to read. This is the full archive."
+      />
       <section
         {...studioSection("stats", "Stats")}
-        className="px-5 md:px-6 py-24 md:py-32"
+        className="px-5 md:px-6 pb-16"
       >
-        <p className="text-sm underline underline-offset-4">The newsletter</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
-          Every letter the club has sent, <em>since day one</em>.
-        </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
-          Essays, exercises, interviews, and honest check-ins, published on
-          Substack, free to read. This is the full archive.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <a href={site.subscribe} target="_blank" rel="noreferrer">
-            <Boxed className="accent-hover transition-colors">
-              Subscribe on Substack
-            </Boxed>
+        <div className="flex flex-wrap items-center gap-4">
+          <a
+            href={site.subscribe}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-lg btn-primary"
+          >
+            Subscribe on Substack
           </a>
           <a
             href={site.substack}
@@ -40,11 +44,16 @@ export default function NewsletterPage() {
           </a>
         </div>
         {!hidden.has("stats") && (
-        <dl className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3">
-          {stats.map((s) => (
-            <div key={s.label} className="card p-6">
-              <dt className="text-xs text-muted">{s.label}</dt>
-              <dd className="mt-2 font-serif text-3xl">{s.value}</dd>
+        <dl className="mt-12 grid grid-cols-2 border-y border-line md:grid-cols-4">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={`py-7 ${i % 2 === 1 ? "border-l border-line pl-7" : ""} md:border-l md:pl-7 md:first:border-l-0 md:first:pl-0 ${i > 1 ? "border-t border-line md:border-t-0" : ""}`}
+            >
+              <dd className="font-serif text-[2.5rem] leading-none tracking-tight">
+                {s.value}
+              </dd>
+              <dt className="label mt-2.5">{s.label}</dt>
             </div>
           ))}
         </dl>

@@ -9,6 +9,7 @@ type Item = Record<string, string>;
 
 type Content = {
   site: Item;
+  rooms: Item[];
   stats: Item[];
   pillars: Item[];
   threads: Item[];
@@ -23,6 +24,7 @@ type Content = {
   fundamentals: Item;
   stills: Item;
   clips: Item;
+  walls: Item;
   linkIndex: Item[];
   worksheets: Item[];
   offerings: Item[];
@@ -32,6 +34,7 @@ type Content = {
 };
 
 type ListKey =
+  | "rooms"
   | "stats"
   | "threads"
   | "practiceFiles"
@@ -44,7 +47,14 @@ type ListKey =
 
 type StringsKey = "quotes" | "practiceRules";
 
-type ObjectKey = "site" | "directory" | "learn" | "fundamentals" | "stills" | "clips";
+type ObjectKey =
+  | "site"
+  | "directory"
+  | "learn"
+  | "fundamentals"
+  | "stills"
+  | "clips"
+  | "walls";
 
 /* ---------- section schema ---------- */
 
@@ -97,6 +107,21 @@ const sections: Section[] = [
       { key: "subscribe", label: "Subscribe URL" },
       { key: "instagram", label: "Instagram URL" },
       { key: "linkedin", label: "LinkedIn URL" },
+    ],
+  },
+  {
+    id: "rooms",
+    title: "Rooms",
+    note: "The cards on the index. A room disappears with its page — hide it in Navigation and it leaves both",
+    kind: "list",
+    itemName: "room",
+    fields: [
+      {
+        key: "id",
+        label: "Which room (directory, stills, clips, fundamentals, learn, newsletter, practice)",
+      },
+      { key: "name", label: "Name" },
+      { key: "line", label: "One line under it", kind: "textarea" },
     ],
   },
   {
@@ -282,6 +307,21 @@ const sections: Section[] = [
         kind: "textarea",
       },
       { key: "note", label: "How it's kept", kind: "textarea" },
+    ],
+  },
+  {
+    id: "walls",
+    title: "The walls",
+    note: "The strip of stills and clips on the index — the frames themselves are cut at /curate and /cut",
+    kind: "object",
+    fields: [
+      { key: "label", label: "Label" },
+      {
+        key: "headline",
+        label: "Headline — *between asterisks* turns italic",
+        kind: "textarea",
+      },
+      { key: "note", label: "Note under it", kind: "textarea" },
     ],
   },
   {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useContent } from "@/components/content";
-import { Boxed } from "@/components/Motifs";
+import { Label } from "@/components/Motifs";
 
 /* The offer.
 
@@ -10,7 +10,13 @@ import { Boxed } from "@/components/Motifs";
    is worse than no number — so this block has two states and the content
    decides which. Fill in `offerPrice` in the Studio and it becomes an offer;
    leave it empty and it asks people to wait, honestly, with the same shape and
-   the same weight, so nothing has to be redesigned the day a price exists. */
+   the same weight, so nothing has to be redesigned the day a price exists.
+
+   It is also the one block of colour on the pages that carry it: indigo, the
+   club's own, which is how the site says "this is the thing to press" without
+   a second typeface or a bigger heading. `.block-colour` redefines the tokens
+   its children read, so the muted paragraph and the hairlines inside it are
+   white tints rather than every child being special-cased. */
 
 type Learn = {
   offerTitle?: string;
@@ -38,61 +44,71 @@ export default function OfferBlock({ compact = false }: { compact?: boolean }) {
     .filter(Boolean);
 
   return (
-    <div className={`card px-6 md:px-10 ${compact ? "py-10" : "py-14"}`}>
-      <div className="max-w-3xl">
-        <p className="text-sm underline underline-offset-4">
-          {learn.offerTitle || "The library"}
-        </p>
+    <div
+      className={`block-colour block-indigo px-6 md:px-12 ${
+        compact ? "py-10 md:py-12" : "py-12 md:py-16"
+      }`}
+    >
+      <div className="grid gap-10 md:grid-cols-[1.1fr_1fr] md:gap-14">
+        <div>
+          <Label>{learn.offerTitle || "The library"}</Label>
+          <h2 className="mt-3.5 font-serif text-3xl md:text-[2.5rem] leading-[1.08] tracking-tight">
+            {priced ? (
+              <>
+                Pay once. <em>Keep it for good.</em>
+              </>
+            ) : (
+              <>
+                Not for sale <em>yet</em>.
+              </>
+            )}
+          </h2>
+          <p className="mt-5 max-w-md text-[15px] text-muted leading-relaxed">
+            {learn.offerNote ||
+              (priced
+                ? "One payment, and the library is yours — everything in it today, and everything added to it after."
+                : "The club is still writing it. Put your name on the newsletter and you'll hear the day it opens, before anyone else does.")}
+          </p>
+        </div>
 
-        <h2 className="mt-6 font-serif text-3xl md:text-5xl leading-tight">
-          {priced ? (
-            <>
-              Pay once. <em>Keep it for good.</em>
-            </>
-          ) : (
-            <>
-              Not for sale <em>yet</em>.
-            </>
+        <div>
+          {includes.length > 0 && (
+            <ul className="row-divide border-t border-line text-[15px]">
+              {includes.map((line) => (
+                <li key={line} className="flex gap-4 py-3.5 leading-snug">
+                  <span aria-hidden className="text-muted">
+                    —
+                  </span>
+                  {line}
+                </li>
+              ))}
+            </ul>
           )}
-        </h2>
 
-        <p className="mt-6 max-w-md text-sm text-muted leading-relaxed">
-          {learn.offerNote ||
-            (priced
-              ? "One payment, and the library is yours — everything in it today, and everything added to it after."
-              : "The club is still writing it. Put your name on the newsletter and you'll hear the day it opens, before anyone else does.")}
-        </p>
-
-        {includes.length > 0 && (
-          <ul className="mt-10 grid gap-2 sm:grid-cols-2 max-w-2xl">
-            {includes.map((line) => (
-              <li
-                key={line}
-                className="inset px-4 py-3 text-sm leading-relaxed"
-              >
-                {line}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <div className="mt-10 flex flex-wrap items-center gap-6">
-          {priced ? (
-            <>
-              <a href={learn.offerHref} target="_blank" rel="noreferrer">
-                <Boxed className="text-lg accent-hover transition-colors">
+          <div className="mt-8 flex flex-wrap items-center gap-5">
+            {priced ? (
+              <>
+                <a
+                  href={learn.offerHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-lg btn-on-colour"
+                >
                   {learn.offerCta || "Get the library"}
-                </Boxed>
-              </a>
-              <p className="font-serif text-2xl">{price}</p>
-            </>
-          ) : (
-            <a href={site.subscribe} target="_blank" rel="noreferrer">
-              <Boxed className="text-lg accent-hover transition-colors">
+                </a>
+                <p className="font-serif text-2xl">{price}</p>
+              </>
+            ) : (
+              <a
+                href={site.subscribe}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-lg btn-on-colour"
+              >
                 {learn.offerCta || "Tell me when it opens"}
-              </Boxed>
-            </a>
-          )}
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>

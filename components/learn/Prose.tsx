@@ -49,7 +49,7 @@ function Spans({ spans }: { spans: Span[] }) {
 
 export default function Prose({ blocks }: { blocks: Block[] }) {
   return (
-    <div className="max-w-2xl">
+    <div>
       {blocks.map((b, i) => {
         switch (b.t) {
           case "h":
@@ -140,12 +140,15 @@ export default function Prose({ blocks }: { blocks: Block[] }) {
              one of these, so it is the loudest block on the page. */
           case "do":
             return (
-              <section key={i} className="mt-12 card px-6 py-6">
+              <section
+                key={i}
+                className="block-colour block-green mt-12 px-7 py-6"
+              >
                 <div className="flex items-baseline justify-between gap-4">
-                  <p className="text-xs underline underline-offset-4">Go and do this</p>
-                  {b.minutes && <p className="text-xs text-muted">{b.minutes} min</p>}
+                  <p className="label">Go and do this</p>
+                  {b.minutes && <p className="label">{b.minutes} min</p>}
                 </div>
-                <p className="mt-4 leading-relaxed">
+                <p className="mt-3 font-serif text-xl leading-snug">
                   <Spans spans={b.text} />
                 </p>
               </section>
