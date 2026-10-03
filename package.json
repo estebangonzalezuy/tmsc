@@ -9,7 +9,8 @@
     "lint": "eslint",
     "learn:build": "node scripts/learn/build.mjs",
     "fundamentals:build": "node scripts/fundamentals/build.mjs",
-    "directory:build": "node scripts/directory/build.mjs"
+    "directory:build": "node scripts/directory/build.mjs",
+    "references:build": "node scripts/references/build.mjs"
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.77",

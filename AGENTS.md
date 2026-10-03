@@ -37,7 +37,9 @@ browser). Therefore:
   `scripts/learn/markdown.mjs`.
 - `references/` — the owner's working shelf of references (cards, files,
   analyses of picked sets). Not built, not deployed, not copy; its own
-  `README.md` is the workflow. Keep `INDEX.md` in step when filing a card.
+  `README.md` is the workflow. Keep `INDEX.md` in step when filing a card,
+  and run `npm run references:build`: it writes plain, unstyled, noindex
+  HTML to `public/references/`, served unlisted at `/references`.
 - `components/content.tsx` — `ContentContext` (defaults to the built JSON so
   public pages stay static), `useContent()`, `studioSection(id, label)`
   (click-to-edit markers), `hiddenSet(content)`.

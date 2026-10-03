@@ -1,11 +1,11 @@
 ---
 id: YYYY-MM-question-slug
 question: ""
-references: []      # item ids, e.g. [2026-10-slug, 2026-10-other]
+references: []
 date: YYYY-MM-DD
 ---
 
-# The question
+## The question
 
 What we're trying to learn from this set, in one sentence.
 

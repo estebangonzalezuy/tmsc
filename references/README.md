@@ -45,6 +45,26 @@ so the index stays sortable:
 `tags` are free, lower-case, hyphenated. `status` moves
 `inbox → filed → picked → analysed`.
 
+## Reading it in a browser
+
+`npm run references:build` turns the cards and analyses into plain,
+unstyled HTML in `public/references/`, which is served at `/references`.
+It has no layout, CSS or nav, nothing links to it, and every page is
+`noindex`. Rebuild after any change here and commit the output along with
+it. The build fails if a card's `id` doesn't match its file name or if an
+analysis points to a card that doesn't exist.
+
+**The page is unlisted, not private.** The repo is public, so anything
+here or in `public/references/` can be read by anyone who finds it.
+
+## Other people's work
+
+Because the repo is public, the full text of someone else's article,
+newsletter or film is **not committed**, even as a PDF. Keep what you need
+in the card: a summary, short quotes and a link to the original. A
+screenshot or frame to point at is fine. An uploaded original stays out
+of the repo.
+
 ## How this sits beside the site
 
 The Directory, the Stills and the Clips are the club's *published*

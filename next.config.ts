@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: "/resources", destination: "/directory", permanent: true }];
   },
+  // The references shelf is plain HTML in public/references/ (built by
+  // scripts/references/build.mjs). public/ does no directory-index
+  // resolution, so the bare path is mapped to its index by hand.
+  async rewrites() {
+    return [{ source: "/references", destination: "/references/index.html" }];
+  },
 };
 
 export default nextConfig;
