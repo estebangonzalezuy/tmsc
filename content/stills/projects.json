@@ -1367,6 +1367,166 @@
           "origin": "auto"
         }
       ]
+    },
+    {
+      "id": "more-clients-same-you-agencies-build-bigger-with-base44",
+      "title": "More clients. Same you. Agencies build bigger with Base44",
+      "credit": "Base 44/Wix Motion Studio",
+      "year": "2026",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-10-07",
+      "source": {
+        "url": "",
+        "platform": "other"
+      },
+      "duration": 51.75,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00016850",
+      "frames": [
+        {
+          "id": "t00003350",
+          "t": 3.35,
+          "file": "t00003350.webp",
+          "mid": "t00003350.mid.webp",
+          "thumb": "t00003350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00006350",
+          "t": 6.35,
+          "file": "t00006350.webp",
+          "mid": "t00006350.mid.webp",
+          "thumb": "t00006350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00008350",
+          "t": 8.35,
+          "file": "t00008350.webp",
+          "mid": "t00008350.mid.webp",
+          "thumb": "t00008350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00011350",
+          "t": 11.35,
+          "file": "t00011350.webp",
+          "mid": "t00011350.mid.webp",
+          "thumb": "t00011350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00016850",
+          "t": 16.85,
+          "file": "t00016850.webp",
+          "mid": "t00016850.mid.webp",
+          "thumb": "t00016850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00019850",
+          "t": 19.85,
+          "file": "t00019850.webp",
+          "mid": "t00019850.mid.webp",
+          "thumb": "t00019850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00022350",
+          "t": 22.35,
+          "file": "t00022350.webp",
+          "mid": "t00022350.mid.webp",
+          "thumb": "t00022350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00024850",
+          "t": 24.85,
+          "file": "t00024850.webp",
+          "mid": "t00024850.mid.webp",
+          "thumb": "t00024850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00030350",
+          "t": 30.35,
+          "file": "t00030350.webp",
+          "mid": "t00030350.mid.webp",
+          "thumb": "t00030350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00033850",
+          "t": 33.85,
+          "file": "t00033850.webp",
+          "mid": "t00033850.mid.webp",
+          "thumb": "t00033850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00038350",
+          "t": 38.35,
+          "file": "t00038350.webp",
+          "mid": "t00038350.mid.webp",
+          "thumb": "t00038350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00041850",
+          "t": 41.85,
+          "file": "t00041850.webp",
+          "mid": "t00041850.mid.webp",
+          "thumb": "t00041850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00044850",
+          "t": 44.85,
+          "file": "t00044850.webp",
+          "mid": "t00044850.mid.webp",
+          "thumb": "t00044850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00046850",
+          "t": 46.85,
+          "file": "t00046850.webp",
+          "mid": "t00046850.mid.webp",
+          "thumb": "t00046850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ]
     }
   ]
 }
