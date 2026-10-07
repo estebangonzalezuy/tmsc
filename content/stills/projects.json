@@ -925,6 +925,206 @@
         }
       ],
       "link": "https://www.ordinaryfolk.co/project/equilibrium"
+    },
+    {
+      "id": "eleven-labs-agents-architect",
+      "title": "Eleven Labs Agents Architect",
+      "credit": "",
+      "year": "2026",
+      "note": "",
+      "tags": [],
+      "status": "published",
+      "addedAt": "2026-10-07",
+      "source": {
+        "url": "",
+        "platform": "other"
+      },
+      "duration": 67.19,
+      "width": 1920,
+      "height": 1080,
+      "cover": "t00002555",
+      "frames": [
+        {
+          "id": "t00002555",
+          "t": 2.555,
+          "file": "t00002555.webp",
+          "mid": "t00002555.mid.webp",
+          "thumb": "t00002555.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00004597",
+          "t": 4.597,
+          "file": "t00004597.webp",
+          "mid": "t00004597.mid.webp",
+          "thumb": "t00004597.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00006599",
+          "t": 6.599,
+          "file": "t00006599.webp",
+          "mid": "t00006599.mid.webp",
+          "thumb": "t00006599.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00009350",
+          "t": 9.35,
+          "file": "t00009350.webp",
+          "mid": "t00009350.mid.webp",
+          "thumb": "t00009350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00017416",
+          "t": 17.416,
+          "file": "t00017416.webp",
+          "mid": "t00017416.mid.webp",
+          "thumb": "t00017416.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00021261",
+          "t": 21.261,
+          "file": "t00021261.webp",
+          "mid": "t00021261.mid.webp",
+          "thumb": "t00021261.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00021350",
+          "t": 21.35,
+          "file": "t00021350.webp",
+          "mid": "t00021350.mid.webp",
+          "thumb": "t00021350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00024388",
+          "t": 24.388,
+          "file": "t00024388.webp",
+          "mid": "t00024388.mid.webp",
+          "thumb": "t00024388.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00029332",
+          "t": 29.332,
+          "file": "t00029332.webp",
+          "mid": "t00029332.mid.webp",
+          "thumb": "t00029332.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00030350",
+          "t": 30.35,
+          "file": "t00030350.webp",
+          "mid": "t00030350.mid.webp",
+          "thumb": "t00030350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00033787",
+          "t": 33.787,
+          "file": "t00033787.webp",
+          "mid": "t00033787.mid.webp",
+          "thumb": "t00033787.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00035850",
+          "t": 35.85,
+          "file": "t00035850.webp",
+          "mid": "t00035850.mid.webp",
+          "thumb": "t00035850.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00041350",
+          "t": 41.35,
+          "file": "t00041350.webp",
+          "mid": "t00041350.mid.webp",
+          "thumb": "t00041350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00049997",
+          "t": 49.997,
+          "file": "t00049997.webp",
+          "mid": "t00049997.mid.webp",
+          "thumb": "t00049997.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00053350",
+          "t": 53.35,
+          "file": "t00053350.webp",
+          "mid": "t00053350.mid.webp",
+          "thumb": "t00053350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00055938",
+          "t": 55.938,
+          "file": "t00055938.webp",
+          "mid": "t00055938.mid.webp",
+          "thumb": "t00055938.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "hand"
+        },
+        {
+          "id": "t00058350",
+          "t": 58.35,
+          "file": "t00058350.webp",
+          "mid": "t00058350.mid.webp",
+          "thumb": "t00058350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        },
+        {
+          "id": "t00060350",
+          "t": 60.35,
+          "file": "t00060350.webp",
+          "mid": "t00060350.mid.webp",
+          "thumb": "t00060350.thumb.webp",
+          "w": 1600,
+          "h": 900,
+          "origin": "auto"
+        }
+      ]
     }
   ]
 }
