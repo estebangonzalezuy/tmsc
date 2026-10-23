@@ -174,10 +174,7 @@ export default function PracticePage() {
         className="px-5 md:px-6 py-24 md:py-32"
       >
         <p className="text-sm underline underline-offset-4">Practice</p>
-        <h1 className="mt-6 max-w-[14em] font-serif text-[clamp(2.7rem,6.5vw,5.4rem)] leading-[0.9] tracking-[-0.034em]">
-          You have the time. <em>We&apos;ll pick the exercise.</em>
-        </h1>
-        <p className="mt-8 max-w-md text-base leading-relaxed">
+        <p className="mt-6 max-w-md text-base leading-relaxed">
           Tell us how long you&apos;ve got. You get one thing to do: a goal, a
           constraint, and something to watch if you get stuck. Not a shelf to
           browse.

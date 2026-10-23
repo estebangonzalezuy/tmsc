@@ -310,21 +310,6 @@ const sections: Section[] = [
     ],
   },
   {
-    id: "walls",
-    title: "The walls",
-    note: "The strip of stills and clips on the index — the frames themselves are cut at /curate and /cut",
-    kind: "object",
-    fields: [
-      { key: "label", label: "Label" },
-      {
-        key: "headline",
-        label: "Headline — *between asterisks* turns italic",
-        kind: "textarea",
-      },
-      { key: "note", label: "Note under it", kind: "textarea" },
-    ],
-  },
-  {
     id: "linkIndex",
     title: "the Links",
     note: "Every button on /links, the club's internal index. Rows sharing a group are listed together, in this order",

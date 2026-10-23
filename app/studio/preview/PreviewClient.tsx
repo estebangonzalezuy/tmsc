@@ -5,7 +5,7 @@ import { ContentContext, type SiteContent } from "@/components/content";
 import defaultContent from "@/content/site.json";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import HomePage, { type WallPick } from "@/components/pages/HomePage";
+import HomePage from "@/components/pages/HomePage";
 import AboutPage from "@/components/pages/AboutPage";
 import NewsletterPage from "@/components/pages/NewsletterPage";
 import DirectoryPage from "@/components/pages/DirectoryPage";
@@ -63,12 +63,10 @@ export default function PreviewClient({
   stillsWall,
   clipsWall,
   homeCounts,
-  homeWalls,
 }: {
   stillsWall?: WallData;
   clipsWall?: ClipWall;
   homeCounts?: RoomCounts;
-  homeWalls?: WallPick[];
 }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [page, setPage] = useState("home");
@@ -143,7 +141,7 @@ export default function PreviewClient({
         ) : page === "clips" ? (
           <ClipsPage wall={clipsWall} />
         ) : page === "home" ? (
-          <HomePage counts={homeCounts} walls={homeWalls} />
+          <HomePage counts={homeCounts} />
         ) : (
           <Page />
         )}

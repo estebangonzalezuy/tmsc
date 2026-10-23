@@ -153,7 +153,7 @@ export function PageHeader({
   children,
 }: {
   label: ReactNode;
-  title: ReactNode;
+  title?: ReactNode;
   intro?: ReactNode;
   /** Filters, search, a row of pills: whatever this page is steered with. */
   children?: ReactNode;
@@ -161,9 +161,11 @@ export function PageHeader({
   return (
     <header className="px-5 md:px-6 pt-12 md:pt-16 pb-10">
       <Label>{label}</Label>
-      <h1 className="mt-4 font-serif text-[clamp(2.6rem,7vw,5.75rem)] leading-[0.92] tracking-[-0.034em]">
-        {title}
-      </h1>
+      {title && (
+        <h1 className="mt-4 font-serif text-[clamp(2.6rem,7vw,5.75rem)] leading-[0.92] tracking-[-0.034em]">
+          {title}
+        </h1>
+      )}
       {intro && (
         <p className="mt-6 max-w-xl text-base leading-relaxed text-foreground md:text-lg">
           {intro}

@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import ClipCanvas, { type ClipShape } from "@/components/clips/ClipCanvas";
-import { useNearViewport } from "@/components/clips/useNearViewport";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
 import Cta from "@/components/Cta";
 import {
-  Emphasize,
   Label,
   LetterMarquee,
   Room,
@@ -35,38 +32,10 @@ function HeroHeadline({ text }: { text: string }) {
   );
 }
 
-/* One tile on the walls strip. A still is a picture; a clip is the Clips
-   wall's own canvas, stepping its sheet — the same component, not a second
-   one, so a clip on the index behaves exactly like a clip on its wall. */
-export type WallPick =
-  | {
-      kind: "still";
-      key: string;
-      src: string;
-      srcSet: string;
-      title: string;
-      credit: string;
-      code: string;
-      href: string;
-    }
-  | {
-      kind: "clip";
-      key: string;
-      sheet: string;
-      poster: string;
-      shape: ClipShape;
-      title: string;
-      credit: string;
-      code: string;
-      href: string;
-    };
-
 export default function HomePage({
   counts = {},
-  walls = [],
 }: {
   counts?: RoomCounts;
-  walls?: WallPick[];
 }) {
   const content = useContent();
   const { site, archive, quotes, stats } = content;
@@ -84,10 +53,6 @@ export default function HomePage({
     if (hidden.has(spec.section) || hidden.has(`nav:${spec.navId}`)) return [];
     return [{ spec, copy }];
   });
-
-  const wallsCopy = (content as { walls?: { label: string; headline: string; note: string } }).walls;
-  const showWalls =
-    walls.length > 0 && !(hidden.has("stills") && hidden.has("clips"));
 
   return (
     <>
@@ -173,48 +138,6 @@ export default function HomePage({
         </section>
       )}
 
-      {/* The walls. Real frames and real clips, not a picture of them: the
-          stills are the files the Stills wall serves and the clips step their
-          own sheets. */}
-      {showWalls && (
-        <section
-          {...studioSection("walls", "The walls")}
-          className="px-5 md:px-6 py-20 md:py-28"
-        >
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading
-              label={wallsCopy?.label ?? "The walls"}
-              title={
-                <Emphasize
-                  text={
-                    wallsCopy?.headline ??
-                    "What good looks like, and *how it moves*."
-                  }
-                />
-              }
-            />
-            <div className="flex gap-5">
-              <Link href="/stills" className="textlink">
-                All the stills →
-              </Link>
-              <Link href="/clips" className="textlink">
-                All the clips →
-              </Link>
-            </div>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-3.5 md:grid-cols-4">
-            {walls.map((item) => (
-              <WallTile key={item.key} item={item} />
-            ))}
-          </div>
-          {wallsCopy?.note && (
-            <p className="mt-8 max-w-xl text-sm leading-relaxed text-muted">
-              {wallsCopy.note}
-            </p>
-          )}
-        </section>
-      )}
-
       {/* The library. The same block the Learn page carries, so the offer is
           written once and the index shows it rather than describing it. */}
       {!hidden.has("learn") && !hidden.has("nav:learn") && (
@@ -265,42 +188,5 @@ export default function HomePage({
       <Cta />
       <LetterMarquee text={`${site.name.toUpperCase()} · `} />
     </>
-  );
-}
-
-function WallTile({ item }: { item: WallPick }) {
-  const [ref, near] = useNearViewport<HTMLAnchorElement>();
-  return (
-    <Link ref={ref} href={item.href} className="group block">
-      {item.kind === "still" ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.src}
-          srcSet={item.srcSet}
-          sizes="(min-width: 768px) 22vw, 45vw"
-          alt={`Still from ${item.title}`}
-          loading="lazy"
-          className="aspect-video w-full bg-inset object-cover"
-        />
-      ) : (
-        <ClipCanvas
-          clip={item.shape}
-          sheet={item.sheet}
-          poster={item.poster}
-          alt={`Clip from ${item.title}`}
-          active={near}
-          className="aspect-video w-full bg-inset object-cover"
-        />
-      )}
-      <div className="mt-2 flex items-baseline justify-between gap-3 text-[11px] leading-snug text-foreground">
-        <span className="truncate">
-          <span className="font-medium text-foreground group-hover:underline underline-offset-2">
-            {item.title}
-          </span>{" "}
-          · {item.credit}
-        </span>
-        <span className="shrink-0 tabular-nums">{item.code}</span>
-      </div>
-    </Link>
   );
 }

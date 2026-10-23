@@ -28,12 +28,6 @@ export default function DirectoryPage() {
     <>
       <PageHeader
         label={`${directory?.label ?? "the Directory"} · ${manifest.total} entries · ${collections.length} collections`}
-        title={
-          <>
-            It all already exists. The problem is that it&apos;s{" "}
-            <em>scattered</em>.
-          </>
-        }
         intro={
           directory?.intro ??
           "Every answer to every beginner question is online already, spread across a thousand tabs nobody keeps. The Directory is the club's attempt to hold it in one place: organised, filterable, and honest about where each entry came from."
