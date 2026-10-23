@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { accentHoverText, CircleLetter, Label } from "@/components/Motifs";
+import { Label } from "@/components/Motifs";
 
 const allColumns = [
   {
@@ -27,8 +27,7 @@ const allColumns = [
 ];
 
 const typefaces = [
-  { name: "Archivo", href: "https://fonts.google.com/specimen/Archivo" },
-  { name: "Lora", href: "https://fonts.google.com/specimen/Lora" },
+  { name: "Archivo Narrow", href: "https://fonts.google.com/specimen/Archivo+Narrow" },
 ];
 
 export default function SiteFooter() {
@@ -55,23 +54,22 @@ export default function SiteFooter() {
     >
       <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
-          <p className="flex items-center gap-2.5 font-medium">
-            <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
+          <p className="font-semibold text-[clamp(1.8rem,3vw,2.6rem)] leading-[0.92] tracking-[-0.034em]">
             {site.name}
           </p>
-          <p className="mt-4 max-w-xs text-sm text-muted leading-relaxed">
+          <p className="mt-4 max-w-xs text-base leading-relaxed">
             {site.description}
           </p>
         </div>
         {columns.map((c) => (
           <div key={c.title} className="text-sm">
             <Label>{c.title}</Label>
-            <ul className="mt-3.5 space-y-2 text-muted">
+            <ul className="mt-3.5 space-y-2">
               {c.links.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="accent-hover-text transition-colors"
+                    className="underline-offset-4 hover:underline"
                   >
                     {l.label}
                   </Link>
@@ -82,13 +80,13 @@ export default function SiteFooter() {
         ))}
         <div className="text-sm">
           <Label>Elsewhere</Label>
-          <ul className="mt-3.5 space-y-2 text-muted">
+          <ul className="mt-3.5 space-y-2">
             <li>
               <a
                 href={site.substack}
                 target="_blank"
                 rel="noreferrer"
-                className="accent-hover-text transition-colors"
+                className="underline-offset-4 hover:underline"
               >
                 Substack
               </a>
@@ -98,7 +96,7 @@ export default function SiteFooter() {
                 href={site.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="accent-hover-text transition-colors"
+                className="underline-offset-4 hover:underline"
               >
                 Instagram
               </a>
@@ -108,7 +106,7 @@ export default function SiteFooter() {
                 href={site.linkedin}
                 target="_blank"
                 rel="noreferrer"
-                className="accent-hover-text transition-colors"
+                className="underline-offset-4 hover:underline"
               >
                 LinkedIn
               </a>
@@ -116,7 +114,7 @@ export default function SiteFooter() {
             <li>
               <a
                 href={`mailto:${site.email}`}
-                className="accent-hover-text transition-colors"
+                className="underline-offset-4 hover:underline"
               >
                 {site.email}
               </a>
@@ -138,7 +136,7 @@ export default function SiteFooter() {
                 href={f.href}
                 target="_blank"
                 rel="noreferrer"
-                className={`underline underline-offset-4 ${accentHoverText(f.name)}`}
+                className="underline underline-offset-4"
               >
                 {f.name}
               </a>

@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { Archivo, Lora, Pirata_One } from "next/font/google";
+import { Archivo, Archivo_Narrow, Lora, Pirata_One } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { site } from "@/lib/data";
 
-/* Both families are loaded with their real italics. The site sets its display
-   lines in Lora italic, and the Post Lab's headlines mix roman and italic
-   inside one sentence — a browser-slanted roman gives that away instantly, so
-   the italic faces are worth the two extra files. */
+/* The public site is set in Archivo Narrow — one condensed grotesque for
+   display and body, loaded at the weights the brutalist scale actually uses.
+   Archivo and Lora stay on the page because the Posts Studio and Frames still
+   draw with them; they are not the site's voice anymore. */
+const archivoNarrow = Archivo_Narrow({
+  variable: "--font-archivo-narrow",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
@@ -41,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivo.variable} ${lora.variable} ${pirata.variable} h-full antialiased`}
+      className={`${archivoNarrow.variable} ${archivo.variable} ${lora.variable} ${pirata.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

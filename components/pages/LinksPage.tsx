@@ -67,7 +67,7 @@ function Social({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className={`inline-flex size-11 items-center justify-center rounded-full bg-surface text-xs shadow-[0_1px_3px_rgba(13,13,13,0.10)] card-lift ${accentHover(
+      className={`inline-flex size-11 items-center justify-center bg-accent text-xs text-white card-lift ${accentHover(
         label,
       )}`}
     >
@@ -85,14 +85,13 @@ export default function LinksPage() {
     : groupEntries(linkIndex as Entry[]);
 
   return (
-    <div className="mx-auto w-full max-w-[520px] px-5 py-16 text-center">
-      <span className="inline-flex size-24 items-center justify-center rounded-full bg-surface font-serif italic text-xl shadow-[0_1px_3px_rgba(13,13,13,0.10)]">
-        tMSC
-      </span>
-      <p className="mt-6 text-base">{site.name}</p>
-      <p className="mt-1 text-sm text-muted">themotionsocial.club</p>
+    <div className="brand mx-auto min-h-full w-full max-w-[520px] px-5 py-16">
+      <p className="font-semibold text-[clamp(2.2rem,8vw,3.2rem)] leading-[0.9] tracking-[-0.034em]">
+        {site.name}
+      </p>
+      <p className="mt-3 text-base">themotionsocial.club</p>
 
-      <div className="mt-6 flex items-center justify-center gap-3">
+      <div className="mt-6 flex items-center gap-2">
         <Social mark="SS" label="Substack" href={site.substack} />
         <Social mark="IG" label="Instagram" href={site.instagram} />
         <Social mark="in" label="LinkedIn" href={site.linkedin} />

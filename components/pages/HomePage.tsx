@@ -5,7 +5,6 @@ import ClipCanvas, { type ClipShape } from "@/components/clips/ClipCanvas";
 import { useNearViewport } from "@/components/clips/useNearViewport";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
 import Cta from "@/components/Cta";
-import Illustration from "@/components/Illustration";
 import {
   Emphasize,
   Label,
@@ -84,40 +83,33 @@ export default function HomePage({
           this quiet and still turn. */}
       <section
         {...studioSection("site", "Site & links")}
-        className="relative overflow-hidden px-5 md:px-6 pt-24 md:pt-32 pb-14 md:pb-20 text-center"
+        className="block-colour bg-accent px-5 md:px-6 pt-14 md:pt-20 pb-16 md:pb-24"
       >
-        <Illustration
-          kind="hero"
-          ink="#d9d7d1"
-          className="pointer-events-none absolute inset-0 hidden h-full w-full md:block"
-        />
-        <div className="relative">
-          <Label className="mx-auto">
-            {site.name} · a club for designers learning motion
-          </Label>
-          <h1 className="mt-7 font-serif text-[2.6rem] md:text-[4.9rem] leading-[1.02] tracking-tight max-w-[62rem] mx-auto">
-            <Emphasize text={site.headline || FALLBACK_HEADLINE} />
-          </h1>
-          <p className="mt-7 max-w-lg mx-auto text-base md:text-[1.05rem] leading-relaxed text-muted">
-            <strong className="font-medium text-foreground">
-              The side companion on your motion design path.
-            </strong>{" "}
-            A place to connect with other people, to practice, and to embrace
-            failure.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href={site.subscribe}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-lg btn-primary"
-            >
-              Join the newsletter
-            </a>
-            <Link href="/about" className="textlink">
-              What is the club? →
-            </Link>
-          </div>
+        <Label>
+          {site.name} · a club for designers learning motion
+        </Label>
+        <h1 className="mt-5 max-w-[14em] font-serif text-[clamp(2.7rem,7.4vw,6.4rem)] leading-[0.9] tracking-[-0.04em]">
+          <Emphasize text={site.headline || FALLBACK_HEADLINE} />
+        </h1>
+        <p className="mt-8 max-w-md text-base leading-relaxed md:text-lg">
+          <strong className="font-semibold">
+            The side companion on your motion design path.
+          </strong>{" "}
+          A place to connect with other people, to practice, and to embrace
+          failure.
+        </p>
+        <div className="mt-10 flex flex-wrap items-center gap-5">
+          <a
+            href={site.subscribe}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-lg btn-on-colour"
+          >
+            Join the newsletter
+          </a>
+          <Link href="/about" className="textlink">
+            What is the club? →
+          </Link>
         </div>
       </section>
 
@@ -134,7 +126,7 @@ export default function HomePage({
           <Label>
             {visibleRooms.length} rooms, one club
           </Label>
-          <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-px border border-foreground bg-foreground sm:grid-cols-2">
             {visibleRooms.map(({ spec, copy }, i) => (
               <Room
                 key={spec.id}
@@ -257,9 +249,9 @@ export default function HomePage({
       {!hidden.has("quotes") && quotes.length > 0 && (
         <section
           {...studioSection("quotes", "Quotes")}
-          className="block-pale block-peri px-5 md:px-6 py-24 md:py-28 text-center"
+          className="bg-accent-warm px-5 py-16 text-black md:px-6 md:py-24"
         >
-          <p className="font-serif italic text-3xl md:text-[2.75rem] leading-[1.15] tracking-tight max-w-3xl mx-auto">
+          <p className="max-w-[16em] font-serif text-[clamp(2rem,5vw,4.25rem)] leading-[0.92] tracking-[-0.034em]">
             {quotes[0]}
           </p>
         </section>
@@ -283,7 +275,7 @@ function WallTile({ item }: { item: WallPick }) {
           sizes="(min-width: 768px) 22vw, 45vw"
           alt={`Still from ${item.title}`}
           loading="lazy"
-          className="aspect-video w-full rounded-[var(--radius-sm)] bg-inset object-cover"
+          className="aspect-video w-full bg-inset object-cover"
         />
       ) : (
         <ClipCanvas
@@ -292,10 +284,10 @@ function WallTile({ item }: { item: WallPick }) {
           poster={item.poster}
           alt={`Clip from ${item.title}`}
           active={near}
-          className="aspect-video w-full rounded-[var(--radius-sm)] bg-inset object-cover"
+          className="aspect-video w-full bg-inset object-cover"
         />
       )}
-      <div className="mt-2.5 flex items-baseline justify-between gap-3 text-xs text-muted">
+      <div className="mt-2 flex items-baseline justify-between gap-3 text-[11px] leading-snug text-foreground">
         <span className="truncate">
           <span className="font-medium text-foreground group-hover:underline underline-offset-2">
             {item.title}

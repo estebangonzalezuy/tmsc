@@ -8,17 +8,17 @@ export default function Cta({ title }: { title?: React.ReactNode }) {
   return (
     <section
       {...studioSection("site", "Site & links")}
-      className="px-5 md:px-6 py-24 md:py-32 text-center"
+      className="px-5 md:px-6 py-20 md:py-28"
     >
       <Label>{site.name}</Label>
-      <h2 className="mt-4 font-serif text-4xl md:text-[3.25rem] leading-[1.06] tracking-tight max-w-3xl mx-auto">
+      <h2 className="mt-4 max-w-[12em] font-serif text-[clamp(2.2rem,5vw,3.6rem)] leading-[0.92] tracking-[-0.034em]">
         {title ?? (
           <>
             A place to <em>question ourselves</em>
           </>
         )}
       </h2>
-      <p className="mt-6 max-w-md mx-auto text-sm text-muted leading-relaxed">
+      <p className="mt-6 max-w-md text-base leading-relaxed text-foreground">
         One honest letter at a time. Exercises, resources, and real
         conversations about the practice. Free, in your inbox.
       </p>

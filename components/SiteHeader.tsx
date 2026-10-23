@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import { CircleLetter } from "@/components/Motifs";
 
 // A link disappears when the section powering its page is hidden, or when
 // the link itself is hidden from the Navigation panel in the Studio.
@@ -38,20 +37,20 @@ export default function SiteHeader() {
        long and the way back has to stay reachable. */
     <header
       {...studioSection("nav", "Navigation")}
-      className="sticky top-0 z-20 border-b border-line bg-background/85 backdrop-blur"
+      className="sticky top-0 z-20 border-b-2 border-foreground bg-background"
     >
       {/* Desktop nav */}
-      <nav className="hidden h-[3.75rem] items-center justify-between gap-6 px-5 text-[13.5px] md:flex md:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 font-medium">
-          <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
-          {site.name}
+      <nav className="hidden h-16 items-center justify-between gap-6 px-5 text-sm md:flex md:px-6">
+        <Link href="/" className="shrink-0 font-semibold tracking-[-0.03em]">
+          <span className="xl:hidden">{site.short}</span>
+          <span className="hidden xl:inline">{site.name}</span>
         </Link>
-        <div className="flex items-center gap-6 text-muted">
+        <div className="flex items-center gap-5">
           {menuLinks.slice(1).map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="accent-hover-text transition-colors"
+              className="underline-offset-4 hover:underline"
             >
               {l.label}
             </Link>
@@ -61,56 +60,55 @@ export default function SiteHeader() {
           href={site.subscribe}
           target="_blank"
           rel="noreferrer"
-          className="btn shrink-0 accent-hover"
+          className="btn btn-primary shrink-0"
         >
           Join the club
         </a>
       </nav>
 
       {/* Mobile nav */}
-      <nav className="flex h-[3.5rem] items-center justify-between px-5 text-sm md:hidden">
+      <nav className="flex h-14 items-center justify-between px-5 text-sm md:hidden">
         <Link
           href="/"
           onClick={() => setOpen(false)}
-          className="flex items-center gap-2.5 font-medium"
+          className="font-semibold tracking-[-0.03em]"
         >
-          <CircleLetter size="size-[26px] text-sm">M</CircleLetter>
           {site.short}
         </Link>
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          className="pill"
+          className="btn"
         >
           Menu
         </button>
       </nav>
 
       {open && (
-        <div className="fixed inset-0 z-30 bg-foreground text-background flex flex-col md:hidden">
+        <div className="fixed inset-0 z-30 flex flex-col bg-accent text-white md:hidden">
           <div className="flex items-center justify-between px-5 py-4 text-sm">
-            <span>{site.name}</span>
-            <button onClick={() => setOpen(false)} aria-label="Close menu">
+            <span className="font-semibold tracking-[-0.03em]">{site.name}</span>
+            <button onClick={() => setOpen(false)} aria-label="Close menu" className="btn btn-on-colour">
               Close
             </button>
           </div>
-          <div className="flex-1 flex flex-col justify-center gap-2 px-5">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-5">
             {menuLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="font-serif italic text-5xl leading-tight"
+                className="font-semibold text-[clamp(2.4rem,11vw,3.4rem)] leading-[0.92] tracking-[-0.034em]"
               >
                 {l.label}
               </Link>
             ))}
           </div>
-          <div className="flex items-center justify-between px-5 py-4 text-xs text-background/60">
+          <div className="flex items-center justify-between px-5 py-5 text-sm">
             <span>
               {site.name} © {new Date().getFullYear()}
             </span>
-            <a href={site.subscribe} target="_blank" rel="noreferrer">
+            <a href={site.subscribe} target="_blank" rel="noreferrer" className="underline underline-offset-4">
               Join the club
             </a>
           </div>

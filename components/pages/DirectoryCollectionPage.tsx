@@ -133,7 +133,7 @@ export default function DirectoryCollectionPage({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Search ${collection.count} entries…`}
-            className="w-full card rounded-full px-5 py-3 text-sm placeholder:text-muted focus:outline-none"
+            className="w-full card px-5 py-3 text-base placeholder:text-muted focus:outline-none"
           />
         </label>
       </section>
@@ -224,7 +224,7 @@ function FacetRow({
               key={v.value}
               onClick={() => onToggle(facet.key, v.value)}
               aria-pressed={on}
-              className={`rounded-full px-3 py-1 text-xs transition-colors ${
+              className={`px-3 py-1.5 text-sm transition-colors ${
                 on
                   ? "bg-foreground text-background"
                   : `card ${accentHover(v.value)}`

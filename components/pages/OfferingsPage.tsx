@@ -64,8 +64,8 @@ export default function OfferingsPage() {
       </section>
       )}
 
-      <section className="border-t-0 px-5 md:px-6 py-24 text-center">
-        <p className="font-serif italic text-2xl md:text-4xl leading-tight max-w-2xl mx-auto">
+      <section className="bg-accent-soft px-5 py-16 text-black md:px-6 md:py-24">
+        <p className="max-w-[16em] font-serif text-[clamp(1.8rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.034em]">
           Nothing here is urgent. The newsletter is where everything begins.
         </p>
         <a

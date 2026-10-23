@@ -2,24 +2,12 @@
 
 import Link from "next/link";
 import { hiddenSet, studioSection, useContent } from "@/components/content";
-import Illustration from "@/components/Illustration";
 import {
   CircleLetter,
   PageHeader,
   SectionHeading,
   Emphasize,
 } from "@/components/Motifs";
-import type { IllusKind } from "@/lib/illus/drawers";
-
-/* The three tracks, in the order the manifest lists them. Fixed rather than
-   hashed, for the same reason a room's colour is: a shelf should look like
-   itself between visits. */
-const TRACK_COLOURS = [
-  { block: "block-colour bg-accent-green", ink: "rgba(255,255,255,.55)" },
-  { block: "block-colour bg-accent", ink: "rgba(255,255,255,.55)" },
-  { block: "block-colour bg-accent-warm", ink: "rgba(255,255,255,.55)" },
-];
-const TRACK_KINDS: IllusKind[] = ["path", "orbit", "lines"];
 import { accentHover } from "@/lib/accent";
 import Cta from "@/components/Cta";
 import PieceGrid from "@/components/learn/PieceGrid";
@@ -27,6 +15,15 @@ import OfferBlock from "@/components/learn/OfferBlock";
 import { useProgress } from "@/components/learn/useProgress";
 import manifest from "@/content/learn/manifest.json";
 import type { PieceCard } from "@/lib/learn";
+
+/* The three tracks, in the order the manifest lists them. Fixed rather than
+   hashed, for the same reason a room's colour is: a shelf should look like
+   itself between visits. Blue, red, yellow — black type on red and yellow. */
+const TRACK_COLOURS = [
+  "block-colour bg-accent",
+  "block-colour bg-accent-warm",
+  "block-pale bg-accent-soft",
+];
 
 /* The library's front page. It imports the manifest directly rather than
    lib/learn, because this is a client component and the manifest is cards and
@@ -115,31 +112,25 @@ export default function LearnPage() {
         {/* A track is a room of its own, so it is built like one: the club's
             colour at rest, a drawing running in it, the name on the type it
             is set in everywhere else. */}
-        <div className="mt-10 grid gap-3.5 md:grid-cols-3">
+        <div className="mt-10 grid gap-px border border-foreground bg-foreground md:grid-cols-3">
           {tracks.map((t, i) => {
-            const { block, ink } = TRACK_COLOURS[i % TRACK_COLOURS.length];
+            const block = TRACK_COLOURS[i % TRACK_COLOURS.length];
             return (
               <Link
                 key={t.id}
                 href={`/learn/${t.id}`}
-                className={`group relative flex min-h-[18rem] flex-col overflow-hidden rounded-[var(--radius)] border border-black/10 p-6 ${block}`}
+                className={`group flex min-h-[16rem] flex-col justify-end p-6 ${block}`}
               >
-                <Illustration
-                  kind={TRACK_KINDS[i % TRACK_KINDS.length]}
-                  ink={ink}
-                  seed={t.id}
-                  className="absolute inset-x-0 top-0 h-[58%] w-full"
-                />
-                <CircleLetter size="size-8 text-sm" className="relative">
+                <CircleLetter size="size-8 text-sm">
                   {t.letter}
                 </CircleLetter>
-                <h3 className="relative mt-auto pt-7 font-serif text-2xl leading-tight tracking-tight group-hover:underline underline-offset-4 decoration-1">
+                <h3 className="mt-auto pt-7 font-serif text-[clamp(1.8rem,3vw,2.4rem)] leading-[0.92] tracking-[-0.034em] group-hover:underline underline-offset-4 decoration-1">
                   {t.name}
                 </h3>
-                <p className="relative mt-2 text-sm leading-snug text-muted">
+                <p className="mt-2 text-sm leading-snug">
                   {t.blurb}
                 </p>
-                <p className="label relative mt-4">
+                <p className="label mt-4">
                   {t.count} pieces · {t.published} written
                 </p>
               </Link>
@@ -255,7 +246,7 @@ export default function LearnPage() {
                     type="button"
                     onClick={() => toggle(d.piece)}
                     aria-pressed={isDone}
-                    className={`rounded-full px-3 py-1 text-xs transition-colors whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-sm transition-colors whitespace-nowrap ${
                       isDone ? "bg-foreground text-background" : `card ${accentHover(d.piece)}`
                     }`}
                   >

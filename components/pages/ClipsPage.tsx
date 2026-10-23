@@ -240,9 +240,9 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
     <>
       <section
         {...studioSection("clips", "Clips")}
-        className="px-5 md:px-6 pt-12 md:pt-16 pb-7 text-center"
+        className="px-5 md:px-6 pt-12 md:pt-16 pb-7"
       >
-        <h1 className="mx-auto max-w-3xl font-serif text-4xl md:text-6xl leading-tight">
+        <h1 className="max-w-[12em] font-serif text-[clamp(2.7rem,6.5vw,5.4rem)] leading-[0.9] tracking-[-0.034em]">
           <Emphasize text={clips.headline || fallback.headline} />
         </h1>
       </section>
@@ -257,7 +257,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
         </section>
       ) : (
         <>
-          <section className="px-5 md:px-6 pb-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm">
+          <section className="px-5 md:px-6 pb-6 flex flex-wrap items-center justify-start gap-x-4 gap-y-3 text-sm">
             <div className="flex items-center gap-1.5">
               <Tab
                 on={view === "clips"}
@@ -301,7 +301,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                   })
                 }
                 placeholder="Search project, studio or note…"
-                className="w-full card rounded-full px-4 py-2 text-sm placeholder:text-muted focus:outline-none"
+                className="w-full card px-4 py-3 text-base placeholder:text-muted focus:outline-none"
               />
             </label>
 
@@ -360,7 +360,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                         key={value.value}
                         onClick={() => toggleFacet(facet.key, value.value)}
                         aria-pressed={on}
-                        className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                        className={`px-3 py-1.5 text-sm transition-colors ${
                           on ? "bg-foreground text-background" : "accent-hover"
                         }`}
                       >
@@ -388,7 +388,7 @@ function ClipsWall({ wall }: { wall: ClipWall }) {
                         key={stage.value}
                         onClick={() => toggleValue("stage", stage.value)}
                         aria-pressed={on}
-                        className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                        className={`px-3 py-1.5 text-sm transition-colors ${
                           on ? "bg-foreground text-background" : "accent-hover"
                         }`}
                       >

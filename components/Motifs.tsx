@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import Illustration from "@/components/Illustration";
 import type { IllusKind } from "@/lib/illus/drawers";
 import { hash01 } from "@/lib/illus/drawers";
 
@@ -29,7 +28,7 @@ export function CircleLetter({
 }) {
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full border border-line-2 font-serif ${size} ${className}`}
+      className={`inline-flex items-center justify-center bg-accent font-semibold leading-none text-white ${size} ${className}`}
     >
       {children}
     </span>
@@ -64,22 +63,9 @@ export function Label({
    an ultrawide display grows once on hydration. */
 const SSR_COPIES = 4;
 
-/* The band is the one place the palette is used for nothing but pleasure —
-   the club's colours going past, at the bottom of every page. Fill and type
-   are paired the way .accent-*-hover pairs them. */
-const MARQUEE_FILLS = [
-  "bg-accent text-white border-transparent",
-  "",
-  "bg-accent-warm text-white border-transparent",
-  "",
-  "bg-accent-green text-white border-transparent",
-  "",
-  "bg-accent-soft text-foreground border-transparent",
-  "",
-];
-
+/* A typographic ticker: the name, large, on blue. No circled letters —
+   the band is type and a flat field, the same way a room is. */
 export function LetterMarquee({ text }: { text: string }) {
-  const letters = text.replace(/\s+/g, " ").split("");
   const runRef = useRef<HTMLSpanElement>(null);
   const [copies, setCopies] = useState(SSR_COPIES);
 
@@ -99,22 +85,10 @@ export function LetterMarquee({ text }: { text: string }) {
     <span
       key={key}
       ref={key === 0 ? runRef : undefined}
-      className="flex shrink-0 items-center gap-2 pr-2"
+      className="shrink-0 pr-8 text-[clamp(1.35rem,3.2vw,2.4rem)] font-semibold leading-none tracking-[-0.04em]"
       aria-hidden={key > 0}
     >
-      {letters.map((ch, i) =>
-        ch === " " ? (
-          <span key={i} className="w-4" />
-        ) : (
-          <CircleLetter
-            key={i}
-            size="size-9 md:size-10"
-            className={MARQUEE_FILLS[i % MARQUEE_FILLS.length]}
-          >
-            {ch}
-          </CircleLetter>
-        ),
-      )}
+      {text}
     </span>
   );
 
@@ -123,8 +97,8 @@ export function LetterMarquee({ text }: { text: string }) {
   const style = { "--marquee-shift": `-${100 / copies}%` } as CSSProperties;
 
   return (
-    <div className="overflow-hidden border-t border-line py-5">
-      <div className="flex w-max animate-marquee" style={style}>
+    <div className="overflow-hidden border-y border-foreground bg-accent text-white">
+      <div className="flex w-max animate-marquee py-3" style={style}>
         {Array.from({ length: copies }, (_, i) => run(i))}
       </div>
     </div>
@@ -162,7 +136,7 @@ export function SectionHeading({
   return (
     <div className={className}>
       <Label>{label}</Label>
-      <h2 className="mt-3.5 font-serif text-3xl md:text-[2.5rem] leading-[1.08] tracking-tight max-w-3xl">
+      <h2 className="mt-3 font-serif text-[clamp(2rem,4.2vw,3.4rem)] leading-[0.95] tracking-[-0.034em]">
         {title}
       </h2>
     </div>
@@ -185,13 +159,13 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="px-5 md:px-6 pt-20 md:pt-24 pb-10">
+    <header className="px-5 md:px-6 pt-12 md:pt-16 pb-10">
       <Label>{label}</Label>
-      <h1 className="mt-5 font-serif text-[2.5rem] md:text-[4rem] leading-[1.02] tracking-tight max-w-[56rem]">
+      <h1 className="mt-4 font-serif text-[clamp(2.6rem,7vw,5.75rem)] leading-[0.92] tracking-[-0.034em]">
         {title}
       </h1>
       {intro && (
-        <p className="mt-6 max-w-xl text-base md:text-[1.05rem] leading-relaxed text-muted">
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-foreground md:text-lg">
           {intro}
         </p>
       )}
@@ -220,16 +194,18 @@ export type RoomColour =
 /* `block-colour`/`block-pale` are what make a room's insides legible: they
    redefine --muted and --line for everything drawn on that colour, so a label
    or a pill inside a room needs no special casing of its own. */
-const ROOM_STYLE: Record<RoomColour, { block: string; ink: string }> = {
-  indigo: { block: "block-colour bg-accent", ink: "rgba(255,255,255,.55)" },
-  warm: { block: "block-colour bg-accent-warm", ink: "rgba(255,255,255,.55)" },
-  peri: { block: "block-pale bg-accent-soft", ink: "rgba(13,13,13,.45)" },
-  green: { block: "block-colour bg-accent-green", ink: "rgba(255,255,255,.55)" },
-  cream: { block: "block-pale bg-accent-cream", ink: "rgba(13,13,13,.4)" },
-  paper: { block: "block-pale bg-inset", ink: "rgba(13,13,13,.4)" },
-  /* A literal, not bg-foreground: .block-colour redefines --foreground to
-     white for its children, so the token would resolve to a white card. */
-  ink: { block: "block-colour bg-[#0d0d0d]", ink: "rgba(255,255,255,.45)" },
+/* Blue takes white type, red and yellow take black, white is the page
+   itself with a rule around it. The drawing that used to sit in the top of
+   a room is gone: a room is its name. `kind` stays on the spec so the
+   wiring in lib/rooms.ts does not have to move. */
+const ROOM_STYLE: Record<RoomColour, string> = {
+  indigo: "block-colour bg-accent",
+  warm: "block-colour bg-accent-warm",
+  peri: "block-pale bg-accent-soft",
+  green: "block-colour bg-accent",
+  cream: "block-pale bg-accent-cream",
+  paper: "bg-background text-foreground",
+  ink: "bg-background text-foreground",
 };
 
 export function Room({
@@ -249,36 +225,19 @@ export function Room({
   colour: RoomColour;
   kind: IllusKind;
 }) {
-  const { block, ink } = ROOM_STYLE[colour];
+  const block = ROOM_STYLE[colour];
   return (
     <Link
       href={href}
-      /* A hairline even on the filled ones: cream on white is otherwise a
-         card with no edges, and the ring has to hold all six together. */
-      className={`group relative flex min-h-[19rem] flex-col overflow-hidden rounded-[var(--radius)] border border-black/10 p-5 ${block}`}
+      data-motif={kind}
+      className={`group flex min-h-[16rem] flex-col justify-end p-5 md:min-h-[22rem] md:p-7 ${block}`}
     >
-      <Illustration
-        kind={kind}
-        ink={ink}
-        seed={number}
-        className="absolute inset-x-0 top-0 h-[62%] w-full"
-      />
-      <div className="relative mt-auto flex items-end justify-between gap-3">
-        <div>
-          <span className="label label-on-colour">{number}</span>
-          <h3 className="mt-2 font-serif text-[1.85rem] leading-none tracking-tight group-hover:underline underline-offset-[6px] decoration-1">
-            {name}
-          </h3>
-          <p className="mt-2 max-w-[17rem] text-[13.5px] leading-snug text-muted">
-            {line}
-          </p>
-        </div>
-        {count && (
-          <span className="pill pill-on-colour shrink-0">
-            {count}
-          </span>
-        )}
-      </div>
+      <span className="label label-on-colour">{number}</span>
+      <h3 className="mt-3 font-serif text-[clamp(2rem,4vw,3.15rem)] leading-[0.9] tracking-[-0.034em] group-hover:underline underline-offset-[5px] decoration-1">
+        {name}
+      </h3>
+      <p className="mt-3 max-w-[24rem] text-sm leading-snug">{line}</p>
+      {count && <p className="mt-5 text-xs">{count}</p>}
     </Link>
   );
 }
@@ -287,34 +246,13 @@ export function Room({
    title puts it at, on a ground picked the same way. Nothing is stored and
    nothing is uploaded — a cover is a function of the headline, so the
    archive illustrates itself and a new letter arrives with a picture. */
-const COVERS: { block: string; ink: string }[] = [
-  { block: "bg-accent", ink: "rgba(255,255,255,.6)" },
-  { block: "bg-accent-warm", ink: "rgba(255,255,255,.6)" },
-  { block: "bg-accent-soft", ink: "rgba(13,13,13,.5)" },
-  { block: "bg-accent-green", ink: "rgba(255,255,255,.6)" },
-  { block: "bg-accent-cream", ink: "rgba(13,13,13,.45)" },
-  { block: "bg-inset", ink: "rgba(13,13,13,.45)" },
-];
-
-const COVER_KINDS: IllusKind[] = [
-  "letters",
-  "frames",
-  "sheet",
-  "grid",
-  "path",
-  "lines",
-  "orbit",
-];
+/* A letter's swatch: a flat field, picked from the title, sitting beside
+   the words. The drawing is gone; the colour is the picture. */
+const COVERS = ["bg-accent", "bg-accent-warm", "bg-accent-soft"] as const;
 
 export function Cover({ title, className = "" }: { title: string; className?: string }) {
-  const n = Math.floor(hash01(title) * 42);
-  const { block, ink } = COVERS[n % COVERS.length];
-  const kind = COVER_KINDS[Math.floor(n / 6) % COVER_KINDS.length];
-  return (
-    <span className={`block overflow-hidden rounded-[var(--radius-sm)] ${block} ${className}`}>
-      <Illustration kind={kind} ink={ink} still={title} className="h-full w-full" />
-    </span>
-  );
+  const block = COVERS[Math.floor(hash01(title) * 42) % COVERS.length];
+  return <span className={`block ${block} ${className}`} />;
 }
 
 /* Roman and italic inside one line is how the club's display type reads, and

@@ -174,10 +174,10 @@ export default function PracticePage() {
         className="px-5 md:px-6 py-24 md:py-32"
       >
         <p className="text-sm underline underline-offset-4">Practice</p>
-        <h1 className="mt-8 font-serif text-4xl md:text-6xl leading-tight max-w-4xl">
+        <h1 className="mt-6 max-w-[14em] font-serif text-[clamp(2.7rem,6.5vw,5.4rem)] leading-[0.9] tracking-[-0.034em]">
           You have the time. <em>We&apos;ll pick the exercise.</em>
         </h1>
-        <p className="mt-8 max-w-md text-sm text-muted leading-relaxed">
+        <p className="mt-8 max-w-md text-base leading-relaxed">
           Tell us how long you&apos;ve got and where you are on the path. You
           get one thing to do: a goal, a constraint, and something to watch if
           you get stuck. Not a library to browse.
@@ -289,7 +289,7 @@ export default function PracticePage() {
                       <p className="text-sm underline underline-offset-4">
                         One rule
                       </p>
-                      <p className="mt-4 font-serif text-xl italic leading-snug">
+                      <p className="mt-4 bg-accent-soft px-2 py-1 font-serif text-xl leading-[0.95] text-black">
                         {exercise.constraint}
                       </p>
                     </div>
@@ -367,7 +367,7 @@ export default function PracticePage() {
                   }}
                   className="group block w-full p-8 text-left accent-hover transition-colors"
                 >
-                  <CircleLetter className="group-hover:bg-transparent group-hover:border-background">
+                  <CircleLetter className="group-hover:bg-background group-hover:text-foreground">
                     {s.number}
                   </CircleLetter>
                   <p className="mt-6 font-serif text-2xl group-hover:underline underline-offset-4">

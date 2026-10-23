@@ -51,7 +51,166 @@
   --color-accent-cream: var(--accent-cream);
   --font-sans: var(--font-archivo);
   --font-serif: var(--font-lora);
+  --font-narrow: var(--font-archivo-narrow);
   --font-gothic: var(--font-pirata);
+}
+
+/* ------------------------------------------------------------- the brand
+   October 2026. The public site (.brand, the (site) layout) is a brutalist
+   poster: pure blue, pure red, pure yellow, white, black. Archivo Narrow
+   does every job. Nothing is rounded, nothing floats, nothing glows.
+   These variables are the only place the hexes and the face live — tweak
+   them here. The Posts Studio keeps the :root palette above, on purpose. */
+.brand {
+  --blue: #0000ff;
+  --red: #ff0000;
+  --yellow: #ffe600;
+  --black: #000000;
+  --white: #ffffff;
+
+  --background: var(--white);
+  --surface: var(--white);
+  --inset: var(--white);
+  --foreground: var(--black);
+  --muted: #1a1a1a;
+  --faint: #222222;
+  --line: #000000;
+  --line-2: #000000;
+
+  --radius: 0px;
+  --radius-sm: 0px;
+
+  --accent: var(--blue);
+  --accent-warm: var(--red);
+  --accent-soft: var(--yellow);
+  --accent-green: var(--blue);
+  --accent-cream: var(--yellow);
+
+  --font-sans: var(--font-archivo-narrow), sans-serif;
+  --font-serif: var(--font-archivo-narrow), sans-serif;
+
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: -0.011em;
+  text-align: left;
+}
+
+.brand :where(*):not(.toolcraft, .toolcraft *) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* `font-serif` is inlined to Lora by Tailwind. On the public site the
+   display face is Archivo Narrow, the same face as the body. */
+.brand h1,
+.brand h2,
+.brand h3,
+.brand .font-serif {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.034em;
+}
+.brand h1 {
+  line-height: 0.92;
+}
+.brand h2 {
+  line-height: 0.95;
+}
+
+.brand .text-center {
+  text-align: left !important;
+}
+
+/* Emphasis is a solid block behind the word, not an italic. Yellow on white,
+   blue, and red; blue on a yellow field so the block still separates. */
+.brand em {
+  font-style: normal;
+  font-weight: 700;
+  background: var(--yellow);
+  color: var(--black);
+  padding: 0 0.08em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.brand .bg-accent-soft em,
+.brand .bg-accent-cream em,
+.brand .block-peri em,
+.brand .block-cream em {
+  background: var(--blue);
+  color: var(--white);
+}
+
+.brand :focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.brand .bg-accent :focus-visible,
+.brand .block-colour.bg-accent :focus-visible {
+  outline-color: var(--yellow);
+}
+
+/* On a filled blue field, secondary type stays white — a tinted white
+   fails contrast against #0000FF. Red overrides this just below. */
+.brand .block-colour {
+  --muted: #ffffff;
+}
+.brand .block-pale {
+  --muted: #000000;
+  color: #000000;
+}
+
+/* Red carries black type. Blue stays white, from .block-colour. */
+.brand .block-colour.bg-accent-warm {
+  --foreground: #000000;
+  --muted: #000000;
+  --line: rgba(0, 0, 0, 0.28);
+  --line-2: #000000;
+  color: #000000;
+}
+
+.brand .accent-warm-hover {
+  --hover-fill: var(--red);
+  --hover-type: #000000;
+}
+.brand .accent-soft-hover,
+.brand .accent-green-hover {
+  --hover-fill: var(--yellow);
+  --hover-type: #000000;
+}
+.brand .accent-indigo-hover {
+  --hover-fill: var(--blue);
+  --hover-type: #ffffff;
+}
+
+.brand .btn {
+  min-height: 44px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.brand .btn-on-colour {
+  background: var(--white);
+  color: var(--black);
+}
+.brand .pill-notion {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--black);
+}
+.brand .pill-free {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+}
+.brand .inset {
+  border: 1px solid var(--black);
+}
+.brand img,
+.brand video {
+  border-radius: 0 !important;
 }
 
 /* Keyboard focus gets the accent too, so it reads as the same system as

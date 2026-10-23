@@ -211,9 +211,9 @@ function StillsWall({ wall }: { wall: WallData }) {
     <>
       <section
         {...studioSection("stills", "Stills")}
-        className="px-5 md:px-6 pt-12 md:pt-16 pb-7 text-center"
+        className="px-5 md:px-6 pt-12 md:pt-16 pb-7"
       >
-        <h1 className="mx-auto max-w-3xl font-serif text-4xl md:text-6xl leading-tight">
+        <h1 className="max-w-[12em] font-serif text-[clamp(2.7rem,6.5vw,5.4rem)] leading-[0.9] tracking-[-0.034em]">
           <Emphasize text={stills.headline || fallback.headline} />
         </h1>
       </section>
@@ -228,7 +228,7 @@ function StillsWall({ wall }: { wall: WallData }) {
         </section>
       ) : (
         <>
-          <section className="px-5 md:px-6 pb-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm">
+          <section className="px-5 md:px-6 pb-6 flex flex-wrap items-center justify-start gap-x-4 gap-y-3 text-sm">
             <div className="flex items-center gap-1.5">
               {/* Landing on Stills without a seed gives the deterministic
                   order the server prerendered. Arriving by the tab rolls a
@@ -280,7 +280,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                   })
                 }
                 placeholder="Search project, studio or tag…"
-                className="w-full card rounded-full px-4 py-2 text-sm placeholder:text-muted focus:outline-none"
+                className="w-full card px-4 py-3 text-base placeholder:text-muted focus:outline-none"
               />
             </label>
 
@@ -327,7 +327,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                         key={tag.value}
                         onClick={() => toggleTag(tag.value)}
                         aria-pressed={on}
-                        className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                        className={`px-3 py-1.5 text-sm transition-colors ${
                           on
                             ? "bg-foreground text-background"
                             : "accent-hover"
@@ -437,7 +437,7 @@ function StillsWall({ wall }: { wall: WallData }) {
                           <span className="block truncate text-sm">
                             {project.title}
                           </span>
-                          <span className="block text-xs text-background/60">
+                          <span className="block text-xs text-background">
                             {project.credit || "Uncredited"} · {timecode(frame.t)}
                           </span>
                         </span>
@@ -453,7 +453,7 @@ function StillsWall({ wall }: { wall: WallData }) {
       )}
 
       <section className="px-5 md:px-6 py-10">
-        <p className="max-w-xl text-xs text-muted leading-relaxed">
+        <p className="max-w-xl text-sm leading-relaxed">
           {stills.note}
         </p>
       </section>

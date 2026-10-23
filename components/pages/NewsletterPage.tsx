@@ -67,7 +67,7 @@ export default function NewsletterPage() {
           {...studioSection("archive", "Newsletter archive")}
           className="px-5 md:px-6 py-16"
         >
-          <h2 className="font-serif text-3xl md:text-5xl">{y.year}</h2>
+          <h2 className="font-serif text-[clamp(2.4rem,6vw,4.5rem)] leading-[0.9] tracking-[-0.034em]">{y.year}</h2>
           <div className="mt-8">
             <PostList posts={y.posts} />
           </div>

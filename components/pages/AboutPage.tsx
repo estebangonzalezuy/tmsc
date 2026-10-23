@@ -77,9 +77,9 @@ export default function AboutPage() {
       {!hidden.has("quotes") && quotes.length > 0 && (
       <section
         {...studioSection("quotes", "Quotes")}
-        className="px-5 md:px-6 py-20 text-center"
+        className="bg-accent-warm px-5 py-16 text-black md:px-6 md:py-24"
       >
-        <p className="font-serif italic text-3xl md:text-5xl leading-tight max-w-3xl mx-auto">
+        <p className="max-w-[16em] font-serif text-[clamp(2rem,5vw,4rem)] leading-[0.92] tracking-[-0.034em]">
           {quotes[1] ?? quotes[0]}
         </p>
       </section>

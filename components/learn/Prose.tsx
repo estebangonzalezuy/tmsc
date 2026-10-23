@@ -104,7 +104,7 @@ export default function Prose({ blocks }: { blocks: Block[] }) {
 
           case "quote":
             return (
-              <blockquote key={i} className="mt-12 font-serif italic text-2xl leading-snug">
+              <blockquote key={i} className="mt-12 font-serif text-2xl leading-[0.95]">
                 <Spans spans={b.text} />
               </blockquote>
             );
