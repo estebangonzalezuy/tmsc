@@ -144,6 +144,19 @@
   color: var(--white);
 }
 
+/* The homepage headline's highlight is long enough to wrap. The display
+   leading is tighter than the em box, so two lines of a solid highlight
+   crash into each other. Give the highlight its own leading, taller than
+   that box, and each wrapped line stays a separate rectangle with the
+   letters inside it. */
+.brand h1.hero-title em {
+  line-height: 1.52;
+  padding: 0 0.08em;
+  background: var(--yellow);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 .brand :focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;

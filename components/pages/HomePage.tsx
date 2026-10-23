@@ -16,11 +16,24 @@ import OfferBlock from "@/components/learn/OfferBlock";
 import PostList from "@/components/PostList";
 import { ROOM_SPECS, type RoomCounts } from "@/lib/rooms";
 
-/* `*...*` is italic — see Emphasize. The line has to tell somebody who has
-   never heard of the club what is here, so it names the three things the
-   site actually holds rather than setting a mood. */
+/* `*...*` is the yellow block. The highlighted run starts on its own line
+   so a long phrase does not leave a stub at the end of the sentence above,
+   and each wrapped line of that run is its own rectangle. */
 const FALLBACK_HEADLINE =
-  "Letters, practice, and work worth *looking at*.";
+  "Tools change every week. *Criteria, craft and practice* don't.";
+
+function HeroHeadline({ text }: { text: string }) {
+  return text.split(/\*([^*]+)\*/g).map((part, i) =>
+    i % 2 ? (
+      <span key={i}>
+        <br />
+        <em>{part}</em>
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
 
 /* One tile on the walls strip. A still is a picture; a clip is the Clips
    wall's own canvas, stepping its sheet — the same component, not a second
@@ -86,8 +99,8 @@ export default function HomePage({
         className="block-colour bg-accent px-5 md:px-6 pt-14 md:pt-20 pb-16 md:pb-24"
       >
         <Label>{site.name}</Label>
-        <h1 className="mt-5 max-w-[14em] font-serif text-[clamp(2.7rem,7.4vw,6.4rem)] leading-[0.9] tracking-[-0.04em]">
-          <Emphasize text={site.headline || FALLBACK_HEADLINE} />
+        <h1 className="hero-title mt-5 max-w-[18em] font-serif text-[clamp(2.7rem,7.4vw,6.4rem)] leading-[0.9] tracking-[-0.04em]">
+          <HeroHeadline text={site.headline || FALLBACK_HEADLINE} />
         </h1>
         <p className="mt-8 max-w-md text-base leading-relaxed md:text-lg">
           {site.description}
