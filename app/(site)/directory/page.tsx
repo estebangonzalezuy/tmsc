@@ -4,7 +4,7 @@ import { directoryTotal } from "@/lib/directory";
 
 export const metadata: Metadata = {
   title: "the Directory | the Motion Social Club",
-  description: `${directoryTotal} curated motion design resources: YouTube channels, courses, studios, tools, books and the vocabulary, organised and filterable.`,
+  description: `${directoryTotal} references: channels, courses, studios, tools, books, and the words for them. Organised, and honest about the source.`,
 };
 
 export default function Page() {

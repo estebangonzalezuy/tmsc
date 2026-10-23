@@ -25,19 +25,15 @@ export default function AboutPage() {
       >
         <div className="grid gap-10 md:grid-cols-2 text-[15px] leading-relaxed">
           <p>
-            {site.positioning} Founded by Esteban González, a self-taught
-            motion designer from Montevideo, the club started as an excuse to
-            share as many resources as possible (posts, newsletter issues,
-            worksheets, exercises) and grew into a place for the conversations
-            that are harder to find: feedback, doubt, and growth beyond the
-            technical.
+            {site.positioning} Founded by Esteban González, in Montevideo. It
+            started as an excuse to share what he was finding useful: letters,
+            worksheets, exercises. It turned into a place for the conversations
+            that are harder to have in public.
           </p>
-          <p className="text-muted">
-            The club emphasizes that motion design is not just for rock stars
-            or top artists, but a profession with diverse paths to success. Its
-            aim is simple: create a space where motion designers can challenge
-            themselves and grow, professionally and personally, posing
-            questions rather than selling answers.
+          <p>
+            There are many ways to do this work, and most of them are not the
+            loud ones. The club asks questions more often than it sells
+            answers.
           </p>
         </div>
       </section>
@@ -89,7 +85,7 @@ export default function AboutPage() {
       <Cta
         title={
           <>
-            One honest letter, <em>twice a month</em>.
+            Read the latest <em>letter</em>.
           </>
         }
       />

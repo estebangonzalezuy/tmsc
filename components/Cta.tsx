@@ -19,8 +19,8 @@ export default function Cta({ title }: { title?: React.ReactNode }) {
         )}
       </h2>
       <p className="mt-6 max-w-md text-base leading-relaxed text-foreground">
-        One honest letter at a time. Exercises, resources, and real
-        conversations about the practice. Free, in your inbox.
+        The letter is free. The exercises are here. The references are here.
+        Read one, or do one.
       </p>
       <div className="mt-9">
         <a

@@ -16,10 +16,10 @@ export default function NewsletterPage() {
         label="The newsletter"
         title={
           <>
-            Every letter the club has sent, <em>since day one</em>.
+            The letters, <em>since the first one</em>.
           </>
         }
-        intro="Essays, exercises, interviews, and honest check-ins, published on Substack, free to read. This is the full archive."
+        intro="Conversations, notes, and check-ins, on Substack, free to read. This is the archive, newest first."
       />
       <section
         {...studioSection("stats", "Stats")}

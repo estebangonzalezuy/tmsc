@@ -20,7 +20,7 @@ import { ROOM_SPECS, type RoomCounts } from "@/lib/rooms";
    never heard of the club what is here, so it names the three things the
    site actually holds rather than setting a mood. */
 const FALLBACK_HEADLINE =
-  "Resources, exercises and letters for designers learning *motion design*.";
+  "Letters, practice, and work worth *looking at*.";
 
 /* One tile on the walls strip. A still is a picture; a clip is the Clips
    wall's own canvas, stepping its sheet — the same component, not a second
@@ -85,18 +85,12 @@ export default function HomePage({
         {...studioSection("site", "Site & links")}
         className="block-colour bg-accent px-5 md:px-6 pt-14 md:pt-20 pb-16 md:pb-24"
       >
-        <Label>
-          {site.name} · a club for designers learning motion
-        </Label>
+        <Label>{site.name}</Label>
         <h1 className="mt-5 max-w-[14em] font-serif text-[clamp(2.7rem,7.4vw,6.4rem)] leading-[0.9] tracking-[-0.04em]">
           <Emphasize text={site.headline || FALLBACK_HEADLINE} />
         </h1>
         <p className="mt-8 max-w-md text-base leading-relaxed md:text-lg">
-          <strong className="font-semibold">
-            The side companion on your motion design path.
-          </strong>{" "}
-          A place to connect with other people, to practice, and to embrace
-          failure.
+          {site.description}
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-5">
           <a
@@ -113,9 +107,32 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* The rooms. This is the index: six or seven cards that are the only
-          colour on the page at rest, each running the motif of the thing it
-          opens. */}
+      {/* The letters first. The club publishes these; the rooms are ways in. */}
+      {!hidden.has("archive") && (
+        <section
+          {...studioSection("archive", "Newsletter archive")}
+          className="px-5 md:px-6 py-16 md:py-24"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <SectionHeading
+              label="The newsletter"
+              title={
+                <>
+                  The latest <em>letters</em>.
+                </>
+              }
+            />
+            <Link href="/newsletter" className="textlink">
+              Browse the full archive →
+            </Link>
+          </div>
+          <div className="mt-10">
+            <PostList posts={latestPosts} covers />
+          </div>
+        </section>
+      )}
+
+      {/* The rooms. This is the index: the ways into the club. */}
       {visibleRooms.length > 0 && (
         <section
           {...studioSection("rooms", "Rooms")}
@@ -182,31 +199,6 @@ export default function HomePage({
               {wallsCopy.note}
             </p>
           )}
-        </section>
-      )}
-
-      {/* Newsletter */}
-      {!hidden.has("archive") && (
-        <section
-          {...studioSection("archive", "Newsletter archive")}
-          className="px-5 md:px-6 pb-20 md:pb-28"
-        >
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading
-              label="The newsletter"
-              title={
-                <>
-                  One honest letter, <em>twice a month</em>.
-                </>
-              }
-            />
-            <Link href="/newsletter" className="textlink">
-              Browse the full archive →
-            </Link>
-          </div>
-          <div className="mt-10">
-            <PostList posts={latestPosts} covers />
-          </div>
         </section>
       )}
 

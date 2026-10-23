@@ -55,7 +55,7 @@ const fallback = {
   /* `*...*` is italic — see Emphasize. The headline is the whole hero now, so
      it has to say what the page is to somebody who has never heard of the
      club, not just set a tone. */
-  headline: "Style frames from the best projects in *motion design*.",
+  headline: "Frames from real projects, *linked to the second*.",
   note: "Every frame links back to the second it came from, so you can always check a still against the thing that moved.",
 };
 

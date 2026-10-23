@@ -5,7 +5,7 @@ import PracticePage from "@/components/pages/PracticePage";
 export const metadata: Metadata = {
   title: `Practice | ${site.name}`,
   description:
-    "Tell the club how long you have and where you are. It hands back one motion exercise to finish in that time.",
+    "Tell the club how long you have. It hands back one exercise to finish in that time.",
 };
 
 export default function Practice() {

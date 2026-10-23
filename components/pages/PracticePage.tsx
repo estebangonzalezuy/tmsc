@@ -178,9 +178,9 @@ export default function PracticePage() {
           You have the time. <em>We&apos;ll pick the exercise.</em>
         </h1>
         <p className="mt-8 max-w-md text-base leading-relaxed">
-          Tell us how long you&apos;ve got and where you are on the path. You
-          get one thing to do: a goal, a constraint, and something to watch if
-          you get stuck. Not a library to browse.
+          Tell us how long you&apos;ve got. You get one thing to do: a goal, a
+          constraint, and something to watch if you get stuck. Not a shelf to
+          browse.
         </p>
       </section>
 
