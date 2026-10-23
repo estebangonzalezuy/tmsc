@@ -370,7 +370,7 @@ const sections: Section[] = [
   {
     id: "archive",
     title: "Newsletter archive",
-    note: "Every issue, grouped by year",
+    note: "Every issue, grouped by year. The cover is the image on the Substack post.",
     kind: "archive",
   },
   {
@@ -617,6 +617,11 @@ const postFields: Field[] = [
   { key: "title", label: "Title" },
   { key: "type", label: "Type" },
   { key: "href", label: "Link (leave empty for the Substack home)" },
+  {
+    key: "image",
+    label: "Cover image — the Substack image, usually a gif",
+    kind: "textarea",
+  },
 ];
 
 function ArchiveEditor({

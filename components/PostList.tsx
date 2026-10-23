@@ -5,17 +5,11 @@ import { useContent } from "@/components/content";
 import { accentHoverText, Cover } from "@/components/Motifs";
 
 /* The archive, as rows. A letter is a date, a title and what kind of letter
-   it is — and, where there is room for it, a cover: one of the club's own
-   drawings, stopped at an instant its own headline puts it at. Nothing is
-   uploaded and nothing is stored; see Cover in Motifs. */
+   it is, with its Substack cover on the left — the same image the post
+   uses, gif included. A letter with no public cover keeps a flat swatch
+   so the titles still line up. */
 
-export default function PostList({
-  posts,
-  covers = false,
-}: {
-  posts: Post[];
-  covers?: boolean;
-}) {
+export default function PostList({ posts }: { posts: Post[] }) {
   const { site } = useContent();
   return (
     <ul className="row-divide border-t border-line">
@@ -29,10 +23,21 @@ export default function PostList({
               p.title,
             )}`}
           >
-            {covers && (
+            {p.image ? (
+              // The cover is a remote gif or still. next/image would want a
+              // remote pattern and would freeze a gif; a plain img plays it.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="aspect-video w-[5.75rem] shrink-0 bg-inset object-cover sm:w-40"
+              />
+            ) : (
               <Cover
                 title={p.title}
-                className="hidden h-[74px] w-[112px] shrink-0 sm:block"
+                className="aspect-video w-[5.75rem] shrink-0 sm:w-40"
               />
             )}
             <span className="label w-[6.5rem] shrink-0 hidden md:block">

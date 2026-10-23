@@ -49,6 +49,8 @@ export type Post = {
   type: string;
   /** Direct Substack permalink. Falls back to the publication home when absent. */
   href?: string;
+  /** The letter's own Substack cover. A gif when that is the file they published. */
+  image?: string;
 };
 export type ArchiveYear = { year: string; posts: Post[] };
 

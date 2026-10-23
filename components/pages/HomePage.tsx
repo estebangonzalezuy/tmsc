@@ -127,7 +127,7 @@ export default function HomePage({
             </Link>
           </div>
           <div className="mt-10">
-            <PostList posts={latestPosts} covers />
+            <PostList posts={latestPosts} />
           </div>
         </section>
       )}
