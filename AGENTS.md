@@ -340,6 +340,16 @@ there is compiled, it has no route, and it is ignored by the site's ESLint on
 purpose. `public/frames/README.md` is its documentation. Keep it that way:
 don't wire it into `app/`, and don't pull site modules into it.
 
+## the Motion instrument (`public/instrument/`) — beside the site, too
+
+A keyboard you play the club's words with (A–K play a note and its word,
+a step sequencer loops them, R records picture and sound to `.webm`). One
+self-contained `index.html` with Archivo Narrow embedded, served verbatim at
+`/instrument/index.html`, unlisted. Same contract as Frames: not in `app/`,
+no site modules, no build. Unlike Frames it is live rather than a pure
+function of `t` — a recording is a real-time capture of a performance.
+`public/instrument/README.md` is its documentation.
+
 ## the Tools (`/tools`) — retired
 
 The everyday front door to the studio (a note, a countdown, a quote card, a
