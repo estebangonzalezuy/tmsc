@@ -32,8 +32,9 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 Every note grows from the centre of the cluster, from nothing to full size,
 and shoves the tags around it. They bump, tilt a little, and the pile pulls
 back together. Nothing falls. On the loop the pile shrinks back into the
-centre. The same motion is every preset, including the 16ths. The pad sits on the left:
-an 8×8 step grid with slightly rounded cells. Click it or press Space to start; drag
+centre. The same motion is every preset, including the 16ths. The pad sits on the left, compact:
+an 8×8 step grid with slightly rounded cells. The word tags have a smaller
+corner than the controls, and they still sit edge to edge. Click it or press Space to start; drag
 across it to paint the pattern. The other controls are a separate group on the right,
 flat white buttons with a black edge and no shadow. A selected control flips
 to black with white text: tempo,
@@ -61,7 +62,7 @@ or on a slider.
 | `C` | background theme |
 | `P` | pixel effect on / off |
 | `X` | clear the pattern |
-| `R` | record the canvas (downloads a `.webm`) |
+| `R` | record the canvas and the sound, with no interface in the picture. Frame is 9:16, 16:9 or 1:1. Safari downloads H.264 + AAC `.mp4`. Chrome downloads H.264 `.mp4` (AAC when it offers it, otherwise Opus). Firefox downloads a `.webm`. |
 | `U` | hide / show the interface |
 
 ## Credits
@@ -118,7 +119,7 @@ texto o en un deslizador.
 | `C` | fondo |
 | `P` | efecto píxel |
 | `X` | borrar el patrón |
-| `R` | grabar el canvas (descarga un `.webm`) |
+| `R` | grabar el canvas y el sonido, sin la interfaz. El encuadre es 9:16, 16:9 o 1:1. Chrome y Safari bajan un `.mp4`; Firefox un `.webm`. |
 | `U` | ocultar / mostrar la interfaz |
 
 ## Créditos

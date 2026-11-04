@@ -25,7 +25,7 @@
   .mi-pad {
     left:0; top:50%; transform:translateY(-50%);
     background:#fff; color:#000; border:1.5px solid #000; outline:none;
-    border-radius:14px; padding:10px;
+    border-radius:10px; padding:8px;
   }
   .mi-card {
     right:0; top:0; width:min(300px, 38vw); max-height:100%; overflow:auto;
@@ -34,9 +34,9 @@
   .mi-head { display:flex; justify-content:flex-end; margin:0 0 2px; }
   .mi-body { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
   #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
-  .mi-warn { margin:0 0 8px; padding:4px 10px; font-size:12px; color:#000; background:#fff; border:1.5px solid #000; outline:none; border-radius:999px; box-shadow:none; }
-  #mi button, .mi-slide, .mi-toggle, .mi-text textarea, .mi-label {
-    color:#000; background:#fff; border:1.5px solid #000; outline:none; border-radius:999px;
+  .mi-warn { margin:0 0 8px; padding:4px 10px; font-size:12px; color:#000; background:#fff; border:1.5px solid #000; outline:none; border-radius:8px; box-shadow:none; }
+  #mi button, .mi-slide, .mi-toggle, .mi-text textarea, .mi-label, .mi-rec-flag {
+    color:#000; background:#fff; border:1.5px solid #000; outline:none; border-radius:8px;
     box-shadow:none; font:inherit;
   }
   .mi-slide { position:relative; align-self:stretch; height:30px; }
@@ -53,25 +53,27 @@
     background:#000; color:#fff; border-color:#fff;
   }
   #mi-presets button { width:36px; padding:5px 0; }
-  #mi #mi-fold { width:32px; height:32px; padding:0; border-radius:50%; cursor:grab; }
+  #mi #mi-fold { width:32px; height:32px; padding:0; border-radius:8px; cursor:grab; }
   .mi-toggle { display:flex; align-items:center; justify-content:space-between; gap:16px; height:30px; padding:0 12px; font-size:13px; cursor:pointer; }
   .mi-toggle s { display:inline-block; width:32px; height:18px; border:1.5px solid #000; border-radius:9px; position:relative; background:#fff; text-decoration:none; box-shadow:none; outline:none; }
   .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:12px; height:12px; border-radius:50%; background:#000; }
   .mi-toggle[aria-pressed="true"] s { background:#000; border-color:#fff; }
   .mi-toggle[aria-pressed="true"] s::after { left:auto; right:1px; background:#fff; }
   .mi-label { align-self:flex-end; font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; margin:0; }
-  .mi-grid { display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:5px; width:min(272px, 30vw); }
+  .mi-grid { display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:3px; width:min(168px, 22vw); }
   #mi .mi-pad .mi-grid button {
-    width:100%; aspect-ratio:1; height:auto; padding:0; border-radius:5px;
+    width:100%; aspect-ratio:1; height:auto; padding:0; border-radius:3px;
     box-shadow:none; outline:none; background:#fff; color:#000; border:1.5px solid #000;
   }
   #mi .mi-grid button.is-on { background:#000; color:#fff; border-color:#fff; }
   #mi .mi-grid button.is-step { border-bottom-width:3px; }
   #mi .mi-grid button.is-on.is-step { border-bottom-color:#fff; }
   .mi-text { display:flex; flex-direction:column; align-items:flex-end; gap:4px; align-self:stretch; }
-  .mi-text textarea { font:inherit; font-size:14px; width:100%; min-height:52px; padding:8px 10px; border-radius:16px; resize:vertical; box-sizing:border-box; }
-  .mi-actions { align-self:stretch; }
+  .mi-text textarea { font:inherit; font-size:14px; width:100%; min-height:52px; padding:8px 10px; border-radius:8px; resize:vertical; box-sizing:border-box; }
+  .mi-actions { align-self:stretch; align-items:center; }
   .mi-actions button { flex:1; }
+  .mi-rec-flag { flex:0 0 auto; font-size:12px; letter-spacing:.08em; padding:3px 8px; background:#000; color:#fff; border-color:#fff; }
+  .mi-rec-flag[hidden] { display:none; }
   #mi-hint {
     position:fixed; z-index:6; left:0; right:0; bottom:20px; margin:0; padding:0 336px;
     display:flex; justify-content:center; background:transparent; border:0; box-shadow:none;
@@ -79,12 +81,12 @@
   }
   #mi-hint span {
     max-width:100%; text-align:center; font-size:15px; line-height:1.3; color:#000; background:#fff;
-    border:1.5px solid #000; border-radius:999px; padding:8px 16px; box-shadow:none;
+    border:1.5px solid #000; border-radius:8px; padding:8px 16px; box-shadow:none;
   }
   #mi-hint[hidden] { display:none; }
   @media (max-width: 980px) {
     .mi-pad { top:8px; transform:none; }
-    .mi-grid { width:min(200px, 46vw); }
+    .mi-grid { width:min(148px, 42vw); }
     .mi-card { top:auto; bottom:0; left:0; right:0; width:auto; max-height:42vh; }
     #mi-hint { padding:0 16px; bottom:calc(42vh + 28px); }
   }
@@ -124,8 +126,11 @@
         <textarea id="mi-text" rows="3" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
         <button type="button" id="mi-reset">Reset</button>
       </label>
+      <div class="mi-label">Frame</div>
+      <div class="mi-seg" id="mi-aspect" role="group" aria-label="Frame"></div>
       <div class="mi-actions">
         <button type="button" id="mi-clear">Clear</button>
+        <span class="mi-rec-flag" id="mi-rec-flag" hidden>REC</span>
         <button type="button" id="mi-rec">Record</button>
       </div>
     </div>
@@ -459,9 +464,19 @@ function colours(it, th, kind) {
   if (pr.mixed) return it.ch.ink ? ['#000000', '#FFFFFF'] : ['#FFFFFF', '#000000'];
   return [th.lb, th.lt];
 }
+const TAG_R = 6; // design px. Smaller than the UI's 8–10px corners. Drawn inside the box the collision already uses, so the straight edges still meet.
 function box(c, x, y, rot, sc, w, h, word, d, bc, fc, track = 0) {
   c.save(); c.translate(x, y); c.rotate(rot); c.scale(sc, sc);
-  c.fillStyle = bc; c.fillRect(-w / 2, -h / 2, w, h);
+  const r = Math.max(0, Math.min(TAG_R, w / 2, h / 2));
+  const x0 = -w / 2, y0 = -h / 2;
+  c.beginPath();
+  c.moveTo(x0 + r, y0);
+  c.arcTo(x0 + w, y0, x0 + w, y0 + h, r);
+  c.arcTo(x0 + w, y0 + h, x0, y0 + h, r);
+  c.arcTo(x0, y0 + h, x0, y0, r);
+  c.arcTo(x0, y0, x0 + w, y0, r);
+  c.closePath();
+  c.fillStyle = bc; c.fill();
   c.fillStyle = fc; c.font = `700 ${d.fs}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   c.letterSpacing = `${track}px`; c.fillText(word, track / 2, d.fs * CAPR() / 2); c.letterSpacing = '0px';
   c.restore();
@@ -658,7 +673,7 @@ function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
 DIR.draw = (c, t, th) => {
   if (!L || L.hero !== S.hero) DIR.layout();
   const pr = P(), LC = lay();
-  if (pr.bg && S.theme === pr.theme) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = pr.bg; c.fillRect(0, 0, cv.width, cv.height); }
+  if (pr.bg && S.theme === pr.theme) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = pr.bg; c.fillRect(0, 0, c.canvas.width, c.canvas.height); }
   c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.globalAlpha = 0.05; c.strokeStyle = th.fg; c.lineWidth = 1; c.beginPath();
   for (let x = 48; x < W; x += 48) { c.moveTo(x + 0.5, 0); c.lineTo(x + 0.5, H); }
   for (let y = 48; y < H; y += 48) { c.moveTo(0, y + 0.5); c.lineTo(W, y + 0.5); }
@@ -805,7 +820,7 @@ const S = {
   scale:'major', theme:DIR.defaultTheme, pixel:true, bpm:DIR.bpm || 112, playing:false, step:-1,
   pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
             [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
-  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
+  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
 };
 let items = [];
 DIR.init && DIR.init();
@@ -1041,6 +1056,7 @@ function frame() {
     const q = queue.shift(); if (q.step !== undefined) S.step = q.step; else { trigger(q.r); if (q.n) S.lastNote = q.n; }
   }
   render(now());
+  if (S.recording) paintRecording(now());
   syncPanel();
   requestAnimationFrame(frame);
 }
@@ -1050,25 +1066,72 @@ function applyTheme() {
   document.documentElement.style.setProperty('--bg', th.bg); document.documentElement.style.setProperty('--fg', th.fg);
   document.getElementById('pxflood').setAttribute('flood-color', th.fg);
 }
-// ---------------- recording (canvas + audio → .webm) ----------------
-let rec = null, chunks = [];
+// ---------------- recording (offscreen canvas + audio → mp4, else webm) ----------------
+// The file is only the framed canvas and the sound. The pad, buttons, hint
+// and REC mark stay in the HTML, so they never enter the picture.
+// Safari records H.264 + AAC. Chrome records H.264, with AAC when it offers
+// that pair and Opus otherwise. Firefox records WebM (VP8/VP9 + Opus) and
+// does not record MP4, so it downloads a .webm. Neither Safari nor Firefox
+// is given a codec it cannot mux.
+const FRAMES = { '9x16':{ w:1080, h:1920, file:'9x16' }, '16x9':{ w:1920, h:1080, file:'16x9' }, '1x1':{ w:1080, h:1080, file:'1x1' } };
+let rec = null, recChunks = [], recStream = null, recCanvas = null, recCtx = null, recFile = '16x9';
+function paintRecording(t) {
+  const spec = FRAMES[recFile] || FRAMES['16x9'];
+  if (!recCanvas) { recCanvas = document.createElement('canvas'); recCtx = recCanvas.getContext('2d'); }
+  if (recCanvas.width !== spec.w || recCanvas.height !== spec.h) { recCanvas.width = spec.w; recCanvas.height = spec.h; }
+  const saved = { W, H, DPR, L };
+  try {
+    W = spec.w; H = spec.h; DPR = 1;
+    L = { hero:S.hero, sh:H, w:W, u:Math.min(W, H) / 1080, cx:W / 2, cy:H / 2 };
+    const th = THEMES[S.theme];
+    recCtx.setTransform(1, 0, 0, 1, 0, 0); recCtx.globalAlpha = 1; recCtx.filter = 'none';
+    recCtx.fillStyle = th.bg; recCtx.fillRect(0, 0, spec.w, spec.h);
+    DIR.draw(recCtx, t, th);
+  } finally {
+    W = saved.W; H = saved.H; DPR = saved.DPR; L = saved.L;
+  }
+}
+function recMime() {
+  // H.264 + AAC when the browser offers it (Safari). Chrome here offers H.264
+  // with Opus in an mp4, which still plays. Anything else falls back to WebM.
+  const mp4 = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1.4D001E,mp4a.40.2',
+    'video/mp4;codecs=avc1.42E01E,opus',
+    'video/mp4;codecs=avc1.4d002a,opus',
+  ];
+  const webm = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  return [...mp4, ...webm].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
 function toggleRec() {
-  if (rec) { rec.stop(); return; }
+  if (rec) { try { rec.requestData(); } catch (_) {} rec.stop(); return; }
   audio();
-  const stream = cv.captureStream(60);
-  recDest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
-  const types = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
-  const mime = types.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+  if (!recDest) return;
+  const mime = recMime();
   if (!mime) { console.warn('MediaRecorder not supported'); return; }
-  chunks = []; rec = new MediaRecorder(stream, { mimeType:mime, videoBitsPerSecond: 12e6 });
-  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recFile = FRAMES[S.aspect] ? S.aspect : '16x9';
+  S.recording = true;
+  paintRecording(now());
+  recStream = recCanvas.captureStream(30);
+  recDest.stream.getAudioTracks().forEach(tr => recStream.addTrack(tr));
+  recChunks = [];
+  rec = new MediaRecorder(recStream, { mimeType:mime, videoBitsPerSecond:8e6, audioBitsPerSecond:128e3 });
+  rec.ondataavailable = e => { if (e.data && e.data.size) recChunks.push(e.data); };
   rec.onstop = () => {
-    const blob = new Blob(chunks, { type:'video/webm' }), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `motion-instrument-${DIR.slug}-${Date.now()}.webm`;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    rec = null; S.recording = false; window.__lastRecording = blob.size;
+    const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+    const type = mime.split(';')[0];
+    const blob = new Blob(recChunks, { type });
+    const name = `motion-instrument-${(FRAMES[recFile] || FRAMES['16x9']).file}.${ext}`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+    if (recStream) recStream.getVideoTracks().forEach(tr => tr.stop());
+    recStream = null; rec = null; S.recording = false; panelSig = '';
+    window.__lastRecording = { name, type, size:blob.size };
+    window.__lastRecBlob = blob;
   };
-  rec.start(250); S.recording = true;
+  rec.start(200);
 }
 // ---------------- input ----------------
 cv.addEventListener('pointerdown', ev => {
@@ -1134,7 +1197,7 @@ async function renderAudio(sc, dur, sr = 48000) {
   for (let k = 0; k < u8.length; k += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(k, k + 0x8000));
   return { b64: btoa(s), sr, peak, clip, events: ev.length };
 }
-window.MI = { S, THEMES, get items() { return items; }, get words() { return TEXT.slice(); }, DEFAULT_TEXT, applyWords, togglePlay, trigger, playNote, fontOK:null, DIR,
+window.MI = { S, THEMES, FRAMES, get items() { return items; }, get words() { return TEXT.slice(); }, DEFAULT_TEXT, applyWords, togglePlay, toggleRec, trigger, playNote, fontOK:null, DIR,
   setTheme(i) { S.theme = i; applyTheme(); }, renderMode(on) { S.render = on; if (!on) requestAnimationFrame(frame); }, frameAt, renderAudio, scriptEvents, SOUNDS, SOUND_NAME, MODE_GAIN, RAMP, rampT };
 // ---------------- panel (DialKit-shaped: labelled rows, wired to the keys) ----------------
 let panelSig = '';
@@ -1161,9 +1224,11 @@ function syncPanel() {
   panel.hidden = !!S.hero;
   const hint = document.getElementById('mi-hint');
   if (hint) hint.hidden = !!S.playing || !!S.hero;
+  const flag = document.getElementById('mi-rec-flag');
+  if (flag) flag.hidden = !S.recording;
   const warn = document.getElementById('mi-warn');
   if (warn) warn.hidden = !S.fontWarn;
-  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.pixel, S.theme, S.recording, S.step, S.hero,
+  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.pixel, S.theme, S.recording, S.aspect, S.step, S.hero,
     S.pattern.map(r => r.join('')).join('')].join('|');
   if (sig === panelSig) return;
   panelSig = sig;
@@ -1179,6 +1244,7 @@ function syncPanel() {
   markSeg(document.getElementById('mi-tone'), S.tone);
   markSeg(document.getElementById('mi-scale'), S.scale);
   markSeg(document.getElementById('mi-theme'), S.theme);
+  markSeg(document.getElementById('mi-aspect'), S.aspect);
   const ramp = document.getElementById('mi-ramp'), pixel = document.getElementById('mi-pixel');
   ramp.setAttribute('aria-pressed', S.ramp ? 'true' : 'false');
   pixel.setAttribute('aria-pressed', S.pixel ? 'true' : 'false');
@@ -1199,6 +1265,7 @@ function syncPanel() {
   segButtons(document.getElementById('mi-tone'), TONES.map(id => ({ value:id, label:TONE_NAME[id] })), v => { S.tone = v; panelSig = ''; });
   segButtons(document.getElementById('mi-scale'), [{ value:'major', label:'Major' }, { value:'minor', label:'Minor' }], v => { S.scale = v; panelSig = ''; });
   segButtons(document.getElementById('mi-theme'), THEMES.map((th, i) => ({ value:i, label:th.name[0].toUpperCase() + th.name.slice(1) })), v => { S.theme = Number(v); applyTheme(); panelSig = ''; });
+  segButtons(document.getElementById('mi-aspect'), [{ value:'9x16', label:'9:16' }, { value:'16x9', label:'16:9' }, { value:'1x1', label:'1:1' }], v => { S.aspect = v; panelSig = ''; });
   document.getElementById('mi-bpm').addEventListener('input', e => { S.bpm = Number(e.target.value); panelSig = ''; });
   document.getElementById('mi-var').addEventListener('input', e => { S.variety = Number(e.target.value) / 100; panelSig = ''; });
   document.getElementById('mi-play').addEventListener('click', () => { togglePlay(); panelSig = ''; });
