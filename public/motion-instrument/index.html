@@ -67,7 +67,12 @@
   }
   #mi .mi-grid button.is-on { background:#000; color:#fff; border-color:#fff; }
   #mi .mi-grid button.is-step { border-bottom-width:3px; }
-  #mi .mi-grid button.is-on.is-step { border-bottom-color:#fff; }
+  #mi .mi-grid button.is-axis,
+  #mi .mi-grid button.is-on.is-axis,
+  #mi .mi-grid button.is-axis.is-step,
+  #mi .mi-grid button.is-on.is-axis.is-step { border-bottom-color:#EE4B2B; }
+  #mi .mi-grid button.is-axis { border-bottom-width:3px; }
+  #mi .mi-grid button.is-axis.is-step { border-bottom-width:4px; }
   .mi-text { display:flex; flex-direction:column; align-items:flex-end; gap:4px; align-self:stretch; }
   .mi-text textarea { font:inherit; font-size:14px; width:100%; min-height:52px; padding:8px 10px; border-radius:8px; resize:vertical; box-sizing:border-box; }
   .mi-actions { align-self:stretch; align-items:center; }
@@ -94,13 +99,6 @@
 </head>
 <body>
 <canvas id="stage"></canvas>
-<!-- tMSC pixel level 2 "bleed": gaussian σ = .375·cell, hard threshold .43, painted in the type colour -->
-<svg class="defs" aria-hidden="true"><filter id="pxbleed" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
-  <feGaussianBlur in="SourceAlpha" stdDeviation="2.25" result="b"/>
-  <feComponentTransfer in="b" result="t"><feFuncA type="linear" slope="1000" intercept="-430"/></feComponentTransfer>
-  <feFlood id="pxflood" flood-color="#FFFFFF" result="f"/>
-  <feComposite in="f" in2="t" operator="in"/>
-</filter></svg>
 <aside id="mi" aria-label="Motion Instrument">
   <div class="mi-pad" id="mi-pad">
     <div class="mi-grid" id="mi-grid" role="group" aria-label="Pad"></div>
@@ -120,7 +118,6 @@
       <div class="mi-seg" id="mi-scale" role="group" aria-label="Scale"></div>
       <div class="mi-slide"><span>Variety</span><i id="mi-var-h"></i><b id="mi-var-v">50</b><input id="mi-var" type="range" min="0" max="100" step="25" value="50" aria-label="Variety"></div>
       <button type="button" class="mi-toggle" id="mi-ramp" aria-pressed="false"><span>Ramp</span><s></s></button>
-      <button type="button" class="mi-toggle" id="mi-pixel" aria-pressed="true"><span>Pixel</span><s></s></button>
       <div class="mi-seg" id="mi-theme" role="group" aria-label="Theme"></div>
       <label class="mi-text"><span class="mi-label">Text</span>
         <textarea id="mi-text" rows="3" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
@@ -174,7 +171,7 @@ function applyWords(raw) {
   TEXT = next; textRev++; LAYC = null;
   const pr = P(), L0 = lay();
   items.forEach(it => {
-    if (it.slot == null || !L0.cap) return;
+    if (it.click || it.slot == null || !L0.cap) return;
     const slot = it.slot % L0.cap;
     it.slot = slot;
     it.tg = pr.lay === 'grid' ? L0.cells[(slot * 7) % L0.cells.length] : L0.tags[slot];
@@ -446,7 +443,7 @@ DIR.onTrigger = (it, t0) => {
   const pr = P(), L0 = lay(), idx = S.noteIdx++;
   it.slot = idx % L0.cap; it.gen = Math.floor(idx / L0.cap); it.ch = character(it);
   it.tg = pr.lay === 'grid' ? L0.cells[(it.slot * 7) % L0.cells.length] : L0.tags[it.slot];
-  if (it.slot === 0) items.forEach(o => { if (o !== it && o.fold == null) o.fold = t0; });   // new cycle: shrink back into the centre
+  if (it.slot === 0) items.forEach(o => { if (o !== it && !o.click && o.fold == null) o.fold = t0; });   // new cycle: shrink back into the centre
 };
 // ---------- draw ----------
 let L = null;
@@ -560,17 +557,18 @@ function hitBoxes(a, b, scA, scB) {
   }
   return best;
 }
-function collideAll(alive, scOf, newest) {
+function collideAll(alive, scOf, pinned) {
+  const fixed = it => typeof pinned === 'function' ? pinned(it) : it === pinned;
   for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) {
     const a = alive[i], b = alive[j], scA = scOf(a), scB = scOf(b);
     const hit = hitBoxes(a, b, scA, scB);
     if (!hit) continue;
     const { overlap, nx, ny } = hit;
     const mass = it => Math.max(400, it.tg.w * it.tg.h);
-    const invA = a === newest ? 0 : 1 / mass(a), invB = b === newest ? 0 : 1 / mass(b);
+    const invA = fixed(a) ? 0 : 1 / mass(a), invB = fixed(b) ? 0 : 1 / mass(b);
     if (invA + invB === 0) continue;
-    const invIA = a === newest ? 0 : 12 / (mass(a) * (a.tg.w * a.tg.w + a.tg.h * a.tg.h));
-    const invIB = b === newest ? 0 : 12 / (mass(b) * (b.tg.w * b.tg.w + b.tg.h * b.tg.h));
+    const invIA = fixed(a) ? 0 : 12 / (mass(a) * (a.tg.w * a.tg.w + a.tg.h * a.tg.h));
+    const invIB = fixed(b) ? 0 : 12 / (mass(b) * (b.tg.w * b.tg.w + b.tg.h * b.tg.h));
     const cx = (a.fx + b.fx) / 2, cy = (a.fy + b.fy) / 2;
     const rax = cx - a.fx, ray = cy - a.fy, rbx = cx - b.fx, rby = cy - b.fy;
     const vax = a.fvx - a.vang * ray, vay = a.fvy + a.vang * rax;
@@ -586,8 +584,8 @@ function collideAll(alive, scOf, newest) {
     if (rel < -40) {
       const side = (b.fx - a.fx) * -ny + (b.fy - a.fy) * nx;
       const kick = Math.max(-1, Math.min(1, side / 36)) * Math.min(overlap, 8) * Math.min(-rel, 400) / 400;
-      if (a !== newest) a.vang -= kick * invA * 4200;
-      if (b !== newest) b.vang += kick * invB * 4200;
+      if (!fixed(a)) a.vang -= kick * invA * 4200;
+      if (!fixed(b)) b.vang += kick * invB * 4200;
     }
     const corr = Math.max(overlap - 0.8, 0) * 0.7, invSum = invA + invB;
     a.fx -= nx * corr * invA / invSum; a.fy -= ny * corr * invA / invSum;
@@ -603,26 +601,41 @@ function flowStepBody(it, step, pull) {
   it.vang += (-70 * (it.ang || 0) - 9 * (it.vang || 0)) * step;
   it.ang = Math.max(-ANG_MAX, Math.min(ANG_MAX, (it.ang || 0) + it.vang * step));
 }
+function clickScale(it, t) {
+  const age = t - it.t0, grow = Math.max(0, growAmt(age)), life = it.click.life;
+  if (age <= life) return grow;
+  return Math.min(grow, 1) * (1 - clamp((age - life) / 0.4));
+}
+function pinBody(it, nb) {
+  if (it.click) { it.fx = it.click.x; it.fy = it.click.y; }
+  else if (it === nb) { it.fx = 0; it.fy = 0; }
+  else return false;
+  it.fvx = 0; it.fvy = 0; it.ang = 0; it.vang = 0;
+  return true;
+}
 function flowSimulate(group, folds, t) {
-  const key = S.preset + ':' + group[0].gen;
+  const seq = group.filter(it => !it.click);
+  const key = S.preset + ':' + (seq[0] ? seq[0].gen : 'guest');
   let clock = flowClock.get(key);
-  if (clock == null || t + 1e-4 < clock) clock = Math.min(...group.map(it => it.t0), ...folds.map(it => it.fold || it.t0));
+  if (clock == null || t + 1e-4 < clock) {
+    const seeds = (seq.length ? seq : group).map(it => it.t0);
+    const foldT = folds.map(it => it.fold || it.t0);
+    clock = Math.min(...seeds, ...(foldT.length ? foldT : seeds));
+  }
   const h = 1 / 90;
   let guard = 0;
   while (clock < t - 1e-4 && guard++ < 5000) {
     const step = Math.min(h, t - clock), sim = clock + step;
     const alive = [];
-    for (const it of group) if (it.t0 <= sim) { bodyInit(it); alive.push(it); }
+    for (const it of group) if (it.t0 <= sim && !(it.click && clickScale(it, sim) <= 0.01 && sim - it.t0 > it.click.life)) { bodyInit(it); alive.push(it); }
     folds.forEach(bodyInit);
     if (alive.length) {
-      const nb = alive[alive.length - 1];
-      const scOf = it => it === nb ? Math.max(growAmt(sim - it.t0), 0) : 1;
-      for (const it of alive) {
-        if (it === nb) { it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0; it.ang = 0; it.vang = 0; continue; }
-        flowStepBody(it, step, 9);
-      }
-      for (let pass = 0; pass < 3; pass++) collideAll(alive, scOf, nb);
-      nb.fx = 0; nb.fy = 0; nb.fvx = 0; nb.fvy = 0; nb.ang = 0; nb.vang = 0;
+      const nb = alive.filter(it => !it.click).at(-1) || null;
+      const hold = it => it === nb || !!it.click;
+      const scOf = it => it.click ? clickScale(it, sim) : it === nb ? Math.max(growAmt(sim - it.t0), 0) : 1;
+      for (const it of alive) { if (!pinBody(it, nb)) flowStepBody(it, step, 9); }
+      for (let pass = 0; pass < 3; pass++) collideAll(alive, scOf, hold);
+      alive.forEach(it => pinBody(it, nb));
       let maxR = 40;
       for (const it of alive) {
         const sc = scOf(it);
@@ -649,17 +662,24 @@ function foldScale(it, t) {
   return Math.max(0, 1 - clamp((t - it.fold - delay) / 0.42));
 }
 function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
-  for (let i = items.length - 1; i >= 0; i--) if (items[i].fold && t - items[i].fold > 0.95) items.splice(i, 1);
-  const cur = live.length ? Math.max(...live.map(it => it.gen)) : 0;
-  const group = live.filter(it => it.gen === cur && !it.fold && t >= it.t0).sort((a, b) => a.t0 - b.t0 || a.slot - b.slot);
-  const folds = live.filter(it => it.fold && t >= it.t0);
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    if (it.click && t - it.t0 > it.click.life + 0.45) items.splice(i, 1);
+    else if (it.fold && t - it.fold > 0.95) items.splice(i, 1);
+  }
+  live = items.filter(it => it.tg);
+  const seqGen = live.filter(it => !it.click).map(it => it.gen);
+  const cur = seqGen.length ? Math.max(...seqGen) : 0;
+  const group = live.filter(it => t >= it.t0 && !it.fold && (it.click || it.gen === cur)).sort((a, b) => a.t0 - b.t0 || a.slot - b.slot);
+  const folds = live.filter(it => it.fold && !it.click && t >= it.t0);
   if (group.length) flowSimulate(group, folds, t);
   else folds.forEach(bodyInit);
   let foldR = 1;
   for (const it of folds) foldR = Math.max(foldR, Math.hypot(it.fx || 0, it.fy || 0));
   folds.forEach(it => { it.foldR = foldR; });
-  const fit = group.length ? (flowFit.get(S.preset + ':' + group[0].gen) ?? 1) : 1;
-  const nb = group[group.length - 1];
+  const seq = group.filter(it => !it.click);
+  const fit = group.length ? (flowFit.get(S.preset + ':' + (seq[0] ? seq[0].gen : 'guest')) ?? 1) : 1;
+  const nb = seq.at(-1) || null;
   c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(cam.x, cam.y);
   const paint = (it, sc, pin) => {
     if (!it.tg || sc <= 0.01) return;
@@ -668,7 +688,7 @@ function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
     box(c, x, y, pin ? 0 : (it.ang || 0), sc * fit, it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
   };
   folds.forEach(it => paint(it, foldScale(it, t), false));
-  group.forEach(it => paint(it, it === nb ? growAmt(t - it.t0) : 1, it === nb));
+  group.forEach(it => paint(it, it.click ? clickScale(it, t) : it === nb ? growAmt(t - it.t0) : 1, it === nb));
 }
 DIR.draw = (c, t, th) => {
   if (!L || L.hero !== S.hero) DIR.layout();
@@ -777,9 +797,9 @@ DIR.ui = (c, t, th) => {
   c.font = `700 30px ${FONT}`; c.fillText(String(S.preset + 1).padStart(2, '0'), sx, y0 + 46);   // number only, no name
   c.font = `400 13px ${FONT}`;
   c.fillText([S.ramp ? `RAMP ${S.bpmNow || 80} BPM` : `${S.bpm} BPM`, ['', '', '8THS', 'TRIPLETS', '16THS'][S.sub || 2], S.scale === 'major' ? 'MAJOR' : 'MINOR', S.lastNote || '—', `VARIETY ${Math.round(S.variety * 100)}`,
-              `SOUND ${MI.SOUND_NAME[S.sound]}`, pr.lay === 'edit' ? 'NO PX' : `PX ${S.pixel ? 'ON' : 'OFF'}`, th.name.toUpperCase(), S.recording ? '● REC' : ''].filter(Boolean).join('   ·   '), sx, y0 + 74);
+              `SOUND ${MI.SOUND_NAME[S.sound]}`, th.name.toUpperCase(), S.recording ? '● REC' : ''].filter(Boolean).join('   ·   '), sx, y0 + 74);
   c.fillText(`TAG ${S.noteIdx % LC.cap || LC.cap} / ${LC.cap}`, sx, y0 + 96);
-  const HELP = ['A–K NOTES', 'SPACE PLAY', '1–9 0 - = E  01–13', 'O SOUND', 'L RAMP', 'V VARIETY', 'M MAJ/MIN', '↑↓ BPM', 'C THEME', 'P PIXEL', 'X CLEAR', 'R REC', 'U HIDE'];
+  const HELP = ['A–K NOTES', 'SPACE PLAY', '1–9 0 - = E  01–13', 'O SOUND', 'L RAMP', 'V VARIETY', 'M MAJ/MIN', '↑↓ BPM', 'C THEME', 'X CLEAR', 'R REC', 'U HIDE'];
   const one = HELP.join('   '), room = W - sx - 24;
   if (c.measureText(one).width <= room) c.fillText(one, sx, y0 + STRIP - 20);
   else { c.fillText(HELP.slice(0, 7).join('   '), sx, y0 + STRIP - 38); c.fillText(HELP.slice(7).join('   '), sx, y0 + STRIP - 20); }
@@ -804,7 +824,6 @@ const THEMES = DIR.themes || [
   { name:'black',      bg:'#000000', fg:'#FFFFFF' },
   { name:'white',      bg:'#FFFFFF', fg:'#3D3DEB' },
 ];
-const CELL = 6, ALPHA_T = 110;   // tMSC bitmap level 2: 6 px cells, coverage threshold 110/255, bleed σ .375·cell / .43
 const FONT = '"Archivo Narrow", "Arial Narrow", "Helvetica Neue", Arial, sans-serif';
 const KEYS = ['a','s','d','f','g','h','j','k'];
 const SCALES = { major:[0,2,4,5,7,9,11,12], minor:[0,2,3,5,7,8,10,12] };
@@ -817,7 +836,7 @@ const FEEL = DIR.feel || {
   minor: { dur:.75, life:2.4, exit:.55, keep:2, ease:'heavy', gravity:1 },
 };
 const S = {
-  scale:'major', theme:DIR.defaultTheme, pixel:true, bpm:DIR.bpm || 112, playing:false, step:-1,
+  scale:'major', theme:DIR.defaultTheme, bpm:DIR.bpm || 112, playing:false, step:-1,
   pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
             [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
   sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
@@ -841,18 +860,11 @@ const E = {
 let VT = null; const now = () => VT ?? performance.now() / 1000;
 // ---------------- canvas ----------------
 const cv = document.getElementById('stage'), ctx = cv.getContext('2d');
-const low = document.createElement('canvas'), lctx = low.getContext('2d', { willReadFrequently:true });
-const px = document.createElement('canvas'), pctx = px.getContext('2d');
-const full = document.createElement('canvas'), fctx = full.getContext('2d');
 let W = 0, H = 0, DPR = 1;
 function resize() {
   DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   W = innerWidth; H = innerHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  full.width = cv.width; full.height = cv.height;
-  px.width = W; px.height = H;
-  low.width = Math.ceil(W / CELL); low.height = Math.ceil(H / CELL);
-  document.querySelector('#pxbleed feGaussianBlur').setAttribute('stdDeviation', (.375 * CELL).toFixed(3));
   DIR.layout && DIR.layout();
 }
 addEventListener('resize', resize);
@@ -996,26 +1008,6 @@ function life(it, t) {
   const ex = t > exitAt ? clamp((t - exitAt) / f.exit) : 0;
   return { age, p, e, ex, minor: it.scale === 'minor', dead: ex >= 1 || age < 0 };
 }
-// ---------------- pixel pass (tMSC level 2) ----------------
-// drawFn(c) draws in CSS px with any opaque fill; result is flooded with the theme fg colour.
-function pixelPass(drawFn, out) {
-  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.clearRect(0, 0, low.width, low.height);
-  lctx.setTransform(1 / CELL, 0, 0, 1 / CELL, 0, 0); lctx.fillStyle = '#000'; lctx.strokeStyle = '#000';
-  drawFn(lctx, 1 / CELL);
-  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.globalCompositeOperation = 'source-over';
-  const d = lctx.getImageData(0, 0, low.width, low.height), a = d.data;
-  for (let k = 3; k < a.length; k += 4) a[k] = a[k] > ALPHA_T ? 255 : 0;
-  lctx.putImageData(d, 0, 0);
-  pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.clearRect(0, 0, px.width, px.height); pctx.imageSmoothingEnabled = false;
-  pctx.filter = 'url(#pxbleed)'; pctx.drawImage(low, 0, 0, low.width * CELL, low.height * CELL); pctx.filter = 'none';
-  out.imageSmoothingEnabled = false; out.drawImage(px, 0, 0, px.width * DPR, px.height * DPR);
-}
-function cleanPass(drawFn, out, color) {
-  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.clearRect(0, 0, full.width, full.height);
-  fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.fillStyle = color; fctx.strokeStyle = color;
-  drawFn(fctx, DPR); fctx.globalCompositeOperation = 'source-over';
-  out.setTransform(1, 0, 0, 1, 0, 0); out.drawImage(full, 0, 0);
-}
 // ---------------- sequencer (Web Audio clock, look-ahead) ----------------
 let nextT = 0, seqStep = 0; const queue = [];
 const stepDur = () => 60 / S.bpm / (S.sub || 2);   // S.sub: 2 = 8ths, 3 = 8th triplets, 4 = 16ths
@@ -1064,7 +1056,6 @@ function frame() {
 function applyTheme() {
   const th = THEMES[S.theme];
   document.documentElement.style.setProperty('--bg', th.bg); document.documentElement.style.setProperty('--fg', th.fg);
-  document.getElementById('pxflood').setAttribute('flood-color', th.fg);
 }
 // ---------------- recording (offscreen canvas + audio → mp4, else webm) ----------------
 // The file is only the framed canvas and the sound. The pad, buttons, hint
@@ -1134,10 +1125,36 @@ function toggleRec() {
   rec.start(200);
 }
 // ---------------- input ----------------
+function spawnClick(ev) {
+  if (!L) return;
+  const pr = P();
+  const cam = pr.lay === 'edit' ? { x:0, y:210 } : { x:0, y:0 };
+  const seq = items.filter(it => it.tg && !it.click && !it.fold);
+  const gen = seq.length ? Math.max(...seq.map(it => it.gen)) : 0;
+  const fit = flowFit.get(S.preset + ':' + gen) ?? 1;
+  const designX = (ev.clientX - L.cx) / L.u - cam.x;
+  const designY = (ev.clientY - L.cy) / L.u - cam.y;
+  const pool = TEXT.filter(Boolean);
+  const word = pool[Math.floor(Math.random() * pool.length)] || '·';
+  const d = dims(pr.fs || 46);
+  const row = Math.max(0, Math.min(7, Math.round((1 - ev.clientY / Math.max(1, H)) * 7)));
+  const t0 = now();
+  const it = {
+    i:row, t0, scale:S.scale, feel:FEEL[S.scale] || FEEL.major, exitT:null,
+    seed:hash(trigN, row), key:trigN++,
+    click:{ x:designX / fit, y:designY / fit, life:1.7 },
+    slot:Math.floor(hash(trigN, 4) * 8), gen,
+    tg:{ w:Math.round(textW(word, d.fs)) + 2 * d.pad, h:d.h, word, d },
+  };
+  it.ch = character(it);
+  bodyInit(it); it.fx = it.click.x; it.fy = it.click.y;
+  items.push(it);
+  S.lastNote = playNote(row, undefined, S.noteIdx);
+  S.lastVoice = row;
+}
 cv.addEventListener('pointerdown', ev => {
-  audio();
-  const h = DIR.hitGrid && DIR.hitGrid(ev.clientX, ev.clientY);
-  if (h) { S.pattern[h.st][h.row] ^= 1; if (S.pattern[h.st][h.row] && !S.playing) { S.lastNote = playNote(h.row, undefined, S.noteIdx); trigger(h.row); } }
+  if (ev.button != null && ev.button !== 0) return;
+  spawnClick(ev);
 });
 addEventListener('keydown', ev => {
   const tag = ev.target && ev.target.tagName;
@@ -1153,7 +1170,6 @@ addEventListener('keydown', ev => {
     case 'l': toggleRamp(); break;
     case 'm': S.scale = S.scale === 'major' ? 'minor' : 'major'; break;
     case 'c': S.theme = (S.theme + 1) % THEMES.length; applyTheme(); break;
-    case 'p': S.pixel = !S.pixel; break;
     case 'x': S.pattern.forEach(r => r.fill(0)); DIR.onClear && DIR.onClear(); break;
     case 'r': toggleRec(); break;
     case 'arrowup': S.bpm = Math.min(240, S.bpm + (ev.shiftKey ? 1 : 5)); break;
@@ -1228,7 +1244,7 @@ function syncPanel() {
   if (flag) flag.hidden = !S.recording;
   const warn = document.getElementById('mi-warn');
   if (warn) warn.hidden = !S.fontWarn;
-  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.pixel, S.theme, S.recording, S.aspect, S.step, S.hero,
+  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.theme, S.recording, S.aspect, S.step, S.hero,
     S.pattern.map(r => r.join('')).join('')].join('|');
   if (sig === panelSig) return;
   panelSig = sig;
@@ -1245,9 +1261,7 @@ function syncPanel() {
   markSeg(document.getElementById('mi-scale'), S.scale);
   markSeg(document.getElementById('mi-theme'), S.theme);
   markSeg(document.getElementById('mi-aspect'), S.aspect);
-  const ramp = document.getElementById('mi-ramp'), pixel = document.getElementById('mi-pixel');
-  ramp.setAttribute('aria-pressed', S.ramp ? 'true' : 'false');
-  pixel.setAttribute('aria-pressed', S.pixel ? 'true' : 'false');
+  document.getElementById('mi-ramp').setAttribute('aria-pressed', S.ramp ? 'true' : 'false');
   const rec = document.getElementById('mi-rec');
   rec.textContent = S.recording ? 'Stop' : 'Record';
   rec.classList.toggle('is-on', S.recording);
@@ -1270,7 +1284,6 @@ function syncPanel() {
   document.getElementById('mi-var').addEventListener('input', e => { S.variety = Number(e.target.value) / 100; panelSig = ''; });
   document.getElementById('mi-play').addEventListener('click', () => { togglePlay(); panelSig = ''; });
   document.getElementById('mi-ramp').addEventListener('click', () => { toggleRamp(); panelSig = ''; });
-  document.getElementById('mi-pixel').addEventListener('click', () => { S.pixel = !S.pixel; panelSig = ''; });
   document.getElementById('mi-clear').addEventListener('click', () => { S.pattern.forEach(r => r.fill(0)); DIR.onClear && DIR.onClear(); panelSig = ''; });
   document.getElementById('mi-rec').addEventListener('click', () => { toggleRec(); panelSig = ''; });
   const text = document.getElementById('mi-text');
@@ -1281,6 +1294,7 @@ function syncPanel() {
   for (let r = 7; r >= 0; r--) for (let st = 0; st < 8; st++) {
     const b = document.createElement('button');
     b.type = 'button'; b.tabIndex = -1; b.dataset.st = String(st); b.dataset.row = String(r);
+    if (r === 0) b.classList.add('is-axis');
     grid.appendChild(b);
   }
   let painting = null;

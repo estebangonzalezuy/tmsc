@@ -39,7 +39,7 @@ across it to paint the pattern. The other controls are a separate group on the r
 flat white buttons with a black edge and no shadow. A selected control flips
 to black with white text: tempo,
 subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
-pixel, theme, and the text. A one-line hint shows until playback starts, and
+theme, and the text. Click the canvas and a word from the text grows at that spot, pushes its neighbours, and shrinks away after a short life. A one-line hint shows until playback starts, and
 returns when it stops. Tone is how a note sounds — Pluck,
 Soft, Reed, Bell — and only one note rings at a time. The text is the
 paragraph the notes spell, one word per note. Reset
@@ -60,7 +60,6 @@ or on a slider.
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
 | `C` | background theme |
-| `P` | pixel effect on / off |
 | `X` | clear the pattern |
 | `R` | record the canvas and the sound, with no interface in the picture. Frame is 9:16, 16:9 or 1:1. Safari downloads H.264 + AAC `.mp4`. Chrome downloads H.264 `.mp4` (AAC when it offers it, otherwise Opus). Firefox downloads a `.webm`. |
 | `U` | hide / show the interface |
@@ -117,7 +116,6 @@ texto o en un deslizador.
 | `M` | mayor / menor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
 | `C` | fondo |
-| `P` | efecto píxel |
 | `X` | borrar el patrón |
 | `R` | grabar el canvas y el sonido, sin la interfaz. El encuadre es 9:16, 16:9 o 1:1. Chrome y Safari bajan un `.mp4`; Firefox un `.webm`. |
 | `U` | ocultar / mostrar la interfaz |
