@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>motion instrument — D · ETIQUETAS — tMSC</title>
+<style>
+  /* Archivo Narrow 400 + 700 — Google Fonts woff2 (OFL), static instances, latin subset, embedded: works offline from file:// */
+  @font-face { font-family:"Archivo Narrow"; font-style:normal; font-weight:400; font-display:block; src:url(data:font/woff2;base64,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) format("woff2"); }
+  @font-face { font-family:"Archivo Narrow"; font-style:normal; font-weight:700; font-display:block; src:url(data:font/woff2;base64,d09GMgABAAAAACKMAA8AAAAATpQAACIvAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGoE4G5EqHIUSBmA/U1RBVEQAg3YRCArsINYMATYCJAOHQAuDbAAEIAWFEgcgG41As6JutFqRIYrqTSj7LxOoHDY7qROntqORHlNKocL8pjhN4eiH7nvvs3Td41n7dhNS0/kIjX2Sy0O8f//vmjn3n/dBVJYTlymNGq5cpQPb2wXA/oHfZu8joIJiok2FINEqKqjQggFGYTFxOt2wcPbpIl27zWWo24WLvjt3kbt5kbqqu95FzY/mPmcCB/OSAuoKU1eHwpQX8rOHIEzLf+3GHiAWSajWLNuQnM5+yKvhVlNUDK41aIXQyJnKhW4m7zZBa648U8eEFVnTpb361A2B1oD0mUrj+kDpA2ORpmya7a7WMjxv0O6sEPsz39uTr4IKt9Q0e7erv9tdndB0Z5L1ZHjS36P9YJ01b1khprMdIqwIiwq4/CplmjZlyi7cclGWaGqzNI5xaN2s0qDf+3znV+NlpdV71qtILUMpoYQSQvY4HfzSa799A6e+/soiWmHBqPsZEkB74E4gRUAEQOAEQRCEQ0QiQVBwIPikEHJyCKUcCD0jhJkNIk8BhEMpRLlKCJcGiCbNEC3aIDp0QHTphxgwDIUAIwYFhYAAqnZrQUBDIgwKFg4SKEASHVblbwi4vQwSqEVLrA4gnNrf3gIEaMDZrPbkYa/IABkmhVECRuAkxYXy6ipxa478fEoqb36s7CozUDVAA9Qr6i9FYpmqynTKvjPXZ4NomRn8ZwF3YPzyJWa6KGfEYaBGxtRaWkn5LIoLkSbjWSPzifb3BLbuMoM9baQyxuz1PG39HUH61uxxIfroNO8u9LwrsfLldqcf377Dps0uzyzK46fglx7eYtTFDGNVmRlk/HIswpmsmdCtg+yRMQMM+aXbtI9qD06fB9SPjPeBNMOOeln3oPJXvPxU7uRfzBTSo/tyz59dvlEDzzc9b/TyCHQIFL/F8VMsQiISriR8AjJyCkoqdk3adeji023AStPOOOucy654E0q0iAEHSsQ4JImXMNH4wEEEOJgME8hxCIUMFTYRdmCMJhymHYfrKBuhSzc/AxhjJUaZxlhnsL+zGOuc9NfAA6x804yZDkntfmg4UGNRDIqVcQPNIOqhLEq6HGg6jKPHCMPA8UzMEBY2eG2mvzzgBPkYp6AshkMJjFIcrrwzRoVKODXLAe4BjrAQJ2rCZM2YosVO1apNoFFEM+k6IRl2zVBL0cTUv3yQ/tZ9IXbYmTpulzC7CWPtK0tywEEBjmOsEzjYSUwwgYNNYoIpHOwUJjhdNsArXhXgNYF1dTAiikJEe5SLLon01ox2lTDiTRzk45kjfOFLqEXK+pwLHC7DdYbA+Tt0FMhaqHUs2LqwoLhoqVNbXL1SW1a8cI01p7h9ndUS69/UNlduKnChTcsbmmAUjliQBVVBo6BVQV3QUtD6mtrAnTreUAMZp1rrmiHnEZlRHipCFagWeVDL6tuBEIQA+SMEYRAK4RAW+U1FC5awvi6RIu1OOOeDQCEJ3TKADzFNiII5RgktmypNj159ErMn06OyK6NzED9q/X4dNztdrUewkoaZSAKjYCX7kNCAJIZ9gzZK9hvJXxfCZh+QlJpFJ0zgaMBoCcFoN6vooETZPpQE5fOjxCuFFiAlFdSCESRS6JHceZAfuwJDyVdpAIq/JLjAMLNxa+zQcTkvwYC8K0uAlXTqsYck1KZRbwcVsM9tWrvaZoJrKEPD0fj/3wNo9A2h3suWHVFTwGB+EN11oPsHGN7p6lFPOwLgn+hxBGM2GNpjiwbqEgiTUYEFkArZe2O6P9GE0XFn8ddXKD84Qin6vaAklFhKIoVGYVE3UjfTwl+8QAYTSbVvcAQlhpJQT90KaD4xfES4JtH8m9fMZ869ChEHTHHFzT19wx4XHfa6Gz51yQknHTJjp9N2OHK2aX3PO96VJ3IWIhBOEIIIkYiixEtEQkZBw8XDl0xAeP2YO8WUo075qG5/KJ3uFxURbheeD1l61jSruGydx8LfUkRwq3beKf/jLjXha5M+cMVeV73hmjd943MPfGHEeR962Zce+8r7NtnskY995oAnNlrmgjHbbLcfBooff2hYAfDChQgVJk60GLGCUbHQMXAwvYVNSkRMQiXJIloZMmXTyJLDwMbCKlcJB6ciJtXcatVpUO9tC7RZbAkvn0bdEEh54SwQngPia+An0PEG6PosQGMayAcBWkGViaqWSAIorSJ53bVMm3fpHixmK4B0izEVp5HLxlDlUVQJe8p8MI0aENI9ukTnnl5IpHkH/GQCdYRia42bOQIsjd8ASGjQRmnO1UgRWEJRaAPTYrqRXIiEyVg0758UC0HkXOt8wPArkEBfGzCBA7dwwuy+NrJH9n59whMm4ca6LDk12YORUmajTQpOwp2LPrcsjY7c+uXRg7Mk4sOjGnpEDdDYg/GSE5kVI7iPkFzQbzaR/d7aIM2Up1sau5ZbMLkrQGgQnabThoQHV+//GMrox1LLSVzPTn7XklJ2IgpKb3q6Pvp0zWmedOVGWdMbq+s243a0ihFlYaZkLYoX9Y0yfJYyDRINyr7rY/2IZhnpvxFpXsFfABaphl1/yKB6oH+TsAUbMNd2BsQxzFhc5hEFAIFiYsTTQpYqr2hGEkIARREXueNPAxBIkOaU0V7SXf2w4yLpHfmecB6J+axjjggxEolFQcr1/QSD6pZ/B7JOGsmhqEmpSOTH/muTmsmA8IrF0uLEyG8aWYcywvaraCykHOM7NIvnDAY4xo6jnAavekKLJlRCBC/xrjRgmw5GCA5p7p24rWEMWAL1C/NorUSxRR/lIIsWBbTvTiNK9o/TXQuZ47GnNSk3oQUsSjYPg6iT4AWW/hSLN8TyWFM8ULiC6fH39/UXdtMJ5yRJqawYEZf8XDoC1oYaHFqy+KgUNi6zdgcdvKUGMkDqQzu7EhrW7+1SIC65Bywi8HDGOQ3k5J4i8hbN8bJzJJ1y9aIi2w8f6nTY3ctiH1MIoY0RniBXN95ioJGSwtwuG1ehGizIYZsF3pvR2sfGfokl+/9/A3JeqAMKaHoD7BIifH7QYXkZ7tOiBJLY9GPlDKLBr9XULMhlUffZdyV7P29tYCRiZOcqqGQuVtPVMb9ZsZ1aLsyrGPWaLKkfhtIdDyrcpM1KudDfM9uuiSh8tR2PnnczshajX4xsCcZ/t11LLG5mAJ3y2V3gMVTtGwSG/0lKiUQcGOVUM8W2D5JwEn+pWkJjK9w3B5biJR9hoQabu4pIzZO4dW3jJXgSRLF2YRQ5sNodp5uO4Gmr9x/uno5wbxdyxC3RiMh2yTJxpQaiwjNiCrZ3ialFhfMbu4UkoQ0uWXuqpdlOwAD6qrdy1lwCpC2c81dhqkFXyysxkurE+FWKvZp2KaMaIjV5+tbfmsITng73P4xj3CJ6sl67Db5RiAlwGSeS2GiONXq0D4t32IZZomehKWH891jXe5LQJmZKN3b6trtWBWf+gFLKjjrUyKgWPcqwZNBgQZYjxQIsxq5DsAqQA5WM7LgsG4AcUpuqLrHuZ88G8OXY5V4QCpjAL5xoecL8yL2lGMMC5DAFmVN59SuJHwdoxFhAqS+VLzKBTW3mdGf5GLcGff1G2wQSUKvQZ2rSEyX/DlVcP8+DFhCOfYyOdyEaOeSqtwzGkQluGgDFlJ7ByDBg/deOKeJfn2gFTztbByKQyJEYqWhcL2NsNS4nUeODObUKmn65Eo//4bYvBJruNFNYsIqKgx6Tfy/Hg/82ztjGx6OWWsYHIbkxNnkJVtIdpDJb61CCWYp/ceNIpgOovCImcZWs9ctIObh7UDexvYATuoWehh/lRfPoiNt4Gg9vj4W8jkPyJWjT0gLcrjwcXI3AU2LhfSxiBnxsB08XHXW8L1LDGACDtMWpkXIMKh5hGzzLz4jK0GZLFOqX5VBbfjgs+6JQiKDntW4Krl4PKIS3PZv1QuysyuSuDFisp7ttQcBpLC+VZfR0zHOhUFUKp9YM93Chdl8uJbB8kawydlilNlBWK8toWEh3g6EGkxSK5W53/msv8FQ/xzOnTGrtSRHff8Kc/N3Tv5KS7NTt4//oXtIZ0FfKmbi6oEn5ZxRKZ9FH78KSqFr1LUJJiTHNVdO44YHlDeOw7l9CJurHPwjY1PgJhUeY4/nDN4IkmUo1I5XCBushzJyb5wk07tjqYLYOOp8bAkT6h2i3CeI6O67eWgOtspgzBJkhdq/UXEoFLL3rh6P1cbH9kEy80kjdxXAev/n4yZSO3uhQcSv53U5jdx49nNSA2orpbm8cheoRmuQbhau3Jrzy/LcTnr0eDfFbVDbAOuDO3h8m2+k1BHosXh/e6gyvDHM0rUMYROXaNQgZYOp3ug/MVJQDSZjuJO7tlnOy8LOl+sw7jmUJrXp3y+kGd3dxJ3V26aGpo9MKejoebvaCJ8Oq0yOrhowHybPOJIXzE4U26bzmjPPIOdSkLDCMgXI8oMM6naHleOghd/wtwZ1PFVtoMok27CWRWKpbWufJssDsacfSREudTctFigb6o8utDvcjZN1WFVUgT5r229C3159Yp2a9RSrCw/sNY70dRtsv9AmAKR74J6ygMn77tS8GkgZplAYd/lM6edWjPObocob2O7GVD7cxH2d0Bkuz+OhmzKPS+PPm9dv6yH7V6rW8WpbtnRZN2uhUgzoirmLhsIiWkTVNZz4nUrDo30ztaYbTNuIA6f9kOQ98k84Bdv1B0TyqxemPx5ZTFFUx+VwIHoIgpg9XUTTeiSnGEx3ZrE5ckcO1+mY/W3kjSyqdlCUwQ69ehcv58/g1R+Pxg6cvSfTChcN4jKtviyqQmnTXuA2HK8YnHD4Pg5dmoAnvMdKNgY2Qoa4wDc7s8aEY5cIljR7c4NJvlw6KHcf/f/uTiURH/yP9W1mFA+Dbya0P0jB3+X+c5ZY/z+bc047bAA15a+wQgJ1Ee3PZB//yfsd79a7XTLn+e4B4efmf51L/jhZkRqHZLhcb1FNshSNJaJGmqfOuooW60qxUZX45T3lkySaOJYmDlaxdMiJ4g8Z+yFoNEvzQ6OT0mdGJIeMSpbajcjgvy6ow6NobJA2GdpMqy2rvK9N2LE4B9dT84KYjR05vOj1YtaTQULiwSVJTWG0oBLVK4pRQfzSf6nP2fepj2is/FOgNfC3N6z1Vm70Rk0+9TxMhCd+/+uTZM2MTa3RdKcbWgmG9zaDKM7c3SBot3rw0c6lF5LrRkthRSLTgXHy0DEZ9GTW4tLC+ZIGEHq4peA9fWV/qlA/wLNlaCzKId9aVgnpqyPV31eh7UTe2bdgiXvjSKZGnSEHzgXzqNUe3aPilLEBDdr1XUNg9NdU5HRSBjgE0v6ysLNl1prX6HL+stIyPhlhMBG7aXOmS2e7iuWNAgxg8pt875fVvnOKH8yABNC6wHzLwy8Ymp8+MTSzT2okz0y45sijX4jUyW7lW64WgBdq//oOTvVpupXNVTz03uGTCCrVGXq19ajtwPR4hRpgUJvDs73dwacdi+AbkOJM9ta1Bqi/oUO4+PX14Lf479S9NsqexxZmRXq4bTlmzJHEZaXSd8BSPtYa/CXD4zCahtkqPxaOXITi0eFyWepNETzmhJxriJ+gGlTbT4eGmq+u56hJD0HAgH8UXxFBI0qOGSP3Vg69X2NOrmnlwUX3C+6n3hBrY+JZe7+IvBmfT+qTSdWmzg18s7vPCJzcmR0afoNc96dtuDGzdMjmQf1hQIQU0SCuTCw5vDDC/UjaNuIJSeLjl7O85QxWv8TUZEYAGZqY9rvw1gNcbTulGvfNo7/yy09lvNK5fhkKPoOCm3ycnVqzho1fzh26c8INQcSwO431NEhtI9QIWr61gi63KgE6GkyfiGQri/K0/CE0ud0N8T5R4OUcuLnHe6HnZJWuvlcFGfPg3o8cFhix7B8WqjJfTmZsjQjrQOP+sant+RVGe2S+CjItxbomLZzxfj6naiqpLJP9KJtF/aKfFX4VLeKLlx8eCX1xydmzxbZuramQ9CQ86upVPlgm73I3VeTIbbfMVMztGzuvz6cO1KT9QWQKg4ZmfyzF4Tf2s7x/M/G2O0KhK8lWPlo0saebTLQaWgW7h8xi5BoaBYYEf8Q2ukfXra0ZqHHV1LT2qT8ksss3KslJtHMpbii4TryKPB5/gbWUjo9VJPpNKwLk9j/nHN1uP12CYnyPKAAPmKn+rouK/WaPnLpXzuvPTVfiDB+mLMqcGcSYz9tbFHRH9x1bMDeG9Fk/q0a71d5KeeiHTEJktoYB1IUjAM7x7l68/2YGaUlfttVTvKc04LnfLNXSipkREZN0rFSfx0svd5cdheFqUnaVg113lNcTTv3vygGIU5NfVVEltn+kJdSq+tkdeyYweTpckVEwIDgs+I9GZMsXJRitbuKZsRfSTqOh3ItdGXoyMulDQwLInJdlZzOPTDMpZ33/ogL8F6TZL5RJfntREoT/j54CC4COAdDqK/WspXygS+pT0SI0RFLO+bZtuDI5/dlC5rPGr6UPo5s6CklCP12AF3/PYm//MyEkWsvZSjRo1075LSnyNb+3cZvqKRF4lzKGKZGjPHQxRr1KvGI3nbgNnKSYuwmLJP2fC9c5dSd1GlZBzZw5z1x4MvMfCc2+etYM+BJG+Ss9cdBN3MXN3OAKT6knENfo0aWN9zkyw6MW3W5Eb/wKL6v4vY7AVu6+LE30U2nlx1w8KmTCPVzu5fLME7Q9L/QPnY2O+pCRY92nC9pmlCrHeSZNJ8qg/JgcEI0tRqB/iwy/9HhprOqUJ3WeVaSSmEjJwAnJVlTW8tJRSvqQgTSwr2oCOVyTq2RpZdZlMpV0gi1s/TCINrY2TLRETg8SJ7CEuBysNhfN4UQlRQ+fI3fKwzQu2WN1WJi+JVvrmGLyBD+6sXBr9CV/vC/qLFI4eCO7Pvm07uLUe0JA9fEiTddt3IBiGBoJ94i+8AVYZoCEr0FLP/9LH/0rS6ZACGrS1Y/Lkr1r7g7ulf5ubkgAL3PIyyT+AGQtZ89/K3O2YcZ1D6/7eGr6iZBLzMoDuacYYUqGIu75zKnjA9rttd68N0KDuWSfS/OEb/eVPUZVOBeHS9zuuueskH3R+6obnsVK3LQfnjTtN5f6oUqVHfZFPbv2Lhee7OLJwBBYsDN3zlCuaziVKmGFniFHP8bhClD86WSNXZhyRnAi+4B+aUbsgPOavQvQ9H+jjmkiRFD091A/GGg360urqyTCc59UbE73iOLE3MVMTy8lTN4LQxyGyj8NdvMBEkdjjVjY2TkSJmywQGCnSZ0KEriu5nvwDrtqit+CqfyCT/s/+uvkfOO6dE+N5r1gjbZRf00zr3ECNUSVVPvpMq08x0G2C0P1HY5n/JXF7gBluVpSVJ8mlBXSxLVNELpHa0wzNKZ49yl8Xw118rae1KryPKK5n0gZlvBZtFNVNT6yXi+ITySGiiL6EFKHDkax0Nrgq0iV6J/qqqjAnXVJcIoAXwh/VmZlbZLsjLL7gLMmq1F5J+ezozndjs4hZpXKH3q0fh4f48pauxr4UdjaTzs3JVg+QEijH2kKieqyL7wTuf3qfITQL+TXWJU1L4RleU5Eu3jgwKjhYkp2hsaUy6jQ9qXvp5OsBtZAV2ENVGVMYtZocUZ1DnlbPoObIlNRsBoOWrZTRcqCukLo3ZYtxqC5m8c78cH1f2ihjh50QgcBdvL5IzilTqriOz42MPLGc48yXpqfnSzlOuZiRV/KA61ApOWVFcl0dwymTFTEYRTKZk64kIWIxQiL9LBb/DHfxmfZURn1mT+opmi2lAb1UpekK6jJ1olqnXKEtd7pK22yPwbDv+wwiTuvMb5rFBZ9V8RO0Ooh+OYQn03+0yh4TeT0iHBcRawJBoOSSRLKNL5Dk7PyxKbdPC2tPpr4tw1uCI4rDI1cRiauIJC05rCyK6CKE6sIizbG8GbHkI1HC2KLxD8jCxzB2Om+9eI7XGaSzrUwspBnjdIaNMg/7aLw6Pg+249dcz1p9HZJXrV4F/HHFuHLV6j7tUVCMRLFVI18K5FE9hYtgAZ+YxIqHkatmaI920B81zxSm7QUFgzYwHul3Z3iMttS0TnaA6dtXomPv/3RACCJAP3ADVYKKKoVB7eQL7HJ5jM5eMkpPeIk78ZMnreigKE9W5DIa/bsN8DcnKxWbROwPmow43D0M67+h1vxJpf1eQ6XlY2nUgHzw9Qa6C9NY2RXcCh5LW5gatNgC6wtTclKRmOyRfRJdGcTw3sh0FJDWmh2VvNdLRmk51mY48uNSk6OC9wZ4I/FGRpQl79sCEHA31BkwGwrrRMSd9UxgNPcN9iGXV3YZyq33e3qsD/Wu2YNkm8h7bDbyXtnmICDsCpJvJu212Uh75JuC7HfgQ3D/axa4e6SlxP7M12mx8RXxsbTXMwdKI6W5YcZVcWJ0dRjqzzRc2qPwMLRLErvUGA6Re3LDjUtjJRgXQnuUikt9REMw1eK4VarwXFlJ5ICMa+wvIYJo3+DbrsI3Cl0Qsw/P9/YghNzs/LmzaP6u9p1aBrL+RnRv6+DOyj7tUWOUQ9pLI9xdGfXQC1QDfBal0b4k8vtWvD2MKG96Oxx+teCTvqUofwmH48uCP5TE4c1LN0cOo4tqSH17scNHoi5HYN7IS8MFIwUBTcqFRqyj3t0q6GioGFsubMphleoEfp2Kb4svxuRmsjJirHC3if7n1h0fhL37lEL56l3k8o5tfzHof23bcRm++ppCffpV6Ac7tj6ilVIXUDQc7pRYQKV2mkIu57uxE66LOmWmJJZBgPaHFn/a86JRsyHxb4Wx1JaFbVIu1GKKTRkBwUgLLn5d1NBbm8M+56UmGcw0v84bDkFC7D+rFAOL9buJxO0Q2Sx9LcOd0VLvqnUW1lTXBHfFcfwTEn9lrPS5u3Gv/t4Mx3aszV+jX5PfOMgfrsSiK7B9A/zGgrW6tflrd8DF93d6dn7Q8MG4Z/x9oLzn2eWBepbBsHHDxo0NYRUpEBuQ+uuq7ngY+1s8LQ3prZ5WoEjvuozPNuxqgJhOxdjg0jn+0QBcDhj/cGCjL27w3ejkTs/OqYap8VvWJIwurjtuxgf3n31GpqxbT42/HkSExyHr1z1cjgsHVUv2RQKZOb6iadeKlvrg2mDw7p8sOjAZm8e7QcnV6Sm5N3jXa9HrKLb5JCOJzQ/hs0nLvbj7MNkFZj66OSiTTcwQR122ldyEn97AUKT5ZvNrRzY5Az3bF+0tcp7d4FMfblqwRmBrPGitOrzcyfSqc3ISyeJXTmLUWmHY6op2rlZtWJiok8SGUWjVYcEL/QL904qNpkK7KfseixT9VmKZbZFp+XBG0caj0xcmVk5sjH5nMsCsvHjEPzDu37nOeMpaMTlmLZwL7TgQb2cJOVabIEWWzaJo2EmsYrOhjl5xaFt9DLEiJuFIAilWP8zcrg/SlSv4JRIBo8xocbIrl/IsSZyPRUKbUtRZ1eKSrCksa+DDhYmjv1vS+JWqdEltcar8R6soJD9EHgL3pidjLfSf4iMm+AOimU9pyScYWgmHan7q/ICvEOmdNDmDOmOrplrQg0ex/O2+xJeLDA6af/74pVDO0Kfhay6FcLz3IBlfOlCcs6e5OWfvQFGpw0U5e/U96YNZtNHqcDc1ORZYNQ5zYXFSTAIzU5WocrESopMc9sJcbZlhgUmxvLxCsUyLjYYGU6SiPCTIUN6BKFEY6R+klOpte8SZ2SnMg7mml4vUY5rtc/z48YS4sXg+XN/N1jCZGjbHtRJJPHdx2N4cz9nZ5J1k8o4aHL+qE6CbGCwbBF1Ve1l7KZ5SYcq9qH5RBF8pVLd1t8GgrWkQ5XMOg32K+FDuRoPVubzWsbyMl8PPAZeIvYLD6eJwPexmnUsiTkREHo+IOP5VPwGlCcrD9Nj9B6JCMxlZ8arDjJgDG6ObNVREh4atxS+KFb4qKBYbwriEoG+6U3HFiyw//0CnZiUAZV6uRZNr/kvQtKapFuXb7Ab7fPdLqOIDYN3sqXV4ys68pXnOjrAV4eErwsK76Jq6wNInvIYS1VodSUgemnY/06pdRIJgiM7LemWNcr8Plfs4zH9/uQHsSAjQ4ntz9vEK/x/s939qT8Vn/j96Z8mfbEA438/mgEEQRx96CWiDl5C9Dt5nKMr/exz/H8pT/6flkedZXiM4qkfR+nj3JILB601RiWgE2c8L/x+c839quuAZE0BHewv9qyisKKwoNJQ96G0jlcIz4q2138YQlD5h3hbFxNqtDcHPt2uHz83wc/s6vjMepF5kyXs2GWZJtDfPLHcTg9wBBs9iVFjz3WT4mR89/NY3B8K3X3Lx3McQKqvlocVIiSiMQvCensERhlz4zgYwapSi6byarIt5+Lfn/MztHH5/ckCkYmv51vKt5Vt7d7mU3eWM0VNFZ/J6ss4PK/6lJzSyT7BHmAKNUlNlYe5J+/9dFjdwi8ouFW/hob4LPUlvJd5ol7G1ffybYuf/NoJboH09NqfUWFgOFvQtmgPzoCHv5tC92WJrbpfbj6oGfxr/mTT2xlU/vf8Tv9sBAlTNzgDItZUz5Wp79G68slK0Yk5hXqAG8ceVE4XbCHAivkNReQr/hI/0fwyFeB3jym852RPL7pJKCCqcUq424FLpINIJ3jamlQ+DrjQ1cb9nxEaEoxLXcpbCP1NZbjHHoYxDBkczg08OPAeTwb/MqgKKLi1mWUH9N8XMJVoUt9qVIN4cdeB/iw8Bb4UEJbW2Y6/QNtHFHDNQWXBljGTnnwWCHJrfoOIH/hBv6ZEYm5vyAuAObxQBLFw1ASCPREQrMe3uAQL8+Po8WRINeQoUs9fha3fm7R9I0fsHQuo73v5AqHkRIur04t/byovyV/m/NM/qoC8BASrDD3dskrlC1L9ZP79HgM/vvzsYgC86cTu+aCjiuazaCNRQAAH+nk2IXBT+37o/ENOZ9U38BnLdG+3ifypXE6KxbOKSTk4UjecI9reb3SMhwCkqTz2POsQ7AnMCp0V59SfJpVhPZm8BaZpRno8Uz4XlTqdUOqhqANUwUvwmNBMo1f4jFe8goDm/wnzKlU5yCT1XkZsMK0ygrAKf0j1yqMhKtltFblt8Q8XxjmTablfkV5QjGI0WN51kpiZOhcEZm1v5lvoOdPZDVGCyRvu3UzjPzk2awAoLVYZhZiFC8ODASYBsSIWxMMBLCkdnM0wkYAyMGhVnVWnIkyJllB8KSiKMslVRyeSoVAM/JxQin2xBFh2Z8hwTCmSlXBsmQJIvJDLF+IgRRgxjUSjdw6NACeGH8cPJI813RMCMj2Wh+SZmKoAC29cAazBwMjrmUakpMZlZ0KCEMAfGw0RB8adDfoUev8mhSEVBSebhwPA2ZlYIxbpiA5UH9F1uN6CH4cdobVWbYw36YF8GmhDgN2Uw7NAQYuV1tbeNH6QRCOBdkFdEJHhjRRSCuRX9aDxbEY0f/BUx4qJkRayk8K5AoIhda0IA2sfNFdEQEHMcY7wPngos4OIX2Vot1s2rUQOPdhQSImIpKBw83Ci0vOp4jNmpFak2Nby8jndZmfdoLuS+lu1M3KHd18qrTXIkieWLg86phIQaNDZbO9QSUGqrRYTsC2855LWS2iaZQ/dz7qb00elhx3N1dS7g1qBD8/zjVUpAREQijV0uG5M02VzJvZk74MSziriNK8CtWrSxi2iUs2O87Qv0mou1OykQ1puVeiwbvJtdz6qYezvyrOPWZvVMjtdIe6M6BU7barTwM21f2UUC) format("woff2"); }
+  :root { --bg:#3D3DEB; --fg:#FFFFFF; }
+  html, body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
+  canvas#stage { position:fixed; inset:0; width:100vw; height:100vh; display:block; cursor:crosshair; }
+  svg.defs { position:absolute; width:0; height:0; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<!-- tMSC pixel level 2 "bleed": gaussian σ = .375·cell, hard threshold .43, painted in the type colour -->
+<svg class="defs" aria-hidden="true"><filter id="pxbleed" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+  <feGaussianBlur in="SourceAlpha" stdDeviation="2.25" result="b"/>
+  <feComponentTransfer in="b" result="t"><feFuncA type="linear" slope="1000" intercept="-430"/></feComponentTransfer>
+  <feFlood id="pxflood" flood-color="#FFFFFF" result="f"/>
+  <feComposite in="f" in2="t" operator="in"/>
+</filter></svg>
+<script>
+(() => {
+// ===================== DIRECTION D · ETIQUETAS (round 3: dense packed tags) =====================
+// Every note drops the next word of a short paragraph as a tag (box + Archivo Narrow 700). Tags spring into a packed shape:
+// edge-to-edge, zero spacing (2 px overlap so tilts never open a seam). Refs: ref-1 (dense pile of word tags with spring
+// physics), ref-2 (FP: hard grid splits, flat colour blocks, bitmap display type), Cosmos pin (strict grid, one change at a
+// time, letter-spacing as the motion). One cycle = 8 s; when the next cycle's first tag lands the pile falls away → seamless.
+// All motion is closed-form from note onsets → stateless and deterministic. Per-tag character (mass / stiffness / damping /
+// delay / tilt) is seeded by (preset, slot) and scaled by VARIETY (V).
+const DIR = { name:'D · ETIQUETAS', slug:'d-etiquetas', defaultTheme:0, bpm:120, window:9.6, maxItems:200,
+  // lb/lt = tag box / tag text for single-ink presets; fg = UI and display type
+  themes:[ { name:'white',  bg:'#FFFFFF', fg:'#000000', lb:'#000000', lt:'#FFFFFF' },
+           { name:'black',  bg:'#000000', fg:'#FFFFFF', lb:'#FFFFFF', lt:'#000000' },
+           { name:'yellow', bg:'#F4C500', fg:'#000000', lb:'#000000', lt:'#FFFFFF' },
+           { name:'green',  bg:'#2E7D46', fg:'#FFFFFF', lb:'#000000', lt:'#FFFFFF' },
+           { name:'orange', bg:'#EE4B2B', fg:'#000000', lb:'#000000', lt:'#FFFFFF' } ],
+  feel:{ major:{ dur:.3, life:1e6, exit:1.0, keep:1e6, ease:'heavy', gravity:0 },
+         minor:{ dur:.5, life:1e6, exit:1.0, keep:1e6, ease:'heavy', gravity:0 } },
+};
+const TEXT = ('Press a key and a word moves. The human plays the tool, the tool plays back. Every note drops a label, every label finds ' +
+  'its place. Type becomes rhythm, rhythm becomes layout. Springs, weight, timing, a little chaos. One key, one word, one move. ' +
+  'Play it loud, play it slow, play it again. Motion Social Club Barcelona.').split(' ');
+const SIGN = 4;                                         // every cycle ends on the sign-off "Motion Social Club Barcelona."
+function wordAt(slot, cap) {
+  const body = TEXT.length - SIGN;
+  return slot < cap - SIGN ? TEXT[slot % body] : TEXT[body + (slot - (cap - SIGN))];
+}
+const pat = pairs => { const p = [...Array(8)].map(() => Array(8).fill(0)); pairs.forEach(([s, r]) => p[s][r] = 1); return p; };
+const PAL = { indigo:['#3D3DEB','#FFFFFF'], peri:['#ADB4F5','#000000'], yellow:['#F4C500','#000000'], orange:['#EE4B2B','#000000'],
+              green:['#2E7D46','#FFFFFF'], black:['#000000','#FFFFFF'] };
+const PALK = Object.keys(PAL);
+// sub: 2 = 8ths, 3 = 8th triplets, 4 = 16ths. bars per 8 s = bpm·sub/60 (integer → seamless 8 s loop)
+const PRESETS = [
+  { name:'MULTICOLOR', mode:'fling', lay:'blob',    bpm:120, sub:4, fs:46, theme:0, color:true,
+    scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[3,2],[4,5],[6,3],[7,7]] },
+  { name:'MIXTO GRIS', mode:'drop',  lay:'blob',    bpm:135, sub:4, fs:46, theme:0, mixed:true, bg:'#8C8C8C',
+    scales:['minor','minor','major'], pairs:[[0,0],[2,4],[3,2],[5,5],[6,7]] },
+  { name:'CÍRCULO',    mode:'pop',   lay:'circle',  bpm:140, sub:3, fs:40, theme:2, mixed:true,
+    scales:['major'], pairs:[[0,0],[1,2],[2,4],[3,7],[4,5],[5,4],[6,2],[7,1]] },
+  { name:'CRUZ +',     mode:'slide', lay:'plus',    bpm:135, sub:4, fs:42, theme:3, mixed:true,
+    scales:['major','major','minor'], pairs:[[0,7],[1,4],[3,0],[4,2],[6,5]] },
+  { name:'BLOQUE',     mode:'nudge', lay:'justify', bpm:120, sub:4, fs:44, theme:4, mixed:true, bw:640,
+    scales:['major','minor'], pairs:[[0,0],[1,0],[2,4],[4,2],[5,5],[6,4]] },
+  { name:'ESPACIADO',  mode:'track', lay:'grid',    bpm:120, sub:2, fs:40, theme:1, cols:3, cells:36, cw:220,
+    scales:['minor','major'], pairs:[[0,0],[1,2],[2,4],[3,2],[4,5],[5,4],[6,7],[7,4]] },
+  { name:'REJILLA FP', mode:'fling', lay:'fp',      bpm:120, sub:4, fs:32, theme:0, mixed:true,
+    scales:['major','major','minor','major'], pairs:[[0,0],[2,3],[3,5],[4,7],[6,4]] },
+  // ---- round 4 · NACE: every tag is born in the middle, the cluster makes room outward (soft eased collision) ----
+  // round 5: 8ths, a note on every step (32 tags / 8 s) → every hit lands and settles before the next one
+  { name:'NACE MULTICOLOR', mode:'nace', lay:'nace', bpm:120, sub:2, fs:52, theme:0, color:true,
+    scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[2,5],[3,2],[4,5],[5,4],[6,3],[7,7]] },
+  { name:'NACE GRIS',       mode:'nace', lay:'nace', bpm:135, sub:4, fs:44, theme:0, mixed:true, bg:'#8C8C8C',
+    scales:['minor','minor','major'], pairs:[[0,0],[2,4],[3,2],[5,5],[6,7]] },
+  { name:'NACE AMARILLO',   mode:'nace', lay:'nace', bpm:120, sub:4, fs:44, theme:2, mixed:true,
+    scales:['major','minor'], pairs:[[0,0],[1,2],[2,4],[3,7],[5,5],[6,4],[7,2]] },
+  { name:'NACE VERDE',      mode:'nace', lay:'nace', bpm:135, sub:4, fs:44, theme:3, mixed:true,
+    scales:['major','major','minor'], pairs:[[0,7],[1,4],[3,0],[4,2],[5,5],[6,3]] },
+  { name:'NACE NARANJA',    mode:'nace', lay:'nace', bpm:120, sub:4, fs:44, theme:4, mixed:true,
+    scales:['minor','major'], pairs:[[0,0],[1,0],[2,4],[4,2],[5,5],[6,4]] },
+  // ---- round 5 · EDITORIAL (key E): the REJILLA layout, no pixel anywhere. A: running text as small tags · B: the current
+  // word as one BIG tag, kicked in on every note · C: the NACE collision cluster in the indigo pane ----
+  { name:'EDITORIAL', mode:'nace', lay:'edit', bpm:120, sub:2, fs:44, fsA:30, theme:0, mixed:true,
+    scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[2,5],[3,2],[4,5],[5,4],[6,3],[7,7]] },
+];
+const KEYMAP = '1234567890-=';                          // presets 1–12: keys 1…9, 0, -, =
+DIR.init = () => { S.preset = 0; S.variety = .5; S.noteIdx = 0; S.sub = PRESETS[0].sub; };
+const P = () => PRESETS[S.preset];
+// pattern source: normally the preset itself; the NACE edit forces one shared melody (DIR.patSrc = 7) across colourways
+const PS = () => PRESETS[DIR.patSrc ?? S.preset];
+const capOf = pr => { const q = DIR.patSrc != null ? PRESETS[DIR.patSrc] : pr; return q.pairs.length * Math.round(q.bpm * q.sub / 60); };
+DIR.patSrc = null; DIR.PS = PS; DIR.P = P; DIR.PRESETS = PRESETS; DIR.capOf = capOf;
+function applyPreset(n) {
+  S.preset = n; const pr = P(), ps = PS(); S.bpm = ps.bpm; S.sub = ps.sub; S.pattern = pat(ps.pairs); S.scale = ps.scales[0]; S.noteIdx = 0; S.schedIdx = 0;
+  items.length = 0; LAYC = null;
+  if (typeof MI !== 'undefined' && pr.theme !== undefined) MI.setTheme(pr.theme);
+}
+DIR.pattern = pat(PRESETS[0].pairs); DIR.bpm = PRESETS[0].bpm;
+DIR.setPreset = applyPreset;
+DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; };
+DIR.onKey = k => {
+  const pi = KEYMAP.indexOf(k); if (pi >= 0 && pi < PRESETS.length) { applyPreset(pi); return true; }
+  if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
+  if (k === 'v') { S.variety = (Math.round(S.variety * 4) + 1) % 5 / 4; return true; }
+  return false;
+};
+// ---------- type metrics (design space: 1080×1080, origin at stage centre) ----------
+const mc = document.createElement('canvas').getContext('2d');
+function textW(w, fs, track = 0) { mc.font = `700 ${fs}px ${FONT}`; mc.letterSpacing = `${track}px`; const v = mc.measureText(w).width; mc.letterSpacing = '0px'; return v; }
+const CAPR = () => { mc.font = `700 100px ${FONT}`; return mc.measureText('H').actualBoundingBoxAscent / 100; };
+const dims = fs => ({ fs, h:Math.round(fs * 1.36), pad:Math.round(fs * .3) });
+const OV = 3;                                           // packing overlap: tags butt edge-to-edge, never a gap
+// ---------- springs ----------
+function spring(a, w, z) {
+  if (a <= 0) return 0;
+  if (z >= 1) return 1 - Math.exp(-w * a) * (1 + w * a);
+  const wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * a) * (Math.cos(wd * a) + z / Math.sqrt(1 - z * z) * Math.sin(wd * a));
+}
+const approach = (ch, h) => ({ Ta:3.2 / ch.w, A:1.6 * h * Math.exp(-ch.z * Math.PI / Math.sqrt(1 - ch.z * ch.z)) });
+function settle(tau, ch, A) { const wd = ch.w * Math.sqrt(1 - ch.z * ch.z); return A * Math.exp(-ch.z * ch.w * tau) * Math.sin(wd * tau); }
+const BASE = { major:{ k:340, c:17, m:1 }, minor:{ k:150, c:15, m:1.5 } };
+function character(it) {
+  const V = S.variety, r = n => hash(S.preset * 131 + 7, it.slot, n), sg = n => (r(n) - .5) * 2, b = BASE[it.scale];
+  const m = b.m * (1 + .40 * V * sg(1)), k = b.k * (1 + .55 * V * sg(2)), c = b.c * (1 + .50 * V * sg(3));
+  return { w:Math.sqrt(k / m), z:clamp(c / (2 * Math.sqrt(k * m)), .28, .95), delay:.06 * V * r(4),
+           rotF:1.4 * V * sg(5) * Math.PI / 180, rot0:18 * V * sg(6) * Math.PI / 180, jy:1.5 * V * sg(8),
+           ang:r(9) * Math.PI * 2, ink:r(10) < .5 };
+}
+// ---------- layouts: computed once per preset for the whole cycle (slot → tag box) ----------
+// pack(): grow a shape from the centre. Rows have pitch h−OV; each row is one contiguous run, so a new tag either butts onto
+// the left/right end of a run or starts a new row touching the row above/below → no internal gaps. The candidate whose
+// farthest corner has the lowest shape-distance f(x,y) wins (level-set growth keeps the outline).
+const SHAPES = {
+  blob:   (x, y) => Math.hypot(x / 1.12, y),
+  circle: (x, y) => Math.hypot(x, y),
+  plus:   (x, y) => Math.min(Math.max(x / 1, y / .34), Math.max(x / .34, y / 1)),
+};
+function pack(words, d, f, noise, seed) {
+  const rows = new Map(), out = [], RP = d.h - OV;
+  words.forEach((wd, n) => {
+    const w = Math.round(textW(wd, d.fs)) + 2 * d.pad; let best = null;
+    const consider = (j, x, dir) => {
+      const y = j * RP, sc = f(Math.max(Math.abs(x - w / 2), Math.abs(x + w / 2)), Math.abs(y) + d.h / 2)
+        + noise * hash(seed, n, j + 50, dir.charCodeAt(0)) * d.h;
+      if (!best || sc < best.sc) best = { j, x, y, dir, sc };
+    };
+    if (!rows.size) consider(0, 0, 'n');
+    for (const [j, r] of rows) {
+      consider(j, r.R + w / 2 - OV, 'r'); consider(j, r.L - w / 2 + OV, 'l');
+      for (const jj of [j - 1, j + 1]) if (!rows.has(jj)) {
+        const x = r.R - r.L <= w ? (r.L + r.R) / 2 : clamp(0, r.L + w / 2, r.R - w / 2); consider(jj, x, jj < j ? 'u' : 'd'); }
+    }
+    const r = rows.get(best.j);
+    if (!r) rows.set(best.j, { L:best.x - w / 2, R:best.x + w / 2 });
+    else if (best.dir === 'r') r.R = best.x + w / 2; else r.L = best.x - w / 2;
+    out.push({ x:best.x, y:best.y, w, h:d.h, dir:best.dir, word:wd, d });
+  });
+  return out;
+}
+// textRun(): ragged-right running text of small tags with a small gap (editorial pane A: reads as text)
+function textRun(words, d, BW, x0, y0, gap) {
+  const out = []; let x = x0, y = y0;
+  words.forEach(wd => { const w = Math.round(textW(wd, d.fs)) + 2 * d.pad;
+    if (x > x0 && x + w > x0 + BW) { x = x0; y += d.h + gap; }
+    out.push({ x:x + w / 2, y:y + d.h / 2, w, h:d.h, dir:'l', word:wd, d }); x += w + gap; });
+  return out;
+}
+// justify(): rows left → right, edge-to-edge, each full row stretched to the block width (like justified text)
+function justify(words, d, BW, x0 = -BW / 2, y0 = 0) {
+  const rows = [[]]; let acc = 0;
+  words.forEach(wd => { const w = Math.round(textW(wd, d.fs)) + 2 * d.pad;
+    if (rows.at(-1).length && acc + w - OV > BW) { rows.push([]); acc = 0; }
+    rows.at(-1).push({ wd, w }); acc += w - OV; });
+  const out = [];
+  rows.forEach((row, j) => {
+    const nat = row.reduce((a, o) => a + o.w - OV, OV), last = j === rows.length - 1;
+    const extra = last && nat < BW * .8 ? 0 : (BW - nat) / row.length; let x = x0;
+    row.forEach(o => { const w = o.w + extra; out.push({ x:x + w / 2, y:y0 + j * (d.h - OV) + d.h / 2, w, h:d.h, dir:'l', word:o.wd, d }); x += w - OV; });
+  });
+  return out;
+}
+// nace() (round 5): one packed layout per birth. Rows are contiguous runs butted edge-to-edge (OV px overlap), centred on a
+// fixed per-row offset. A newborn goes into the middle row near the centre → the row's halves are pushed apart by half the
+// newborn each (always outward). A row longer than the target round hands BOTH end tags outward at once (to the next row
+// out; middle row → the shorter of ±1), one to each end of that row, so donor and receiver stay centred without sliding
+// back: remaining tags only shift by half the width difference of the two moved tags. Cascades outward. No gaps.
+function nace(words, d) {
+  const RP = d.h - OV, wid = words.map(wd => Math.round(textW(wd, d.fs)) + 2 * d.pad), rows = new Map(), POS = [], CEN = [];
+  let area = 0;
+  const len = r => r ? r.s.reduce((a, k) => a + wid[k] - OV, OV) : 0;
+  const off = j => j ? (hash(S.preset, j, 31) - .5) * d.h * .6 : 0;
+  const centre = (j, r) => { r.L = -len(r) / 2 + off(j); };
+  words.forEach((wd, m) => {
+    const w = wid[m]; area += w * RP;
+    if (!rows.has(0)) rows.set(0, { L:0, s:[m] });
+    else {
+      const r = rows.get(0); let bi = 0, best = Math.abs(r.L), acc = r.L;
+      r.s.forEach((k, i) => { acc += wid[k] - OV; if (Math.abs(acc) < best) { best = Math.abs(acc); bi = i + 1; } });
+      const pv = r.s.indexOf(m - 1);                   // sign-off words are born right after each other → "Motion Social Club Barcelona." reads in the middle row
+      if (m >= words.length - SIGN + 1 && pv >= 0) bi = pv + 1;
+      r.s.splice(bi, 0, m);
+    }
+    centre(0, rows.get(0));
+    const R0 = Math.sqrt(area / Math.PI / 1.06), hw = j => 1.06 * Math.sqrt(Math.max(0, R0 * R0 - (Math.max(0, Math.abs(j) - .5) * RP) ** 2));
+    for (let guard = 0, q = [0]; q.length && guard < 800; guard++) {
+      const j = q.shift(), r = rows.get(j); if (!r || r.s.length < 3) continue;
+      const a = r.s[0], b = r.s.at(-1);
+      if (len(r) - 2 * hw(j) <= (wid[a] + wid[b]) * .5) continue;
+      const jj = j ? j + Math.sign(j) : (len(rows.get(-1)) < len(rows.get(1)) ? -1 : len(rows.get(1)) < len(rows.get(-1)) ? 1 : (hash(S.preset, m, 77) < .5 ? -1 : 1));
+      if ((Math.abs(jj) - .5) * RP > R0) continue;              // never grow a spike past the round
+      r.s.shift(); r.s.pop(); centre(j, r);
+      if (!rows.has(jj)) rows.set(jj, { L:0, s:[] });
+      const n = rows.get(jj); n.s.unshift(a); n.s.push(b); centre(jj, n);
+      q.push(j, jj);
+    }
+    const P_ = []; let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (const [j, r] of rows) { let x = r.L; r.s.forEach(k => { P_[k] = { x:x + wid[k] / 2, y:j * RP }; x += wid[k] - OV; });
+      x0 = Math.min(x0, r.L); x1 = Math.max(x1, r.L + len(r)); y0 = Math.min(y0, j * RP - d.h / 2); y1 = Math.max(y1, j * RP + d.h / 2); }
+    POS.push(P_); CEN.push({ x:(x0 + x1) / 2, y:(y0 + y1) / 2, bw:x1 - x0, bh:y1 - y0 });
+  });
+  return { POS, CEN, wid };
+}
+let LAYC = null;
+function lay() {
+  const pr = P(); if (LAYC && LAYC.p === S.preset) return LAYC;
+  const cap = capOf(pr), words = [...Array(cap)].map((_, n) => wordAt(n, cap)), d = dims(pr.fs);
+  let tags = [], extra = {};
+  if (pr.lay === 'nace' || pr.lay === 'edit') { const N = nace(words, d); extra.N = N;
+    if (pr.lay === 'edit') extra.A = textRun(words, dims(pr.fsA), 492, -516, -516, 5);
+    tags = N.POS[cap - 1].map((o, k) => ({ x:o.x, y:o.y, w:N.wid[k], h:d.h, dir:'n', word:words[k], d })); }
+  else if (pr.lay in SHAPES) tags = pack(words, d, SHAPES[pr.lay], pr.lay === 'blob' ? .35 : .04, S.preset);
+  else if (pr.lay === 'justify') tags = justify(words, d, pr.bw);
+  else if (pr.lay === 'grid') {                           // pin: strict 3-column grid of cells, all present, one change at a time
+    const rows = Math.ceil(pr.cells / pr.cols);
+    extra.cells = [...Array(pr.cells)].map((_, i) => ({ x:(i % pr.cols - (pr.cols - 1) / 2) * (pr.cw - 1), y:(Math.floor(i / pr.cols) - (rows - 1) / 2) * (d.h - 1),
+      w:pr.cw, h:d.h, word:TEXT[i % TEXT.length], d }));
+    tags = extra.cells;
+  } else if (pr.lay === 'fp') {                          // ref-2: three flat panes. A: justified running text · B: bitmap word · C: packed tags
+    const dA = dims(20);
+    extra.A = justify(words, dA, 500, -520, -520);
+    extra.C = pack(words, d, SHAPES.blob, .3, 99).map(o => ({ ...o, y:o.y + 230 }));
+    tags = extra.C;
+  }
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  tags.forEach(o => { x0 = Math.min(x0, o.x - o.w / 2); x1 = Math.max(x1, o.x + o.w / 2); y0 = Math.min(y0, o.y - o.h / 2); y1 = Math.max(y1, o.y + o.h / 2); });
+  const fixed = pr.lay === 'fp' || pr.lay === 'edit';
+  LAYC = { p:S.preset, cap, tags, ...extra, ox:fixed ? 0 : (x0 + x1) / 2, oy:fixed ? 0 : (y0 + y1) / 2 + 16, bw:x1 - x0, bh:y1 - y0 };
+  return LAYC;
+}
+DIR.lay = () => lay();
+DIR.tagInfo = n => {                                    // for the sound modes: running tag n → its width and colour index
+  const pr = P(), L0 = lay(), slot = n % L0.cap, tg = L0.tags[slot] || L0.tags[0];
+  let c = 6;
+  if (pr.color) c = Math.floor(hash(tg.word.toLowerCase().replace(/[^a-z]/g, '').length * 977 + tg.word.toLowerCase().charCodeAt(0), 3) * PALK.length);
+  else if (pr.mixed) c = hash(S.preset * 131 + 7, slot, 10) < .5 ? 5 : 6;
+  return { w:tg.w, c, slot };
+};
+DIR.onTrigger = (it, t0) => {
+  const pr = P(), L0 = lay(), idx = S.noteIdx++;
+  it.slot = idx % L0.cap; it.gen = Math.floor(idx / L0.cap); it.ch = character(it);
+  it.tg = pr.lay === 'grid' ? L0.cells[(it.slot * 7) % L0.cells.length] : L0.tags[it.slot];
+  if (it.slot === 0) items.forEach(o => { if (o !== it && o.exitT === null) o.exitT = t0; });   // new cycle: the pile falls away
+};
+// ---------- draw ----------
+let L = null;
+const STRIP = 168;
+DIR.layout = () => { const sh = S.hero ? H : H - STRIP; L = { hero:S.hero, sh, u:Math.min(W, sh) / 1080, cx:W / 2, cy:sh / 2 }; LAYC = null; };
+function colours(it, th, kind) {
+  const pr = P();
+  if (kind === 'fpA') return ['#000000', '#FFFFFF'];
+  if (pr.color) { const [b, f] = PAL[PALK[Math.floor(hash(it.tg.word.toLowerCase().replace(/[^a-z]/g, '').length * 977 + it.tg.word.toLowerCase().charCodeAt(0), 3) * PALK.length)]];
+    return b === th.bg ? [th.fg, th.bg] : [b, f]; }
+  if (pr.mixed) return it.ch.ink ? ['#000000', '#FFFFFF'] : ['#FFFFFF', '#000000'];
+  return [th.lb, th.lt];
+}
+function box(c, x, y, rot, sc, w, h, word, d, bc, fc, track = 0) {
+  c.save(); c.translate(x, y); c.rotate(rot); c.scale(sc, sc);
+  c.fillStyle = bc; c.fillRect(-w / 2, -h / 2, w, h);
+  c.fillStyle = fc; c.font = `700 ${d.fs}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  c.letterSpacing = `${track}px`; c.fillText(word, track / 2, d.fs * CAPR() / 2); c.letterSpacing = '0px';
+  c.restore();
+}
+function drawTag(c, it, t, th, tg, kind) {
+  const pr = P(), ch = it.ch, a = t - it.t0 - ch.delay;
+  if (a < 0) return;
+  const s = spring(a, ch.w, ch.z), ap = approach(ch, tg.h), LC = lay();
+  const top = LC.oy - 540 - tg.h, bot = LC.oy + 540 + tg.h, left = LC.ox - 540 - tg.w, right = LC.ox + 540 + tg.w;
+  let x = tg.x, y = tg.y + ch.jy, rot = lerp(ch.rot0, ch.rotF, s), sc = 1;
+  const mode = kind === 'fpA' ? 'hard' : pr.mode, q = clamp(a / ap.Ta), ez = 1 - (1 - q) ** 3;
+  switch (mode) {
+    case 'drop':  y = q < 1 ? lerp(top, tg.y, q * q) : tg.y - Math.abs(settle(a - ap.Ta, ch, ap.A)); break;
+    case 'slide': {
+      const d = tg.dir;
+      if (d === 'l' || d === 'r') x = q < 1 ? lerp(d === 'l' ? left : right, tg.x, ez) : tg.x + (d === 'l' ? 1 : -1) * settle(a - ap.Ta, ch, ap.A);
+      else if (d === 'u' || d === 'd') y = q < 1 ? lerp(d === 'u' ? top : bot, tg.y, ez) : tg.y + (d === 'u' ? 1 : -1) * settle(a - ap.Ta, ch, ap.A);
+      else sc = Math.max(0, s);
+      rot = ch.rotF; break; }
+    case 'fling': { const dd = q < 1 ? -(700) * (1 - q) ** 3 : settle(a - ap.Ta, ch, ap.A);
+      x = tg.x - Math.cos(ch.ang) * dd; y = tg.y - Math.sin(ch.ang) * dd; break; }
+    case 'pop':   sc = Math.max(0, s); rot = ch.rotF; break;
+    case 'nudge': sc = Math.max(0, s); x = tg.x - (1 - s) * 140; rot = ch.rotF; break;
+    case 'hard':  rot = 0; break;
+  }
+  if (it.exitT !== null && t > it.exitT) {
+    if (kind === 'fpA') return;                          // running text: hard cut on the new cycle
+    const qq = clamp((t - it.exitT - (LC.cap - it.slot) * (.5 / LC.cap)) / .55);
+    y += qq * qq * 1300; rot += qq * (ch.rotF >= 0 ? 1 : -1) * .35;
+  }
+  if (sc <= .001) return;
+  const [bc, fc] = colours(it, th, kind);
+  box(c, x, y, rot, sc, tg.w, tg.h, tg.word, tg.d, bc, fc);
+}
+const BP = document.createElement('canvas'), bpx = BP.getContext('2d', { willReadFrequently:true });
+function bigPixel(drawFn, out, cell) {
+  const w = Math.ceil(W / cell), h = Math.ceil(H / cell); if (BP.width !== w || BP.height !== h) { BP.width = w; BP.height = h; }
+  bpx.setTransform(1, 0, 0, 1, 0, 0); bpx.clearRect(0, 0, w, h); bpx.setTransform(1 / cell, 0, 0, 1 / cell, 0, 0); drawFn(bpx);
+  const d = bpx.getImageData(0, 0, w, h), a = d.data; for (let k = 3; k < a.length; k += 4) a[k] = a[k] > 110 ? 255 : 0; bpx.putImageData(d, 0, 0);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.imageSmoothingEnabled = false; out.drawImage(BP, 0, 0, w * cell * DPR, h * cell * DPR); out.imageSmoothingEnabled = true;
+}
+const toStage = (c, LC) => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(-LC.ox, -LC.oy); };
+DIR.draw = (c, t, th) => {
+  if (!L || L.hero !== S.hero) DIR.layout();
+  const pr = P(), LC = lay();
+  if (pr.bg && S.theme === pr.theme) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = pr.bg; c.fillRect(0, 0, cv.width, cv.height); }
+  const live = items.filter(it => it.tg).sort((p, q) => p.t0 - q.t0);
+  c.save(); toStage(c, LC);
+  if (pr.lay === 'grid') {                               // pin: all cells static; the latest note's cell tracks out and springs back
+    const d = LC.cells[0].d, last = new Map();
+    live.forEach(it => { if (t >= it.t0) last.set(it.tg, it); });
+    LC.cells.forEach(cl => box(c, cl.x, cl.y, 0, 1, cl.w, cl.h, cl.word, d, th.lb, th.lt));
+    [...last.entries()].sort((p, q) => p[1].t0 - q[1].t0).forEach(([cl, it]) => {
+      const a = t - it.t0, s = spring(a, it.ch.w * .8, it.ch.z), n = cl.word.length;
+      const tmax = Math.max(0, (700 - textW(cl.word, d.fs)) / Math.max(1, n - 1)), track = Math.max(-1.5, tmax * (1 - s));
+      if (track < .6) return;
+      const w = textW(cl.word, d.fs, track) + 2 * d.pad;
+      box(c, cl.x, cl.y, 0, 1, Math.max(cl.w, w), cl.h, cl.word, d, th.lt, th.lb, track);
+    });
+  } else if (pr.lay === 'fp') {
+    c.fillStyle = '#FFFFFF'; c.fillRect(-540, -540, 540, 420);
+    c.fillStyle = '#F4C500'; c.fillRect(0, -540, 540, 420);
+    c.fillStyle = '#3D3DEB'; c.fillRect(-540, -120, 1080, 660);
+    c.save(); c.beginPath(); c.rect(-540, -540, 540, 420); c.clip();
+    live.forEach(it => drawTag(c, it, t, th, LC.A[it.slot], 'fpA')); c.restore();
+    c.save(); c.beginPath(); c.rect(-540, -120, 1080, 660); c.clip();
+    live.forEach(it => drawTag(c, it, t, th, it.tg, 'fpC')); c.restore();
+    c.restore();
+    const cur = [...live].reverse().find(it => t >= it.t0 && (it.exitT === null || t < it.exitT));
+    if (cur) {                                          // bitmap display word, hard cut per note
+      const wd = cur.tg.word.toUpperCase(), fs = Math.min(230, 470 / textW(wd, 100) * 100);
+      const fn = cc => { cc.save(); cc.translate(L.cx, L.cy); cc.scale(L.u, L.u); cc.fillStyle = '#000000'; cc.font = `700 ${fs}px ${FONT}`;
+        cc.textAlign = 'left'; cc.textBaseline = 'alphabetic'; cc.fillText(wd, 30, -330 + fs * CAPR() / 2); cc.restore(); };
+      c.save(); c.beginPath(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.rect(L.cx, L.cy - 540 * L.u, 540 * L.u, 420 * L.u); c.clip();
+      if (S.pixel) bigPixel(fn, c, Math.max(3, Math.round(12 * L.u))); else cleanPass(fn, c, '#000000');
+      c.restore();
+    }
+    return;
+  } else if (pr.lay === 'nace') { c.restore(); drawNace(c, t, th, live, LC); return; }
+  else if (pr.lay === 'edit') { c.restore(); drawEditorial(c, t, th, live, LC); return; }
+  else live.forEach(it => drawTag(c, it, t, th, it.tg));
+  c.restore();
+};
+// NACE motion (round 5, aggressive). Tag s after insertions s+1…M: pos = POS[s][s] + Σ_m (POS[m][s] − POS[m−1][s]) · E(…)
+// E = a hard kick: stiff, under-damped spring (ω ≈ 1.9× the tag's seeded ω, ζ ≈ .55× its ζ → fast attack, ~25–45 %
+// overshoot, settles in ~.3 s); ripple = distance / 2800 px/s, so the hit travels outward fast. On top, each birth fires a
+// sharp radial shockwave (peak 40 px at the newborn, ∝ e^(−dist/260), 45 ms attack, ~.1 s decay, back to 0) — near tags get
+// slammed, far ones twitch. All terms settle to exactly POS[M] → packed, edge-to-edge.
+const KICK = a => a <= 0 ? 0 : (a / .045) * Math.exp(1 - a / .045);
+const kickCh = ch => ({ w:ch.w * 1.9, z:clamp(ch.z * .55, .2, .45) });
+function naceState(LC, T, t, scl) {             // T[slot] = birth time; returns per-slot {x,y,sc,rot} and camera
+  const N = LC.N, M = T.reduce((a, v, k) => v !== undefined && v <= t ? k : a, -1), out = [];
+  if (M < 0) return null;
+  let cx = N.CEN[0].x, cy = N.CEN[0].y;
+  for (let m = 1; m <= M; m++) { if (T[m] === undefined) continue; const e = t - T[m] > 1.4 ? 1 : spring(t - T[m], 11, .8);
+    cx += (N.CEN[m].x - N.CEN[m - 1].x) * e; cy += (N.CEN[m].y - N.CEN[m - 1].y) * e; }
+  for (let s = 0; s <= M; s++) {
+    const ch = scl[s]; if (!ch) continue; const kc = kickCh(ch);
+    let x = N.POS[s][s].x, y = N.POS[s][s].y;
+    for (let m = s + 1; m <= M; m++) {
+      const a0 = t - T[m]; if (T[m] === undefined) continue;
+      const p0 = N.POS[m - 1][s], p1 = N.POS[m][s], nb = N.POS[m][m];
+      const dist = Math.hypot(p0.x - nb.x, p0.y - nb.y), a = a0 - dist / 2800 - ch.delay * .5;
+      const e = a0 > 1.4 ? 1 : spring(a, kc.w, kc.z);
+      x += (p1.x - p0.x) * e; y += (p1.y - p0.y) * e;
+      if (a0 < .8 && dist > 1) { const amp = 40 * Math.exp(-dist / 260) * KICK(a); x += (p0.x - nb.x) / dist * amp; y += (p0.y - nb.y) / dist * amp; }
+    }
+    const ab = t - T[s] - ch.delay * .3;
+    out[s] = { x, y, sc:Math.max(0, spring(ab, kc.w * 1.1, Math.max(.3, kc.z))), rot:lerp(ch.rot0 * .5, ch.rotF, clamp(spring(ab, kc.w, kc.z), -1, 2)) };
+  }
+  return { out, cx, cy, M };
+}
+function drawNace(c, t, th, live, LC, cam = { x:0, y:-16 }) {
+  const gens = new Map(); live.forEach(it => { if (!gens.has(it.gen)) gens.set(it.gen, []); gens.get(it.gen).push(it); });
+  const gl = [...gens.keys()].sort((a, b) => a - b), cur = gl.at(-1);
+  gl.forEach(g => {
+    const its = gens.get(g), T = [], CH = [], IT = []; its.forEach(it => { T[it.slot] = it.t0; CH[it.slot] = it.ch; IT[it.slot] = it; });
+    const st = naceState(LC, T, t, CH); if (!st) return;
+    let k = 1;                                       // reset on the downbeat: the finished cluster shrinks into the newborn
+    if (g !== cur) { const nx = gens.get(cur).find(o => o.slot === 0); if (nx) { const q = clamp((t - nx.t0) / .32); k = 1 - q * q * (3 - 2 * q); } if (k <= .002) return; }
+    c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(cam.x, cam.y); c.scale(k, k); c.translate(-st.cx, -st.cy);
+    st.out.forEach((o, s) => { if (!o || o.sc <= .001) return; const it = IT[s], tg = it.tg;
+      const [bc, fc] = colours(it, th); box(c, o.x, o.y, o.rot, o.sc, tg.w, tg.h, tg.word, tg.d, bc, fc); });
+    c.restore();
+  });
+}
+// EDITORIAL: three flat panes as REJILLA FP (ref-editorial), all clean vector type, no pixel pass.
+function drawEditorial(c, t, th, live, LC) {
+  const st = () => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); };
+  st(); c.fillStyle = '#FFFFFF'; c.fillRect(-540, -540, 540, 420); c.fillStyle = '#F4C500'; c.fillRect(0, -540, 540, 420);
+  c.fillStyle = '#3D3DEB'; c.fillRect(-540, -120, 1080, 660);
+  const gen = live.length ? Math.max(...live.filter(it => t >= it.t0).map(it => it.gen)) : 0, cur = live.filter(it => it.gen === gen && t >= it.t0);
+  // A · running text: each word lands as a small black tag with a short hard kick (scale 1.18 → 1), no tilt → legible
+  c.save(); c.beginPath(); c.rect(-540, -540, 540, 420); c.clip();
+  cur.forEach(it => { const tg = LC.A[it.slot], kc = kickCh(it.ch), s = spring(t - it.t0, kc.w * 1.3, Math.max(.32, kc.z));
+    if (s > .001) box(c, tg.x, tg.y, 0, Math.max(0, s), tg.w, tg.h, tg.word, tg.d, '#000000', '#FFFFFF'); });
+  c.restore();
+  // B · the current word as one BIG tag. New note → slams in (stiff spring, ~35 % overshoot, 4° tilt settling to 0)
+  const last = cur.at(-1);
+  if (last) {
+    const wd = last.tg.word, a = t - last.t0, kc = kickCh(last.ch), e = spring(a, kc.w, kc.z);
+    const fs = Math.min(150, 420 / (textW(wd, 100) / 100 + .6)), d = dims(Math.round(fs)), w = textW(wd, d.fs) + 2 * d.pad;
+    const sg = last.ch.rotF >= 0 ? 1 : -1, sc = .55 + .45 * e, x = 270 - sg * 70 * (1 - e), rot = sg * .07 * (1 - e);
+    c.save(); c.beginPath(); c.rect(0, -540, 540, 420); c.clip(); box(c, x, -330, rot, sc, w, d.h, wd, d, '#000000', '#FFFFFF'); c.restore();
+  }
+  // C · NACE collision cluster, centred in the indigo pane
+  c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.beginPath(); c.rect(L.cx - 540 * L.u, L.cy - 120 * L.u, 1080 * L.u, 660 * L.u); c.clip();
+  drawNace(c, t, th, live, LC, { x:0, y:210 }); c.restore();
+}
+// ---------- interface: one hard-split strip along the bottom (ref FP): identity | sequencer | state ----------
+let GR = null;
+DIR.ui = (c, t, th) => {
+  if (!L || L.hero !== S.hero) DIR.layout();
+  const y0 = H - STRIP, fg = th.fg, pr = P(), LC = lay();
+  c.fillStyle = th.bg; c.fillRect(0, y0, W, STRIP);
+  c.fillStyle = fg; c.fillRect(0, y0, W, 1);
+  const B1 = 240; c.fillRect(0, y0, B1, STRIP);
+  c.fillStyle = th.bg; c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+  c.font = `700 30px ${FONT}`; c.fillText('tMSC', 20, y0 + 46);
+  c.font = `400 13px ${FONT}`; c.fillText('MOTION INSTRUMENT', 20, y0 + 68); c.fillText('D · ETIQUETAS', 20, y0 + 86);
+  c.fillText(S.fontWarn ? 'FONT NOT LOADED' : 'ARCHIVO NARROW · OFFLINE', 20, y0 + STRIP - 20);
+  c.fillStyle = fg; const lx = B1 + 24, cs = 14, gp = 3, gx = lx + 40, gy = y0 + 14;
+  GR = { x0:gx, y0:gy, cs, gp };
+  c.font = `400 11px ${FONT}`;
+  for (let r = 0; r < 8; r++) {
+    const yy = gy + (7 - r) * (cs + gp), m = ROOT_MIDI + SCALES[S.scale][r];
+    c.fillText(NOTE_NAMES[m % 12] + (Math.floor(m / 12) - 1), lx, yy + 11);
+    for (let st = 0; st < 8; st++) {
+      const xx = gx + st * (cs + gp);
+      if (S.pattern[st][r]) c.fillRect(xx, yy, cs, cs); else { c.fillRect(xx, yy, cs, 1); c.fillRect(xx, yy + cs - 1, cs, 1); c.fillRect(xx, yy, 1, cs); c.fillRect(xx + cs - 1, yy, 1, cs); }
+    }
+  }
+  if (S.playing && S.step >= 0) c.fillRect(gx + S.step * (cs + gp), gy + 8 * (cs + gp) + 2, cs, 3);
+  const B2 = gx + 8 * (cs + gp) + 24; c.fillRect(B2, y0, 1, STRIP);
+  const sx = B2 + 24;
+  c.font = `700 30px ${FONT}`; c.fillText(String(S.preset + 1).padStart(2, '0'), sx, y0 + 46);   // number only, no name
+  c.font = `400 13px ${FONT}`;
+  c.fillText([S.ramp ? `RAMP ${S.bpmNow || 80} BPM` : `${S.bpm} BPM`, ['', '', '8THS', 'TRIPLETS', '16THS'][S.sub || 2], S.scale === 'major' ? 'MAJOR' : 'MINOR', S.lastNote || '—', `VARIETY ${Math.round(S.variety * 100)}`,
+              `SOUND ${MI.SOUND_NAME[S.sound]}`, pr.lay === 'edit' ? 'NO PX' : `PX ${S.pixel ? 'ON' : 'OFF'}`, th.name.toUpperCase(), S.recording ? '● REC' : ''].filter(Boolean).join('   ·   '), sx, y0 + 74);
+  c.fillText(`TAG ${S.noteIdx % LC.cap || LC.cap} / ${LC.cap}`, sx, y0 + 96);
+  const HELP = ['A–K NOTES', 'SPACE PLAY', '1–9 0 - = E  01–13', 'O SOUND', 'L RAMP', 'V VARIETY', 'M MAJ/MIN', '↑↓ BPM', 'C THEME', 'P PIXEL', 'X CLEAR', 'R REC', 'U HIDE'];
+  const one = HELP.join('   '), room = W - sx - 24;
+  if (c.measureText(one).width <= room) c.fillText(one, sx, y0 + STRIP - 20);
+  else { c.fillText(HELP.slice(0, 7).join('   '), sx, y0 + STRIP - 38); c.fillText(HELP.slice(7).join('   '), sx, y0 + STRIP - 20); }
+};
+DIR.hitGrid = (x, y) => {
+  if (!GR || S.hero) return null;
+  const st = Math.floor((x - GR.x0) / (GR.cs + GR.gp)), rr = Math.floor((y - GR.y0) / (GR.cs + GR.gp));
+  return st >= 0 && st < 8 && rr >= 0 && rr < 8 ? { st, row:7 - rr } : null;
+};
+
+// ===================== motion instrument — shared core (audio, sequencer, keys, rec, deterministic render) =====================
+// Audio engine, scheduler and controls are v2's (index.html, 2026-11-03), refactored so the same synth can also run in an
+// OfflineAudioContext for deterministic hero renders. Direction files provide DIR = { name, defaultTheme, layout(), draw(c,t), ui(c,t), hitGrid(x,y) }.
+'use strict';
+// ---------------- tMSC palette: 2 colours per theme (bg, type). C cycles in this order ----------------
+const THEMES = DIR.themes || [
+  { name:'indigo',     bg:'#3D3DEB', fg:'#FFFFFF' },
+  { name:'periwinkle', bg:'#ADB4F5', fg:'#000000' },
+  { name:'yellow',     bg:'#F4C500', fg:'#000000' },
+  { name:'orange',     bg:'#EE4B2B', fg:'#000000' },
+  { name:'green',      bg:'#2E7D46', fg:'#FFFFFF' },
+  { name:'black',      bg:'#000000', fg:'#FFFFFF' },
+  { name:'white',      bg:'#FFFFFF', fg:'#3D3DEB' },
+];
+const CELL = 6, ALPHA_T = 110;   // tMSC bitmap level 2: 6 px cells, coverage threshold 110/255, bleed σ .375·cell / .43
+const FONT = '"Archivo Narrow", "Arial Narrow", "Helvetica Neue", Arial, sans-serif';
+const KEYS = ['a','s','d','f','g','h','j','k'];
+const SCALES = { major:[0,2,4,5,7,9,11,12], minor:[0,2,3,5,7,8,10,12] };
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const ROOT_MIDI = 60;
+const WORDS   = ['MOTION','SOCIAL','CLUB','HUMAN','+','TOOL','PLAY','LOOP'];
+const MOTIONS = ['pop','slideL','drop','slideR','spin','rise','stack','split'];
+const FEEL = DIR.feel || {
+  major: { dur:.30, life:1.1, exit:.18, keep:1, ease:'back',  gravity:0 },
+  minor: { dur:.75, life:2.4, exit:.55, keep:2, ease:'heavy', gravity:1 },
+};
+const S = {
+  scale:'major', theme:DIR.defaultTheme, pixel:true, bpm:DIR.bpm || 112, playing:false, step:-1,
+  pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
+            [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
+  sound:'synth', ramp:false, schedIdx:0, recording:false, lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
+};
+let items = [];
+DIR.init && DIR.init();
+// ---------------- helpers ----------------
+const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const snap = (v, g) => Math.round(v / g) * g;
+const stepT = (p, n) => Math.floor(clamp(p) * n + 1e-6) / n;        // stepped (on-n) progress
+function hash(...a) { let h = 2166136261 >>> 0; for (const v of a) { h ^= (v * 2654435761) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; h ^= h >>> 13; } return (h >>> 0) / 4294967296; }
+const E = {
+  back:  t => { const c1 = 2.2, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+  heavy: t => 1 - Math.pow(1 - t, 4),
+  bounce: t => { const n = 7.5625, d = 2.75;
+    if (t < 1/d) return n*t*t; if (t < 2/d) return n*(t-=1.5/d)*t + .75; if (t < 2.5/d) return n*(t-=2.25/d)*t + .9375; return n*(t-=2.625/d)*t + .984375; },
+  inQuad: t => t*t, inCubic: t => t*t*t, outCubic: t => 1 - Math.pow(1 - t, 3),
+};
+// ---------------- clock (virtual during deterministic renders) ----------------
+let VT = null; const now = () => VT ?? performance.now() / 1000;
+// ---------------- canvas ----------------
+const cv = document.getElementById('stage'), ctx = cv.getContext('2d');
+const low = document.createElement('canvas'), lctx = low.getContext('2d', { willReadFrequently:true });
+const px = document.createElement('canvas'), pctx = px.getContext('2d');
+const full = document.createElement('canvas'), fctx = full.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  full.width = cv.width; full.height = cv.height;
+  px.width = W; px.height = H;
+  low.width = Math.ceil(W / CELL); low.height = Math.ceil(H / CELL);
+  document.querySelector('#pxbleed feGaussianBlur').setAttribute('stdDeviation', (.375 * CELL).toFixed(3));
+  DIR.layout && DIR.layout();
+}
+addEventListener('resize', resize);
+// ---------------- audio (v2 synth, unchanged sound; parametrised by context) ----------------
+let AC = null, master = null, recDest = null;
+function buildBus(ac) { const comp = ac.createDynamicsCompressor(), m = ac.createGain(); m.gain.value = .45; m.connect(comp); comp.connect(ac.destination); return { m, comp }; }
+function audio() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return AC; }
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  const b = buildBus(AC); master = b.m;
+  recDest = AC.createMediaStreamDestination(); b.comp.connect(recDest);
+  return AC;
+}
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+function synth(ac, dest, i, t, scale) {
+  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi);
+  const env = ac.createGain(); env.connect(dest);
+  if (scale === 'major') {
+    const o1 = ac.createOscillator(); o1.type = 'triangle'; o1.frequency.value = f;
+    const o2 = ac.createOscillator(); o2.type = 'square'; o2.frequency.value = f * 2;
+    const g2 = ac.createGain(); g2.gain.value = .07;
+    o1.connect(env); o2.connect(g2); g2.connect(env);
+    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.9, t + .004);
+    env.gain.exponentialRampToValueAtTime(.0001, t + .28);
+    [o1, o2].forEach(o => { o.start(t); o.stop(t + .3); });
+  } else {
+    const o1 = ac.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = f;
+    const o2 = ac.createOscillator(); o2.type = 'sine'; o2.frequency.value = f / 2;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(300, t + .6);
+    const g2 = ac.createGain(); g2.gain.value = .8;
+    o1.connect(lp); lp.connect(env); o2.connect(g2); g2.connect(env);
+    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.7, t + .012);
+    env.gain.exponentialRampToValueAtTime(.0001, t + .7);
+    [o1, o2].forEach(o => { o.start(t); o.stop(t + .75); });
+  }
+  return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+}
+// ---------------- round 5: sound modes (all synthesised, no samples). O cycles, L toggles the 80→160 BPM ramp ----------------
+// synth = the v2 synth above (MAJOR when the scale is major) · mono = ONE monophonic voice (square → closing lowpass, short,
+// each note cuts the previous) + one percussive hit per birth picked by the tag's colour (click / wood block / soft thud /
+// paper tick) · sfx = no melody: a typewriter clack per birth (filter pitch from the tag's width, colour detunes it) + a low
+// bass pulse on every beat and a small bell on each bar's downbeat.
+const SOUNDS = ['synth', 'mono', 'sfx'], SOUND_NAME = { synth:'SYNTH', mono:'MONO + SFX', sfx:'SFX + BASS' };
+const MODE_GAIN = { synth:1.12, mono:.95, sfx:1.02 };
+const NOISE = new WeakMap(), MONO = new WeakMap();
+function noise(ac) {                                    // deterministic white noise (seeded LCG) → identical offline renders
+  if (NOISE.has(ac)) return NOISE.get(ac);
+  const b = ac.createBuffer(1, Math.round(ac.sampleRate * .5), ac.sampleRate), d = b.getChannelData(0); let x = 12345;
+  for (let k = 0; k < d.length; k++) { x = (Math.imul(x, 1103515245) + 12345) >>> 0; d[k] = (x / 4294967296) * 2 - 1; }
+  NOISE.set(ac, b); return b;
+}
+function burst(ac, dest, t, dur, type, f, Q, g, off = 0) {   // filtered noise hit
+  const src = ac.createBufferSource(); src.buffer = noise(ac);
+  const bq = ac.createBiquadFilter(); bq.type = type; bq.frequency.value = f; bq.Q.value = Q;
+  const e = ac.createGain(); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + .0008); e.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  src.connect(bq); bq.connect(e); e.connect(dest); src.start(t, off); src.stop(t + dur + .01);
+}
+function tone(ac, dest, t, type, f0, f1, dur, g, glide = .03) {   // pitched hit with a pitch drop
+  const o = ac.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + glide);
+  const e = ac.createGain(); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + .002); e.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(e); e.connect(dest); o.start(t); o.stop(t + dur + .01);
+}
+function sfxHit(ac, dest, t, info) {                    // mono mode: one percussive SFX per birth, chosen by the tag's colour
+  const kind = [1, 3, 0, 1, 2, 2, 3][info.c] ?? 0, wf = clamp((info.w - 60) / 260);   // c: indigo peri yellow orange green black white
+  if (kind === 0) { burst(ac, dest, t, .012, 'highpass', 5200, .7, .55); tone(ac, dest, t, 'sine', 3200, 3000, .01, .12, .005); }          // click
+  if (kind === 1) { const f = 1500 - 650 * wf; tone(ac, dest, t, 'sine', f * 1.02, f, .07, .5, .01); burst(ac, dest, t, .03, 'bandpass', f * 2.1, 9, .35); } // wood block
+  if (kind === 2) { tone(ac, dest, t, 'sine', 150 - 40 * wf, 52, .16, .9, .06); burst(ac, dest, t, .03, 'lowpass', 700, .7, .25); }        // soft thud
+  if (kind === 3) burst(ac, dest, t, .03, 'bandpass', 2600 + 900 * (1 - wf), 1.4, .6, .1);                                                 // paper tick
+}
+function clack(ac, dest, t, info) {                     // sfx mode: typewriter clack; wider tag → lower body, colour detunes
+  const f = clamp(3400 - 9 * info.w, 900, 3200) * [1, 1.12, .9, 1.06, .86, .8, 1.2][info.c];
+  burst(ac, dest, t, .006, 'highpass', 6000, .7, .7);
+  burst(ac, dest, t + .002, .045, 'bandpass', f, 3.2, .9, .2);
+  tone(ac, dest, t, 'triangle', 240, 160, .035, .25, .02);
+}
+function bassPulse(ac, dest, t, accent) { tone(ac, dest, t, 'sine', 130, 49, accent ? .34 : .24, accent ? 1 : .75, .045); }
+function bell(ac, dest, t) { tone(ac, dest, t, 'sine', 2093, 2093, .5, .1, .01); tone(ac, dest, t, 'sine', 3136, 3136, .3, .05, .01); }
+function monoVoice(ac, dest, i, t, scale) {
+  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi), prev = MONO.get(ac);
+  if (prev && prev.t < t) { try { prev.e.gain.cancelAndHoldAtTime(t); } catch (_) { prev.e.gain.cancelScheduledValues(t); } prev.e.gain.setTargetAtTime(0, t, .004); }
+  const o = ac.createOscillator(); o.type = 'square'; o.frequency.value = f;
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 2; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(600, t + .1);
+  const e = ac.createGain(); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.42, t + .003); e.gain.exponentialRampToValueAtTime(.0001, t + .16);
+  o.connect(lp); lp.connect(e); e.connect(dest); o.start(t); o.stop(t + .18); MONO.set(ac, { e, t });
+  return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+}
+const modeBus = new WeakMap();
+function modeDest(ac, dest, mode) {                    // one gain per (context, mode) → per-mode level trim
+  let m = modeBus.get(ac); if (!m) { m = {}; modeBus.set(ac, m); }
+  if (!m[mode]) { m[mode] = ac.createGain(); m[mode].gain.value = MODE_GAIN[mode]; m[mode].connect(dest); }
+  return m[mode];
+}
+const noteName = (i, scale) => { const m = ROOT_MIDI + SCALES[scale][i]; return NOTE_NAMES[m % 12] + (Math.floor(m / 12) - 1); };
+function voice(ac, dest, i, t, scale, n, mode = S.sound) {   // n = running tag number (→ slot → width / colour)
+  const d = modeDest(ac, dest, mode), info = DIR.tagInfo ? DIR.tagInfo(n) : { w:120, c:0 };
+  if (mode === 'synth') return synth(ac, d, i, t, scale);
+  if (mode === 'mono') { sfxHit(ac, d, t, info); return monoVoice(ac, d, i, t, scale); }
+  clack(ac, d, t, info); return noteName(i, scale);
+}
+function beatSfx(ac, dest, t, st, sub, mode = S.sound) {    // per step: bass pulse on beats, bell on the bar downbeat (sfx mode)
+  if (mode !== 'sfx' || st % (sub || 2)) return; const d = modeDest(ac, dest, mode);
+  bassPulse(ac, d, t, st === 0); if (st === 0) bell(ac, d, t);
+}
+function finalHit(ac, dest, t) {                        // ramp one-shot: the closing hit
+  tone(ac, dest, t, 'sine', 160, 38, .9, .6, .12); burst(ac, dest, t, .35, 'lowpass', 2400, .7, .3); burst(ac, dest, t, .08, 'highpass', 4000, .7, .25);
+}
+function playNote(i, when, n = S.noteIdx) { const ac = audio(); return voice(ac, master, i, Math.max(when ?? ac.currentTime, ac.currentTime), S.scale, n); }
+// ramp: BPM rises linearly 80 → 160 over 8 s. Steps per second = bpm·sub/60 → step k starts at t(k) = (−80 + √(6400 + 1200k/sub)) / 10
+// (sub 4: 64 steps in exactly 8 s; sub 2: 32). One-shot: there is no seamless way back from 160 to 80 BPM.
+const RAMP = { b0:80, b1:160, T:8 };
+const rampT = (k, sub) => { const a = (RAMP.b1 - RAMP.b0) / RAMP.T / 2; return (-RAMP.b0 + Math.sqrt(RAMP.b0 ** 2 + 4 * a * 60 * k / sub)) / (2 * a); };
+const rampSteps = sub => Math.round((RAMP.b0 + RAMP.b1) / 2 * RAMP.T * sub / 60);
+const rampBpm = t => RAMP.b0 + (RAMP.b1 - RAMP.b0) * clamp(t / RAMP.T);
+// ---------------- voices ----------------
+let trigN = 0;
+function trigger(i, t0 = now(), scale = S.scale, key = trigN++) {
+  const feel = FEEL[scale];
+  const it = { i, t0, scale, feel, exitT:null, seed:hash(key, i), key }; items.push(it);
+  DIR.onTrigger && DIR.onTrigger(it, t0);
+  const alive = items.filter(it => it.exitT === null || it.exitT > t0);
+  alive.slice(0, Math.max(0, alive.length - feel.keep)).forEach(it => { if (it.exitT === null || it.exitT > t0) it.exitT = t0; });
+  if (items.length > (DIR.maxItems || 24)) items.splice(0, items.length - (DIR.maxItems || 24));
+  S.lastVoice = i;
+}
+// state of one item at time t → { age, p (enter progress 0..1), e (eased), ex (exit 0..1), minor, dead }
+function life(it, t) {
+  const f = it.feel, age = t - it.t0, p = clamp(age / f.dur), e = E[f.ease](p);
+  const exitAt = Math.min(it.exitT ?? Infinity, it.t0 + f.life);
+  const ex = t > exitAt ? clamp((t - exitAt) / f.exit) : 0;
+  return { age, p, e, ex, minor: it.scale === 'minor', dead: ex >= 1 || age < 0 };
+}
+// ---------------- pixel pass (tMSC level 2) ----------------
+// drawFn(c) draws in CSS px with any opaque fill; result is flooded with the theme fg colour.
+function pixelPass(drawFn, out) {
+  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.clearRect(0, 0, low.width, low.height);
+  lctx.setTransform(1 / CELL, 0, 0, 1 / CELL, 0, 0); lctx.fillStyle = '#000'; lctx.strokeStyle = '#000';
+  drawFn(lctx, 1 / CELL);
+  lctx.setTransform(1, 0, 0, 1, 0, 0); lctx.globalCompositeOperation = 'source-over';
+  const d = lctx.getImageData(0, 0, low.width, low.height), a = d.data;
+  for (let k = 3; k < a.length; k += 4) a[k] = a[k] > ALPHA_T ? 255 : 0;
+  lctx.putImageData(d, 0, 0);
+  pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.clearRect(0, 0, px.width, px.height); pctx.imageSmoothingEnabled = false;
+  pctx.filter = 'url(#pxbleed)'; pctx.drawImage(low, 0, 0, low.width * CELL, low.height * CELL); pctx.filter = 'none';
+  out.imageSmoothingEnabled = false; out.drawImage(px, 0, 0, px.width * DPR, px.height * DPR);
+}
+function cleanPass(drawFn, out, color) {
+  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.clearRect(0, 0, full.width, full.height);
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.fillStyle = color; fctx.strokeStyle = color;
+  drawFn(fctx, DPR); fctx.globalCompositeOperation = 'source-over';
+  out.setTransform(1, 0, 0, 1, 0, 0); out.drawImage(full, 0, 0);
+}
+// ---------------- sequencer (Web Audio clock, look-ahead) ----------------
+let nextT = 0, seqStep = 0; const queue = [];
+const stepDur = () => 60 / S.bpm / (S.sub || 2);   // S.sub: 2 = 8ths, 3 = 8th triplets, 4 = 16ths
+let rampStart = 0, rampK = 0;
+function togglePlay() {
+  const ac = audio(); S.playing = !S.playing;
+  if (S.playing) { nextT = ac.currentTime + .06; seqStep = 0; S.schedIdx = S.noteIdx; rampStart = nextT; rampK = 0; } else { queue.length = 0; S.step = -1; }
+}
+function toggleRamp() { S.ramp = !S.ramp; if (AC) { rampStart = Math.max(nextT, AC.currentTime + .06); nextT = rampStart; rampK = 0; seqStep = 0; } }
+setInterval(() => {
+  if (!S.playing || !AC || S.render) return;
+  while (nextT < AC.currentTime + .12) {
+    const st = seqStep;
+    S.pattern[st].forEach((on, r) => { if (on) { const n = playNote(r, nextT, S.schedIdx++); queue.push({ t:nextT, r, n }); } });
+    beatSfx(AC, master, nextT, st, S.sub);
+    queue.push({ t:nextT, step:st });
+    if (S.ramp) {                                       // live ramp loops (80→160, jump back); the render is a one-shot
+      const N = rampSteps(S.sub || 2); rampK++; if (rampK >= N) { rampStart += RAMP.T; rampK = 0; }
+      nextT = rampStart + rampT(rampK, S.sub || 2); S.bpmNow = Math.round(rampBpm(nextT - rampStart));
+    } else nextT += stepDur();
+    seqStep = (seqStep + 1) % 8;
+  }
+}, 25);
+// ---------------- frame ----------------
+function render(t) {
+  const th = THEMES[S.theme];
+  for (let k = items.length - 1; k >= 0; k--) if (life(items[k], t).dead && t - items[k].t0 > 0) items.splice(k, 1);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = th.bg; ctx.fillRect(0, 0, cv.width, cv.height);
+  DIR.draw(ctx, t, th);
+  if (!S.hero) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); DIR.ui(ctx, t, th); }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+function frame() {
+  if (S.render) return;
+  if (AC) while (queue.length && queue[0].t <= AC.currentTime) {
+    const q = queue.shift(); if (q.step !== undefined) S.step = q.step; else { trigger(q.r); S.lastNote = q.n; }
+  }
+  render(now());
+  requestAnimationFrame(frame);
+}
+// ---------------- theme / help ----------------
+function applyTheme() {
+  const th = THEMES[S.theme];
+  document.documentElement.style.setProperty('--bg', th.bg); document.documentElement.style.setProperty('--fg', th.fg);
+  document.getElementById('pxflood').setAttribute('flood-color', th.fg);
+}
+// ---------------- recording (canvas + audio → .webm) ----------------
+let rec = null, chunks = [];
+function toggleRec() {
+  if (rec) { rec.stop(); return; }
+  audio();
+  const stream = cv.captureStream(60);
+  recDest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
+  const types = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  const mime = types.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m));
+  if (!mime) { console.warn('MediaRecorder not supported'); return; }
+  chunks = []; rec = new MediaRecorder(stream, { mimeType:mime, videoBitsPerSecond: 12e6 });
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  rec.onstop = () => {
+    const blob = new Blob(chunks, { type:'video/webm' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `motion-instrument-${DIR.slug}-${Date.now()}.webm`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    rec = null; S.recording = false; window.__lastRecording = blob.size;
+  };
+  rec.start(250); S.recording = true;
+}
+// ---------------- input ----------------
+cv.addEventListener('pointerdown', ev => {
+  audio();
+  const h = DIR.hitGrid && DIR.hitGrid(ev.clientX, ev.clientY);
+  if (h) { S.pattern[h.st][h.row] ^= 1; if (S.pattern[h.st][h.row] && !S.playing) { S.lastNote = playNote(h.row, undefined, S.noteIdx); trigger(h.row); } }
+});
+addEventListener('keydown', ev => {
+  if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const k = ev.key.toLowerCase(), i = KEYS.indexOf(k);
+  if (i >= 0) { if (!ev.repeat) { S.lastNote = playNote(i, undefined, S.noteIdx); S.schedIdx = S.noteIdx + 1; trigger(i); } ev.preventDefault(); return; }
+  if (ev.repeat && k !== 'arrowup' && k !== 'arrowdown') return;
+  switch (k) {
+    case ' ': togglePlay(); break;
+    case 'o': S.sound = SOUNDS[(SOUNDS.indexOf(S.sound) + 1) % SOUNDS.length]; break;   // S is a note key (A S D … K) → sound on O
+    case 'l': toggleRamp(); break;
+    case 'm': S.scale = S.scale === 'major' ? 'minor' : 'major'; break;
+    case 'c': S.theme = (S.theme + 1) % THEMES.length; applyTheme(); break;
+    case 'p': S.pixel = !S.pixel; break;
+    case 'x': S.pattern.forEach(r => r.fill(0)); DIR.onClear && DIR.onClear(); break;
+    case 'r': toggleRec(); break;
+    case 'arrowup': S.bpm = Math.min(240, S.bpm + (ev.shiftKey ? 1 : 5)); break;
+    case 'arrowdown': S.bpm = Math.max(40, S.bpm - (ev.shiftKey ? 1 : 5)); break;
+    case 'u': S.hero = !S.hero; break;   // hide/show interface (hero view)
+    default: if (DIR.onKey && DIR.onKey(k)) break; return;
+  }
+  ev.preventDefault();
+});
+// ---------------- deterministic render API (hero loop): stateless replay of a scripted pattern ----------------
+// script = { bpm, sub, pattern[8][8], scaleForBar:(bar)=>'major'|'minor', ramp?:bool (one-shot 80→160), sound?:mode }
+function scriptEvents(sc, tEnd) {
+  const sub = sc.sub || S.sub || 2, sd = 60 / sc.bpm / sub, ev = [], steps = [];
+  const tk = sc.ramp ? k => rampT(k, sub) : k => k * sd, kmax = sc.ramp ? rampSteps(sub) : Infinity;
+  for (let k = 0; k < kmax && tk(k) < tEnd; k++) {
+    const scale = sc.scaleForBar(Math.floor(k / 8)), st = k % 8, t = tk(k);
+    steps.push({ t, k, st });
+    sc.pattern[st].forEach((on, r) => on && ev.push({ t, r, scale, k, st }));
+  }
+  return { ev, sd, steps, sub };
+}
+function frameAt(sc, t) {
+  const { ev, sd, steps, sub } = scriptEvents(sc, t + 1e-6);
+  items = []; VT = t; const WIN = DIR.window || 6;
+  S.noteIdx = ev.filter(e => e.t <= t - WIN).length;
+  ev.filter(e => e.t <= t && e.t > t - WIN).forEach(e => { S.scale = e.scale; trigger(e.r, e.t, e.scale, e.k * 8 + e.r); S.lastNote = noteName(e.r, e.scale); });
+  S.step = sc.ramp ? (steps.length ? steps.at(-1).st : -1) : Math.floor(t / sd + 1e-6) % 8; S.playing = true;
+  S.bpmNow = sc.ramp ? Math.round(rampBpm(t)) : null; if (sc.sound) S.sound = sc.sound; S.ramp = !!sc.ramp;
+  render(t); VT = null;
+}
+async function renderAudio(sc, dur, sr = 48000) {
+  const oac = new OfflineAudioContext(1, Math.ceil(dur * sr), sr), bus = buildBus(oac), mode = sc.sound || S.sound;
+  const { ev, steps, sub } = scriptEvents(sc, dur);
+  ev.forEach((e, n) => voice(oac, bus.m, e.r, e.t + 1e-4, e.scale, n, mode));
+  steps.forEach(s => beatSfx(oac, bus.m, s.t + 1e-4, s.st, sub, mode));
+  if (sc.ramp && ev.length) finalHit(oac, modeDest(oac, bus.m, mode), ev.at(-1).t + 1e-4);
+  const buf = await oac.startRendering(), d = buf.getChannelData(0);
+  const i16 = new Int16Array(d.length); let peak = 0, clip = 0;
+  for (let k = 0; k < d.length; k++) { const a = Math.abs(d[k]); if (a >= 1) clip++; const v = Math.max(-1, Math.min(1, d[k])); peak = Math.max(peak, Math.abs(v)); i16[k] = v * 32767; }
+  let s = ''; const u8 = new Uint8Array(i16.buffer);
+  for (let k = 0; k < u8.length; k += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(k, k + 0x8000));
+  return { b64: btoa(s), sr, peak, clip, events: ev.length };
+}
+window.MI = { S, THEMES, get items() { return items; }, togglePlay, trigger, playNote, fontOK:null, DIR,
+  setTheme(i) { S.theme = i; applyTheme(); }, renderMode(on) { S.render = on; if (!on) requestAnimationFrame(frame); }, frameAt, renderAudio, scriptEvents, SOUNDS, SOUND_NAME, MODE_GAIN, RAMP, rampT };
+// ---------------- boot: wait for the embedded Archivo Narrow, never fall back silently ----------------
+applyTheme(); resize();
+(async () => {
+  let ok = false;
+  try {
+    const wait = Promise.all([document.fonts.load('700 100px "Archivo Narrow"'), document.fonts.load('400 12px "Archivo Narrow"'), document.fonts.ready]);
+    await Promise.race([wait, new Promise(r => setTimeout(r, 3000))]);
+    const faces = [...document.fonts].filter(f => f.family.replace(/["']/g, '') === 'Archivo Narrow');
+    ok = faces.length >= 2 && faces.every(f => f.status === 'loaded') &&
+         document.fonts.check('700 100px "Archivo Narrow"') && document.fonts.check('400 12px "Archivo Narrow"');
+  } catch (e) { ok = false; }
+  if (!ok) { S.fontWarn = '! ARCHIVO NARROW NOT LOADED — FALLBACK FONT, WIDTHS WILL DIFFER'; console.warn(S.fontWarn); }
+  window.MI.fontOK = ok; resize();
+  requestAnimationFrame(frame);
+})();
+
+})();
+</script>
+</body>
+</html>

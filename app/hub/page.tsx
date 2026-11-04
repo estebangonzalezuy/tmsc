@@ -24,6 +24,7 @@ const groups: { title: string; note: string; rows: Row[] }[] = [
       { href: "/postlab", name: "the Posts Studio", what: "nodes in, a post out" },
       { href: "/studio", name: "the Studio", what: "the site's own words" },
       { href: "/curate", name: "the Curator", what: "a video in, style frames out" },
+      { href: "/motion-instrument", name: "the Motion Instrument", what: "play the words from the keyboard" },
     ],
   },
   {

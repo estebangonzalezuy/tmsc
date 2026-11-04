@@ -350,6 +350,23 @@ no site modules, no build. Unlike Frames it is live rather than a pure
 function of `t` — a recording is a real-time capture of a performance.
 `public/instrument/README.md` is its documentation.
 
+## the Motion Instrument (`/motion-instrument`)
+
+A later instrument, separate from `/instrument` above. Each note drops a
+word-label into a layout that packs, collides and springs, with its own
+synth, thirteen layouts and a step sequencer. It is a built artifact:
+`public/motion-instrument/index.html` (Archivo Narrow embedded, no network,
+no site modules) and `OFL.txt` beside it for the font. Demo videos are not
+in the repo; `media/poster.png` is, because it is the social image.
+
+`public/` does no directory index, so `app/motion-instrument/route.ts`
+answers the bare path with that file. The route only replaces the document
+title and adds the description and Open Graph tags. The tool's markup and
+script are not rewritten, and `/motion-instrument/index.html` still serves
+the artifact untouched. It is linked from the Hub, not the public nav.
+Don't pull site modules into the HTML, and don't edit the instrument to
+change the page's title — that belongs to the route.
+
 ## the Tools (`/tools`) — retired
 
 The everyday front door to the studio (a note, a countdown, a quote card, a
