@@ -35,7 +35,8 @@ back together. Nothing falls. On the loop the pile shrinks back into the
 centre. The same motion is every preset, including the 16ths. The pad sits on the left:
 an 8×8 step grid with slightly rounded cells. Click it or press Space to start; drag
 across it to paint the pattern. The other controls are a separate group on the right,
-flat black buttons with a white edge and a black outer edge, no shadow: tempo,
+flat white buttons with a black edge and no shadow. A selected control flips
+to black with white text: tempo,
 subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
 pixel, theme, and the text. A one-line hint shows until playback starts, and
 returns when it stops. Tone is how a note sounds — Pluck,
@@ -97,7 +98,7 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 ## Controles
 
-El pad queda a la izquierda y el resto de los botones, planos, a la derecha. El texto es el párrafo
+El pad queda a la izquierda y el resto de los botones, blancos y planos, a la derecha. El texto es el párrafo
 que las notas deletrean, una palabra por nota. Reset devuelve el párrafo
 original. Los atajos siguen funcionando salvo cuando el cursor está en el
 texto o en un deslizador.
