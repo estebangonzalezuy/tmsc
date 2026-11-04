@@ -186,15 +186,15 @@ const P = () => PRESETS[S.preset];
 const PS = () => PRESETS[DIR.patSrc ?? S.preset];
 const capOf = pr => { const q = DIR.patSrc != null ? PRESETS[DIR.patSrc] : pr; return q.pairs.length * Math.round(q.bpm * q.sub / 60); };
 DIR.patSrc = null; DIR.PS = PS; DIR.P = P; DIR.PRESETS = PRESETS; DIR.capOf = capOf;
-const flowClock = new Map();
+const flowClock = new Map(), flowFit = new Map();
 function applyPreset(n) {
   S.preset = n; const pr = P(), ps = PS(); S.bpm = ps.bpm; S.sub = ps.sub; S.pattern = pat(ps.pairs); S.scale = ps.scales[0]; S.noteIdx = 0; S.schedIdx = 0;
-  items.length = 0; LAYC = null; flowClock.clear();
+  items.length = 0; LAYC = null; flowClock.clear(); flowFit.clear();
   if (typeof MI !== 'undefined' && pr.theme !== undefined) MI.setTheme(pr.theme);
 }
 DIR.pattern = pat(PRESETS[0].pairs); DIR.bpm = PRESETS[0].bpm;
 DIR.setPreset = applyPreset;
-DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; flowClock.clear(); };
+DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; flowClock.clear(); flowFit.clear(); };
 DIR.onKey = k => {
   const pi = KEYMAP.indexOf(k); if (pi >= 0 && pi < PRESETS.length) { applyPreset(pi); return true; }
   if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
@@ -408,7 +408,7 @@ DIR.onTrigger = (it, t0) => {
   const pr = P(), L0 = lay(), idx = S.noteIdx++;
   it.slot = idx % L0.cap; it.gen = Math.floor(idx / L0.cap); it.ch = character(it);
   it.tg = pr.lay === 'grid' ? L0.cells[(it.slot * 7) % L0.cells.length] : L0.tags[it.slot];
-  if (it.slot === 0) items.forEach(o => { if (o !== it && o.exitT === null) o.exitT = t0; });   // new cycle: the pile falls away
+  if (it.slot === 0) items.forEach(o => { if (o !== it && o.fold == null) o.fold = t0; });   // new cycle: shrink back into the centre
 };
 // ---------- draw ----------
 let L = null;
@@ -454,11 +454,6 @@ function drawTag(c, it, t, th, tg, kind) {
     case 'nudge': sc = Math.max(0, s); x = tg.x - (1 - s) * 140; rot = ch.rotF; break;
     case 'hard':  rot = 0; break;
   }
-  if (it.exitT !== null && t > it.exitT) {
-    if (kind === 'fpA') return;                          // running text: hard cut on the new cycle
-    const qq = clamp((t - it.exitT - (LC.cap - it.slot) * (.5 / LC.cap)) / .55);
-    y += qq * qq * 1300; rot += qq * (ch.rotF >= 0 ? 1 : -1) * .35;
-  }
   if (sc <= .001) return;
   const [bc, fc] = colours(it, th, kind);
   box(c, x, y, rot, sc, tg.w, tg.h, tg.word, tg.d, bc, fc);
@@ -471,86 +466,161 @@ function bigPixel(drawFn, out, cell) {
   out.setTransform(1, 0, 0, 1, 0, 0); out.imageSmoothingEnabled = false; out.drawImage(BP, 0, 0, w * cell * DPR, h * cell * DPR); out.imageSmoothingEnabled = true;
 }
 const toStage = (c, LC) => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(-LC.ox, -LC.oy); };
-// One physical cluster for every preset. ω, ζ chosen so a tag is ~70% of the
-// way in a tenth of a second, overshoots once, bounces back once, and is
-// within a few percent by ~0.6 s — about a beat at these tempos. 16ths arrive
-// before that, and the integrator keeps the current position and velocity.
-const FLOW_W = 16, FLOW_Z = 0.4;
-function flowSeparate(group) {
-  const last = group.length - 1;
-  for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) {
-    const a = group[i], b = group[j];
-    const dx = b.fx - a.fx, dy = b.fy - a.fy;
-    const ox = (a.tg.w + b.tg.w) / 2 - OV - Math.abs(dx);
-    const oy = (a.tg.h + b.tg.h) / 2 - OV - Math.abs(dy);
-    if (ox <= 0.5 || oy <= 0.5) continue;
-    const wa = i === last ? 0.12 : 1, wb = j === last ? 0.12 : 1, share = wa + wb;
-    if (ox < oy) {
-      const s = Math.sign(dx) || 1, push = ox;
-      a.fx -= s * push * wa / share; b.fx += s * push * wb / share;
-    } else {
-      const s = Math.sign(dy) || 1, push = oy;
-      a.fy -= s * push * wa / share; b.fy += s * push * wb / share;
+// Rigid tags, no gravity. The newest word is pinned at the canvas centre and
+// grows from nothing (overshoot, then a small settle, ~0.2 s). Its body
+// collides with the others; they pass the shove on, pick up a little spin,
+// and a soft spring pulls the pile back toward the centre so it stays packed.
+const REST = 0.32, ANG_MAX = 0.18;
+function growAmt(age) {
+  if (age <= 0) return 0;
+  const y = spring(age, 18, 0.45);
+  return y < 0 ? 0 : y;
+}
+function bodyInit(it) {
+  if (it.fx != null) return;
+  it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0; it.ang = 0; it.vang = 0;
+}
+function obbCorners(it, sc) {
+  const c = Math.cos(it.ang || 0), s = Math.sin(it.ang || 0);
+  const hw = it.tg.w * 0.5 * sc, hh = it.tg.h * 0.5 * sc;
+  const out = [];
+  for (const sx of [-hw, hw]) for (const sy of [-hh, hh]) out.push({ x: it.fx + c * sx - s * sy, y: it.fy + s * sx + c * sy });
+  return out;
+}
+function projSpan(pts, ax, ay) {
+  let min = Infinity, max = -Infinity;
+  for (const p of pts) { const d = p.x * ax + p.y * ay; if (d < min) min = d; if (d > max) max = d; }
+  return { min, max };
+}
+function hitBoxes(a, b, scA, scB) {
+  if (scA < 0.04 || scB < 0.04) return null;
+  const ca = obbCorners(a, scA), cb = obbCorners(b, scB);
+  const axes = [a.ang || 0, b.ang || 0].flatMap(ang => {
+    const c = Math.cos(ang), s = Math.sin(ang);
+    return [[c, s], [-s, c]];
+  });
+  let best = null;
+  for (const [ax, ay] of axes) {
+    const pa = projSpan(ca, ax, ay), pb = projSpan(cb, ax, ay);
+    const overlap = Math.min(pa.max, pb.max) - Math.max(pa.min, pb.min);
+    if (overlap <= 0) return null;
+    if (!best || overlap < best.overlap) {
+      let nx = ax, ny = ay;
+      if (nx * (b.fx - a.fx) + ny * (b.fy - a.fy) < 0) { nx = -nx; ny = -ny; }
+      best = { overlap, nx, ny };
     }
   }
+  return best;
 }
-function flowSimulate(group, t) {
+function collideAll(alive, scOf, newest) {
+  for (let i = 0; i < alive.length; i++) for (let j = i + 1; j < alive.length; j++) {
+    const a = alive[i], b = alive[j], scA = scOf(a), scB = scOf(b);
+    const hit = hitBoxes(a, b, scA, scB);
+    if (!hit) continue;
+    const { overlap, nx, ny } = hit;
+    const mass = it => Math.max(400, it.tg.w * it.tg.h);
+    const invA = a === newest ? 0 : 1 / mass(a), invB = b === newest ? 0 : 1 / mass(b);
+    if (invA + invB === 0) continue;
+    const invIA = a === newest ? 0 : 12 / (mass(a) * (a.tg.w * a.tg.w + a.tg.h * a.tg.h));
+    const invIB = b === newest ? 0 : 12 / (mass(b) * (b.tg.w * b.tg.w + b.tg.h * b.tg.h));
+    const cx = (a.fx + b.fx) / 2, cy = (a.fy + b.fy) / 2;
+    const rax = cx - a.fx, ray = cy - a.fy, rbx = cx - b.fx, rby = cy - b.fy;
+    const vax = a.fvx - a.vang * ray, vay = a.fvy + a.vang * rax;
+    const vbx = b.fvx - b.vang * rby, vby = b.fvy + b.vang * rbx;
+    const rel = (vbx - vax) * nx + (vby - vay) * ny;
+    const raN = rax * ny - ray * nx, rbN = rbx * ny - rby * nx;
+    const denom = invA + invB + raN * raN * invIA + rbN * rbN * invIB;
+    if (rel < 0 && denom > 1e-8) {
+      const j = -(1 + REST) * rel / denom;
+      a.fvx -= j * nx * invA; a.fvy -= j * ny * invA; a.vang -= j * raN * invIA;
+      b.fvx += j * nx * invB; b.fvy += j * ny * invB; b.vang += j * rbN * invIB;
+    }
+    if (rel < -40) {
+      const side = (b.fx - a.fx) * -ny + (b.fy - a.fy) * nx;
+      const kick = Math.max(-1, Math.min(1, side / 36)) * Math.min(overlap, 8) * Math.min(-rel, 400) / 400;
+      if (a !== newest) a.vang -= kick * invA * 4200;
+      if (b !== newest) b.vang += kick * invB * 4200;
+    }
+    const corr = Math.max(overlap - 0.8, 0) * 0.7, invSum = invA + invB;
+    a.fx -= nx * corr * invA / invSum; a.fy -= ny * corr * invA / invSum;
+    b.fx += nx * corr * invB / invSum; b.fy += ny * corr * invB / invSum;
+  }
+}
+function flowStepBody(it, step, pull) {
+  it.fvx += (-pull * it.fx - 4.2 * it.fvx) * step;
+  it.fvy += (-pull * it.fy - 4.2 * it.fvy) * step;
+  it.fvx = Math.max(-1600, Math.min(1600, it.fvx));
+  it.fvy = Math.max(-1600, Math.min(1600, it.fvy));
+  it.fx += it.fvx * step; it.fy += it.fvy * step;
+  it.vang += (-70 * (it.ang || 0) - 9 * (it.vang || 0)) * step;
+  it.ang = Math.max(-ANG_MAX, Math.min(ANG_MAX, (it.ang || 0) + it.vang * step));
+}
+function flowSimulate(group, folds, t) {
   const key = S.preset + ':' + group[0].gen;
   let clock = flowClock.get(key);
-  if (clock == null || t + 1e-4 < clock) {
-    group.forEach(it => { it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0; it.fPushed = false; });
-    clock = Math.min(...group.map(it => it.t0));
-  }
+  if (clock == null || t + 1e-4 < clock) clock = Math.min(...group.map(it => it.t0), ...folds.map(it => it.fold || it.t0));
   const h = 1 / 90;
   let guard = 0;
   while (clock < t - 1e-4 && guard++ < 5000) {
-    const step = Math.min(h, t - clock), sim = clock + step, alive = [];
-    for (const it of group) if (it.t0 <= sim) alive.push(it);
-    if (!alive.length) { clock = sim; continue; }
-    for (const it of alive) if (!it.fPushed) {
-      it.fPushed = true; it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0;
+    const step = Math.min(h, t - clock), sim = clock + step;
+    const alive = [];
+    for (const it of group) if (it.t0 <= sim) { bodyInit(it); alive.push(it); }
+    folds.forEach(bodyInit);
+    if (alive.length) {
+      const nb = alive[alive.length - 1];
+      const scOf = it => it === nb ? Math.max(growAmt(sim - it.t0), 0) : 1;
+      for (const it of alive) {
+        if (it === nb) { it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0; it.ang = 0; it.vang = 0; continue; }
+        flowStepBody(it, step, 9);
+      }
+      for (let pass = 0; pass < 3; pass++) collideAll(alive, scOf, nb);
+      nb.fx = 0; nb.fy = 0; nb.fvx = 0; nb.fvy = 0; nb.ang = 0; nb.vang = 0;
+      let maxR = 40;
+      for (const it of alive) {
+        const sc = scOf(it);
+        maxR = Math.max(maxR, Math.hypot(it.fx, it.fy) + Math.max(it.tg.w, it.tg.h) * 0.5 * Math.min(sc, 1.2));
+      }
+      const want = maxR > 470 ? 470 / maxR : 1;
+      const fit = (flowFit.get(key) ?? 1) + (want - (flowFit.get(key) ?? 1)) * Math.min(1, step * 5);
+      flowFit.set(key, fit);
     }
-    const pos = centerPack(alive.map(it => it.tg.w), alive[0].tg.h);
-    for (let i = 0; i < alive.length; i++) {
-      const it = alive[i], tx = pos[i] ? pos[i].x : 0, ty = pos[i] ? pos[i].y : 0;
-      const ax = -FLOW_W * FLOW_W * (it.fx - tx) - 2 * FLOW_Z * FLOW_W * it.fvx;
-      const ay = -FLOW_W * FLOW_W * (it.fy - ty) - 2 * FLOW_Z * FLOW_W * it.fvy;
-      it.fvx = Math.max(-2200, Math.min(2200, it.fvx + ax * step));
-      it.fvy = Math.max(-2200, Math.min(2200, it.fvy + ay * step));
-      it.fx += it.fvx * step; it.fy += it.fvy * step;
+    let foldR = 1;
+    for (const it of folds) foldR = Math.max(foldR, Math.hypot(it.fx || 0, it.fy || 0));
+    for (const it of folds) {
+      const dist = Math.hypot(it.fx, it.fy);
+      if (sim < it.fold + Math.max(0, (foldR - dist) / 1100)) continue;
+      flowStepBody(it, step, 46);
     }
-    for (let pass = 0; pass < 4; pass++) flowSeparate(alive);
     clock = sim;
   }
   flowClock.set(key, t);
 }
+function foldScale(it, t) {
+  const dist = Math.hypot(it.fx || 0, it.fy || 0), maxR = it.foldR || dist;
+  const delay = Math.max(0, (maxR - dist) / 1100);
+  return Math.max(0, 1 - clamp((t - it.fold - delay) / 0.42));
+}
 function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
-  const gens = new Map();
-  live.forEach(it => { if (!gens.has(it.gen)) gens.set(it.gen, []); gens.get(it.gen).push(it); });
+  for (let i = items.length - 1; i >= 0; i--) if (items[i].fold && t - items[i].fold > 0.95) items.splice(i, 1);
   const cur = live.length ? Math.max(...live.map(it => it.gen)) : 0;
+  const group = live.filter(it => it.gen === cur && !it.fold && t >= it.t0).sort((a, b) => a.t0 - b.t0 || a.slot - b.slot);
+  const folds = live.filter(it => it.fold && t >= it.t0);
+  if (group.length) flowSimulate(group, folds, t);
+  else folds.forEach(bodyInit);
+  let foldR = 1;
+  for (const it of folds) foldR = Math.max(foldR, Math.hypot(it.fx || 0, it.fy || 0));
+  folds.forEach(it => { it.foldR = foldR; });
+  const fit = group.length ? (flowFit.get(S.preset + ':' + group[0].gen) ?? 1) : 1;
+  const nb = group[group.length - 1];
   c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(cam.x, cam.y);
-  for (const [g, its] of gens) {
-    const group = its.filter(it => t >= it.t0).sort((a, b) => a.t0 - b.t0 || a.slot - b.slot);
-    if (!group.length) continue;
-    if (g === cur) flowSimulate(group, t);
-    let k = 1, ox = 0, oy = 0;
-    if (g !== cur) {
-      const nx = live.find(o => o.gen === cur && o.slot === 0);
-      const q = nx ? clamp((t - nx.t0) / .32) : 1;
-      k = 1 - q * q * (3 - 2 * q);
-      if (k <= .02) continue;
-      group.forEach(it => { if (it.fx == null) return; ox += it.fx; oy += it.fy; });
-      ox /= group.length; oy /= group.length;
-    }
-    group.forEach(it => {
-      if (it.fx == null || !it.tg) return;
-      const age = t - it.t0, sc = Math.max(0, spring(age, 28, .62));
-      const rot = (1 - clamp(spring(age, 12, .5), 0, 1.15)) * (it.ch && it.ch.rotF < 0 ? -.1 : .1);
-      const x = g === cur ? it.fx : ox + (it.fx - ox) * k, y = g === cur ? it.fy : oy + (it.fy - oy) * k;
-      const [bc, fc] = colours(it, th);
-      box(c, x, y, rot, sc * (g === cur ? 1 : k), it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
-    });
-  }
+  const paint = (it, sc, pin) => {
+    if (!it.tg || sc <= 0.01) return;
+    const x = pin ? 0 : (it.fx || 0) * fit, y = pin ? 0 : (it.fy || 0) * fit;
+    const [bc, fc] = colours(it, th);
+    box(c, x, y, pin ? 0 : (it.ang || 0), sc * fit, it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
+  };
+  folds.forEach(it => paint(it, foldScale(it, t), false));
+  group.forEach(it => paint(it, it === nb ? growAmt(t - it.t0) : 1, it === nb));
 }
 DIR.draw = (c, t, th) => {
   if (!L || L.hero !== S.hero) DIR.layout();

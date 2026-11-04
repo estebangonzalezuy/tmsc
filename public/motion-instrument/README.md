@@ -29,9 +29,10 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 ## Controls
 
-Every note is born at the centre of the cluster and the other tags spring outward
-around it — one overshoot, one bounce back, settled in about a beat. The same
-motion is every preset, including the 16ths. The controls float on the canvas
+Every note grows from the centre of the cluster, from nothing to full size,
+and shoves the tags around it. They bump, tilt a little, and the pile pulls
+back together. Nothing falls. On the loop the pile shrinks back into the
+centre. The same motion is every preset, including the 16ths. The controls float on the canvas
 as black buttons with a white outline: tempo,
 subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
 pixel, theme, the step grid, and the text. Tone is how a note sounds — Pluck,
