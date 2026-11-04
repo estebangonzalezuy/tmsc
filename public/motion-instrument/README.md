@@ -29,7 +29,10 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 ## Controls
 
-The controls float on the canvas as black buttons with a white outline: tempo,
+Every note is born at the centre of the cluster and the other tags spring outward
+around it — one overshoot, one bounce back, settled in about a beat. The same
+motion is every preset, including the 16ths. The controls float on the canvas
+as black buttons with a white outline: tempo,
 subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
 pixel, theme, the step grid, and the text. Tone is how a note sounds — Pluck,
 Soft, Reed, Bell — and only one note rings at a time. The text is the

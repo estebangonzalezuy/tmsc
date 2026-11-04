@@ -186,14 +186,15 @@ const P = () => PRESETS[S.preset];
 const PS = () => PRESETS[DIR.patSrc ?? S.preset];
 const capOf = pr => { const q = DIR.patSrc != null ? PRESETS[DIR.patSrc] : pr; return q.pairs.length * Math.round(q.bpm * q.sub / 60); };
 DIR.patSrc = null; DIR.PS = PS; DIR.P = P; DIR.PRESETS = PRESETS; DIR.capOf = capOf;
+const flowClock = new Map();
 function applyPreset(n) {
   S.preset = n; const pr = P(), ps = PS(); S.bpm = ps.bpm; S.sub = ps.sub; S.pattern = pat(ps.pairs); S.scale = ps.scales[0]; S.noteIdx = 0; S.schedIdx = 0;
-  items.length = 0; LAYC = null;
+  items.length = 0; LAYC = null; flowClock.clear();
   if (typeof MI !== 'undefined' && pr.theme !== undefined) MI.setTheme(pr.theme);
 }
 DIR.pattern = pat(PRESETS[0].pairs); DIR.bpm = PRESETS[0].bpm;
 DIR.setPreset = applyPreset;
-DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; };
+DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; flowClock.clear(); };
 DIR.onKey = k => {
   const pi = KEYMAP.indexOf(k); if (pi >= 0 && pi < PRESETS.length) { applyPreset(pi); return true; }
   if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
@@ -317,6 +318,56 @@ function nace(words, d) {
   });
   return { POS, CEN, wid };
 }
+// Packed layout of the tags born so far. The newest word is spliced into the
+// middle of the centre row (and never ejected), then the whole pack is shifted
+// so that word sits at (0, 0). Every other tag's target is where it must go
+// to stay edge-to-edge around that centre.
+function centerPack(ws, h) {
+  const n = ws.length;
+  if (!n) return [];
+  const RP = h - OV, rows = new Map();
+  const len = r => r ? r.s.reduce((a, k) => a + ws[k] - OV, OV) : 0;
+  const centre = (j, r) => { r.L = -len(r) / 2 + (j ? (hash(S.preset, j, 31) - .5) * h * .35 : 0); };
+  for (let m = 0; m < n; m++) {
+    if (!rows.has(0)) rows.set(0, { L:0, s:[m] });
+    else {
+      const r = rows.get(0);
+      let bi = 0, best = Infinity, acc = r.L;
+      const edges = [acc];
+      r.s.forEach(k => { acc += ws[k] - OV; edges.push(acc); });
+      edges.forEach((x, i) => { const c = Math.abs(x); if (c < best) { best = c; bi = i; } });
+      r.s.splice(bi, 0, m);
+    }
+    centre(0, rows.get(0));
+    let area = 0;
+    for (let k = 0; k <= m; k++) area += ws[k] * RP;
+    const R0 = Math.sqrt(area / Math.PI / 1.06);
+    const hw = j => 1.06 * Math.sqrt(Math.max(0, R0 * R0 - (Math.max(0, Math.abs(j) - .5) * RP) ** 2));
+    for (let guard = 0, q = [0]; q.length && guard < 400; guard++) {
+      const j = q.shift(), r = rows.get(j);
+      if (!r || r.s.length < 3) continue;
+      const a = r.s[0], b = r.s.at(-1);
+      if (a === m || b === m) continue;
+      if (len(r) - 2 * hw(j) <= (ws[a] + ws[b]) * .5) continue;
+      const left = rows.get(j ? j - Math.sign(j) : -1), right = rows.get(j ? j + Math.sign(j) : 1);
+      const jj = j ? j + Math.sign(j) : (len(left) <= len(right) ? -1 : 1);
+      if ((Math.abs(jj) - .5) * RP > R0 + RP) continue;
+      r.s.shift(); r.s.pop(); centre(j, r);
+      if (!rows.has(jj)) rows.set(jj, { L:0, s:[] });
+      const dest = rows.get(jj);
+      dest.s.unshift(a); dest.s.push(b); centre(jj, dest);
+      q.push(j, jj);
+    }
+  }
+  const pos = new Array(n);
+  for (const [j, r] of rows) {
+    let x = r.L;
+    for (const k of r.s) { pos[k] = { x:x + ws[k] / 2, y:j * RP }; x += ws[k] - OV; }
+  }
+  const c = pos[n - 1] || { x:0, y:0 };
+  for (const p of pos) if (p) { p.x -= c.x; p.y -= c.y; }
+  return pos;
+}
 let LAYC = null;
 function lay() {
   const pr = P(); if (LAYC && LAYC.p === S.preset && LAYC.rev === textRev) return LAYC;
@@ -345,6 +396,7 @@ function lay() {
   return LAYC;
 }
 DIR.lay = () => lay();
+DIR.centerPack = centerPack;
 DIR.tagInfo = n => {                                    // for the sound modes: running tag n → its width and colour index
   const pr = P(), L0 = lay(), slot = n % L0.cap, tg = L0.tags[slot] || L0.tags[0];
   let c = 6;
@@ -419,46 +471,94 @@ function bigPixel(drawFn, out, cell) {
   out.setTransform(1, 0, 0, 1, 0, 0); out.imageSmoothingEnabled = false; out.drawImage(BP, 0, 0, w * cell * DPR, h * cell * DPR); out.imageSmoothingEnabled = true;
 }
 const toStage = (c, LC) => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(-LC.ox, -LC.oy); };
+// One physical cluster for every preset. ω, ζ chosen so a tag is ~70% of the
+// way in a tenth of a second, overshoots once, bounces back once, and is
+// within a few percent by ~0.6 s — about a beat at these tempos. 16ths arrive
+// before that, and the integrator keeps the current position and velocity.
+const FLOW_W = 16, FLOW_Z = 0.4;
+function flowSeparate(group) {
+  const last = group.length - 1;
+  for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) {
+    const a = group[i], b = group[j];
+    const dx = b.fx - a.fx, dy = b.fy - a.fy;
+    const ox = (a.tg.w + b.tg.w) / 2 - OV - Math.abs(dx);
+    const oy = (a.tg.h + b.tg.h) / 2 - OV - Math.abs(dy);
+    if (ox <= 0.5 || oy <= 0.5) continue;
+    const wa = i === last ? 0.12 : 1, wb = j === last ? 0.12 : 1, share = wa + wb;
+    if (ox < oy) {
+      const s = Math.sign(dx) || 1, push = ox;
+      a.fx -= s * push * wa / share; b.fx += s * push * wb / share;
+    } else {
+      const s = Math.sign(dy) || 1, push = oy;
+      a.fy -= s * push * wa / share; b.fy += s * push * wb / share;
+    }
+  }
+}
+function flowSimulate(group, t) {
+  const key = S.preset + ':' + group[0].gen;
+  let clock = flowClock.get(key);
+  if (clock == null || t + 1e-4 < clock) {
+    group.forEach(it => { it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0; it.fPushed = false; });
+    clock = Math.min(...group.map(it => it.t0));
+  }
+  const h = 1 / 90;
+  let guard = 0;
+  while (clock < t - 1e-4 && guard++ < 5000) {
+    const step = Math.min(h, t - clock), sim = clock + step, alive = [];
+    for (const it of group) if (it.t0 <= sim) alive.push(it);
+    if (!alive.length) { clock = sim; continue; }
+    for (const it of alive) if (!it.fPushed) {
+      it.fPushed = true; it.fx = 0; it.fy = 0; it.fvx = 0; it.fvy = 0;
+    }
+    const pos = centerPack(alive.map(it => it.tg.w), alive[0].tg.h);
+    for (let i = 0; i < alive.length; i++) {
+      const it = alive[i], tx = pos[i] ? pos[i].x : 0, ty = pos[i] ? pos[i].y : 0;
+      const ax = -FLOW_W * FLOW_W * (it.fx - tx) - 2 * FLOW_Z * FLOW_W * it.fvx;
+      const ay = -FLOW_W * FLOW_W * (it.fy - ty) - 2 * FLOW_Z * FLOW_W * it.fvy;
+      it.fvx = Math.max(-2200, Math.min(2200, it.fvx + ax * step));
+      it.fvy = Math.max(-2200, Math.min(2200, it.fvy + ay * step));
+      it.fx += it.fvx * step; it.fy += it.fvy * step;
+    }
+    for (let pass = 0; pass < 4; pass++) flowSeparate(alive);
+    clock = sim;
+  }
+  flowClock.set(key, t);
+}
+function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
+  const gens = new Map();
+  live.forEach(it => { if (!gens.has(it.gen)) gens.set(it.gen, []); gens.get(it.gen).push(it); });
+  const cur = live.length ? Math.max(...live.map(it => it.gen)) : 0;
+  c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(cam.x, cam.y);
+  for (const [g, its] of gens) {
+    const group = its.filter(it => t >= it.t0).sort((a, b) => a.t0 - b.t0 || a.slot - b.slot);
+    if (!group.length) continue;
+    if (g === cur) flowSimulate(group, t);
+    let k = 1, ox = 0, oy = 0;
+    if (g !== cur) {
+      const nx = live.find(o => o.gen === cur && o.slot === 0);
+      const q = nx ? clamp((t - nx.t0) / .32) : 1;
+      k = 1 - q * q * (3 - 2 * q);
+      if (k <= .02) continue;
+      group.forEach(it => { if (it.fx == null) return; ox += it.fx; oy += it.fy; });
+      ox /= group.length; oy /= group.length;
+    }
+    group.forEach(it => {
+      if (it.fx == null || !it.tg) return;
+      const age = t - it.t0, sc = Math.max(0, spring(age, 28, .62));
+      const rot = (1 - clamp(spring(age, 12, .5), 0, 1.15)) * (it.ch && it.ch.rotF < 0 ? -.1 : .1);
+      const x = g === cur ? it.fx : ox + (it.fx - ox) * k, y = g === cur ? it.fy : oy + (it.fy - oy) * k;
+      const [bc, fc] = colours(it, th);
+      box(c, x, y, rot, sc * (g === cur ? 1 : k), it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
+    });
+  }
+}
 DIR.draw = (c, t, th) => {
   if (!L || L.hero !== S.hero) DIR.layout();
   const pr = P(), LC = lay();
   if (pr.bg && S.theme === pr.theme) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = pr.bg; c.fillRect(0, 0, cv.width, cv.height); }
   const live = items.filter(it => it.tg).sort((p, q) => p.t0 - q.t0);
-  c.save(); toStage(c, LC);
-  if (pr.lay === 'grid') {                               // pin: all cells static; the latest note's cell tracks out and springs back
-    const d = LC.cells[0].d, last = new Map();
-    live.forEach(it => { if (t >= it.t0) last.set(it.tg, it); });
-    LC.cells.forEach(cl => box(c, cl.x, cl.y, 0, 1, cl.w, cl.h, cl.word, d, th.lb, th.lt));
-    [...last.entries()].sort((p, q) => p[1].t0 - q[1].t0).forEach(([cl, it]) => {
-      const a = t - it.t0, s = spring(a, it.ch.w * .8, it.ch.z), n = cl.word.length;
-      const tmax = Math.max(0, (700 - textW(cl.word, d.fs)) / Math.max(1, n - 1)), track = Math.max(-1.5, tmax * (1 - s));
-      if (track < .6) return;
-      const w = textW(cl.word, d.fs, track) + 2 * d.pad;
-      box(c, cl.x, cl.y, 0, 1, Math.max(cl.w, w), cl.h, cl.word, d, th.lt, th.lb, track);
-    });
-  } else if (pr.lay === 'fp') {
-    c.fillStyle = '#FFFFFF'; c.fillRect(-540, -540, 540, 420);
-    c.fillStyle = '#F4C500'; c.fillRect(0, -540, 540, 420);
-    c.fillStyle = '#3D3DEB'; c.fillRect(-540, -120, 1080, 660);
-    c.save(); c.beginPath(); c.rect(-540, -540, 540, 420); c.clip();
-    live.forEach(it => drawTag(c, it, t, th, LC.A[it.slot], 'fpA')); c.restore();
-    c.save(); c.beginPath(); c.rect(-540, -120, 1080, 660); c.clip();
-    live.forEach(it => drawTag(c, it, t, th, it.tg, 'fpC')); c.restore();
-    c.restore();
-    const cur = [...live].reverse().find(it => t >= it.t0 && (it.exitT === null || t < it.exitT));
-    if (cur) {                                          // bitmap display word, hard cut per note
-      const wd = cur.tg.word.toUpperCase(), fs = Math.min(230, 470 / textW(wd, 100) * 100);
-      const fn = cc => { cc.save(); cc.translate(L.cx, L.cy); cc.scale(L.u, L.u); cc.fillStyle = '#000000'; cc.font = `700 ${fs}px ${FONT}`;
-        cc.textAlign = 'left'; cc.textBaseline = 'alphabetic'; cc.fillText(wd, 30, -330 + fs * CAPR() / 2); cc.restore(); };
-      c.save(); c.beginPath(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.rect(L.cx, L.cy - 540 * L.u, 540 * L.u, 420 * L.u); c.clip();
-      if (S.pixel) bigPixel(fn, c, Math.max(3, Math.round(12 * L.u))); else cleanPass(fn, c, '#000000');
-      c.restore();
-    }
-    return;
-  } else if (pr.lay === 'nace') { c.restore(); drawNace(c, t, th, live, LC); return; }
-  else if (pr.lay === 'edit') { c.restore(); drawEditorial(c, t, th, live, LC); return; }
-  else live.forEach(it => drawTag(c, it, t, th, it.tg));
-  c.restore();
+  if (pr.lay === 'edit') { drawEditorial(c, t, th, live, LC); return; }
+  drawFlow(c, t, th, live);
 };
 // NACE motion (round 5, aggressive). Tag s after insertions s+1…M: pos = POS[s][s] + Σ_m (POS[m][s] − POS[m−1][s]) · E(…)
 // E = a hard kick: stiff, under-damped spring (ω ≈ 1.9× the tag's seeded ω, ζ ≈ .55× its ζ → fast attack, ~25–45 %
@@ -522,9 +622,9 @@ function drawEditorial(c, t, th, live, LC) {
     const sg = last.ch.rotF >= 0 ? 1 : -1, sc = .55 + .45 * e, x = 270 - sg * 70 * (1 - e), rot = sg * .07 * (1 - e);
     c.save(); c.beginPath(); c.rect(0, -540, 540, 420); c.clip(); box(c, x, -330, rot, sc, w, d.h, wd, d, '#000000', '#FFFFFF'); c.restore();
   }
-  // C · NACE collision cluster, centred in the indigo pane
+  // C · the same centre-birth cluster as every other preset, in the indigo pane
   c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.beginPath(); c.rect(L.cx - 540 * L.u, L.cy - 120 * L.u, 1080 * L.u, 660 * L.u); c.clip();
-  drawNace(c, t, th, live, LC, { x:0, y:210 }); c.restore();
+  drawFlow(c, t, th, live, { x:0, y:210 }); c.restore();
 }
 // ---------- interface: one hard-split strip along the bottom (ref FP): identity | sequencer | state ----------
 let GR = null;
