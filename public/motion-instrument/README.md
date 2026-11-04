@@ -29,6 +29,13 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 ## Controls
 
+The same choices sit in a panel on the page: tempo, subdivision, preset (numbered
+01–13), sound, scale, variety, ramp, pixel, theme, the step grid, and the
+text. The text is the paragraph the notes spell, one word per note. Reset
+puts back the original paragraph, which still ends on Motion Social Club
+Barcelona. Keyboard shortcuts keep working unless the cursor is in the text
+or on a slider.
+
 | Key | Action |
 |---|---|
 | `SPACE` | play / stop the sequence |
@@ -79,6 +86,11 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 - `index.html?hero` abre sin interfaz.
 
 ## Controles
+
+Los mismos controles están en un panel sobre la página. El texto es el párrafo
+que las notas deletrean, una palabra por nota. Reset devuelve el párrafo
+original. Los atajos siguen funcionando salvo cuando el cursor está en el
+texto o en un deslizador.
 
 | Tecla | Acción |
 |---|---|

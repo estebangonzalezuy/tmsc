@@ -361,11 +361,12 @@ in the repo; `media/poster.png` is, because it is the social image.
 
 `public/` does no directory index, so `app/motion-instrument/route.ts`
 answers the bare path with that file. The route only replaces the document
-title and adds the description and Open Graph tags. The tool's markup and
-script are not rewritten, and `/motion-instrument/index.html` still serves
-the artifact untouched. It is linked from the Hub, not the public nav.
-Don't pull site modules into the HTML, and don't edit the instrument to
-change the page's title — that belongs to the route.
+title and adds the description and Open Graph tags. The canvas is the piece;
+the controls are an HTML panel on top of it (DialKit's row language, black
+and white, Archivo Narrow), including the paragraph the notes spell. It is
+linked from the Hub, not the public nav. Don't pull site modules into the
+HTML, and don't edit the instrument to change the page's title — that
+belongs to the route.
 
 ## the Tools (`/tools`) — retired
 

@@ -13,6 +13,50 @@
   html, body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
   canvas#stage { position:fixed; inset:0; width:100vw; height:100vh; display:block; cursor:crosshair; }
   svg.defs { position:absolute; width:0; height:0; }
+  /* Floating control panel, in DialKit's language: one card, a label and a
+     value on each row, sliders, toggles, segmented choices. Black and white
+     only, set in the embedded Archivo Narrow. Nothing here is fetched. */
+  #mi { position:fixed; z-index:5; top:16px; right:16px; width:min(300px, calc(100vw - 32px)); color:#000; font-family:"Archivo Narrow", sans-serif; font-weight:400; }
+  #mi[hidden] { display:none; }
+  .mi-card { background:#fff; color:#000; border:1px solid #000; border-radius:14px; max-height:calc(100vh - 32px); overflow:auto; }
+  .mi-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; background:#fff; border-bottom:1px solid #000; cursor:grab; user-select:none; }
+  .mi-head b { font-weight:700; font-size:15px; letter-spacing:-.02em; }
+  .mi-head button, .mi-text button, .mi-actions button, #mi-play { font:inherit; color:#000; background:#fff; border:1px solid #000; border-radius:8px; cursor:pointer; }
+  .mi-head button { width:28px; height:28px; padding:0; line-height:1; }
+  .mi-body { display:flex; flex-direction:column; gap:6px; padding:10px; }
+  #mi.is-collapsed { width:44px; }
+  #mi.is-collapsed .mi-card { width:44px; height:44px; border-radius:50%; overflow:hidden; }
+  #mi.is-collapsed .mi-head { border:0; padding:0; width:44px; height:44px; justify-content:center; cursor:pointer; }
+  #mi.is-collapsed .mi-head button, #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
+  .mi-warn { margin:0; padding:8px 12px 0; font-size:12px; }
+  .mi-slide { position:relative; height:32px; border:1px solid #000; border-radius:8px; background:#fff; }
+  .mi-slide span, .mi-slide b { position:absolute; top:50%; transform:translateY(-50%); font-size:13px; font-weight:400; pointer-events:none; }
+  .mi-slide span { left:10px; }
+  .mi-slide b { right:10px; font-weight:700; }
+  .mi-slide i { position:absolute; top:6px; bottom:6px; width:2px; background:#000; pointer-events:none; }
+  .mi-slide input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:ew-resize; }
+  .mi-seg { display:flex; flex-wrap:wrap; gap:4px; }
+  .mi-seg button { font:inherit; font-size:13px; color:#000; background:#fff; border:1px solid #000; border-radius:8px; padding:4px 8px; cursor:pointer; }
+  .mi-seg button.is-on { background:#000; color:#fff; }
+  #mi-presets button { width:36px; padding:4px 0; }
+  .mi-toggle { display:flex; align-items:center; justify-content:space-between; height:32px; padding:0 10px; border:1px solid #000; border-radius:8px; background:#fff; font:inherit; font-size:13px; color:#000; cursor:pointer; }
+  .mi-toggle s { display:inline-block; width:32px; height:18px; border:1px solid #000; border-radius:9px; position:relative; background:#fff; text-decoration:none; }
+  .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:14px; height:14px; border-radius:50%; background:#000; }
+  .mi-toggle[aria-pressed="true"] s { background:#000; }
+  .mi-toggle[aria-pressed="true"] s::after { left:auto; right:1px; background:#fff; }
+  .mi-label { font-size:13px; }
+  .mi-grid { display:grid; grid-template-columns:repeat(8, 14px); gap:3px; }
+  .mi-grid button { width:14px; height:14px; padding:0; border:1px solid #000; border-radius:0; background:#fff; cursor:pointer; }
+  .mi-grid button.is-on { background:#000; }
+  .mi-grid button.is-step { box-shadow:inset 0 -2px 0 #000; }
+  .mi-text { display:flex; flex-direction:column; gap:4px; font-size:13px; }
+  .mi-text textarea { font:inherit; font-size:14px; color:#000; background:#fff; border:1px solid #000; border-radius:8px; padding:8px; resize:vertical; min-height:72px; }
+  .mi-text button, .mi-actions button, #mi-play { padding:6px 10px; }
+  #mi-play.is-on { background:#000; color:#fff; }
+  .mi-actions { display:flex; gap:6px; }
+  .mi-actions button { flex:1; }
+  .mi-actions button.is-on { background:#000; color:#fff; }
+  .mi-hint { margin:0; font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
 </style>
 </head>
 <body>
@@ -24,6 +68,38 @@
   <feFlood id="pxflood" flood-color="#FFFFFF" result="f"/>
   <feComposite in="f" in2="t" operator="in"/>
 </filter></svg>
+<aside id="mi" aria-label="Motion Instrument">
+  <div class="mi-card">
+    <header class="mi-head" id="mi-head">
+      <b>Motion</b>
+      <button type="button" id="mi-fold" aria-label="Collapse panel">–</button>
+    </header>
+    <p class="mi-warn" id="mi-warn" hidden>Font not loaded</p>
+    <div class="mi-body">
+      <button type="button" id="mi-play">Play</button>
+      <div class="mi-slide"><span>BPM</span><i id="mi-bpm-h"></i><b id="mi-bpm-v">120</b><input id="mi-bpm" type="range" min="40" max="240" step="1" value="120" aria-label="BPM"></div>
+      <div class="mi-seg" id="mi-sub" role="group" aria-label="Subdivision"></div>
+      <div class="mi-seg" id="mi-presets" role="group" aria-label="Preset"></div>
+      <div class="mi-seg" id="mi-sound" role="group" aria-label="Sound"></div>
+      <div class="mi-seg" id="mi-scale" role="group" aria-label="Scale"></div>
+      <div class="mi-slide"><span>Variety</span><i id="mi-var-h"></i><b id="mi-var-v">50</b><input id="mi-var" type="range" min="0" max="100" step="25" value="50" aria-label="Variety"></div>
+      <button type="button" class="mi-toggle" id="mi-ramp" aria-pressed="false"><span>Ramp</span><s></s></button>
+      <button type="button" class="mi-toggle" id="mi-pixel" aria-pressed="true"><span>Pixel</span><s></s></button>
+      <div class="mi-seg" id="mi-theme" role="group" aria-label="Theme"></div>
+      <div class="mi-label">Pattern</div>
+      <div class="mi-grid" id="mi-grid"></div>
+      <label class="mi-text">Text
+        <textarea id="mi-text" rows="5" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
+        <button type="button" id="mi-reset">Reset</button>
+      </label>
+      <div class="mi-actions">
+        <button type="button" id="mi-clear">Clear</button>
+        <button type="button" id="mi-rec">Record</button>
+      </div>
+      <p class="mi-hint">A–K notes · space play · U hide</p>
+    </div>
+  </div>
+</aside>
 <script>
 (() => {
 // ===================== DIRECTION D · ETIQUETAS (round 3: dense packed tags) =====================
@@ -43,13 +119,29 @@ const DIR = { name:'D · ETIQUETAS', slug:'d-etiquetas', defaultTheme:0, bpm:120
   feel:{ major:{ dur:.3, life:1e6, exit:1.0, keep:1e6, ease:'heavy', gravity:0 },
          minor:{ dur:.5, life:1e6, exit:1.0, keep:1e6, ease:'heavy', gravity:0 } },
 };
-const TEXT = ('Press a key and a word moves. The human plays the tool, the tool plays back. Every note drops a label, every label finds ' +
+const DEFAULT_TEXT = 'Press a key and a word moves. The human plays the tool, the tool plays back. Every note drops a label, every label finds ' +
   'its place. Type becomes rhythm, rhythm becomes layout. Springs, weight, timing, a little chaos. One key, one word, one move. ' +
-  'Play it loud, play it slow, play it again. Motion Social Club Barcelona.').split(' ');
+  'Play it loud, play it slow, play it again. Motion Social Club Barcelona.';
+let TEXT = DEFAULT_TEXT.split(' ');
 const SIGN = 4;                                         // every cycle ends on the sign-off "Motion Social Club Barcelona."
+let textRev = 0;
 function wordAt(slot, cap) {
-  const body = TEXT.length - SIGN;
-  return slot < cap - SIGN ? TEXT[slot % body] : TEXT[body + (slot - (cap - SIGN))];
+  const sign = TEXT.length > SIGN ? SIGN : 0, body = TEXT.length - sign;
+  if (body <= 0) return TEXT[0] || '';
+  return slot < cap - sign ? TEXT[slot % body] : TEXT[body + (slot - (cap - sign))];
+}
+function applyWords(raw) {
+  const words = String(raw).trim().split(/\s+/).filter(Boolean);
+  const next = words.length ? words : ['·'];
+  if (next.length === TEXT.length && next.every((w, i) => w === TEXT[i])) return;
+  TEXT = next; textRev++; LAYC = null;
+  const pr = P(), L0 = lay();
+  items.forEach(it => {
+    if (it.slot == null || !L0.cap) return;
+    const slot = it.slot % L0.cap;
+    it.slot = slot;
+    it.tg = pr.lay === 'grid' ? L0.cells[(slot * 7) % L0.cells.length] : L0.tags[slot];
+  });
 }
 const pat = pairs => { const p = [...Array(8)].map(() => Array(8).fill(0)); pairs.forEach(([s, r]) => p[s][r] = 1); return p; };
 const PAL = { indigo:['#3D3DEB','#FFFFFF'], peri:['#ADB4F5','#000000'], yellow:['#F4C500','#000000'], orange:['#EE4B2B','#000000'],
@@ -228,7 +320,7 @@ function nace(words, d) {
 }
 let LAYC = null;
 function lay() {
-  const pr = P(); if (LAYC && LAYC.p === S.preset) return LAYC;
+  const pr = P(); if (LAYC && LAYC.p === S.preset && LAYC.rev === textRev) return LAYC;
   const cap = capOf(pr), words = [...Array(cap)].map((_, n) => wordAt(n, cap)), d = dims(pr.fs);
   let tags = [], extra = {};
   if (pr.lay === 'nace' || pr.lay === 'edit') { const N = nace(words, d); extra.N = N;
@@ -250,7 +342,7 @@ function lay() {
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   tags.forEach(o => { x0 = Math.min(x0, o.x - o.w / 2); x1 = Math.max(x1, o.x + o.w / 2); y0 = Math.min(y0, o.y - o.h / 2); y1 = Math.max(y1, o.y + o.h / 2); });
   const fixed = pr.lay === 'fp' || pr.lay === 'edit';
-  LAYC = { p:S.preset, cap, tags, ...extra, ox:fixed ? 0 : (x0 + x1) / 2, oy:fixed ? 0 : (y0 + y1) / 2 + 16, bw:x1 - x0, bh:y1 - y0 };
+  LAYC = { p:S.preset, rev:textRev, cap, tags, ...extra, ox:fixed ? 0 : (x0 + x1) / 2, oy:fixed ? 0 : (y0 + y1) / 2 + 16, bw:x1 - x0, bh:y1 - y0 };
   return LAYC;
 }
 DIR.lay = () => lay();
@@ -269,8 +361,12 @@ DIR.onTrigger = (it, t0) => {
 };
 // ---------- draw ----------
 let L = null;
-const STRIP = 168;
-DIR.layout = () => { const sh = S.hero ? H : H - STRIP; L = { hero:S.hero, sh, u:Math.min(W, sh) / 1080, cx:W / 2, cy:sh / 2 }; LAYC = null; };
+const STRIP = 168;                                  // the old strip; the panel replaced it, so the piece uses the full window
+DIR.layout = () => {
+  const sh = H, same = L && L.sh === sh && L.w === W;
+  L = { hero:S.hero, sh, w:W, u:Math.min(W, sh) / 1080, cx:W / 2, cy:sh / 2 };
+  if (!same) LAYC = null;
+};
 function colours(it, th, kind) {
   const pr = P();
   if (kind === 'fpA') return ['#000000', '#FFFFFF'];
@@ -717,7 +813,6 @@ function render(t) {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over';
   ctx.fillStyle = th.bg; ctx.fillRect(0, 0, cv.width, cv.height);
   DIR.draw(ctx, t, th);
-  if (!S.hero) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); DIR.ui(ctx, t, th); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 function frame() {
@@ -726,6 +821,7 @@ function frame() {
     const q = queue.shift(); if (q.step !== undefined) S.step = q.step; else { trigger(q.r); S.lastNote = q.n; }
   }
   render(now());
+  syncPanel();
   requestAnimationFrame(frame);
 }
 // ---------------- theme / help ----------------
@@ -761,6 +857,8 @@ cv.addEventListener('pointerdown', ev => {
   if (h) { S.pattern[h.st][h.row] ^= 1; if (S.pattern[h.st][h.row] && !S.playing) { S.lastNote = playNote(h.row, undefined, S.noteIdx); trigger(h.row); } }
 });
 addEventListener('keydown', ev => {
+  const tag = ev.target && ev.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target && ev.target.isContentEditable)) return;
   if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
   const k = ev.key.toLowerCase(), i = KEYS.indexOf(k);
   if (i >= 0) { if (!ev.repeat) { S.lastNote = playNote(i, undefined, S.noteIdx); S.schedIdx = S.noteIdx + 1; trigger(i); } ev.preventDefault(); return; }
@@ -815,8 +913,111 @@ async function renderAudio(sc, dur, sr = 48000) {
   for (let k = 0; k < u8.length; k += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(k, k + 0x8000));
   return { b64: btoa(s), sr, peak, clip, events: ev.length };
 }
-window.MI = { S, THEMES, get items() { return items; }, togglePlay, trigger, playNote, fontOK:null, DIR,
+window.MI = { S, THEMES, get items() { return items; }, get words() { return TEXT.slice(); }, DEFAULT_TEXT, applyWords, togglePlay, trigger, playNote, fontOK:null, DIR,
   setTheme(i) { S.theme = i; applyTheme(); }, renderMode(on) { S.render = on; if (!on) requestAnimationFrame(frame); }, frameAt, renderAudio, scriptEvents, SOUNDS, SOUND_NAME, MODE_GAIN, RAMP, rampT };
+// ---------------- panel (DialKit-shaped: labelled rows, wired to the keys) ----------------
+let panelSig = '';
+function segButtons(host, items, pick) {
+  host.replaceChildren();
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = it.label; b.dataset.v = it.value;
+    b.addEventListener('click', () => pick(it.value));
+    host.appendChild(b);
+  });
+}
+function markSeg(host, value) {
+  host.querySelectorAll('button').forEach(b => b.classList.toggle('is-on', b.dataset.v === String(value)));
+}
+function slide(input, handle, valueEl, value, min, max, text) {
+  const p = (Number(value) - min) / (max - min);
+  handle.style.left = `calc(${Math.max(0, Math.min(1, p)) * 100}% - 1px)`;
+  valueEl.textContent = text;
+  if (document.activeElement !== input) input.value = String(value);
+}
+function syncPanel() {
+  const panel = document.getElementById('mi'); if (!panel) return;
+  panel.hidden = !!S.hero;
+  const warn = document.getElementById('mi-warn');
+  if (warn) warn.hidden = !S.fontWarn;
+  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.scale, S.variety, S.pixel, S.theme, S.recording, S.step, S.hero,
+    S.pattern.map(r => r.join('')).join('')].join('|');
+  if (sig === panelSig) return;
+  panelSig = sig;
+  const play = document.getElementById('mi-play');
+  play.textContent = S.playing ? 'Stop' : 'Play';
+  play.classList.toggle('is-on', S.playing);
+  const heard = S.ramp && S.bpmNow ? S.bpmNow : S.bpm;
+  slide(document.getElementById('mi-bpm'), document.getElementById('mi-bpm-h'), document.getElementById('mi-bpm-v'), S.bpm, 40, 240, heard);
+  slide(document.getElementById('mi-var'), document.getElementById('mi-var-h'), document.getElementById('mi-var-v'), Math.round(S.variety * 100), 0, 100, Math.round(S.variety * 100));
+  markSeg(document.getElementById('mi-sub'), S.sub);
+  markSeg(document.getElementById('mi-presets'), S.preset);
+  markSeg(document.getElementById('mi-sound'), S.sound);
+  markSeg(document.getElementById('mi-scale'), S.scale);
+  markSeg(document.getElementById('mi-theme'), S.theme);
+  const ramp = document.getElementById('mi-ramp'), pixel = document.getElementById('mi-pixel');
+  ramp.setAttribute('aria-pressed', S.ramp ? 'true' : 'false');
+  pixel.setAttribute('aria-pressed', S.pixel ? 'true' : 'false');
+  const rec = document.getElementById('mi-rec');
+  rec.textContent = S.recording ? 'Stop' : 'Record';
+  rec.classList.toggle('is-on', S.recording);
+  document.querySelectorAll('#mi-grid button').forEach(b => {
+    const st = Number(b.dataset.st), row = Number(b.dataset.row);
+    b.classList.toggle('is-on', !!S.pattern[st][row]);
+    b.classList.toggle('is-step', S.playing && S.step === st);
+  });
+}
+(function mountPanel() {
+  const cap = ['Synth', 'Mono', 'Bass'];
+  segButtons(document.getElementById('mi-sub'), [{ value:2, label:'8ths' }, { value:3, label:'Tri' }, { value:4, label:'16ths' }], v => { S.sub = Number(v); panelSig = ''; });
+  segButtons(document.getElementById('mi-presets'), PRESETS.map((_, i) => ({ value:i, label:String(i + 1).padStart(2, '0') })), v => { applyPreset(Number(v)); panelSig = ''; });
+  segButtons(document.getElementById('mi-sound'), SOUNDS.map((id, i) => ({ value:id, label:cap[i] })), v => { S.sound = v; panelSig = ''; });
+  segButtons(document.getElementById('mi-scale'), [{ value:'major', label:'Major' }, { value:'minor', label:'Minor' }], v => { S.scale = v; panelSig = ''; });
+  segButtons(document.getElementById('mi-theme'), THEMES.map((th, i) => ({ value:i, label:th.name[0].toUpperCase() + th.name.slice(1) })), v => { S.theme = Number(v); applyTheme(); panelSig = ''; });
+  document.getElementById('mi-bpm').addEventListener('input', e => { S.bpm = Number(e.target.value); panelSig = ''; });
+  document.getElementById('mi-var').addEventListener('input', e => { S.variety = Number(e.target.value) / 100; panelSig = ''; });
+  document.getElementById('mi-play').addEventListener('click', () => { togglePlay(); panelSig = ''; });
+  document.getElementById('mi-ramp').addEventListener('click', () => { toggleRamp(); panelSig = ''; });
+  document.getElementById('mi-pixel').addEventListener('click', () => { S.pixel = !S.pixel; panelSig = ''; });
+  document.getElementById('mi-clear').addEventListener('click', () => { S.pattern.forEach(r => r.fill(0)); DIR.onClear && DIR.onClear(); panelSig = ''; });
+  document.getElementById('mi-rec').addEventListener('click', () => { toggleRec(); panelSig = ''; });
+  const text = document.getElementById('mi-text');
+  text.value = DEFAULT_TEXT;
+  text.addEventListener('input', () => applyWords(text.value));
+  document.getElementById('mi-reset').addEventListener('click', () => { text.value = DEFAULT_TEXT; applyWords(DEFAULT_TEXT); });
+  const grid = document.getElementById('mi-grid');
+  for (let r = 7; r >= 0; r--) for (let st = 0; st < 8; st++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.tabIndex = -1; b.dataset.st = String(st); b.dataset.row = String(r);
+    b.addEventListener('click', () => {
+      audio();
+      S.pattern[st][r] ^= 1;
+      if (S.pattern[st][r] && !S.playing) { S.lastNote = playNote(r, undefined, S.noteIdx); trigger(r); }
+      panelSig = '';
+    });
+    grid.appendChild(b);
+  }
+  const card = document.getElementById('mi'), head = document.getElementById('mi-head');
+  document.getElementById('mi-fold').addEventListener('click', () => card.classList.toggle('is-collapsed'));
+  head.addEventListener('click', e => { if (card.classList.contains('is-collapsed') && !e.target.closest('button')) card.classList.remove('is-collapsed'); });
+  let drag = null;
+  head.addEventListener('pointerdown', e => {
+    if (e.target.closest('button') || card.classList.contains('is-collapsed')) return;
+    const box = card.getBoundingClientRect();
+    drag = { x:e.clientX, y:e.clientY, l:box.left, t:box.top };
+    card.style.right = 'auto'; card.style.left = box.left + 'px'; card.style.top = box.top + 'px';
+    head.setPointerCapture(e.pointerId);
+  });
+  head.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const l = Math.max(8, Math.min(innerWidth - card.offsetWidth - 8, drag.l + e.clientX - drag.x));
+    const t = Math.max(8, Math.min(innerHeight - 48, drag.t + e.clientY - drag.y));
+    card.style.left = l + 'px'; card.style.top = t + 'px';
+  });
+  head.addEventListener('pointerup', () => { drag = null; });
+  if (S.hero) card.hidden = true;
+  syncPanel();
+})();
 // ---------------- boot: wait for the embedded Archivo Narrow, never fall back silently ----------------
 applyTheme(); resize();
 (async () => {
