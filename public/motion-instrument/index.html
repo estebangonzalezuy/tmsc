@@ -13,50 +13,80 @@
   html, body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
   canvas#stage { position:fixed; inset:0; width:100vw; height:100vh; display:block; cursor:crosshair; }
   svg.defs { position:absolute; width:0; height:0; }
-  /* Controls float on the canvas: black buttons, white outline, no dock.
-     Archivo Narrow is the embedded face. Nothing here is fetched. */
-  #mi, .mi-body, .mi-head, .mi-seg, .mi-actions, .mi-text, .mi-grid { pointer-events:none; }
-  .mi-card, #mi button, #mi .mi-slide, #mi textarea, #mi .mi-head { pointer-events:auto; }
-  #mi { position:fixed; z-index:5; top:16px; right:16px; width:min(320px, calc(100vw - 32px)); color:#fff; font-family:"Archivo Narrow", sans-serif; font-weight:400; }
+  /* Flat controls. The pad sits on the left; the other buttons are a
+     separate group on the right. Black fill, white edge, and a black
+     outer edge so a button still reads on a white or a black canvas.
+     Archivo Narrow is embedded. Nothing here is fetched. */
+  #mi, #mi-hint { font-family:"Archivo Narrow", sans-serif; font-weight:400; }
+  #mi { position:fixed; z-index:5; inset:16px; width:auto; pointer-events:none; color:#fff; }
   #mi[hidden] { display:none; }
-  .mi-card { background:transparent; border:0; max-height:calc(100vh - 32px); overflow:auto; }
-  .mi-head { display:flex; justify-content:flex-end; margin:0 0 8px; }
-  .mi-body { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
-  #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
-  .mi-warn { margin:0 0 8px; padding:4px 10px; font-size:12px; color:#fff; background:#000; border:1px solid #fff; border-radius:999px; box-shadow:0 8px 18px rgba(0,0,0,.35); }
-  #mi button, .mi-slide, .mi-toggle, .mi-text textarea, .mi-label, .mi-hint {
-    color:#fff; background:#000; border:1px solid #fff; border-radius:999px;
-    box-shadow:0 8px 18px rgba(0,0,0,.35); font:inherit;
+  .mi-pad, .mi-card { pointer-events:auto; position:absolute; box-shadow:none; }
+  .mi-pad {
+    left:0; top:50%; transform:translateY(-50%);
+    background:#000; color:#fff; border:2px solid #fff; outline:2px solid #000;
+    border-radius:14px; padding:10px;
   }
-  .mi-slide { position:relative; align-self:stretch; height:34px; }
+  .mi-card {
+    right:0; top:0; width:min(300px, 38vw); max-height:100%; overflow:auto;
+    background:transparent; border:0; padding:4px; box-sizing:border-box;
+  }
+  .mi-head { display:flex; justify-content:flex-end; margin:0 0 2px; }
+  .mi-body { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+  #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
+  .mi-warn { margin:0 0 8px; padding:4px 10px; font-size:12px; color:#fff; background:#000; border:2px solid #fff; outline:2px solid #000; border-radius:999px; }
+  #mi button, .mi-slide, .mi-toggle, .mi-text textarea, .mi-label {
+    color:#fff; background:#000; border:2px solid #fff; outline:2px solid #000; border-radius:999px;
+    box-shadow:none; font:inherit;
+  }
+  .mi-slide { position:relative; align-self:stretch; height:30px; }
   .mi-slide span, .mi-slide b { position:absolute; top:50%; transform:translateY(-50%); font-size:13px; font-weight:400; pointer-events:none; color:#fff; }
   .mi-slide span { left:12px; }
   .mi-slide b { right:12px; font-weight:700; }
   .mi-slide i { position:absolute; top:7px; bottom:7px; width:2px; background:#fff; pointer-events:none; }
   .mi-slide input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:ew-resize; }
-  .mi-seg, .mi-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+  .mi-seg, .mi-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px; }
   .mi-seg button, .mi-actions button, #mi-play, .mi-text button, #mi-fold {
     font-size:13px; padding:3px 9px; cursor:pointer;
   }
-  .mi-seg button.is-on, .mi-actions button.is-on, #mi-play.is-on { background:#fff; color:#000; }
+  #mi button.is-on, #mi .mi-toggle[aria-pressed="true"] {
+    background:#fff; color:#000; border-color:#000; outline-color:#fff;
+  }
   #mi-presets button { width:36px; padding:5px 0; }
-  #mi #mi-fold { width:36px; height:36px; padding:0; border-radius:50%; cursor:grab; }
-  .mi-toggle { display:flex; align-items:center; justify-content:space-between; gap:16px; height:34px; padding:0 12px; font-size:13px; cursor:pointer; }
-  .mi-toggle s { display:inline-block; width:32px; height:18px; border:1px solid #fff; border-radius:9px; position:relative; background:transparent; text-decoration:none; box-shadow:none; }
-  .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:14px; height:14px; border-radius:50%; background:#fff; }
-  .mi-toggle[aria-pressed="true"] { background:#fff; color:#000; }
+  #mi #mi-fold { width:32px; height:32px; padding:0; border-radius:50%; cursor:grab; }
+  .mi-toggle { display:flex; align-items:center; justify-content:space-between; gap:16px; height:30px; padding:0 12px; font-size:13px; cursor:pointer; }
+  .mi-toggle s { display:inline-block; width:32px; height:18px; border:2px solid #fff; border-radius:9px; position:relative; background:transparent; text-decoration:none; box-shadow:none; outline:none; }
+  .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:12px; height:12px; border-radius:50%; background:#fff; }
   .mi-toggle[aria-pressed="true"] s { border-color:#000; }
   .mi-toggle[aria-pressed="true"] s::after { left:auto; right:1px; background:#000; }
-  .mi-label, .mi-hint { align-self:flex-end; font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; margin:0; }
-  .mi-grid { display:grid; grid-template-columns:repeat(8, 12px); gap:3px; }
-  #mi .mi-grid button { width:12px; height:12px; padding:0; border-radius:2px; box-shadow:none; }
-  #mi .mi-grid button.is-on { background:#fff; }
-  #mi .mi-grid button.is-step { box-shadow:inset 0 -2px 0 #fff; }
-  #mi .mi-grid button.is-on.is-step { box-shadow:inset 0 -2px 0 #000; }
-  .mi-text { display:flex; flex-direction:column; align-items:flex-end; gap:6px; align-self:stretch; }
+  .mi-label { align-self:flex-end; font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; margin:0; }
+  .mi-grid { display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:5px; width:min(272px, 30vw); }
+  #mi .mi-pad .mi-grid button {
+    width:100%; aspect-ratio:1; height:auto; padding:0; border-radius:5px;
+    box-shadow:none; outline:none;
+  }
+  #mi .mi-grid button.is-on { background:#fff; color:#000; border-color:#000; }
+  #mi .mi-grid button.is-step { border-bottom-width:4px; border-bottom-color:#fff; }
+  #mi .mi-grid button.is-on.is-step { border-bottom-color:#000; }
+  .mi-text { display:flex; flex-direction:column; align-items:flex-end; gap:4px; align-self:stretch; }
   .mi-text textarea { font:inherit; font-size:14px; width:100%; min-height:52px; padding:8px 10px; border-radius:16px; resize:vertical; box-sizing:border-box; }
   .mi-actions { align-self:stretch; }
   .mi-actions button { flex:1; }
+  #mi-hint {
+    position:fixed; z-index:6; left:0; right:0; bottom:20px; margin:0; padding:0 336px;
+    display:flex; justify-content:center; background:transparent; border:0; box-shadow:none;
+    pointer-events:none;
+  }
+  #mi-hint span {
+    max-width:100%; text-align:center; font-size:15px; line-height:1.3; color:#000; background:#fff;
+    border:2px solid #000; border-radius:999px; padding:8px 16px; box-shadow:none;
+  }
+  #mi-hint[hidden] { display:none; }
+  @media (max-width: 980px) {
+    .mi-pad { top:8px; transform:none; }
+    .mi-grid { width:min(200px, 46vw); }
+    .mi-card { top:auto; bottom:0; left:0; right:0; width:auto; max-height:42vh; }
+    #mi-hint { padding:0 16px; bottom:calc(42vh + 28px); }
+  }
 </style>
 </head>
 <body>
@@ -69,6 +99,9 @@
   <feComposite in="f" in2="t" operator="in"/>
 </filter></svg>
 <aside id="mi" aria-label="Motion Instrument">
+  <div class="mi-pad" id="mi-pad">
+    <div class="mi-grid" id="mi-grid" role="group" aria-label="Pad"></div>
+  </div>
   <div class="mi-card">
     <header class="mi-head" id="mi-head">
       <button type="button" id="mi-fold" aria-label="Collapse">–</button>
@@ -86,8 +119,6 @@
       <button type="button" class="mi-toggle" id="mi-ramp" aria-pressed="false"><span>Ramp</span><s></s></button>
       <button type="button" class="mi-toggle" id="mi-pixel" aria-pressed="true"><span>Pixel</span><s></s></button>
       <div class="mi-seg" id="mi-theme" role="group" aria-label="Theme"></div>
-      <div class="mi-label">Pattern</div>
-      <div class="mi-grid" id="mi-grid"></div>
       <label class="mi-text"><span class="mi-label">Text</span>
         <textarea id="mi-text" rows="3" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
         <button type="button" id="mi-reset">Reset</button>
@@ -99,6 +130,7 @@
     </div>
   </div>
 </aside>
+<p id="mi-hint"><span>Click the pad or press Space to start — drag on the pad to shape the sound.</span></p>
 <script>
 (() => {
 // ===================== DIRECTION D · ETIQUETAS (round 3: dense packed tags) =====================
@@ -626,6 +658,10 @@ DIR.draw = (c, t, th) => {
   if (!L || L.hero !== S.hero) DIR.layout();
   const pr = P(), LC = lay();
   if (pr.bg && S.theme === pr.theme) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = pr.bg; c.fillRect(0, 0, cv.width, cv.height); }
+  c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.globalAlpha = 0.05; c.strokeStyle = th.fg; c.lineWidth = 1; c.beginPath();
+  for (let x = 48; x < W; x += 48) { c.moveTo(x + 0.5, 0); c.lineTo(x + 0.5, H); }
+  for (let y = 48; y < H; y += 48) { c.moveTo(0, y + 0.5); c.lineTo(W, y + 0.5); }
+  c.stroke(); c.restore();
   const live = items.filter(it => it.tg).sort((p, q) => p.t0 - q.t0);
   if (pr.lay === 'edit') { drawEditorial(c, t, th, live, LC); return; }
   drawFlow(c, t, th, live);
@@ -1122,6 +1158,8 @@ function slide(input, handle, valueEl, value, min, max, text) {
 function syncPanel() {
   const panel = document.getElementById('mi'); if (!panel) return;
   panel.hidden = !!S.hero;
+  const hint = document.getElementById('mi-hint');
+  if (hint) hint.hidden = !!S.playing || !!S.hero;
   const warn = document.getElementById('mi-warn');
   if (warn) warn.hidden = !S.fontWarn;
   const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.pixel, S.theme, S.recording, S.step, S.hero,
@@ -1175,21 +1213,48 @@ function syncPanel() {
   for (let r = 7; r >= 0; r--) for (let st = 0; st < 8; st++) {
     const b = document.createElement('button');
     b.type = 'button'; b.tabIndex = -1; b.dataset.st = String(st); b.dataset.row = String(r);
-    b.addEventListener('click', () => {
-      audio();
-      S.pattern[st][r] ^= 1;
-      if (S.pattern[st][r] && !S.playing) { S.lastNote = playNote(r, undefined, S.noteIdx); trigger(r); }
-      panelSig = '';
-    });
     grid.appendChild(b);
   }
-  const card = document.getElementById('mi'), head = document.getElementById('mi-head');
+  let painting = null;
+  const cellAt = (x, y) => {
+    const el = document.elementFromPoint(x, y);
+    return el && grid.contains(el) && el.dataset.st != null ? el : null;
+  };
+  const paint = (el) => {
+    if (!el || painting == null) return;
+    const st = Number(el.dataset.st), row = Number(el.dataset.row);
+    if (S.pattern[st][row] === painting) return;
+    S.pattern[st][row] = painting;
+    if (painting) { S.lastNote = playNote(row, undefined, S.noteIdx); trigger(row); }
+    panelSig = '';
+  };
+  grid.addEventListener('pointerdown', e => {
+    const el = e.target.closest('button');
+    if (!el) return;
+    audio();
+    if (!S.playing) togglePlay();
+    const st = Number(el.dataset.st), row = Number(el.dataset.row);
+    painting = S.pattern[st][row] ? 0 : 1;
+    S.pattern[st][row] = painting;
+    if (painting) { S.lastNote = playNote(row, undefined, S.noteIdx); trigger(row); }
+    panelSig = '';
+    grid.setPointerCapture(e.pointerId);
+  });
+  grid.addEventListener('pointermove', e => { if (painting != null) paint(cellAt(e.clientX, e.clientY)); });
+  grid.addEventListener('pointerup', () => { painting = null; });
+  grid.addEventListener('pointercancel', () => { painting = null; });
+  document.getElementById('mi-pad').addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    audio();
+    if (!S.playing) togglePlay();
+  });
+  const shell = document.getElementById('mi'), card = shell.querySelector('.mi-card');
   const fold = document.getElementById('mi-fold');
   let drag = null, moved = false;
   fold.addEventListener('click', () => {
     if (moved) { moved = false; return; }
-    card.classList.toggle('is-collapsed');
-    fold.textContent = card.classList.contains('is-collapsed') ? '+' : '–';
+    shell.classList.toggle('is-collapsed');
+    fold.textContent = shell.classList.contains('is-collapsed') ? '+' : '–';
   });
   fold.addEventListener('pointerdown', e => {
     const box = card.getBoundingClientRect();
@@ -1202,12 +1267,13 @@ function syncPanel() {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.hypot(dx, dy) < 4) return;
     moved = true;
+    const host = shell.getBoundingClientRect();
     card.style.right = 'auto';
-    card.style.left = Math.max(8, Math.min(innerWidth - card.offsetWidth - 8, drag.l + dx)) + 'px';
-    card.style.top = Math.max(8, Math.min(innerHeight - 48, drag.t + dy)) + 'px';
+    card.style.left = Math.max(0, Math.min(host.width - card.offsetWidth, drag.l + dx - host.left)) + 'px';
+    card.style.top = Math.max(0, Math.min(host.height - 48, drag.t + dy - host.top)) + 'px';
   });
   fold.addEventListener('pointerup', () => { drag = null; });
-  if (S.hero) card.hidden = true;
+  if (S.hero) shell.hidden = true;
   syncPanel();
 })();
 // ---------------- boot: wait for the embedded Archivo Narrow, never fall back silently ----------------
