@@ -29,9 +29,11 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 ## Controls
 
-The same choices sit in a panel on the page: tempo, subdivision, preset (numbered
-01–13), sound, scale, variety, ramp, pixel, theme, the step grid, and the
-text. The text is the paragraph the notes spell, one word per note. Reset
+The controls float on the canvas as black buttons with a white outline: tempo,
+subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
+pixel, theme, the step grid, and the text. Tone is how a note sounds — Pluck,
+Soft, Reed, Bell — and only one note rings at a time. The text is the
+paragraph the notes spell, one word per note. Reset
 puts back the original paragraph, which still ends on Motion Social Club
 Barcelona. Keyboard shortcuts keep working unless the cursor is in the text
 or on a slider.
@@ -43,6 +45,7 @@ or on a slider.
 | `1`–`9`, `0`, `-`, `=` | layouts 01–12 |
 | `E` | layout 13 |
 | `O` | sound: SYNTH → MONO + SFX → SFX + BASS |
+| `T` | tone: Pluck → Soft → Reed → Bell |
 | `L` | tempo ramp 80 → 160 BPM on / off |
 | `V` | variety (0 → 100 % in steps of 25) |
 | `M` | major / minor |
@@ -99,6 +102,7 @@ texto o en un deslizador.
 | `1`–`9`, `0`, `-`, `=` | composiciones 01–12 |
 | `E` | composición 13 |
 | `O` | sonido: SYNTH → MONO + SFX → SFX + BASS |
+| `T` | timbre: Pluck → Soft → Reed → Bell |
 | `L` | rampa de tempo 80 → 160 BPM |
 | `V` | variedad (0 → 100 % en pasos de 25) |
 | `M` | mayor / menor |

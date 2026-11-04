@@ -13,50 +13,50 @@
   html, body { margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--fg); }
   canvas#stage { position:fixed; inset:0; width:100vw; height:100vh; display:block; cursor:crosshair; }
   svg.defs { position:absolute; width:0; height:0; }
-  /* Floating control panel, in DialKit's language: one card, a label and a
-     value on each row, sliders, toggles, segmented choices. Black and white
-     only, set in the embedded Archivo Narrow. Nothing here is fetched. */
-  #mi { position:fixed; z-index:5; top:16px; right:16px; width:min(300px, calc(100vw - 32px)); color:#000; font-family:"Archivo Narrow", sans-serif; font-weight:400; }
+  /* Controls float on the canvas: black buttons, white outline, no dock.
+     Archivo Narrow is the embedded face. Nothing here is fetched. */
+  #mi, .mi-body, .mi-head, .mi-seg, .mi-actions, .mi-text, .mi-grid { pointer-events:none; }
+  .mi-card, #mi button, #mi .mi-slide, #mi textarea, #mi .mi-head { pointer-events:auto; }
+  #mi { position:fixed; z-index:5; top:16px; right:16px; width:min(320px, calc(100vw - 32px)); color:#fff; font-family:"Archivo Narrow", sans-serif; font-weight:400; }
   #mi[hidden] { display:none; }
-  .mi-card { background:#fff; color:#000; border:1px solid #000; border-radius:14px; max-height:calc(100vh - 32px); overflow:auto; }
-  .mi-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; background:#fff; border-bottom:1px solid #000; cursor:grab; user-select:none; }
-  .mi-head b { font-weight:700; font-size:15px; letter-spacing:-.02em; }
-  .mi-head button, .mi-text button, .mi-actions button, #mi-play { font:inherit; color:#000; background:#fff; border:1px solid #000; border-radius:8px; cursor:pointer; }
-  .mi-head button { width:28px; height:28px; padding:0; line-height:1; }
-  .mi-body { display:flex; flex-direction:column; gap:6px; padding:10px; }
-  #mi.is-collapsed { width:44px; }
-  #mi.is-collapsed .mi-card { width:44px; height:44px; border-radius:50%; overflow:hidden; }
-  #mi.is-collapsed .mi-head { border:0; padding:0; width:44px; height:44px; justify-content:center; cursor:pointer; }
-  #mi.is-collapsed .mi-head button, #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
-  .mi-warn { margin:0; padding:8px 12px 0; font-size:12px; }
-  .mi-slide { position:relative; height:32px; border:1px solid #000; border-radius:8px; background:#fff; }
-  .mi-slide span, .mi-slide b { position:absolute; top:50%; transform:translateY(-50%); font-size:13px; font-weight:400; pointer-events:none; }
-  .mi-slide span { left:10px; }
-  .mi-slide b { right:10px; font-weight:700; }
-  .mi-slide i { position:absolute; top:6px; bottom:6px; width:2px; background:#000; pointer-events:none; }
+  .mi-card { background:transparent; border:0; max-height:calc(100vh - 32px); overflow:auto; }
+  .mi-head { display:flex; justify-content:flex-end; margin:0 0 8px; }
+  .mi-body { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  #mi.is-collapsed .mi-body, #mi.is-collapsed .mi-warn { display:none; }
+  .mi-warn { margin:0 0 8px; padding:4px 10px; font-size:12px; color:#fff; background:#000; border:1px solid #fff; border-radius:999px; box-shadow:0 8px 18px rgba(0,0,0,.35); }
+  #mi button, .mi-slide, .mi-toggle, .mi-text textarea, .mi-label, .mi-hint {
+    color:#fff; background:#000; border:1px solid #fff; border-radius:999px;
+    box-shadow:0 8px 18px rgba(0,0,0,.35); font:inherit;
+  }
+  .mi-slide { position:relative; align-self:stretch; height:34px; }
+  .mi-slide span, .mi-slide b { position:absolute; top:50%; transform:translateY(-50%); font-size:13px; font-weight:400; pointer-events:none; color:#fff; }
+  .mi-slide span { left:12px; }
+  .mi-slide b { right:12px; font-weight:700; }
+  .mi-slide i { position:absolute; top:7px; bottom:7px; width:2px; background:#fff; pointer-events:none; }
   .mi-slide input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:ew-resize; }
-  .mi-seg { display:flex; flex-wrap:wrap; gap:4px; }
-  .mi-seg button { font:inherit; font-size:13px; color:#000; background:#fff; border:1px solid #000; border-radius:8px; padding:4px 8px; cursor:pointer; }
-  .mi-seg button.is-on { background:#000; color:#fff; }
-  #mi-presets button { width:36px; padding:4px 0; }
-  .mi-toggle { display:flex; align-items:center; justify-content:space-between; height:32px; padding:0 10px; border:1px solid #000; border-radius:8px; background:#fff; font:inherit; font-size:13px; color:#000; cursor:pointer; }
-  .mi-toggle s { display:inline-block; width:32px; height:18px; border:1px solid #000; border-radius:9px; position:relative; background:#fff; text-decoration:none; }
-  .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:14px; height:14px; border-radius:50%; background:#000; }
-  .mi-toggle[aria-pressed="true"] s { background:#000; }
-  .mi-toggle[aria-pressed="true"] s::after { left:auto; right:1px; background:#fff; }
-  .mi-label { font-size:13px; }
-  .mi-grid { display:grid; grid-template-columns:repeat(8, 14px); gap:3px; }
-  .mi-grid button { width:14px; height:14px; padding:0; border:1px solid #000; border-radius:0; background:#fff; cursor:pointer; }
-  .mi-grid button.is-on { background:#000; }
-  .mi-grid button.is-step { box-shadow:inset 0 -2px 0 #000; }
-  .mi-text { display:flex; flex-direction:column; gap:4px; font-size:13px; }
-  .mi-text textarea { font:inherit; font-size:14px; color:#000; background:#fff; border:1px solid #000; border-radius:8px; padding:8px; resize:vertical; min-height:72px; }
-  .mi-text button, .mi-actions button, #mi-play { padding:6px 10px; }
-  #mi-play.is-on { background:#000; color:#fff; }
-  .mi-actions { display:flex; gap:6px; }
+  .mi-seg, .mi-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+  .mi-seg button, .mi-actions button, #mi-play, .mi-text button, #mi-fold {
+    font-size:13px; padding:3px 9px; cursor:pointer;
+  }
+  .mi-seg button.is-on, .mi-actions button.is-on, #mi-play.is-on { background:#fff; color:#000; }
+  #mi-presets button { width:36px; padding:5px 0; }
+  #mi #mi-fold { width:36px; height:36px; padding:0; border-radius:50%; cursor:grab; }
+  .mi-toggle { display:flex; align-items:center; justify-content:space-between; gap:16px; height:34px; padding:0 12px; font-size:13px; cursor:pointer; }
+  .mi-toggle s { display:inline-block; width:32px; height:18px; border:1px solid #fff; border-radius:9px; position:relative; background:transparent; text-decoration:none; box-shadow:none; }
+  .mi-toggle s::after { content:""; position:absolute; top:1px; left:1px; width:14px; height:14px; border-radius:50%; background:#fff; }
+  .mi-toggle[aria-pressed="true"] { background:#fff; color:#000; }
+  .mi-toggle[aria-pressed="true"] s { border-color:#000; }
+  .mi-toggle[aria-pressed="true"] s::after { left:auto; right:1px; background:#000; }
+  .mi-label, .mi-hint { align-self:flex-end; font-size:11px; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; margin:0; }
+  .mi-grid { display:grid; grid-template-columns:repeat(8, 12px); gap:3px; }
+  #mi .mi-grid button { width:12px; height:12px; padding:0; border-radius:2px; box-shadow:none; }
+  #mi .mi-grid button.is-on { background:#fff; }
+  #mi .mi-grid button.is-step { box-shadow:inset 0 -2px 0 #fff; }
+  #mi .mi-grid button.is-on.is-step { box-shadow:inset 0 -2px 0 #000; }
+  .mi-text { display:flex; flex-direction:column; align-items:flex-end; gap:6px; align-self:stretch; }
+  .mi-text textarea { font:inherit; font-size:14px; width:100%; min-height:52px; padding:8px 10px; border-radius:16px; resize:vertical; box-sizing:border-box; }
+  .mi-actions { align-self:stretch; }
   .mi-actions button { flex:1; }
-  .mi-actions button.is-on { background:#000; color:#fff; }
-  .mi-hint { margin:0; font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
 </style>
 </head>
 <body>
@@ -71,8 +71,7 @@
 <aside id="mi" aria-label="Motion Instrument">
   <div class="mi-card">
     <header class="mi-head" id="mi-head">
-      <b>Motion</b>
-      <button type="button" id="mi-fold" aria-label="Collapse panel">–</button>
+      <button type="button" id="mi-fold" aria-label="Collapse">–</button>
     </header>
     <p class="mi-warn" id="mi-warn" hidden>Font not loaded</p>
     <div class="mi-body">
@@ -81,6 +80,7 @@
       <div class="mi-seg" id="mi-sub" role="group" aria-label="Subdivision"></div>
       <div class="mi-seg" id="mi-presets" role="group" aria-label="Preset"></div>
       <div class="mi-seg" id="mi-sound" role="group" aria-label="Sound"></div>
+      <div class="mi-seg" id="mi-tone" role="group" aria-label="Tone"></div>
       <div class="mi-seg" id="mi-scale" role="group" aria-label="Scale"></div>
       <div class="mi-slide"><span>Variety</span><i id="mi-var-h"></i><b id="mi-var-v">50</b><input id="mi-var" type="range" min="0" max="100" step="25" value="50" aria-label="Variety"></div>
       <button type="button" class="mi-toggle" id="mi-ramp" aria-pressed="false"><span>Ramp</span><s></s></button>
@@ -88,15 +88,14 @@
       <div class="mi-seg" id="mi-theme" role="group" aria-label="Theme"></div>
       <div class="mi-label">Pattern</div>
       <div class="mi-grid" id="mi-grid"></div>
-      <label class="mi-text">Text
-        <textarea id="mi-text" rows="5" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
+      <label class="mi-text"><span class="mi-label">Text</span>
+        <textarea id="mi-text" rows="3" spellcheck="false" autocomplete="off" aria-label="Text"></textarea>
         <button type="button" id="mi-reset">Reset</button>
       </label>
       <div class="mi-actions">
         <button type="button" id="mi-clear">Clear</button>
         <button type="button" id="mi-rec">Record</button>
       </div>
-      <p class="mi-hint">A–K notes · space play · U hide</p>
     </div>
   </div>
 </aside>
@@ -599,7 +598,7 @@ const S = {
   scale:'major', theme:DIR.defaultTheme, pixel:true, bpm:DIR.bpm || 112, playing:false, step:-1,
   pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
             [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
-  sound:'synth', ramp:false, schedIdx:0, recording:false, lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
+  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
 };
 let items = [];
 DIR.init && DIR.init();
@@ -646,27 +645,39 @@ function audio() {
   return AC;
 }
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+const TONES = ['pluck', 'soft', 'reed', 'bell'];
+const TONE_NAME = { pluck:'Pluck', soft:'Soft', reed:'Reed', bell:'Bell' };
+function cutMelodic(ac, t) {
+  const prev = MONO.get(ac);
+  if (!prev || !(prev.t < t)) return;
+  try { prev.e.gain.cancelAndHoldAtTime(t); } catch (_) { prev.e.gain.cancelScheduledValues(t); }
+  prev.e.gain.setTargetAtTime(0, t, .008);
+  (prev.osc || []).forEach(o => { try { o.stop(t + .04); } catch (_) {} });
+}
 function synth(ac, dest, i, t, scale) {
-  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi);
+  // One note at a time, one oscillator. The old voice was two oscillators with a long tail,
+  // so a 16th-note line stacked into a chord. The next note cuts the previous.
+  cutMelodic(ac, t);
+  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi), tone = S.tone || 'pluck';
   const env = ac.createGain(); env.connect(dest);
-  if (scale === 'major') {
-    const o1 = ac.createOscillator(); o1.type = 'triangle'; o1.frequency.value = f;
-    const o2 = ac.createOscillator(); o2.type = 'square'; o2.frequency.value = f * 2;
-    const g2 = ac.createGain(); g2.gain.value = .07;
-    o1.connect(env); o2.connect(g2); g2.connect(env);
-    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.9, t + .004);
-    env.gain.exponentialRampToValueAtTime(.0001, t + .28);
-    [o1, o2].forEach(o => { o.start(t); o.stop(t + .3); });
-  } else {
-    const o1 = ac.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = f;
-    const o2 = ac.createOscillator(); o2.type = 'sine'; o2.frequency.value = f / 2;
-    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(300, t + .6);
-    const g2 = ac.createGain(); g2.gain.value = .8;
-    o1.connect(lp); lp.connect(env); o2.connect(g2); g2.connect(env);
-    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.7, t + .012);
-    env.gain.exponentialRampToValueAtTime(.0001, t + .7);
-    [o1, o2].forEach(o => { o.start(t); o.stop(t + .75); });
-  }
+  const osc = [];
+  const spawn = (type, freq) => { const o = ac.createOscillator(); o.type = type; o.frequency.setValueAtTime(freq, t); osc.push(o); return o; };
+  let dur = .07, peak = .8;
+  if (tone === 'soft') { spawn('sine', f).connect(env); dur = .14; peak = .55; }
+  else if (tone === 'reed') {
+    const o = spawn('square', f), lp = ac.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(1400, t); lp.frequency.exponentialRampToValueAtTime(380, t + .08);
+    o.connect(lp); lp.connect(env); dur = .09; peak = .2;
+  } else if (tone === 'bell') {
+    spawn('sine', f).connect(env);
+    const partial = spawn('sine', f * 2.76), g = ac.createGain(); g.gain.value = .14;
+    partial.connect(g); g.connect(env); dur = .18; peak = .36;
+  } else { spawn('triangle', f).connect(env); }
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(peak, t + .003);
+  env.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  osc.forEach(o => { o.start(t); o.stop(t + dur + .03); });
+  MONO.set(ac, { e:env, t, osc });
   return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
 }
 // ---------------- round 5: sound modes (all synthesised, no samples). O cycles, L toggles the 80→160 BPM ramp ----------------
@@ -710,12 +721,12 @@ function clack(ac, dest, t, info) {                     // sfx mode: typewriter 
 function bassPulse(ac, dest, t, accent) { tone(ac, dest, t, 'sine', 130, 49, accent ? .34 : .24, accent ? 1 : .75, .045); }
 function bell(ac, dest, t) { tone(ac, dest, t, 'sine', 2093, 2093, .5, .1, .01); tone(ac, dest, t, 'sine', 3136, 3136, .3, .05, .01); }
 function monoVoice(ac, dest, i, t, scale) {
-  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi), prev = MONO.get(ac);
-  if (prev && prev.t < t) { try { prev.e.gain.cancelAndHoldAtTime(t); } catch (_) { prev.e.gain.cancelScheduledValues(t); } prev.e.gain.setTargetAtTime(0, t, .004); }
+  cutMelodic(ac, t);
+  const midi = ROOT_MIDI + SCALES[scale][i], f = mtof(midi);
   const o = ac.createOscillator(); o.type = 'square'; o.frequency.value = f;
   const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 2; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(600, t + .1);
   const e = ac.createGain(); e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(.42, t + .003); e.gain.exponentialRampToValueAtTime(.0001, t + .16);
-  o.connect(lp); lp.connect(e); e.connect(dest); o.start(t); o.stop(t + .18); MONO.set(ac, { e, t });
+  o.connect(lp); lp.connect(e); e.connect(dest); o.start(t); o.stop(t + .18); MONO.set(ac, { e, t, osc:[o] });
   return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
 }
 const modeBus = new WeakMap();
@@ -795,8 +806,10 @@ function toggleRamp() { S.ramp = !S.ramp; if (AC) { rampStart = Math.max(nextT, 
 setInterval(() => {
   if (!S.playing || !AC || S.render) return;
   while (nextT < AC.currentTime + .12) {
-    const st = seqStep;
-    S.pattern[st].forEach((on, r) => { if (on) { const n = playNote(r, nextT, S.schedIdx++); queue.push({ t:nextT, r, n }); } });
+    const st = seqStep, rows = [];
+    S.pattern[st].forEach((on, r) => { if (on) rows.push(r); });
+    const lead = rows.length ? Math.max(...rows) : -1;          // one pitch per step, even if several tags land
+    rows.forEach(r => { const n = r === lead ? playNote(r, nextT, S.schedIdx) : null; S.schedIdx++; queue.push({ t:nextT, r, n }); });
     beatSfx(AC, master, nextT, st, S.sub);
     queue.push({ t:nextT, step:st });
     if (S.ramp) {                                       // live ramp loops (80→160, jump back); the render is a one-shot
@@ -818,7 +831,7 @@ function render(t) {
 function frame() {
   if (S.render) return;
   if (AC) while (queue.length && queue[0].t <= AC.currentTime) {
-    const q = queue.shift(); if (q.step !== undefined) S.step = q.step; else { trigger(q.r); S.lastNote = q.n; }
+    const q = queue.shift(); if (q.step !== undefined) S.step = q.step; else { trigger(q.r); if (q.n) S.lastNote = q.n; }
   }
   render(now());
   syncPanel();
@@ -866,6 +879,7 @@ addEventListener('keydown', ev => {
   switch (k) {
     case ' ': togglePlay(); break;
     case 'o': S.sound = SOUNDS[(SOUNDS.indexOf(S.sound) + 1) % SOUNDS.length]; break;   // S is a note key (A S D … K) → sound on O
+    case 't': S.tone = TONES[(TONES.indexOf(S.tone) + 1) % TONES.length]; break;
     case 'l': toggleRamp(); break;
     case 'm': S.scale = S.scale === 'major' ? 'minor' : 'major'; break;
     case 'c': S.theme = (S.theme + 1) % THEMES.length; applyTheme(); break;
@@ -940,7 +954,7 @@ function syncPanel() {
   panel.hidden = !!S.hero;
   const warn = document.getElementById('mi-warn');
   if (warn) warn.hidden = !S.fontWarn;
-  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.scale, S.variety, S.pixel, S.theme, S.recording, S.step, S.hero,
+  const sig = [S.playing, S.bpm, S.bpmNow || '', S.ramp, S.sub, S.preset, S.sound, S.tone, S.scale, S.variety, S.pixel, S.theme, S.recording, S.step, S.hero,
     S.pattern.map(r => r.join('')).join('')].join('|');
   if (sig === panelSig) return;
   panelSig = sig;
@@ -953,6 +967,7 @@ function syncPanel() {
   markSeg(document.getElementById('mi-sub'), S.sub);
   markSeg(document.getElementById('mi-presets'), S.preset);
   markSeg(document.getElementById('mi-sound'), S.sound);
+  markSeg(document.getElementById('mi-tone'), S.tone);
   markSeg(document.getElementById('mi-scale'), S.scale);
   markSeg(document.getElementById('mi-theme'), S.theme);
   const ramp = document.getElementById('mi-ramp'), pixel = document.getElementById('mi-pixel');
@@ -972,6 +987,7 @@ function syncPanel() {
   segButtons(document.getElementById('mi-sub'), [{ value:2, label:'8ths' }, { value:3, label:'Tri' }, { value:4, label:'16ths' }], v => { S.sub = Number(v); panelSig = ''; });
   segButtons(document.getElementById('mi-presets'), PRESETS.map((_, i) => ({ value:i, label:String(i + 1).padStart(2, '0') })), v => { applyPreset(Number(v)); panelSig = ''; });
   segButtons(document.getElementById('mi-sound'), SOUNDS.map((id, i) => ({ value:id, label:cap[i] })), v => { S.sound = v; panelSig = ''; });
+  segButtons(document.getElementById('mi-tone'), TONES.map(id => ({ value:id, label:TONE_NAME[id] })), v => { S.tone = v; panelSig = ''; });
   segButtons(document.getElementById('mi-scale'), [{ value:'major', label:'Major' }, { value:'minor', label:'Minor' }], v => { S.scale = v; panelSig = ''; });
   segButtons(document.getElementById('mi-theme'), THEMES.map((th, i) => ({ value:i, label:th.name[0].toUpperCase() + th.name.slice(1) })), v => { S.theme = Number(v); applyTheme(); panelSig = ''; });
   document.getElementById('mi-bpm').addEventListener('input', e => { S.bpm = Number(e.target.value); panelSig = ''; });
@@ -998,23 +1014,29 @@ function syncPanel() {
     grid.appendChild(b);
   }
   const card = document.getElementById('mi'), head = document.getElementById('mi-head');
-  document.getElementById('mi-fold').addEventListener('click', () => card.classList.toggle('is-collapsed'));
-  head.addEventListener('click', e => { if (card.classList.contains('is-collapsed') && !e.target.closest('button')) card.classList.remove('is-collapsed'); });
-  let drag = null;
-  head.addEventListener('pointerdown', e => {
-    if (e.target.closest('button') || card.classList.contains('is-collapsed')) return;
+  const fold = document.getElementById('mi-fold');
+  let drag = null, moved = false;
+  fold.addEventListener('click', () => {
+    if (moved) { moved = false; return; }
+    card.classList.toggle('is-collapsed');
+    fold.textContent = card.classList.contains('is-collapsed') ? '+' : '–';
+  });
+  fold.addEventListener('pointerdown', e => {
     const box = card.getBoundingClientRect();
     drag = { x:e.clientX, y:e.clientY, l:box.left, t:box.top };
-    card.style.right = 'auto'; card.style.left = box.left + 'px'; card.style.top = box.top + 'px';
-    head.setPointerCapture(e.pointerId);
+    moved = false;
+    fold.setPointerCapture(e.pointerId);
   });
-  head.addEventListener('pointermove', e => {
+  fold.addEventListener('pointermove', e => {
     if (!drag) return;
-    const l = Math.max(8, Math.min(innerWidth - card.offsetWidth - 8, drag.l + e.clientX - drag.x));
-    const t = Math.max(8, Math.min(innerHeight - 48, drag.t + e.clientY - drag.y));
-    card.style.left = l + 'px'; card.style.top = t + 'px';
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.hypot(dx, dy) < 4) return;
+    moved = true;
+    card.style.right = 'auto';
+    card.style.left = Math.max(8, Math.min(innerWidth - card.offsetWidth - 8, drag.l + dx)) + 'px';
+    card.style.top = Math.max(8, Math.min(innerHeight - 48, drag.t + dy)) + 'px';
   });
-  head.addEventListener('pointerup', () => { drag = null; });
+  fold.addEventListener('pointerup', () => { drag = null; });
   if (S.hero) card.hidden = true;
   syncPanel();
 })();
