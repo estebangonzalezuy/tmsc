@@ -1,5 +1,20 @@
 # Progress — Anticipator Skill Lab
 
+## Cierre de la noche (2026-11-05)
+
+**Anda:** etapas 0–6. Catálogo de 9 specs (springs reales + anticipación, fallback bezier ajustado con error declarado), `validate:catalog` (falla si algo rompe el schema), Lab con side-by-side + diales + ζ + Save al catálogo, `generate:skill` idempotente → `skills/anticipator/`, Editor con timeline DialKit (≥2 clips en loop, drag en el dock, panel Clip), export determinista → `out/*.mp4|webm`.
+**Falta / revisar:** (1) la semilla `animate-text-springs` y el motion builder no estaban en el contenedor: los 3 presets semilla y el editor se rehicieron desde el brief, así que hay que reconciliarlos con tu versión local. (2) Exits todavía bezier (el runtime ya soporta `exit.x_spring`). (3) Sin audio en el export. (4) Build estático: Save descarga JSON en vez de escribir.
+**Cómo correr:**
+```
+cd labs/anticipator && npm install
+npm run dev                      # http://localhost:5178  (Lab / #editor)
+npm test                         # validate:catalog + check:skill
+npm run generate:skill           # única forma de tocar skills/
+npm run export -- springs-side-by-side tmsc-timeline --verify
+```
+**Nada publicado:** sin PR a Pixel Point, sin npm, sin deploy, sin X. Solo el branch `claude/new-session-3sl55y` del repo tmsc (no `main`). Siguiente paso: `docs/SHIP-CHECKLIST.md`.
+
+---
 ## Etapa 0 — Recon ✅
 
 **Where things are (real paths, in this cloud session):**
@@ -96,3 +111,14 @@ nothing deploys.
   frame-paced) for quick checks.
 - `out/springs-side-by-side.mp4` (1920×1080, 60fps, 9.8s) and
   `out/tmsc-timeline.mp4` (1080×1080, 30fps, 11s), plus .webm and posters.
+
+## Etapa 6 — Docs de ship ✅
+
+- `docs/SHIP-CHECKLIST.md`: reconciliar semillas, repo propio + MIT, deploy
+  del demo (proyecto nuevo, no el sitio tMSC), video de 40s, tweet, comentario
+  en el post de Alex, preguntar antes de cualquier PR upstream.
+- `docs/tweet-draft.md` (minúsculas, `YOUR_DEMO_URL`, tag @alex_barashkov,
+  shot list del video). `docs/README-PUBLIC.md` con "Built on Pixel Point
+  animate-text" arriba de todo. `README.md` del lab.
+- Verificado: `npm test` del lab, `npm run build` estático (preview sin
+  errores), y el sitio tMSC sigue pasando `npm run lint` + `npm run build`.
