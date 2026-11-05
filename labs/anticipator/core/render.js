@@ -1,0 +1,145 @@
+// Canvas 2D renderer. The one draw path: the Lab's side-by-side, the
+// editor's preview and the exported frames all call renderClip/renderProject.
+// Imports no DOM at module load, so node scripts can import the timing
+// helpers next to it.
+
+import { layoutText, unitStates, withOverrides, clipDuration, clipTiming, holdFor } from "./timeline.js";
+
+export const FONT_NARROW = "Archivo Narrow";
+export const FONT_VARIABLE = "Archivo";
+
+/** Does this spec animate the variable weight axis? */
+export function usesWeight(spec) {
+  const has = (f) => f && Object.keys(f).includes("x_font_weight");
+  return [spec.enter?.from, spec.enter?.to, spec.exit?.from, spec.exit?.to].some(has);
+}
+
+function fontString(weight, px, family) {
+  return `${Math.round(weight)} ${px}px "${family}"`;
+}
+
+const layoutCache = new Map();
+
+/** Layout for a clip; cached by everything that changes it. */
+export function clipLayout(ctx, { spec, text, fontPx, maxWidth, weight = 700 }) {
+  const variable = usesWeight(spec);
+  const family = variable ? FONT_VARIABLE : FONT_NARROW;
+  const w = variable ? (spec.enter.to.x_font_weight ?? weight) : weight;
+  const key = [spec.target, text, fontPx, maxWidth, w, family].join("|");
+  if (layoutCache.has(key)) return layoutCache.get(key);
+  ctx.save();
+  ctx.font = fontString(w, fontPx, family);
+  if (variable && "fontStretch" in ctx) ctx.fontStretch = "condensed";
+  const layout = layoutText({
+    text,
+    target: spec.target,
+    fontPx,
+    maxWidth,
+    lineHeight: 1.02,
+    measure: (s) => ctx.measureText(s).width,
+  });
+  ctx.restore();
+  layout.family = family;
+  layout.variable = variable;
+  if (layoutCache.size > 400) layoutCache.clear();
+  layoutCache.set(key, layout);
+  return layout;
+}
+
+/**
+ * Draw one text clip at clip-local time tMs, centred on (cx, cy).
+ * opts: { spec, text, ink, fontPx, maxWidth, mode, overrides, holdMs, exit, weight }
+ */
+export function renderClip(ctx, tMs, cx, cy, opts) {
+  const spec = withOverrides(opts.spec, opts.overrides);
+  const fontPx = opts.fontPx || 96;
+  const weight = opts.weight || 700;
+  const layout = clipLayout(ctx, { spec, text: opts.text, fontPx, maxWidth: opts.maxWidth || Infinity, weight });
+  const states = unitStates(spec, layout, tMs, {
+    mode: opts.mode || "spring",
+    overrides: opts.overrides,
+    holdMs: opts.holdMs,
+    fontPx,
+    exit: opts.exit !== false,
+  });
+  const xh = fontPx * 0.36; // transform origin: middle of the x-height
+  for (const { unit, props } of states) {
+    const a = props.opacity ?? 1;
+    if (a <= 0.001) continue;
+    ctx.save();
+    ctx.globalAlpha *= a;
+    const w = props.x_font_weight ?? weight;
+    ctx.font = fontString(w, fontPx, layout.family);
+    if (layout.variable && "fontStretch" in ctx) ctx.fontStretch = "condensed";
+    ctx.fillStyle = props.color || opts.ink || "#0C0C0C";
+    if (props.blur_px > 0.05) ctx.filter = `blur(${props.blur_px.toFixed(2)}px)`;
+    ctx.translate(cx + unit.x + unit.w / 2 + (props.x_px || 0), cy + unit.y - xh + (props.y_px || 0));
+    if (props.rotate_deg) ctx.rotate((props.rotate_deg * Math.PI) / 180);
+    const s = props.scale ?? 1;
+    // rotate_x/rotate_y have no real 3D in 2D canvas: foreshorten instead.
+    const sx = s * Math.cos(((props.rotate_y_deg || 0) * Math.PI) / 180);
+    const sy = s * Math.cos(((props.rotate_x_deg || 0) * Math.PI) / 180);
+    if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+    ctx.fillText(unit.text, -unit.w / 2, xh);
+    ctx.restore();
+  }
+  return { layout, states };
+}
+
+/** Natural length (ms) of a clip's spec on this text, in a mode. */
+export function naturalClipMs(ctx, opts) {
+  const spec = withOverrides(opts.spec, opts.overrides);
+  const layout = clipLayout(ctx, { spec, text: opts.text, fontPx: opts.fontPx || 96, maxWidth: opts.maxWidth || Infinity, weight: opts.weight || 700 });
+  const n = spec.target === "whole" ? 1 : layout.units.length;
+  return {
+    total: clipDuration(spec, n, layout.wordCount, { mode: opts.mode || "spring", overrides: opts.overrides }),
+    hold: holdFor(spec, layout.wordCount),
+    ...clipTiming(spec, n, { mode: opts.mode || "spring", overrides: opts.overrides }),
+    units: n,
+  };
+}
+
+/**
+ * Draw a whole project at absolute time tMs.
+ * project: { width, height, background, clips: [{ id, specId, text, ink,
+ *   at_ms, duration_ms, fontPx, y (0..1), overrides, mode }] }
+ * specs: { [id]: spec }
+ *
+ * A clip's own length stretches its *hold*: enter and exit keep their
+ * physics, so dragging a clip longer on the timeline never slows a spring.
+ */
+export function renderProject(ctx, project, specs, tMs) {
+  const { width, height } = project;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = project.background || "#FFFFFF";
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.scale(ctx.canvas.width / width, ctx.canvas.height / height);
+  for (const clip of project.clips) {
+    const spec = specs[clip.specId];
+    if (!spec) continue;
+    const local = tMs - clip.at_ms;
+    if (local < 0 || local > clip.duration_ms) continue;
+    const opts = {
+      spec,
+      text: clip.text,
+      ink: clip.ink,
+      fontPx: clip.fontPx || 120,
+      maxWidth: width * 0.84,
+      mode: clip.mode || "spring",
+      overrides: clip.overrides,
+      weight: clip.weight || 700,
+    };
+    const nat = naturalClipMs(ctx, opts);
+    opts.holdMs = Math.max(0, clip.duration_ms - nat.enterTotal - nat.exitTotal);
+    renderClip(ctx, local, width / 2, height * (clip.y ?? 0.5), opts);
+  }
+  ctx.restore();
+}
+
+/** Last ms anything is on screen. */
+export function projectDuration(project) {
+  return project.clips.reduce((m, c) => Math.max(m, c.at_ms + c.duration_ms), 0);
+}

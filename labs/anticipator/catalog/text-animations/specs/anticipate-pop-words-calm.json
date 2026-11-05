@@ -1,0 +1,67 @@
+{
+  "id": "anticipate-pop-words-calm",
+  "display_name": "Anticipate Pop Words, Calm",
+  "description": "The pop with the cartoon taken out: a barely-there pinch, a near-critical spring, no second ring.",
+  "inspiration": "Product UI announcements where the pop should read as care, not as a joke.",
+  "target": "per-word",
+  "signature_easing": "cubic-bezier(0.523, -0.361, 0.148, 1.064)",
+  "enter": {
+    "duration_ms": 549,
+    "stagger_ms": 90,
+    "easing": "cubic-bezier(0.523, -0.361, 0.148, 1.064)",
+    "from": {
+      "opacity": 0,
+      "scale": 0.6,
+      "y_px": 14
+    },
+    "to": {
+      "opacity": 1,
+      "scale": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 260,
+      "damping": 30,
+      "mass": 1,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "amount": 0.06,
+      "duration_ms": 120
+    },
+    "x_opacity_duration_ms": 160,
+    "x_fallback": {
+      "fitted_from": "b4abe4d0",
+      "rms_error": 0.0125,
+      "max_error": 0.0329,
+      "spring_phase_ms": 549
+    }
+  },
+  "exit": {
+    "duration_ms": 360,
+    "stagger_ms": 30,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "scale": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "scale": 0.9,
+      "y_px": -6
+    }
+  },
+  "swap": {
+    "mode": "sequential",
+    "overlap_ms": 0,
+    "micro_delay_ms": 60
+  },
+  "usage_notes": "Variant of anticipate-pop-words (same from/to). ζ ≈ 0.93: the overshoot is under 1% of travel.",
+  "x_intent": "calm",
+  "x_intent_notes": "Same gesture, inside voice.",
+  "x_variant_of": "anticipate-pop-words",
+  "x_hold_ms": 1100,
+  "x_hold_per_word_ms": 200,
+  "x_built_on": "pixel-point/animate-text"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "hold-aware-rise",
+  "display_name": "Hold-Aware Rise",
+  "description": "A firm per-word rise that declares how long the copy must stay on screen to be read before anything exits.",
+  "inspiration": "Subtitles and lower thirds: the animation is the easy part; leaving it up long enough is the job.",
+  "target": "per-word",
+  "signature_easing": "cubic-bezier(0.385, -0.293, 0.012, 1.239)",
+  "enter": {
+    "duration_ms": 668,
+    "stagger_ms": 60,
+    "easing": "cubic-bezier(0.385, -0.293, 0.012, 1.239)",
+    "from": {
+      "opacity": 0,
+      "y_px": 24
+    },
+    "to": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 220,
+      "damping": 26,
+      "mass": 1,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "amount": 0.05,
+      "duration_ms": 80
+    },
+    "x_opacity_duration_ms": 200,
+    "x_fallback": {
+      "fitted_from": "a9ab095d",
+      "rms_error": 0.0152,
+      "max_error": 0.0245,
+      "spring_phase_ms": 668
+    }
+  },
+  "exit": {
+    "duration_ms": 320,
+    "stagger_ms": 24,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "y_px": -12
+    }
+  },
+  "swap": {
+    "mode": "sequential",
+    "overlap_ms": 0,
+    "micro_delay_ms": 60
+  },
+  "usage_notes": "Hold = x_hold_ms + words × x_hold_per_word_ms, counted from the end of the enter (last word settled), not its start. An agent cycling phrases must not start the exit sooner, even if the surrounding loop is shorter: lengthen the loop instead. 250ms/word is a comfortable reading pace for short display copy; 300+ for body-like lines.",
+  "x_intent": "editorial",
+  "x_intent_notes": "Unremarkable on purpose, so the words get read.",
+  "x_hold_ms": 600,
+  "x_hold_per_word_ms": 250,
+  "x_built_on": "pixel-point/animate-text"
+}

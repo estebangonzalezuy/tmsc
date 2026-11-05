@@ -1,0 +1,59 @@
+{
+  "id": "spring-rise-letters-calm",
+  "display_name": "Spring Rise Letters, Calm",
+  "description": "The same rise, critically damped and unhurried: no overshoot, no wind-up, letters arrive and stay.",
+  "inspiration": "Editorial openers, museum signage, anything that should feel considered rather than performed.",
+  "target": "per-character",
+  "signature_easing": "cubic-bezier(0.263, 0.461, 0.087, 1.067)",
+  "enter": {
+    "duration_ms": 854,
+    "stagger_ms": 40,
+    "easing": "cubic-bezier(0.263, 0.461, 0.087, 1.067)",
+    "from": {
+      "opacity": 0,
+      "y_px": 40
+    },
+    "to": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 120,
+      "damping": 22,
+      "mass": 1,
+      "rest_delta": 0.001
+    },
+    "x_opacity_duration_ms": 320,
+    "x_fallback": {
+      "fitted_from": "554f60c9",
+      "rms_error": 0.008,
+      "max_error": 0.0238,
+      "spring_phase_ms": 854
+    }
+  },
+  "exit": {
+    "duration_ms": 420,
+    "stagger_ms": 16,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "y_px": -16
+    }
+  },
+  "swap": {
+    "mode": "crossfade",
+    "overlap_ms": 200,
+    "micro_delay_ms": 35
+  },
+  "usage_notes": "Variant of spring-rise-letters (same from/to). ζ = 1.0 is the fastest a spring can arrive without passing its target. The bezier fallback is almost exact here (one smooth curve).",
+  "x_intent": "calm",
+  "x_intent_notes": "ζ = 1.0, no anticipation, long opacity. Nothing to notice but the words.",
+  "x_variant_of": "spring-rise-letters",
+  "x_hold_ms": 1400,
+  "x_hold_per_word_ms": 200,
+  "x_built_on": "pixel-point/animate-text"
+}

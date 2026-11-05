@@ -1,0 +1,28 @@
+{
+  "visible_ids": [
+    "anticipate-pop-words",
+    "spring-rise-letters",
+    "spring-rise-letters-calm",
+    "spring-rise-letters-energetic",
+    "heavy-drop-lines",
+    "weight-wave-letters",
+    "hold-aware-rise",
+    "anticipate-pop-words-calm"
+  ],
+  "groups": {
+    "seed": [
+      "anticipate-pop-words",
+      "spring-rise-letters",
+      "heavy-drop-lines"
+    ],
+    "expressive": [
+      "weight-wave-letters",
+      "hold-aware-rise"
+    ],
+    "variants": [
+      "spring-rise-letters-calm",
+      "spring-rise-letters-energetic",
+      "anticipate-pop-words-calm"
+    ]
+  }
+}

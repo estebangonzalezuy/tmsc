@@ -20,3 +20,16 @@
 `package.json`, like `scripts/content-cycle/`. It's ignored by the site's
 ESLint/TypeScript, not wired into `app/`, and not merged to `main`, so
 nothing deploys.
+
+## Etapa 1 — Skeleton + schema ✅
+
+- `core/`: shared pure modules (spring closed form, CSS easing, phase curves,
+  bezier fit, timeline, canvas render, validator). The app, scripts and export
+  all import these. One code path.
+- `catalog/text-animations/schema.md`: Pixel-compatible core + `x_*` extensions.
+- 8 specs: 3 seed (rebuilt from the brief; reconcile with the local
+  `motion.js`), `weight-wave-letters` (real, Archivo variable wght 100–900,
+  not a stub), `hold-aware-rise`, and 3 calm/energetic variants.
+- `npm run validate:catalog` passes; verified it fails on bad keys, stale
+  fallback, unlisted file and id/file mismatch.
+- `npm run fit:catalog` fits the bezier fallback from the physics (idempotent).
