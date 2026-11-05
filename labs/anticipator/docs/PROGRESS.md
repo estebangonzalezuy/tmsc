@@ -85,3 +85,14 @@ nothing deploys.
 - Verified with Playwright: 5-clip timeline loops (wraps at 11.0s), dock drag
   moves a clip (3000 → 4020ms), panel text edit reaches the canvas, Add clip
   gets its natural length.
+
+## Etapa 5 — Export + demos ✅
+
+- `npm run export -- <project…> [--fps N] [--verify] [--keep-frames]`: Vite +
+  headless Chromium + `#render` route → PNG per frame via `renderAt(ms)` →
+  ffmpeg MP4 (H.264) + WebM (VP9) + poster PNG in `out/`. Deterministic,
+  verified byte-identical on re-render.
+- In-app **Export WebM** (MediaRecorder, captureStream(0) + requestFrame,
+  frame-paced) for quick checks.
+- `out/springs-side-by-side.mp4` (1920×1080, 60fps, 9.8s) and
+  `out/tmsc-timeline.mp4` (1080×1080, 30fps, 11s), plus .webm and posters.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCatalog } from "./catalog.js";
 import Lab from "./lab/Lab.jsx";
 import Editor from "./editor/Editor.jsx";
+import RenderView from "./RenderView.jsx";
 
 function initialTab() {
   const h = location.hash.replace("#", "");
@@ -11,6 +12,7 @@ function initialTab() {
 export default function App() {
   const [tab, setTab] = useState(initialTab);
   const cat = useCatalog();
+  if (location.hash === "#render") return <RenderView cat={cat} />;
   const go = (t) => { setTab(t); history.replaceState(null, "", `#${t}`); };
   return (
     <div className="app">
