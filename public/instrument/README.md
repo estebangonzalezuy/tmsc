@@ -25,7 +25,7 @@ unlisted, not protected, the way Frames, the Studio and the Desk are.
 | Space          | play / pause the sequencer                   |
 | M              | major ↔ minor (snappy ↔ heavy, with gravity) |
 | ↑ ↓            | tempo ±5 BPM (Shift: ±1)                      |
-| C              | next colour pair                             |
+| C              | next colour pair. One pair is picked at random when the page opens. |
 | P              | pixel bleed on / off                         |
 | X              | clear the pattern                            |
 | R              | start / stop recording (downloads a .webm)   |
