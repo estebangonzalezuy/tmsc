@@ -240,6 +240,7 @@ DIR.onKey = k => {
   if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
   if (k === 'q') { applyPreset(13); return true; }       // 14 · 16:9
   if (k === 'w') { applyPreset(14); return true; }       // 15 · 9:16
+  if (k === 'b') { S.board = (S.board + 1) % BOARDS.length; return true; } // editorial panes, layouts 13–15
   if (k === 'v') { S.variety = (Math.round(S.variety * 4) + 1) % 5 / 4; return true; }
   return false;
 };
@@ -758,16 +759,40 @@ function drawNace(c, t, th, live, LC, cam = { x:0, y:-16 }) {
     c.restore();
   });
 }
+// Editorial boards for layouts 13–15. C keeps cycling the five page backgrounds
+// every layout shares, so B steps this list on its own. The first scheme is the
+// original board. Each pane is one fill, and the tag on it is a readable pair:
+// the club colours keep the black or white tag that theme already uses, blue is
+// set in white, and red is set in black.
+const BOARDS = [
+  { a:'#FFFFFF', b:'#F4C500', c:'#3D3DEB' },
+  { a:'#000000', b:'#FFFFFF', c:'#EE4B2B' },
+  { a:'#2E7D46', b:'#F4C500', c:'#3D3DEB' },
+  { a:'#0000FF', b:'#FF0000', c:'#3D3DEB' },
+  { a:'#FFFFFF', b:'#000000', c:'#2E7D46' },
+  { a:'#F4C500', b:'#EE4B2B', c:'#3D3DEB' },
+  { a:'#ADB4F5', b:'#FFFFFF', c:'#EE4B2B' },
+];
+function boardNow() { return BOARDS[S.board % BOARDS.length]; }
+function boardInk(fill) {
+  const ink = {
+    '#FFFFFF':['#000000', '#FFFFFF'], '#F4C500':['#000000', '#FFFFFF'], '#ADB4F5':['#000000', '#FFFFFF'],
+    '#EE4B2B':['#000000', '#FFFFFF'], '#2E7D46':['#000000', '#FFFFFF'], '#000000':['#FFFFFF', '#000000'],
+    '#3D3DEB':['#FFFFFF', '#000000'], '#0000FF':['#FFFFFF', '#0000FF'], '#FF0000':['#000000', '#FF0000'],
+  };
+  return ink[fill.toUpperCase()] || ['#000000', '#FFFFFF'];
+}
 // EDITORIAL: three flat panes as REJILLA FP (ref-editorial), all clean vector type, no pixel pass.
 function drawEditorial(c, t, th, live, LC) {
+  const bd = boardNow(), inkA = boardInk(bd.a), inkB = boardInk(bd.b);
   const st = () => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); };
-  st(); c.fillStyle = '#FFFFFF'; c.fillRect(-540, -540, 540, 420); c.fillStyle = '#F4C500'; c.fillRect(0, -540, 540, 420);
-  c.fillStyle = '#3D3DEB'; c.fillRect(-540, -120, 1080, 660);
+  st(); c.fillStyle = bd.a; c.fillRect(-540, -540, 540, 420); c.fillStyle = bd.b; c.fillRect(0, -540, 540, 420);
+  c.fillStyle = bd.c; c.fillRect(-540, -120, 1080, 660);
   const gen = live.length ? Math.max(...live.filter(it => t >= it.t0).map(it => it.gen)) : 0, cur = live.filter(it => it.gen === gen && t >= it.t0);
   // A · running text: each word lands as a small black tag with a short hard kick (scale 1.18 → 1), no tilt → legible
   c.save(); c.beginPath(); c.rect(-540, -540, 540, 420); c.clip();
   cur.forEach(it => { const tg = LC.A[it.slot], kc = kickCh(it.ch), s = spring(t - it.t0, kc.w * 1.3, Math.max(.32, kc.z));
-    if (s > .001) box(c, tg.x, tg.y, 0, Math.max(0, s), tg.w, tg.h, tg.word, tg.d, '#000000', '#FFFFFF'); });
+    if (s > .001) box(c, tg.x, tg.y, 0, Math.max(0, s), tg.w, tg.h, tg.word, tg.d, inkA[0], inkA[1]); });
   c.restore();
   // B · the current word as one BIG tag. New note → slams in (stiff spring, ~35 % overshoot, 4° tilt settling to 0)
   const last = cur.at(-1);
@@ -775,9 +800,9 @@ function drawEditorial(c, t, th, live, LC) {
     const wd = last.tg.word, a = t - last.t0, kc = kickCh(last.ch), e = spring(a, kc.w, kc.z);
     const fs = Math.min(150, 420 / (textW(wd, 100) / 100 + .6)), d = dims(Math.round(fs)), w = textW(wd, d.fs) + 2 * d.pad;
     const sg = last.ch.rotF >= 0 ? 1 : -1, sc = .55 + .45 * e, x = 270 - sg * 70 * (1 - e), rot = sg * .07 * (1 - e);
-    c.save(); c.beginPath(); c.rect(0, -540, 540, 420); c.clip(); box(c, x, -330, rot, sc, w, d.h, wd, d, '#000000', '#FFFFFF'); c.restore();
+    c.save(); c.beginPath(); c.rect(0, -540, 540, 420); c.clip(); box(c, x, -330, rot, sc, w, d.h, wd, d, inkB[0], inkB[1]); c.restore();
   }
-  // C · the same centre-birth cluster as every other preset, in the indigo pane
+  // C · the same centre-birth cluster as every other preset, in the third pane
   c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.beginPath(); c.rect(L.cx - 540 * L.u, L.cy - 120 * L.u, 1080 * L.u, 660 * L.u); c.clip();
   drawFlow(c, t, th, live, { x:0, y:210 }); c.restore();
 }
@@ -785,19 +810,19 @@ function drawEditorial(c, t, th, live, LC) {
 // 9:16 board. The board scales to the view, so an exact frame is filled and a
 // different window letterboxes it instead of cropping the panes.
 function editBoard() {
-  const frame = P().frame;
+  const frame = P().frame, bd = boardNow();
   if (frame === '16x9') return {
     w:1920, h:1080,
-    a:{ x:-960, y:-540, w:640, h:540, fill:'#FFFFFF' },
-    b:{ x:-960, y:0, w:640, h:540, fill:'#F4C500' },
-    c:{ x:-320, y:-540, w:1280, h:1080, fill:'#3D3DEB' },
+    a:{ x:-960, y:-540, w:640, h:540, fill:bd.a },
+    b:{ x:-960, y:0, w:640, h:540, fill:bd.b },
+    c:{ x:-320, y:-540, w:1280, h:1080, fill:bd.c },
     word:{ x:-640, y:270, fit:500 },
   };
   if (frame === '9x16') return {
     w:1080, h:1920,
-    a:{ x:-540, y:-960, w:1080, h:460, fill:'#FFFFFF' },
-    b:{ x:-540, y:-500, w:1080, h:480, fill:'#F4C500' },
-    c:{ x:-540, y:-20, w:1080, h:980, fill:'#3D3DEB' },
+    a:{ x:-540, y:-960, w:1080, h:460, fill:bd.a },
+    b:{ x:-540, y:-500, w:1080, h:480, fill:bd.b },
+    c:{ x:-540, y:-20, w:1080, h:980, fill:bd.c },
     word:{ x:0, y:-260, fit:820 },
   };
   return null;
@@ -810,9 +835,10 @@ function drawFramedEditorial(c, t, th, live, LC) {
   for (const key of ['a', 'b', 'c']) { const p = board[key]; c.fillStyle = p.fill; c.fillRect(p.x, p.y, p.w, p.h); }
   const gen = live.length ? Math.max(...live.filter(it => t >= it.t0 && it.gen != null).map(it => it.gen), 0) : 0;
   const cur = live.filter(it => it.gen === gen && !it.click && t >= it.t0);
+  const inkA = boardInk(board.a.fill), inkB = boardInk(board.b.fill);
   c.save(); place(); c.beginPath(); c.rect(board.a.x, board.a.y, board.a.w, board.a.h); c.clip();
   cur.forEach(it => { const tg = LC.A && LC.A[it.slot]; if (!tg) return; const kc = kickCh(it.ch), sc = spring(t - it.t0, kc.w * 1.3, Math.max(.32, kc.z));
-    if (sc > .001) box(c, tg.x, tg.y, 0, Math.max(0, sc), tg.w, tg.h, tg.word, tg.d, '#000000', '#FFFFFF'); });
+    if (sc > .001) box(c, tg.x, tg.y, 0, Math.max(0, sc), tg.w, tg.h, tg.word, tg.d, inkA[0], inkA[1]); });
   c.restore();
   const last = cur.at(-1);
   if (last) {
@@ -820,7 +846,7 @@ function drawFramedEditorial(c, t, th, live, LC) {
     const fs = Math.min(170, board.word.fit / (textW(wd, 100) / 100 + .6)), d = dims(Math.round(fs)), w = textW(wd, d.fs) + 2 * d.pad;
     const sg = last.ch.rotF >= 0 ? 1 : -1, sc = .55 + .45 * e, x = board.word.x - sg * 36 * (1 - e), rot = sg * .05 * (1 - e);
     c.save(); place(); c.beginPath(); c.rect(board.b.x, board.b.y, board.b.w, board.b.h); c.clip();
-    box(c, x, board.word.y, rot, sc, w, d.h, wd, d, '#000000', '#FFFFFF'); c.restore();
+    box(c, x, board.word.y, rot, sc, w, d.h, wd, d, inkB[0], inkB[1]); c.restore();
   }
   const pc = board.c;
   c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.beginPath();
@@ -861,7 +887,7 @@ DIR.ui = (c, t, th) => {
   c.fillText([S.ramp ? `RAMP ${S.bpmNow || 80} BPM` : `${S.bpm} BPM`, ['', '', '8THS', 'TRIPLETS', '16THS'][S.sub || 2], S.scale === 'major' ? 'MAJOR' : 'MINOR', S.lastNote || '—', `VARIETY ${Math.round(S.variety * 100)}`,
               `SOUND ${MI.SOUND_NAME[S.sound]}`, th.name.toUpperCase(), S.recording ? '● REC' : ''].filter(Boolean).join('   ·   '), sx, y0 + 74);
   c.fillText(`TAG ${S.noteIdx % LC.cap || LC.cap} / ${LC.cap}`, sx, y0 + 96);
-  const HELP = ['A–K NOTES', 'SPACE PLAY', '1–9 0 - = E  01–13', 'O SOUND', 'L RAMP', 'V VARIETY', 'M MAJ/MIN', '↑↓ BPM', 'C THEME', 'X CLEAR', 'R REC', 'U HIDE'];
+  const HELP = ['A–K NOTES', 'SPACE PLAY', '1–9 0 - = E Q W  01–15', 'O SOUND', 'L RAMP', 'V VARIETY', 'M MAJ/MIN', '↑↓ BPM', 'C THEME', 'B BOARD', 'X CLEAR', 'R REC', 'U HIDE'];
   const one = HELP.join('   '), room = W - sx - 24;
   if (c.measureText(one).width <= room) c.fillText(one, sx, y0 + STRIP - 20);
   else { c.fillText(HELP.slice(0, 7).join('   '), sx, y0 + STRIP - 38); c.fillText(HELP.slice(7).join('   '), sx, y0 + STRIP - 20); }
@@ -901,7 +927,7 @@ const S = {
   scale:'major', theme:DIR.defaultTheme, bpm:DIR.bpm || 112, playing:false, step:-1,
   pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
             [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
-  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false,
+  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false, board:0,
 };
 let items = [];
 DIR.init && DIR.init();

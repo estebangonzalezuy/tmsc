@@ -12,7 +12,7 @@ path opens the tool. `index.html` is the built file and stays as generated;
 
 A small instrument you play from the keyboard. Each note drops a word-label into a
 layout that is packed, collides and springs into place, so typography becomes rhythm.
-It comes with its own synth and SFX, 13 numbered layouts and 5 background themes,
+It comes with its own synth and SFX, 15 numbered layouts and 5 background themes,
 and it can record its own canvas. It is a single offline HTML file. The Archivo Narrow
 font is embedded, and it makes no network requests and has no dependencies.
 
@@ -55,6 +55,7 @@ or on a slider.
 | `E` | layout 13, the square editorial |
 | `Q` | layout 14, the same grid composed for 16:9 |
 | `W` | layout 15, the same grid composed for 9:16 |
+| `B` | editorial board colours on layouts 13, 14 and 15. Each press steps a three-pane combination (the club palette, plus blue with white and red with black). The first combination is the original white, yellow and indigo board. `C` still cycles the page background. |
 | `O` | sound: SYNTH → MONO + SFX → SFX + BASS |
 | `T` | tone: Pluck → Soft → Reed → Bell |
 | `L` | tempo ramp 80 → 160 BPM on / off |
@@ -84,7 +85,7 @@ License: TBD. This covers the code and media; the font is under the OFL (`OFL.tx
 
 Un pequeño instrumento que se toca con el teclado. Cada nota deja caer una etiqueta-palabra
 en una composición que se empaqueta, choca y se asienta con muelles: la tipografía se
-convierte en ritmo. Tiene sintetizador y SFX propios, 13 composiciones numeradas y 5 fondos,
+convierte en ritmo. Tiene sintetizador y SFX propios, 15 composiciones numeradas y 5 fondos,
 y puede grabar su propio canvas. Es un único archivo HTML offline. La fuente Archivo Narrow
 va incrustada, y no hace peticiones de red ni tiene dependencias.
 
@@ -113,6 +114,7 @@ texto o en un deslizador.
 | `E` | composición 13, la editorial cuadrada |
 | `Q` | composición 14, la misma retícula en 16:9 |
 | `W` | composición 15, la misma retícula en 9:16 |
+| `B` | colores del tablero editorial en las composiciones 13, 14 y 15. Cada pulsación avanza una combinación de tres panes (la paleta del club, más azul con blanco y rojo con negro). La primera es el tablero original: blanco, amarillo e índigo. `C` sigue cambiando el fondo de la página. |
 | `O` | sonido: SYNTH → MONO + SFX → SFX + BASS |
 | `T` | timbre: Pluck → Soft → Reed → Bell |
 | `L` | rampa de tempo 80 → 160 BPM |
