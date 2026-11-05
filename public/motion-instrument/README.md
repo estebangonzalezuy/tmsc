@@ -12,7 +12,7 @@ path opens the tool. `index.html` is the built file and stays as generated;
 
 A small instrument you play from the keyboard. Each note drops a word-label into a
 layout that is packed, collides and springs into place, so typography becomes rhythm.
-It comes with its own synth and SFX, 15 numbered layouts and 5 background themes,
+It comes with its own synth and SFX, 15 numbered layouts and 20 colour themes,
 and it can record its own canvas. It is a single offline HTML file. The Archivo Narrow
 font is embedded, and it makes no network requests and has no dependencies.
 
@@ -62,7 +62,7 @@ or on a slider.
 | `V` | variety (0 → 100 % in steps of 25) |
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
-| `C` | background theme |
+| `C` | next colour theme. One is picked at random when the page opens, then C cycles the rest. Each theme is two colours, background and type. |
 | `X` | clear the pattern |
 | `R` | record the canvas and the sound, with no interface in the picture. Frame is 9:16, 16:9 or 1:1. Safari downloads H.264 + AAC `.mp4`. Chrome downloads H.264 `.mp4` (AAC when it offers it, otherwise Opus). Firefox downloads a `.webm`. |
 | `U` | hide / show the interface |
@@ -85,7 +85,7 @@ License: TBD. This covers the code and media; the font is under the OFL (`OFL.tx
 
 Un pequeño instrumento que se toca con el teclado. Cada nota deja caer una etiqueta-palabra
 en una composición que se empaqueta, choca y se asienta con muelles: la tipografía se
-convierte en ritmo. Tiene sintetizador y SFX propios, 15 composiciones numeradas y 5 fondos,
+convierte en ritmo. Tiene sintetizador y SFX propios, 15 composiciones numeradas y 20 temas de color,
 y puede grabar su propio canvas. Es un único archivo HTML offline. La fuente Archivo Narrow
 va incrustada, y no hace peticiones de red ni tiene dependencias.
 
@@ -121,7 +121,7 @@ texto o en un deslizador.
 | `V` | variedad (0 → 100 % en pasos de 25) |
 | `M` | mayor / menor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
-| `C` | fondo |
+| `C` | siguiente tema. Al abrir se elige uno al azar; C recorre el resto. Cada tema son dos colores, fondo y tipo. |
 | `X` | borrar el patrón |
 | `R` | grabar el canvas y el sonido, sin la interfaz. El encuadre es 9:16, 16:9 o 1:1. Chrome y Safari bajan un `.mp4`; Firefox un `.webm`. |
 | `U` | ocultar / mostrar la interfaz |
