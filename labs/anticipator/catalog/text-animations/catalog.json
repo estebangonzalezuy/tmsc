@@ -7,7 +7,8 @@
     "heavy-drop-lines",
     "weight-wave-letters",
     "hold-aware-rise",
-    "anticipate-pop-words-calm"
+    "anticipate-pop-words-calm",
+    "anticipate-pop-words-energetic"
   ],
   "groups": {
     "seed": [
@@ -23,6 +24,9 @@
       "spring-rise-letters-calm",
       "spring-rise-letters-energetic",
       "anticipate-pop-words-calm"
+    ],
+    "lab": [
+      "anticipate-pop-words-energetic"
     ]
   }
 }

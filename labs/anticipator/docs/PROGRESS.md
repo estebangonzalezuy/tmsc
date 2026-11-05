@@ -33,3 +33,21 @@ nothing deploys.
 - `npm run validate:catalog` passes; verified it fails on bad keys, stale
   fallback, unlisted file and id/file mismatch.
 - `npm run fit:catalog` fits the bezier fallback from the physics (idempotent).
+
+## Etapa 2 — Runtime preview + diales ✅
+
+- `npm run dev` → http://localhost:5178 (Lab tab).
+- Side by side: **bezier reference** (pick: the familiar back-out cubic
+  `cubic-bezier(0.34, 1.56, 0.64, 1)` with its own duration dial, or this spec's
+  own fitted fallback) vs **spring + anticipation**. One clock drives both
+  screens and the curve plot.
+- Dials: stiffness, damping, mass, anticipation %, anticipation ms, stagger,
+  opacity ms, rest_delta. Live ζ, character, overshoot %, settle ms, and the
+  fallback's rms/max error.
+- Save as preset: name + intent (calm / energetic / heavy / playful / precise /
+  editorial) + notes → POST `/api/specs` (Vite dev middleware) → validated,
+  fallback fitted, written to `catalog/text-animations/specs/<id>.json` and
+  listed in `catalog.json` (group `lab`). Copy JSON as well; without the dev
+  server it downloads the file.
+- Verified with Playwright: `anticipate-pop-words-energetic` was made from
+  the UI (k 700, c 19, wind-up 22%/80ms) and is now in the catalog.
