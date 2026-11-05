@@ -1,0 +1,63 @@
+{
+  "id": "spring-rise-letters",
+  "display_name": "Spring Rise Letters",
+  "description": "Letters rise from below on a firm spring with a short dip first, and land with a single small overshoot.",
+  "inspiration": "The per-character rise everyone knows, given the weight a motion designer would key by hand: a dip, a push, a settle.",
+  "target": "per-character",
+  "signature_easing": "cubic-bezier(0.429, -0.404, 0.033, 1.366)",
+  "enter": {
+    "duration_ms": 573,
+    "stagger_ms": 28,
+    "easing": "cubic-bezier(0.429, -0.404, 0.033, 1.366)",
+    "from": {
+      "opacity": 0,
+      "y_px": 40
+    },
+    "to": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 260,
+      "damping": 24,
+      "mass": 1,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "amount": 0.08,
+      "duration_ms": 80
+    },
+    "x_opacity_duration_ms": 180,
+    "x_fallback": {
+      "fitted_from": "3f59c8ae",
+      "rms_error": 0.0205,
+      "max_error": 0.0318,
+      "spring_phase_ms": 573
+    },
+    "x_css_linear": "linear(0, -0.0043, -0.0163, -0.0335, -0.052, -0.0679, -0.0779, -0.0783, -0.0502, 0.0045, 0.0776, 0.1622, 0.2525, 0.3444, 0.4344, 0.5202, 0.6, 0.6728, 0.7379, 0.7953, 0.8449, 0.8872, 0.9225, 0.9515, 0.9749, 0.9932, 1.0072, 1.0175, 1.0247, 1.0292, 1.0317, 1.0326, 1.0322, 1.0309, 1.0289, 1.0264, 1.0238, 1.021, 1.0182, 1.0156, 1.0131, 1.0108, 1.0087, 1.0069, 1.0053, 1.0039, 1.0028, 1.0018, 1)"
+  },
+  "exit": {
+    "duration_ms": 320,
+    "stagger_ms": 14,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "y_px": -24
+    }
+  },
+  "swap": {
+    "mode": "crossfade",
+    "overlap_ms": 160,
+    "micro_delay_ms": 35
+  },
+  "usage_notes": "Headlines 40px and up. Base effect for the calm/energetic variants, which share its from/to and change only the physics. Below ~20ms stagger the staircase flattens into a block.",
+  "x_intent": "precise",
+  "x_intent_notes": "ζ ≈ 0.74: lands with one overshoot you feel more than see.",
+  "x_hold_ms": 1100,
+  "x_hold_per_word_ms": 160,
+  "x_built_on": "pixel-point/animate-text"
+}

@@ -51,3 +51,18 @@ nothing deploys.
   server it downloads the file.
 - Verified with Playwright: `anticipate-pop-words-energetic` was made from
   the UI (k 700, c 19, wind-up 22%/80ms) and is now in the catalog.
+
+## Etapa 3 — Generate skill ✅
+
+- `npm run generate:skill` → `skills/anticipator/` (SKILL.md, references/
+  schema · selection-guide · catalog · implementation-notes, assets/specs with
+  generated `x_css_linear`, assets/catalog.json, scripts/list-specs ·
+  get-spec [--portable], scripts/runtime/ = the same closed-form core the app
+  uses). Wipes and rewrites; verified byte-identical on re-run.
+- `npm run check:skill`: regenerates to a temp dir and diffs (fails if
+  skills/ is stale or hand-edited), checks frontmatter/sections/credit, runs
+  the helper scripts from another cwd, imports the runtime.
+- SKILL.md presents it as an **expansion** of pixel-point/animate-text and
+  sends non-physical effects back to that skill. Translation order: native
+  spring → CSS `linear()` → JS runtime → fitted bezier fallback.
+- Not installed anywhere. Structure check only, as the brief asked.

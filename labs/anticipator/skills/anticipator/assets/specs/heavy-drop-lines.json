@@ -1,0 +1,63 @@
+{
+  "id": "heavy-drop-lines",
+  "display_name": "Heavy Drop Lines",
+  "description": "Whole lines drop in from above with real mass: they lift first, fall, and land with a short, heavy settle.",
+  "inspiration": "Something set down on a table: a slab, a book, a stamp. Mass, not speed, is the control that matters.",
+  "target": "per-line",
+  "signature_easing": "cubic-bezier(0.385, -0.381, 0, 1.527)",
+  "enter": {
+    "duration_ms": 1198,
+    "stagger_ms": 140,
+    "easing": "cubic-bezier(0.385, -0.381, 0, 1.527)",
+    "from": {
+      "opacity": 0,
+      "y_px": -56
+    },
+    "to": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 300,
+      "damping": 40,
+      "mass": 3,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "amount": 0.1,
+      "duration_ms": 160
+    },
+    "x_opacity_duration_ms": 140,
+    "x_fallback": {
+      "fitted_from": "0a413787",
+      "rms_error": 0.058,
+      "max_error": 0.0933,
+      "spring_phase_ms": 1198
+    },
+    "x_css_linear": "linear(0, -0.0059, -0.0222, -0.045, -0.069, -0.0885, -0.099, -0.0889, -0.0278, 0.0701, 0.1894, 0.3176, 0.4455, 0.5664, 0.6759, 0.7716, 0.8522, 0.9177, 0.9691, 1.0075, 1.0347, 1.0523, 1.0622, 1.066, 1.0653, 1.0613, 1.0552, 1.048, 1.0402, 1.0325, 1.0253, 1.0188, 1.0132, 1.0084, 1.0046, 1.0016, 0.9993, 0.9978, 0.9968, 0.9962, 0.996, 0.9961, 0.9963, 0.9967, 0.9972, 0.9976, 0.9981, 0.9985, 1)"
+  },
+  "exit": {
+    "duration_ms": 380,
+    "stagger_ms": 60,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "y_px": 40
+    }
+  },
+  "swap": {
+    "mode": "sequential",
+    "overlap_ms": 0,
+    "micro_delay_ms": 80
+  },
+  "usage_notes": "Two or three short lines. mass 3 is the point: raising stiffness to compensate keeps the duration but loses the heaviness. Exits fall down (away), same direction as gravity.",
+  "x_intent": "heavy",
+  "x_intent_notes": "mass 3, ζ ≈ 0.67: slow to start, hard to stop.",
+  "x_hold_ms": 1200,
+  "x_hold_per_word_ms": 160,
+  "x_built_on": "pixel-point/animate-text"
+}

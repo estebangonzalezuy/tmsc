@@ -1,0 +1,126 @@
+{
+  "skill": "anticipator",
+  "built_on": "pixel-point/animate-text",
+  "visible_ids": [
+    "anticipate-pop-words",
+    "spring-rise-letters",
+    "spring-rise-letters-calm",
+    "spring-rise-letters-energetic",
+    "heavy-drop-lines",
+    "weight-wave-letters",
+    "hold-aware-rise",
+    "anticipate-pop-words-calm",
+    "anticipate-pop-words-energetic"
+  ],
+  "groups": {
+    "seed": [
+      "anticipate-pop-words",
+      "spring-rise-letters",
+      "heavy-drop-lines"
+    ],
+    "expressive": [
+      "weight-wave-letters",
+      "hold-aware-rise"
+    ],
+    "variants": [
+      "spring-rise-letters-calm",
+      "spring-rise-letters-energetic",
+      "anticipate-pop-words-calm"
+    ],
+    "lab": [
+      "anticipate-pop-words-energetic"
+    ]
+  },
+  "specs": [
+    {
+      "id": "anticipate-pop-words",
+      "display_name": "Anticipate Pop Words",
+      "target": "per-word",
+      "intent": "playful",
+      "variant_of": null,
+      "zeta": 0.54,
+      "unit_ms": 729,
+      "description": "Each word pinches down a hair, then pops past full size and settles: a cartoon wind-up on a real spring."
+    },
+    {
+      "id": "spring-rise-letters",
+      "display_name": "Spring Rise Letters",
+      "target": "per-character",
+      "intent": "precise",
+      "variant_of": null,
+      "zeta": 0.74,
+      "unit_ms": 573,
+      "description": "Letters rise from below on a firm spring with a short dip first, and land with a single small overshoot."
+    },
+    {
+      "id": "spring-rise-letters-calm",
+      "display_name": "Spring Rise Letters, Calm",
+      "target": "per-character",
+      "intent": "calm",
+      "variant_of": "spring-rise-letters",
+      "zeta": 1,
+      "unit_ms": 854,
+      "description": "The same rise, critically damped and unhurried: no overshoot, no wind-up, letters arrive and stay."
+    },
+    {
+      "id": "spring-rise-letters-energetic",
+      "display_name": "Spring Rise Letters, Energetic",
+      "target": "per-character",
+      "intent": "energetic",
+      "variant_of": "spring-rise-letters",
+      "zeta": 0.39,
+      "unit_ms": 846,
+      "description": "The same rise, stiff and under-damped with a quick wind-up: letters snap up, overshoot and ring once."
+    },
+    {
+      "id": "heavy-drop-lines",
+      "display_name": "Heavy Drop Lines",
+      "target": "per-line",
+      "intent": "heavy",
+      "variant_of": null,
+      "zeta": 0.67,
+      "unit_ms": 1198,
+      "description": "Whole lines drop in from above with real mass: they lift first, fall, and land with a short, heavy settle."
+    },
+    {
+      "id": "weight-wave-letters",
+      "display_name": "Weight Wave Letters",
+      "target": "per-character",
+      "intent": "editorial",
+      "variant_of": null,
+      "zeta": 0.67,
+      "unit_ms": 864,
+      "description": "Letters swell from hairline to heavy on a spring, rippling through the word, with a small rise underneath."
+    },
+    {
+      "id": "hold-aware-rise",
+      "display_name": "Hold-Aware Rise",
+      "target": "per-word",
+      "intent": "editorial",
+      "variant_of": null,
+      "zeta": 0.88,
+      "unit_ms": 668,
+      "description": "A firm per-word rise that declares how long the copy must stay on screen to be read before anything exits."
+    },
+    {
+      "id": "anticipate-pop-words-calm",
+      "display_name": "Anticipate Pop Words, Calm",
+      "target": "per-word",
+      "intent": "calm",
+      "variant_of": "anticipate-pop-words",
+      "zeta": 0.93,
+      "unit_ms": 549,
+      "description": "The pop with the cartoon taken out: a barely-there pinch, a near-critical spring, no second ring."
+    },
+    {
+      "id": "anticipate-pop-words-energetic",
+      "display_name": "Anticipate Pop Words, Energetic",
+      "target": "per-word",
+      "intent": "energetic",
+      "variant_of": "anticipate-pop-words",
+      "zeta": 0.36,
+      "unit_ms": 767,
+      "description": "Each word pinches down a hair, then pops past full size and settles: a cartoon wind-up on a real spring."
+    }
+  ]
+}

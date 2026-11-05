@@ -1,0 +1,67 @@
+{
+  "id": "anticipate-pop-words",
+  "display_name": "Anticipate Pop Words",
+  "description": "Each word pinches down a hair, then pops past full size and settles: a cartoon wind-up on a real spring.",
+  "inspiration": "Classic cel anticipation (squash before the stretch), applied to UI-scale type; title cards that want a wink, not a bounce-house.",
+  "target": "per-word",
+  "signature_easing": "cubic-bezier(0.373, -0.485, 0, 1.682)",
+  "enter": {
+    "duration_ms": 729,
+    "stagger_ms": 70,
+    "easing": "cubic-bezier(0.373, -0.485, 0, 1.682)",
+    "from": {
+      "opacity": 0,
+      "scale": 0.6,
+      "y_px": 14
+    },
+    "to": {
+      "opacity": 1,
+      "scale": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 420,
+      "damping": 22,
+      "mass": 1,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "amount": 0.18,
+      "duration_ms": 110
+    },
+    "x_opacity_duration_ms": 120,
+    "x_fallback": {
+      "fitted_from": "06f46b0d",
+      "rms_error": 0.1186,
+      "max_error": 0.2292,
+      "spring_phase_ms": 729
+    },
+    "x_css_linear": "linear(0, -0.0083, -0.0318, -0.066, -0.1047, -0.1407, -0.1672, -0.1795, -0.15, -0.037, 0.1286, 0.3184, 0.5099, 0.6871, 0.8395, 0.9617, 1.0524, 1.113, 1.1472, 1.1596, 1.1555, 1.1398, 1.1172, 1.0914, 1.0655, 1.0416, 1.0211, 1.0047, 0.9925, 0.9845, 0.9799, 0.9784, 0.979, 0.9812, 0.9842, 0.9877, 0.9913, 0.9945, 0.9972, 0.9994, 1.0011, 1.0021, 1.0027, 1.0029, 1.0028, 1.0025, 1.0021, 1.0016, 1)"
+  },
+  "exit": {
+    "duration_ms": 320,
+    "stagger_ms": 30,
+    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "from": {
+      "opacity": 1,
+      "scale": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "scale": 0.85,
+      "y_px": -8
+    }
+  },
+  "swap": {
+    "mode": "sequential",
+    "overlap_ms": 0,
+    "micro_delay_ms": 60
+  },
+  "usage_notes": "Per-word only: per-character at this bounce reads as jitter. Keep phrases short (2–5 words). The anticipation is what sells it, so if opacity_duration grows past ~180ms the wind-up happens while the word is still invisible and the effect collapses into a plain pop.",
+  "x_intent": "playful",
+  "x_intent_notes": "ζ ≈ 0.54: one clear overshoot and a small second ring. Friendly, not silly.",
+  "x_hold_ms": 900,
+  "x_hold_per_word_ms": 180,
+  "x_built_on": "pixel-point/animate-text"
+}
