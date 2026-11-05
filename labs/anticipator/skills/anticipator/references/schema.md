@@ -64,9 +64,11 @@ size (`value × fontPx / 48`), so a 14px rise on a 48px label becomes 35px on a
   "easing": "cubic-bezier(0.378, -0.4, 0, 1.652)",
   "from": { "opacity": 0, "scale": 0.6, "y_px": 14 },
   "to":   { "opacity": 1, "scale": 1,   "y_px": 0 },
-  "x_spring": { "stiffness": 420, "damping": 22, "mass": 1, "rest_delta": 0.001 },
-  "x_anticipation": { "amount": 0.18, "duration_ms": 110 },
-  "x_opacity_duration_ms": 120,
+  "x_spring": { "stiffness": 320, "damping": 14, "mass": 1, "velocity": 0, "rest_delta": 0.001 },
+  "x_anticipation": { "duration_ms": 140, "amount": 0.15, "easing": "cubic-bezier(0.45, 0, 0.55, 1)" },
+  "x_opacity_duration_ms": 160,
+  "x_hold_ms": 900,
+  "x_hold_per_word_ms": 180,
   "x_fallback": { "fitted_from": "9f3c1a2b", "rms_error": 0.11, "max_error": 0.22, "spring_phase_ms": 729 }
 }
 ```
@@ -76,9 +78,13 @@ size (`value × fontPx / 48`), so a 14px rise on a 48px label becomes 35px on a
 | `x_spring.stiffness` | k > 0. Higher is faster. |
 | `x_spring.damping` | c ≥ 0. Higher means less bounce. |
 | `x_spring.mass` | m > 0. Higher is heavier: slower, and it carries through. |
+| `x_spring.velocity` | initial velocity when the spring releases, in travel units per second (default 0). Positive pushes toward `to`. |
 | `x_spring.rest_delta` | settle tolerance as a fraction of travel (default `0.001`). Decides when the phase ends. |
 | `x_anticipation.amount` | wind-up away from the target as a fraction of travel (0–0.6). `0.18` on a 14px rise first dips 2.5px the other way. |
-| `x_anticipation.duration_ms` | how long the wind-up takes (ease-in-out sine), before the spring releases from rest. |
+| `x_anticipation.duration_ms` | how long the wind-up takes, before the spring releases. |
+| `x_anticipation.easing` | easing of the wind-up (default `cubic-bezier(0.45, 0, 0.55, 1)`). |
+| `x_hold_ms` | (enter only) minimum time the fully-entered text stays before the exit starts. Default 1200. |
+| `x_hold_per_word_ms` | (enter only) added per word: hold = `x_hold_ms + words × x_hold_per_word_ms`. |
 | `x_opacity_duration_ms` | opacity runs on its own ease-out clock of this length, starting with the unit. Opacity never springs, and a short value keeps the anticipation visible. |
 | `x_fallback` | **generated** by `fit:catalog`. `fitted_from` is a hash of `x_spring` + `x_anticipation`. The validator fails when the physics changed and the fallback wasn't re-fitted. `max_error` says how far the bezier strays from the spring, in travel units. A cubic-bezier can hold one dip and one overshoot but not a second bounce. |
 
@@ -90,9 +96,12 @@ Damping ratio, the number the lab shows live:
 ```
 
 **How a spring phase plays:** progress `p` runs in travel units (0 = `from`,
-1 = `to`). During the wind-up, `p = −amount · easeInOutSine(t / duration)`.
-After it, the closed-form damped oscillator runs from `p = −amount` with zero
-velocity towards `p = 1` until it stays within `rest_delta`. Every key except
+1 = `to`). During the wind-up, `p = −amount · easing(t / duration)`. Then
+the spring `F = −k(x − 1) − c·v`, `a = F/m` runs from `p = −amount` with
+initial velocity `velocity` towards `p = 1` until it stays within `rest_delta`.
+The runtime solves it in closed form, which is the exact integral of that
+ODE (`core/spring.test.ts` checks it against step integration). That makes
+it deterministic in `t`. Every key except
 `opacity` and `color` follows `p`, so `scale` pinches, `y_px` dips and
 `blur_px` clamps at 0.
 
@@ -103,8 +112,6 @@ velocity towards `p = 1` until it stays within `rest_delta`. Every key except
 | `x_intent` | `calm`, `energetic`, `heavy`, `playful`, `precise`, `editorial`. The character, in words. |
 | `x_intent_notes` | one line on what that intent means for this spec |
 | `x_variant_of` | id of the base effect when this spec only changes the physics (same `from`/`to`) |
-| `x_hold_ms` | minimum time the fully-entered text stays before exit starts |
-| `x_hold_per_word_ms` | added per word, so longer copy stays longer. Hold = `x_hold_ms + words × x_hold_per_word_ms`. |
 | `x_exit_stagger_mode` | stagger order for the exit if it differs from `stagger_mode` |
 | `x_built_on` | always `"pixel-point/animate-text"`. Credit travels with the file. |
 

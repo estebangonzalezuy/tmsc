@@ -9,11 +9,15 @@ Progress `p` is in travel units: 0 = `from`, 1 = `to`. For one unit, at
 a  = x_anticipation.amount        (0 if absent)
 Ta = x_anticipation.duration_ms   (0 if absent)
 
-ms < Ta:  p = −a · (1 − cos(π·ms/Ta)) / 2                  // wind-up, ease-in-out sine
-ms ≥ Ta:  p = 1 + d(t),  t = (ms − Ta)/1000,  d(0) = −(1 + a),  d'(0) = 0
+Ea = x_anticipation.easing        (default cubic-bezier(0.45, 0, 0.55, 1))
+v0 = x_spring.velocity            (travel/s, default 0)
+
+ms < Ta:  p = −a · Ea(ms / Ta)                              // wind-up
+ms ≥ Ta:  p = 1 + d(t),  t = (ms − Ta)/1000,  d(0) = −(1 + a),  d'(0) = v0
+          m·d'' = −k·d − c·d'          (F = −k(x−1) − c·v, a = F/m; solved in closed form)
           ω0 = √(k/m),  ζ = c / (2√(k·m))
-          ζ < 1: d = e^(−ζω0t) · (d0·cos ωd t + (ζω0·d0/ωd)·sin ωd t),  ωd = ω0√(1−ζ²)
-          ζ = 1: d = e^(−ω0t) · d0 · (1 + ω0 t)
+          ζ < 1: d = e^(−ζω0t) · (d0·cos ωd t + ((v0 + ζω0·d0)/ωd)·sin ωd t),  ωd = ω0√(1−ζ²)
+          ζ = 1: d = e^(−ω0t) · (d0 + (v0 + ω0·d0)·t)
           ζ > 1: two real roots; see scripts/runtime/spring.js
 end:      first ms after which |d| stays < rest_delta · (1 + a)
 ```
@@ -39,7 +43,7 @@ starting with the unit. Never spring opacity.
 ## A clip: enter → hold → exit
 
 - enter total = `maxRank · enter.stagger_ms + unit ms`
-- hold = `x_hold_ms + words · x_hold_per_word_ms`, counted **after** the enter total
+- hold = `enter.x_hold_ms + words · enter.x_hold_per_word_ms` (default 1200ms), counted **after** the enter total
 - exit starts at enter total + hold, staggered with `exit.stagger_ms` (and `x_exit_stagger_mode` if set)
 
 When a layout or loop is longer than the natural clip, stretch the **hold**,

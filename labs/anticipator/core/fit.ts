@@ -1,18 +1,19 @@
-// Fallback fitting. A plain animate-text runtime only understands
-// `duration_ms` + a CSS `easing`. So for every spring phase we fit the best
-// cubic-bezier to the real curve (anticipation + spring), and also emit an
-// exact CSS `linear()` easing for runtimes that support it.
-//
-// cubic-bezier can hold one dip below 0 (y1 < 0, the anticipation) and one
-// overshoot above 1 (y2 > 1). It cannot hold a second bounce. `max_error`
-// says honestly how far off the fallback is.
+// Fallback fitting. A plain animate-text runtime only reads `duration_ms` +
+// `easing`, so for each spring phase we fit the best cubic-bezier to the real
+// curve (anticipation + spring) and record its error honestly. A cubic can
+// hold one dip (y1 < 0) and one overshoot (y2 > 1), never a second bounce.
+// We also emit an exact CSS linear() easing for runtimes that support it.
 
-import { cubicBezier } from "./easing.js";
-import { sampleCurve, springPhaseMs } from "./phase.js";
+import type { Phase } from "./types.ts";
+import { cubicBezier } from "./easing.ts";
+import { sampleCurve, springPhaseMs } from "./phase.ts";
 
-const round = (v, d = 3) => Math.round(v * 10 ** d) / 10 ** d;
+type P4 = [number, number, number, number];
+type Pt = { x: number; y: number };
 
-function errorOf(params, pts) {
+const round = (v: number, d = 3) => Math.round(v * 10 ** d) / 10 ** d;
+
+function errorOf(params: P4, pts: Pt[]) {
   const f = cubicBezier(...params);
   let sum = 0, max = 0;
   for (const p of pts) {
@@ -23,15 +24,15 @@ function errorOf(params, pts) {
   return { rms: Math.sqrt(sum / pts.length), max };
 }
 
-function clampParams([x1, y1, x2, y2]) {
-  const c = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+function clampParams([x1, y1, x2, y2]: number[]): P4 {
+  const c = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   return [c(x1, 0, 1), c(y1, -1.5, 2.5), c(x2, 0, 1), c(y2, -1.5, 2.5)];
 }
 
-// Nelder–Mead on 4 params. Small, deterministic, good enough for 4 numbers.
-function nelderMead(f, start, step = 0.15, iters = 400) {
+// Nelder–Mead on 4 params: small, deterministic, good enough for four numbers.
+function nelderMead(f: (p: number[]) => number, start: number[], step = 0.15, iters = 600): number[] {
   const n = start.length;
-  let simplex = [start];
+  let simplex: number[][] = [start];
   for (let i = 0; i < n; i++) {
     const p = start.slice();
     p[i] += step;
@@ -39,7 +40,7 @@ function nelderMead(f, start, step = 0.15, iters = 400) {
   }
   let vals = simplex.map(f);
   for (let k = 0; k < iters; k++) {
-    const order = vals.map((v, i) => i).sort((a, b) => vals[a] - vals[b]);
+    const order = vals.map((_, i) => i).sort((a, b) => vals[a] - vals[b]);
     simplex = order.map((i) => simplex[i]);
     vals = order.map((i) => vals[i]);
     const c = new Array(n).fill(0);
@@ -65,27 +66,27 @@ function nelderMead(f, start, step = 0.15, iters = 400) {
       }
     }
   }
-  const best = vals.indexOf(Math.min(...vals));
-  return simplex[best];
+  return simplex[vals.indexOf(Math.min(...vals))];
 }
 
-/** Best cubic-bezier for a spring phase, plus its honest error. */
-export function fitBezier(phase) {
+/** Best cubic-bezier for a spring phase, plus its honest error (travel units). */
+export function fitBezier(phase: Phase) {
   const { total, points } = sampleCurve(phase, 80, "spring");
-  const cost = (p) => errorOf(clampParams(p), points).rms;
-  const starts = [
-    [0.3, -0.2, 0.3, 1.3],
-    [0.2, 0.0, 0.2, 1.0],
-    [0.5, -0.5, 0.2, 1.6],
-    [0.15, 0.6, 0.3, 1.0],
-  ];
-  let best = null, bestCost = Infinity;
+  const cost = (p: number[]) => errorOf(clampParams(p), points).rms;
+  const starts = [[0.3, -0.2, 0.3, 1.3], [0.2, 0, 0.2, 1], [0.5, -0.5, 0.2, 1.6], [0.15, 0.6, 0.3, 1], [0.34, 1.56, 0.64, 1], [0.36, -0.3, 0.1, 1.4]];
+  // Also start from the bezier the spec was authored with, so the fit can only improve on it.
+  const authored = /^cubic-bezier\(([^)]+)\)$/.exec(String(phase.easing || "").trim());
+  if (authored) {
+    const n = authored[1].split(",").map(Number);
+    if (n.length === 4 && n.every(Number.isFinite)) starts.push(n);
+  }
+  let best: P4 = [0, 0, 1, 1], bestCost = Infinity;
   for (const s of starts) {
     const p = clampParams(nelderMead(cost, s));
     const c = cost(p);
     if (c < bestCost) { bestCost = c; best = p; }
   }
-  const params = best.map((v) => round(v, 3));
+  const params = best.map((v) => round(v, 3)) as P4;
   const err = errorOf(params, points);
   return {
     easing: `cubic-bezier(${params.join(", ")})`,
@@ -95,18 +96,15 @@ export function fitBezier(phase) {
   };
 }
 
-/** Exact CSS linear() easing of a spring phase, `n` evenly spaced stops. */
-export function cssLinear(phase, n = 48) {
+/** Exact CSS linear() easing of a spring phase, n evenly spaced stops. */
+export function cssLinear(phase: Phase, n = 48): string {
   const { points } = sampleCurve(phase, n, "spring");
   return `linear(${points.map((p) => round(p.y, 4)).join(", ")})`;
 }
 
-/** Stable short fingerprint of the physics a fallback was fitted from. */
-export function physicsHash(phase) {
-  const src = JSON.stringify({
-    s: phase.x_spring || null,
-    a: phase.x_anticipation || null,
-  });
+/** Short fingerprint of the physics a fallback was fitted from. */
+export function physicsHash(phase: Phase): string {
+  const src = JSON.stringify({ s: phase.x_spring || null, a: phase.x_anticipation || null });
   let h = 2166136261;
   for (let i = 0; i < src.length; i++) {
     h ^= src.charCodeAt(i);
@@ -115,12 +113,9 @@ export function physicsHash(phase) {
   return (h >>> 0).toString(16).padStart(8, "0");
 }
 
-/**
- * Write the fitted fallback into a spring phase in place: `easing`,
- * `duration_ms` and `x_fallback`. A runtime that ignores x_* plays this.
- */
-export function applyFallback(phase) {
-  if (!phase || !phase.x_spring) return phase;
+/** Write the fitted fallback into a spring phase in place. */
+export function applyFallback(phase: Phase): Phase {
+  if (!phase?.x_spring) return phase;
   const fit = fitBezier(phase);
   phase.easing = fit.easing;
   phase.duration_ms = fit.duration_ms;

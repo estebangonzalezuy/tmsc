@@ -15,7 +15,7 @@ then `docs/STRATEGY.md` and `docs/SHIP-CHECKLIST.md`.
 cd labs/anticipator
 npm install
 npm run dev                 # Lab + Editor → http://localhost:5178
-npm test                    # validate:catalog + check:skill
+npm test                    # physics + validate:catalog + check:skill + typecheck
 npm run generate:skill      # rebuild skills/anticipator from the catalog
 npm run export -- springs-side-by-side tmsc-timeline --verify   # → out/
 ```
@@ -26,10 +26,11 @@ scripts are plain Node.
 | Path | What |
 | --- | --- |
 | `catalog/text-animations/` | `schema.md`, `catalog.json`, `specs/*.json`, the source of truth |
-| `core/` | the runtime, pure ESM: spring (closed form), easing, phase, fit, timeline, render, validate |
+| `core/` | the runtime in TypeScript (Node runs it natively): spring, easing, phase, fit, timeline, render, validate |
 | `scripts/` | validate-catalog, fit-catalog, generate-skill, check-skill, export-video |
 | `skills/anticipator/` | **generated** skill. Don't edit by hand |
-| `app/` | Vite + React: Lab, Editor (DialKit), `#render` route for export |
+| `app/` | Vite + React + TS: Lab, Editor (DialKit), `#render` route for export |
+| `_ref/` | gitignored clone of pixel-point/animate-text, format reference only |
 | `projects/` | editor projects (`tmsc-timeline`, `springs-side-by-side`) |
 | `out/` | rendered demos (mp4, webm, poster) |
 | `docs/` | strategy, progress, licence notes, ship checklist, public README draft, tweet draft |

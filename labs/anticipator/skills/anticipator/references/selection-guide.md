@@ -20,48 +20,50 @@ duration but loses the weight.
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `spring-rise-letters-calm` | per-character | opacity, y_px | 1.00 | none | 854 | ζ = 1.0, no anticipation, long opacity. Nothing to notice but the words. |
-| `anticipate-pop-words-calm` | per-word | opacity, scale, y_px | 0.93 | 6% / 120ms | 549 | Same gesture, inside voice. |
+| `anticipate-pop-words-calm` | per-word | opacity, scale | 0.91 | 5% / 160ms | 679 | ζ ≈ 0.91, 5% squash. |
+| `spring-rise-letters-calm` | per-character | opacity, y_px | 1.00 | none | 854 | ζ = 1.0 (crítico): nothing to notice but the words. |
+| `heavy-drop-lines-calm` | per-line | opacity, y_px | 1.02 | 4% / 160ms | 1596 | Same mass, no bounce: the slab is lowered, not dropped. |
 
 ### editorial
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | `weight-wave-letters` | per-character | opacity, y_px, x_font_weight | 0.67 | 6% / 90ms | 864 | ζ ≈ 0.67 on weight, not position: the word fills in. |
-| `hold-aware-rise` | per-word | opacity, y_px | 0.88 | 5% / 80ms | 668 | Unremarkable on purpose, so the words get read. |
+| `hold-aware-rise` | per-word | opacity, y_px | 0.56 | 12% / 120ms | 899 | Same physics as spring-rise-letters, per word, plus a reading contract. |
 
 ### energetic
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `spring-rise-letters-energetic` | per-character | opacity, y_px | 0.39 | 12% / 70ms | 846 | ζ ≈ 0.39, short stagger, fast opacity. It wants to be cut to music. |
-| `anticipate-pop-words-energetic` | per-word | opacity, scale, y_px | 0.36 | 22% / 80ms | 767 | Stiff and under-damped with a sharper wind-up: the pop lands on the beat and rings once more. |
+| `anticipate-pop-words-energetic` | per-word | opacity, scale | 0.32 | 22% / 90ms | 932 | ζ ≈ 0.32, 22% squash. |
+| `spring-rise-letters-energetic` | per-character | opacity, y_px | 0.39 | 15% / 70ms | 846 | ζ ≈ 0.39 (rebota): cut it to music. |
 
 ### heavy
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `heavy-drop-lines` | per-line | opacity, y_px | 0.67 | 10% / 160ms | 1198 | mass 3, ζ ≈ 0.67: slow to start, hard to stop. |
+| `heavy-drop-lines` | per-line | opacity, y_px | 0.55 | 10% / 160ms | 1554 | mass 2.2, ζ ≈ 0.55 (pesado): slow to start, hard to stop. |
 
 ### playful
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `anticipate-pop-words` | per-word | opacity, scale, y_px | 0.54 | 18% / 110ms | 729 | ζ ≈ 0.54: one clear overshoot and a small second ring. Friendly, not silly. |
+| `anticipate-pop-words` | per-word | opacity, scale | 0.39 | 15% / 140ms | 1135 | ζ ≈ 0.39: a clear pop and a second ring. |
 
 ### precise
 
 | id | target | moves | ζ | wind-up | unit ms | notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `spring-rise-letters` | per-character | opacity, y_px | 0.74 | 8% / 80ms | 573 | ζ ≈ 0.74: lands with one overshoot you feel more than see. |
+| `spring-rise-letters` | per-character | opacity, y_px | 0.56 | 12% / 120ms | 899 | ζ ≈ 0.56: one overshoot you can see. |
 
 ## Same effect, different physics
 
 These share `from`/`to` with their base and change only the spring, so they are
 safe to swap for one another without touching layout.
 
-- **anticipate-pop-words**: `anticipate-pop-words` (playful, ζ 0.54) · `anticipate-pop-words-calm` (calm, ζ 0.93) · `anticipate-pop-words-energetic` (energetic, ζ 0.36)
-- **spring-rise-letters**: `spring-rise-letters` (precise, ζ 0.74) · `spring-rise-letters-calm` (calm, ζ 1.00) · `spring-rise-letters-energetic` (energetic, ζ 0.39)
+- **anticipate-pop-words**: `anticipate-pop-words` (playful, ζ 0.39) · `anticipate-pop-words-calm` (calm, ζ 0.91) · `anticipate-pop-words-energetic` (energetic, ζ 0.32)
+- **spring-rise-letters**: `spring-rise-letters` (precise, ζ 0.56) · `spring-rise-letters-calm` (calm, ζ 1.00) · `spring-rise-letters-energetic` (energetic, ζ 0.39)
+- **heavy-drop-lines**: `heavy-drop-lines` (heavy, ζ 0.55) · `heavy-drop-lines-calm` (calm, ζ 1.02)
 
 ## By request
 

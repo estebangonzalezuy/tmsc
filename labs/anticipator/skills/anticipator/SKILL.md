@@ -13,7 +13,9 @@ and extends it with optional `x_*` fields for **real springs** and
 catalog of text effects (blur-ins, typewriters, shared-axis, kinetic builds),
 use animate-text. Use this one when the motion should have mass.
 
-This skill ships 9 specs. See `references/catalog.md`.
+This skill ships 10 specs. See `references/catalog.md`.
+
+**Rule:** prefer `x_spring` (with `x_anticipation`) whenever the target runtime supports springs or an exact curve. Otherwise play the bezier fallback, `easing` over `duration_ms`, which every spec carries and which any animate-text runtime already understands.
 
 ## When To Use
 
@@ -53,7 +55,7 @@ live in animate-text.
 4. **Opacity on its own clock**: `x_opacity_duration_ms`, ease-out, starting
    with the unit. Never spring opacity.
 5. **Stagger** per `stagger_mode` (formulas in `references/implementation-notes.md`).
-6. **Hold** for `x_hold_ms + words × x_hold_per_word_ms` after the enter
+6. **Hold** for `enter.x_hold_ms + words × enter.x_hold_per_word_ms` after the enter
    finishes, before any exit. Don't shorten it to fit a loop; lengthen the loop.
 7. **Preserve the user's text and styling.** Specs carry motion only, never
    copy, colour or font size (except `x_font_weight`, which needs a variable font).

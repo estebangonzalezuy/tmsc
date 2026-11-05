@@ -17,8 +17,9 @@ design them with dials and a small editor to cut video with them.
 
 ## What it adds to animate-text
 
-- **Real springs.** `x_spring: { stiffness, damping, mass }`, played as a
-  closed-form damped oscillator. It isn't a cubic-bezier pretending, so a
+- **Real springs.** `x_spring: { stiffness, damping, mass, velocity }`,
+  `F = −k(x−1) − c·v`, solved exactly (closed form, checked against step
+  integration). It isn't a cubic-bezier pretending, so a
   second bounce and real weight are possible.
 - **Anticipation.** `x_anticipation: { amount, duration_ms }` winds up away
   from the target before the spring releases. It's the oldest trick in
@@ -70,11 +71,12 @@ npm run dev            # Lab + Editor at http://localhost:5178
 catalog/text-animations/   schema.md · catalog.json · specs/*.json   ← source of truth
 scripts/                   validate-catalog · fit-catalog · generate-skill · check-skill · export-video
 skills/anticipator/        generated. Never edit by hand
-app/                       the Lab + Editor (Vite + React + DialKit)
+app/                       the Lab + Editor (Vite + React + TypeScript + DialKit)
 core/                      the runtime: spring, easing, phase, fit, timeline, render
 ```
 
 ```bash
+npm test                   # physics vs integration, catalog, skill, typecheck
 npm run validate:catalog   # fails on any schema break or stale fallback
 npm run fit:catalog        # re-fit bezier fallbacks after editing physics by hand
 npm run generate:skill     # the only way skills/ changes (idempotent)
@@ -93,4 +95,4 @@ npm run export -- tmsc-timeline --verify
 
 ## Licence
 
-YOUR_LICENCE (MIT suggested for this repo's own code; see `docs/SHIP-CHECKLIST.md`).
+MIT for this repo's own code. Fonts: SIL OFL 1.1.

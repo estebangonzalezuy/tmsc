@@ -35,7 +35,7 @@ catch { console.error("Playwright isn't available. Install it (npm i -D playwrig
 const OUT = path.join(ROOT, "out");
 const sha = (b) => crypto.createHash("sha1").update(b).digest("hex").slice(0, 12);
 
-const server = await createServer({ configFile: path.join(ROOT, "app", "vite.config.js"), server: { port: 0 }, logLevel: "error" });
+const server = await createServer({ configFile: path.join(ROOT, "app", "vite.config.ts"), server: { port: 0 }, logLevel: "error" });
 await server.listen();
 const url = server.resolvedUrls.local[0];
 const browser = await chromium.launch();

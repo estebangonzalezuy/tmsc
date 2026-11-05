@@ -4,7 +4,7 @@
 
 import path from "node:path";
 import { SPECS_DIR, listSpecFiles, readJson, writeJson, canonicalSpec } from "./lib.mjs";
-import { applyFallback, physicsHash } from "../core/fit.js";
+import { applyFallback, physicsHash } from "../core/fit.ts";
 
 const force = process.argv.includes("--force");
 let changed = 0;

@@ -1,0 +1,66 @@
+{
+  "id": "heavy-drop-lines-calm",
+  "display_name": "Heavy Drop Lines, Calm",
+  "description": "Whole lines lift, then drop in from above with real mass and a short, heavy settle.",
+  "inspiration": "Something set down on a table. Mass, not speed, is the control that matters.",
+  "target": "per-line",
+  "signature_easing": "cubic-bezier(0.333, -0.246, 0, 1.168)",
+  "enter": {
+    "duration_ms": 1596,
+    "stagger_ms": 140,
+    "easing": "cubic-bezier(0.333, -0.246, 0, 1.168)",
+    "from": {
+      "opacity": 0,
+      "y_px": -40
+    },
+    "to": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "x_spring": {
+      "stiffness": 120,
+      "damping": 36,
+      "mass": 2.6,
+      "velocity": 0,
+      "rest_delta": 0.001
+    },
+    "x_anticipation": {
+      "duration_ms": 160,
+      "amount": 0.04,
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
+    },
+    "x_opacity_duration_ms": 260,
+    "x_hold_ms": 1200,
+    "x_hold_per_word_ms": 160,
+    "x_fallback": {
+      "fitted_from": "efe332f1",
+      "rms_error": 0.0127,
+      "max_error": 0.0229,
+      "spring_phase_ms": 1596
+    },
+    "x_css_linear": "linear(0, -0.0032, -0.014, -0.0286, -0.0379, -0.0391, -0.0087, 0.0515, 0.1282, 0.212, 0.297, 0.3793, 0.4565, 0.5273, 0.5913, 0.6483, 0.6986, 0.7426, 0.7808, 0.8139, 0.8423, 0.8667, 0.8875, 0.9052, 0.9203, 0.933, 0.9438, 0.9528, 0.9605, 0.9669, 0.9723, 0.9769, 0.9807, 0.9839, 0.9865, 0.9888, 0.9906, 0.9922, 0.9935, 0.9946, 0.9955, 0.9962, 0.9969, 0.9974, 0.9978, 0.9982, 0.9985, 0.9988, 1)"
+  },
+  "exit": {
+    "duration_ms": 380,
+    "stagger_ms": 60,
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
+    "from": {
+      "opacity": 1,
+      "y_px": 0
+    },
+    "to": {
+      "opacity": 0,
+      "y_px": 32
+    }
+  },
+  "swap": {
+    "mode": "sequential",
+    "overlap_ms": 0,
+    "micro_delay_ms": 80
+  },
+  "usage_notes": "Two or three short lines. mass 2.2 is the point: raising stiffness instead keeps the duration but loses the weight. Exits fall away, with gravity.",
+  "x_intent": "calm",
+  "x_intent_notes": "Same mass, no bounce: the slab is lowered, not dropped.",
+  "x_variant_of": "heavy-drop-lines",
+  "x_built_on": "pixel-point/animate-text"
+}

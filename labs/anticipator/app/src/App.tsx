@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useCatalog } from "./catalog.js";
-import Lab from "./lab/Lab.jsx";
-import Editor from "./editor/Editor.jsx";
-import RenderView from "./RenderView.jsx";
+import { useCatalog } from "./catalog.ts";
+import Lab from "./lab/Lab.tsx";
+import Editor from "./editor/Editor.tsx";
+import RenderView from "./RenderView.tsx";
 
-function initialTab() {
+function initialTab(): "lab" | "editor" {
   const h = location.hash.replace("#", "");
   return h === "editor" ? "editor" : "lab";
 }
@@ -13,7 +13,7 @@ export default function App() {
   const [tab, setTab] = useState(initialTab);
   const cat = useCatalog();
   if (location.hash === "#render") return <RenderView cat={cat} />;
-  const go = (t) => { setTab(t); history.replaceState(null, "", `#${t}`); };
+  const go = (t: "lab" | "editor") => { setTab(t); history.replaceState(null, "", `#${t}`); };
   return (
     <div className="app">
       <div className="topbar">

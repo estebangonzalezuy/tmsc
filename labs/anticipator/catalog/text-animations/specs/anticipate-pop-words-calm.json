@@ -1,67 +1,64 @@
 {
   "id": "anticipate-pop-words-calm",
   "display_name": "Anticipate Pop Words, Calm",
-  "description": "The pop with the cartoon taken out: a barely-there pinch, a near-critical spring, no second ring.",
-  "inspiration": "Product UI announcements where the pop should read as care, not as a joke.",
+  "description": "The same pop, near-critically damped with a barely-there squash: care, not a joke.",
   "target": "per-word",
-  "signature_easing": "cubic-bezier(0.523, -0.361, 0.148, 1.064)",
+  "signature_easing": "cubic-bezier(0.564, -0.349, 0.114, 1.134)",
   "enter": {
-    "duration_ms": 549,
-    "stagger_ms": 90,
-    "easing": "cubic-bezier(0.523, -0.361, 0.148, 1.064)",
+    "duration_ms": 679,
+    "stagger_ms": 110,
+    "easing": "cubic-bezier(0.564, -0.349, 0.114, 1.134)",
     "from": {
       "opacity": 0,
-      "scale": 0.6,
-      "y_px": 14
+      "scale": 0.7
     },
     "to": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "x_spring": {
-      "stiffness": 260,
-      "damping": 30,
+      "stiffness": 220,
+      "damping": 27,
       "mass": 1,
+      "velocity": 0,
       "rest_delta": 0.001
     },
     "x_anticipation": {
-      "amount": 0.06,
-      "duration_ms": 120
+      "duration_ms": 160,
+      "amount": 0.05,
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
     },
-    "x_opacity_duration_ms": 160,
+    "x_opacity_duration_ms": 220,
+    "x_hold_ms": 1100,
+    "x_hold_per_word_ms": 200,
     "x_fallback": {
-      "fitted_from": "b4abe4d0",
-      "rms_error": 0.0125,
-      "max_error": 0.0329,
-      "spring_phase_ms": 549
+      "fitted_from": "af80d3dc",
+      "rms_error": 0.0143,
+      "max_error": 0.0388,
+      "spring_phase_ms": 679
     }
   },
   "exit": {
     "duration_ms": 360,
-    "stagger_ms": 30,
-    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "stagger_ms": 40,
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
     "from": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "to": {
       "opacity": 0,
-      "scale": 0.9,
-      "y_px": -6
+      "scale": 0.9
     }
   },
   "swap": {
-    "mode": "sequential",
+    "mode": "crossfade",
     "overlap_ms": 0,
-    "micro_delay_ms": 60
+    "micro_delay_ms": 35
   },
-  "usage_notes": "Variant of anticipate-pop-words (same from/to). ζ ≈ 0.93: the overshoot is under 1% of travel.",
+  "usage_notes": "Variant of anticipate-pop-words: same from/to, only the physics changes.",
   "x_intent": "calm",
-  "x_intent_notes": "Same gesture, inside voice.",
+  "x_intent_notes": "ζ ≈ 0.91, 5% squash.",
   "x_variant_of": "anticipate-pop-words",
-  "x_hold_ms": 1100,
-  "x_hold_per_word_ms": 200,
   "x_built_on": "pixel-point/animate-text"
 }

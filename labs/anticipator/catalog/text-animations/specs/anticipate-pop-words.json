@@ -1,66 +1,64 @@
 {
   "id": "anticipate-pop-words",
   "display_name": "Anticipate Pop Words",
-  "description": "Each word pinches down a hair, then pops past full size and settles: a cartoon wind-up on a real spring.",
-  "inspiration": "Classic cel anticipation (squash before the stretch), applied to UI-scale type; title cards that want a wink, not a bounce-house.",
+  "description": "Each word squashes smaller first (anticipation), then pops on an underdamped spring.",
+  "inspiration": "Cel animation's squash before the stretch, at title-card scale.",
   "target": "per-word",
-  "signature_easing": "cubic-bezier(0.373, -0.485, 0, 1.682)",
+  "signature_easing": "cubic-bezier(0.334, 0.325, 0, 1.465)",
   "enter": {
-    "duration_ms": 729,
-    "stagger_ms": 70,
-    "easing": "cubic-bezier(0.373, -0.485, 0, 1.682)",
+    "duration_ms": 1135,
+    "stagger_ms": 95,
+    "easing": "cubic-bezier(0.334, 0.325, 0, 1.465)",
     "from": {
       "opacity": 0,
-      "scale": 0.6,
-      "y_px": 14
+      "scale": 0.7
     },
     "to": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "x_spring": {
-      "stiffness": 420,
-      "damping": 22,
+      "stiffness": 320,
+      "damping": 14,
       "mass": 1,
+      "velocity": 0,
       "rest_delta": 0.001
     },
     "x_anticipation": {
-      "amount": 0.18,
-      "duration_ms": 110
+      "duration_ms": 140,
+      "amount": 0.15,
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
     },
-    "x_opacity_duration_ms": 120,
+    "x_opacity_duration_ms": 160,
+    "x_hold_ms": 900,
+    "x_hold_per_word_ms": 180,
     "x_fallback": {
-      "fitted_from": "06f46b0d",
-      "rms_error": 0.1186,
-      "max_error": 0.2292,
-      "spring_phase_ms": 729
+      "fitted_from": "fcac5cfe",
+      "rms_error": 0.1788,
+      "max_error": 0.418,
+      "spring_phase_ms": 1135
     }
   },
   "exit": {
-    "duration_ms": 320,
-    "stagger_ms": 30,
-    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "duration_ms": 200,
+    "stagger_ms": 80,
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
     "from": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "to": {
       "opacity": 0,
-      "scale": 0.85,
-      "y_px": -8
+      "scale": 0.8
     }
   },
   "swap": {
-    "mode": "sequential",
+    "mode": "crossfade",
     "overlap_ms": 0,
-    "micro_delay_ms": 60
+    "micro_delay_ms": 35
   },
-  "usage_notes": "Per-word only: per-character at this bounce reads as jitter. Keep phrases short (2–5 words). The anticipation is what sells it, so if opacity_duration grows past ~180ms the wind-up happens while the word is still invisible and the effect collapses into a plain pop.",
+  "usage_notes": "Per-word only; per-character at ζ 0.39 reads as jitter. Short phrases (2–5 words). Keep x_opacity_duration_ms short (≤ ~180ms) or the squash happens while the word is still invisible. Pixel Point's equivalent 'spring' is cubic-bezier(0.34, 1.56, 0.64, 1): one fake overshoot; the Lab shows it on the left.",
   "x_intent": "playful",
-  "x_intent_notes": "ζ ≈ 0.54: one clear overshoot and a small second ring. Friendly, not silly.",
-  "x_hold_ms": 900,
-  "x_hold_per_word_ms": 180,
+  "x_intent_notes": "ζ ≈ 0.39: a clear pop and a second ring.",
   "x_built_on": "pixel-point/animate-text"
 }

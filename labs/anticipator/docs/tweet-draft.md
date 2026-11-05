@@ -52,7 +52,7 @@ YOUR_DEMO_URL
 | --- | --- | --- |
 | 0–3s | "the motion social club" heavy drop, acid/ink | `out/tmsc-timeline.mp4` 0–3s |
 | 3–13s | side-by-side round 1: pop, bezier vs spring + wind-up | `out/springs-side-by-side.mp4` 0–3.2s, played twice (2nd at 0.5×) |
-| 13–20s | round 2: heavy drop, mass 3 | side-by-side 3.3–6.7s |
+| 13–20s | round 2: heavy drop, mass 2.2 | side-by-side 3.3–6.7s |
 | 20–26s | round 3: ζ 0.39 rings twice | side-by-side 6.8–9.8s |
 | 26–34s | screen recording: Lab dials, ζ moving, Save preset | record from `npm run dev` |
 | 34–40s | "anticipator" weight wave + end card with YOUR_DEMO_URL | `out/tmsc-timeline.mp4` 8.3–11s |

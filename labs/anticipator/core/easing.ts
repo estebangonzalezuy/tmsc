@@ -1,13 +1,15 @@
-// CSS easing, evaluated in JS. Just enough of the CSS Easing spec to play an
-// animate-text-compatible spec exactly as a browser would: keywords,
-// cubic-bezier() (y may leave [0,1]) and linear() with evenly spaced stops.
+// CSS easing, evaluated in JS: keywords, cubic-bezier() (y may leave [0,1])
+// and linear() with evenly spaced stops. Enough to play an animate-text spec
+// exactly as a browser would.
 
-export function cubicBezier(x1, y1, x2, y2) {
+export type EaseFn = (x: number) => number;
+
+export function cubicBezier(x1: number, y1: number, x2: number, y2: number): EaseFn {
   const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
   const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-  const sx = (s) => ((ax * s + bx) * s + cx) * s;
-  const sy = (s) => ((ay * s + by) * s + cy) * s;
-  const dx = (s) => (3 * ax * s + 2 * bx) * s + cx;
+  const sx = (s: number) => ((ax * s + bx) * s + cx) * s;
+  const sy = (s: number) => ((ay * s + by) * s + cy) * s;
+  const dx = (s: number) => (3 * ax * s + 2 * bx) * s + cx;
   return (x) => {
     if (x <= 0) return 0;
     if (x >= 1) return 1;
@@ -31,7 +33,7 @@ export function cubicBezier(x1, y1, x2, y2) {
   };
 }
 
-const KEYWORDS = {
+const KEYWORDS: Record<string, EaseFn> = {
   linear: (x) => x,
   ease: cubicBezier(0.25, 0.1, 0.25, 1),
   "ease-in": cubicBezier(0.42, 0, 1, 1),
@@ -39,17 +41,18 @@ const KEYWORDS = {
   "ease-in-out": cubicBezier(0.42, 0, 0.58, 1),
 };
 
-const cache = new Map();
+const cache = new Map<string, EaseFn>();
 
-/** Parse a CSS easing string into (x∈[0,1]) → y. Unknown strings fall back to `ease`. */
-export function parseEasing(str) {
+/** Parse a CSS easing string into x∈[0,1] → y. Unknown strings fall back to `ease`. */
+export function parseEasing(str: string | undefined): EaseFn {
   const key = String(str || "ease").trim();
-  if (cache.has(key)) return cache.get(key);
-  let fn = KEYWORDS[key];
+  const hit = cache.get(key);
+  if (hit) return hit;
+  let fn: EaseFn | undefined = KEYWORDS[key];
   const cb = /^cubic-bezier\(\s*([^)]+)\)$/.exec(key);
   if (!fn && cb) {
     const n = cb[1].split(",").map(Number);
-    if (n.length === 4 && n.every(Number.isFinite)) fn = cubicBezier(...n);
+    if (n.length === 4 && n.every(Number.isFinite)) fn = cubicBezier(n[0], n[1], n[2], n[3]);
   }
   const lin = /^linear\(\s*([^)]+)\)$/.exec(key);
   if (!fn && lin) {
@@ -64,12 +67,12 @@ export function parseEasing(str) {
       };
     }
   }
-  fn = fn || KEYWORDS.ease;
-  cache.set(key, fn);
-  return fn;
+  const out = fn || KEYWORDS.ease;
+  cache.set(key, out);
+  return out;
 }
 
-export function isValidEasing(str) {
+export function isValidEasing(str: unknown): boolean {
   const s = String(str || "").trim();
   if (KEYWORDS[s]) return true;
   const cb = /^cubic-bezier\(\s*([^)]+)\)$/.exec(s);
@@ -80,6 +83,6 @@ export function isValidEasing(str) {
   return /^linear\(/.test(s);
 }
 
-export const easeInOutSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
-export const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
-export const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
+export const ANTICIPATION_EASING = "cubic-bezier(0.45, 0, 0.55, 1)";
+export const easeOutCubic: EaseFn = (x) => 1 - Math.pow(1 - x, 3);
+export const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);

@@ -1,44 +1,40 @@
 # Estrategia — Anticipator Skill Lab
 
-Copiado de la sección *Estrategia* del brief de la noche (2026-11-05), para que
-el repo se explique solo.
+Del brief cloud de la noche (2026-11-05), para que el repo se explique solo.
 
-Alex Barashkov / Pixel Point publicó **animate-text**: un catálogo de
-animaciones de texto como recetas JSON + un script que genera un **SKILL**
-instalable para agentes (`npx skills add pixel-point/animate-text --skill animate-text`).
-La web es Next.js.
+Alex Barashkov / Pixel Point publicó **animate-text**: catálogo de animaciones
+de texto en JSON + script que genera un **SKILL** para agentes.
 
-- Repo: https://github.com/pixel-point/animate-text
+- Repo (solo lectura / referencia, clonado en `_ref/animate-text`, gitignored): https://github.com/pixel-point/animate-text
 - Página: https://pixelpoint.io/skills/animate-text
-- Post de lanzamiento: https://x.com/alex_barashkov/status/2047309188569666010
-- Handle: @alex_barashkov
+- Post: https://x.com/alex_barashkov/status/2047309188569666010 · @alex_barashkov
 
-**Este producto no es un fork hostil: es una expansión suya.** Posicionamiento
-público (cuando Esteban publique, no un agente):
+**Este producto es una expansión suya, no un fork hostil.** Aporte nuestro:
 
-- "built on / expansion of Pixel Point's animate-text"
-- mismos conceptos de recipe JSON + skill generado
-- aporte propio: springs **reales** (masa / stiffness / damping),
-  **anticipación**, UI de diales para diseñar presets, más ejemplos con
-  carácter de motion designer, y un **editor de video chico** encima para
-  componer clips con esas recetas
-- crédito explícito a Alex en README, SKILL.md, UI y borrador de tweet
+1. Springs **reales** (stiffness / damping / mass / velocity) + **anticipación**
+2. Tool UI con diales para diseñar presets (Lab)
+3. `generate:skill` que exporta un skill instalable (como el de Alex)
+4. Editor de video chico (timeline) sobre **DialKit** (`dialkit` + `motion`)
+   para componer clips con esos specs
 
-**Licencia:** el repo de Alex aparece **sin LICENSE** (ver `LICENSE-NOTES.md`).
-No se copia su código de Next, adapters ni assets. Se puede:
+Crédito explícito a Alex en README, SKILL.md, UI y `docs/tweet-draft.md`.
 
-- leer su `catalog/text-animations/schema.md` y la forma de los specs como
-  **referencia de formato**
-- reimplementar el runtime de preview (canvas) por nuestra cuenta
-- mantener **compatibilidad de schema** (mismos campos `target`,
-  `enter`/`exit`, `duration_ms`, `stagger_ms`, `easing`, `from`/`to`, `swap`,
-  `stagger_mode`) y extender con campos opcionales prefijados `x_`, para que
-  un runtime que ignore `x_*` siga andando con la bezier de fallback.
+## Licencia
 
-## Un producto, dos capas
+El repo de Alex no tiene LICENSE (ver `LICENSE-NOTES.md`). Se lee como
+referencia de formato; no se copia su código Next, adapters, assets ni
+scripts. El runtime de preview es propio. Hay **compatibilidad de schema**
+(`target`, `enter`/`exit`, `duration_ms`, `stagger_ms`, `easing`, `from`/`to`,
+`swap`, `stagger_mode`) extendida con campos opcionales `x_*`. Nuestro código: MIT.
 
-- **Capa A — Lab:** diseñar specs con diales (spring real + anticipación,
-  side-by-side contra la referencia bezier), guardarlos al catálogo, y
-  regenerar el skill con `npm run generate:skill`.
-- **Capa B — Editor:** componer clips de texto sobre un timeline (DialKit),
-  cada clip usa un spec del catálogo, preview determinista por `t`, export.
+## Física
+
+`F = −k(x−1) − c·v`, `a = F/m`. Anticipación: primero se easea el progress
+a `−amount`, después arranca el spring. `enter.easing` + `duration_ms`
+quedan como **fallback bezier** si el runtime ignora `x_*`.
+ζ = c / (2√(k·m)), visible en la UI (rebota / crítico / lento).
+
+## Stack
+
+Vite + React + TypeScript · DialKit · Canvas 2D determinista por `t` ms ·
+Archivo Narrow / Archivo (OFL) · paleta tMSC, máx. 2 colores + B/N por demo.

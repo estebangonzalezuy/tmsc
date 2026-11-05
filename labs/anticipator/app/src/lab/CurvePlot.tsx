@@ -2,23 +2,24 @@
 // reference bezier, on the same millisecond axis. The playhead is moved
 // imperatively each frame, never through React state.
 
-import { useMemo, useRef } from "react";
-import { progressAt, phaseMs } from "@core/phase.js";
-import { useFrame } from "../useFrame.js";
+import { useMemo, useRef, type MutableRefObject } from "react";
+import { progressAt, phaseMs } from "@core/phase.ts";
+import type { Mode, Phase } from "@core/types.ts";
+import { useFrame } from "../useFrame.ts";
 
 const W = 800, H = 190, PAD = { l: 34, r: 10, t: 12, b: 22 };
 const Y0 = -0.35, Y1 = 1.45;
 
-export default function CurvePlot({ spring, reference, clock }) {
-  const head = useRef(null);
+export default function CurvePlot({ spring, reference, clock }: { spring: Phase; reference: Phase; clock: MutableRefObject<{ t: number }> }) {
+  const head = useRef<SVGLineElement>(null);
   const { springPath, refPath, domain, ticks } = useMemo(() => {
     const sMs = phaseMs(spring, "spring");
     const rMs = phaseMs(reference, "bezier");
     const domain = Math.max(sMs, rMs) * 1.05;
-    const x = (ms) => PAD.l + (ms / domain) * (W - PAD.l - PAD.r);
-    const y = (v) => PAD.t + ((Y1 - v) / (Y1 - Y0)) * (H - PAD.t - PAD.b);
-    const path = (phase, mode) => {
-      const pts = [];
+    const x = (ms: number) => PAD.l + (ms / domain) * (W - PAD.l - PAD.r);
+    const y = (v: number) => PAD.t + ((Y1 - v) / (Y1 - Y0)) * (H - PAD.t - PAD.b);
+    const path = (phase: Phase, mode: Mode) => {
+      const pts: string[] = [];
       for (let i = 0; i <= 240; i++) {
         const ms = (i / 240) * domain;
         pts.push(`${x(ms).toFixed(1)},${y(progressAt(phase, ms, mode)).toFixed(1)}`);
@@ -26,12 +27,12 @@ export default function CurvePlot({ spring, reference, clock }) {
       return "M" + pts.join("L");
     };
     const step = domain > 1500 ? 500 : domain > 600 ? 200 : 100;
-    const ticks = [];
+    const ticks: { ms: number; x: number }[] = [];
     for (let ms = 0; ms <= domain; ms += step) ticks.push({ ms, x: x(ms) });
-    return { springPath: path(spring, "spring"), refPath: path(reference, "bezier"), domain, ticks, x, y };
+    return { springPath: path(spring, "spring"), refPath: path(reference, "bezier"), domain, ticks };
   }, [spring, reference]);
 
-  const yOf = (v) => PAD.t + ((Y1 - v) / (Y1 - Y0)) * (H - PAD.t - PAD.b);
+  const yOf = (v: number) => PAD.t + ((Y1 - v) / (Y1 - Y0)) * (H - PAD.t - PAD.b);
 
   useFrame(() => {
     const el = head.current;
@@ -39,9 +40,9 @@ export default function CurvePlot({ spring, reference, clock }) {
     const t = clock.current.t;
     const visible = t <= domain;
     const x = PAD.l + (Math.min(t, domain) / domain) * (W - PAD.l - PAD.r);
-    el.setAttribute("x1", x);
-    el.setAttribute("x2", x);
-    el.style.opacity = visible ? 1 : 0;
+    el.setAttribute("x1", String(x));
+    el.setAttribute("x2", String(x));
+    el.style.opacity = visible ? "1" : "0";
   });
 
   return (

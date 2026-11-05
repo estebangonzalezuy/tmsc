@@ -1,67 +1,64 @@
 {
   "id": "anticipate-pop-words-energetic",
   "display_name": "Anticipate Pop Words, Energetic",
-  "description": "Each word pinches down a hair, then pops past full size and settles: a cartoon wind-up on a real spring.",
-  "inspiration": "Classic cel anticipation (squash before the stretch), applied to UI-scale type; title cards that want a wink, not a bounce-house.",
+  "description": "The same pop, stiff and loose with a deep squash: it lands on the beat and rings.",
   "target": "per-word",
-  "signature_easing": "cubic-bezier(0.459, 1.486, 0, 0.988)",
+  "signature_easing": "cubic-bezier(0.425, 1.641, 0, 0.89)",
   "enter": {
-    "duration_ms": 767,
-    "stagger_ms": 45,
-    "easing": "cubic-bezier(0.459, 1.486, 0, 0.988)",
+    "duration_ms": 932,
+    "stagger_ms": 60,
+    "easing": "cubic-bezier(0.425, 1.641, 0, 0.89)",
     "from": {
       "opacity": 0,
-      "scale": 0.6,
-      "y_px": 14
+      "scale": 0.7
     },
     "to": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "x_spring": {
-      "stiffness": 700,
-      "damping": 19,
+      "stiffness": 620,
+      "damping": 16,
       "mass": 1,
+      "velocity": 0,
       "rest_delta": 0.001
     },
     "x_anticipation": {
+      "duration_ms": 90,
       "amount": 0.22,
-      "duration_ms": 80
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
     },
     "x_opacity_duration_ms": 90,
+    "x_hold_ms": 700,
+    "x_hold_per_word_ms": 150,
     "x_fallback": {
-      "fitted_from": "730a113b",
-      "rms_error": 0.2008,
-      "max_error": 0.5924,
-      "spring_phase_ms": 767
+      "fitted_from": "ea31b13b",
+      "rms_error": 0.2065,
+      "max_error": 0.6216,
+      "spring_phase_ms": 932
     }
   },
   "exit": {
-    "duration_ms": 320,
-    "stagger_ms": 30,
-    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "duration_ms": 200,
+    "stagger_ms": 40,
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
     "from": {
       "opacity": 1,
-      "scale": 1,
-      "y_px": 0
+      "scale": 1
     },
     "to": {
       "opacity": 0,
-      "scale": 0.85,
-      "y_px": -8
+      "scale": 0.8
     }
   },
   "swap": {
     "mode": "sequential",
     "overlap_ms": 0,
-    "micro_delay_ms": 60
+    "micro_delay_ms": 20
   },
-  "usage_notes": "Per-word only: per-character at this bounce reads as jitter. Keep phrases short (2–5 words). The anticipation is what sells it, so if opacity_duration grows past ~180ms the wind-up happens while the word is still invisible and the effect collapses into a plain pop.",
+  "usage_notes": "Variant of anticipate-pop-words. Two bounces: the bezier fallback can only show one (see x_fallback.max_error).",
   "x_intent": "energetic",
-  "x_intent_notes": "Stiff and under-damped with a sharper wind-up: the pop lands on the beat and rings once more.",
+  "x_intent_notes": "ζ ≈ 0.32, 22% squash.",
   "x_variant_of": "anticipate-pop-words",
-  "x_hold_ms": 900,
-  "x_hold_per_word_ms": 180,
   "x_built_on": "pixel-point/animate-text"
 }

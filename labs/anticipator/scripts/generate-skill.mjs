@@ -10,11 +10,12 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { stripTypeScriptTypes } from "node:module";
 import { ROOT, CATALOG_DIR, loadCatalog, canonicalSpec } from "./lib.mjs";
-import { validateSpec } from "../core/validate.js";
-import { cssLinear } from "../core/fit.js";
-import { zetaOf, overshoot, springCharacter } from "../core/spring.js";
-import { phaseMs } from "../core/phase.js";
+import { validateSpec } from "../core/validate.ts";
+import { cssLinear } from "../core/fit.ts";
+import { zetaOf, overshoot, springCharacter } from "../core/spring.ts";
+import { phaseMs } from "../core/phase.ts";
 
 const outArg = process.argv.indexOf("--out");
 const OUT = outArg > -1 ? path.resolve(process.argv[outArg + 1]) : path.join(ROOT, "skills", "anticipator");
@@ -46,11 +47,12 @@ for (const id of ids) {
   const s = specs[id];
   const e = s.enter;
   const amount = e.x_anticipation?.amount || 0;
+  const v0 = e.x_spring?.velocity || 0;
   facts[id] = e.x_spring
     ? {
         zeta: zetaOf(e.x_spring),
         character: springCharacter(e.x_spring),
-        overshoot: overshoot(e.x_spring, -(1 + amount)),
+        overshoot: overshoot(e.x_spring, -(1 + amount), v0),
         unitMs: Math.round(phaseMs(e, "spring")),
         windUp: amount ? `${Math.round(amount * 100)}% / ${e.x_anticipation.duration_ms}ms` : "none",
         maxError: e.x_fallback?.max_error,
@@ -117,9 +119,15 @@ const strip = (o) => Array.isArray(o) ? o.map(strip) : o && typeof o === "object
 if (process.argv.includes("--portable")) spec = strip(spec);
 console.log(JSON.stringify(spec, null, 2));
 `);
-for (const f of ["spring.js", "easing.js", "phase.js"]) {
-  const src = fs.readFileSync(path.join(ROOT, "core", f), "utf8");
-  write(`scripts/runtime/${f}`, src);
+// The skill ships the runtime as plain JS: the same core/*.ts the app runs,
+// with types stripped by Node and .ts import specifiers rewritten to .js.
+for (const f of ["spring", "easing", "phase"]) {
+  const ts = fs.readFileSync(path.join(ROOT, "core", `${f}.ts`), "utf8");
+  const js = stripTypeScriptTypes(ts, { mode: "transform" })
+    .replace(/from "\.\/([a-z]+)\.ts"/g, 'from "./$1.js"')
+    .replace(/^[ \t]+$/gm, "")
+    .replace(/\n{3,}/g, "\n\n");
+  write(`scripts/runtime/${f}.js`, `// Generated from core/${f}.ts by generate-skill.mjs.\n${js}`);
 }
 json("scripts/runtime/package.json", { type: "module", private: true });
 write("scripts/runtime/README.md", `# Reference runtime
@@ -203,11 +211,15 @@ Progress \`p\` is in travel units: 0 = \`from\`, 1 = \`to\`. For one unit, at
 a  = x_anticipation.amount        (0 if absent)
 Ta = x_anticipation.duration_ms   (0 if absent)
 
-ms < Ta:  p = −a · (1 − cos(π·ms/Ta)) / 2                  // wind-up, ease-in-out sine
-ms ≥ Ta:  p = 1 + d(t),  t = (ms − Ta)/1000,  d(0) = −(1 + a),  d'(0) = 0
+Ea = x_anticipation.easing        (default cubic-bezier(0.45, 0, 0.55, 1))
+v0 = x_spring.velocity            (travel/s, default 0)
+
+ms < Ta:  p = −a · Ea(ms / Ta)                              // wind-up
+ms ≥ Ta:  p = 1 + d(t),  t = (ms − Ta)/1000,  d(0) = −(1 + a),  d'(0) = v0
+          m·d'' = −k·d − c·d'          (F = −k(x−1) − c·v, a = F/m; solved in closed form)
           ω0 = √(k/m),  ζ = c / (2√(k·m))
-          ζ < 1: d = e^(−ζω0t) · (d0·cos ωd t + (ζω0·d0/ωd)·sin ωd t),  ωd = ω0√(1−ζ²)
-          ζ = 1: d = e^(−ω0t) · d0 · (1 + ω0 t)
+          ζ < 1: d = e^(−ζω0t) · (d0·cos ωd t + ((v0 + ζω0·d0)/ωd)·sin ωd t),  ωd = ω0√(1−ζ²)
+          ζ = 1: d = e^(−ω0t) · (d0 + (v0 + ω0·d0)·t)
           ζ > 1: two real roots; see scripts/runtime/spring.js
 end:      first ms after which |d| stays < rest_delta · (1 + a)
 \`\`\`
@@ -233,7 +245,7 @@ starting with the unit. Never spring opacity.
 ## A clip: enter → hold → exit
 
 - enter total = \`maxRank · enter.stagger_ms + unit ms\`
-- hold = \`x_hold_ms + words · x_hold_per_word_ms\`, counted **after** the enter total
+- hold = \`enter.x_hold_ms + words · enter.x_hold_per_word_ms\` (default 1200ms), counted **after** the enter total
 - exit starts at enter total + hold, staggered with \`exit.stagger_ms\` (and \`x_exit_stagger_mode\` if set)
 
 When a layout or loop is longer than the natural clip, stretch the **hold**,
@@ -270,6 +282,8 @@ catalog of text effects (blur-ins, typewriters, shared-axis, kinetic builds),
 use animate-text. Use this one when the motion should have mass.
 
 This skill ships ${ids.length} specs. See \`references/catalog.md\`.
+
+**Rule:** prefer \`x_spring\` (with \`x_anticipation\`) whenever the target runtime supports springs or an exact curve. Otherwise play the bezier fallback, \`easing\` over \`duration_ms\`, which every spec carries and which any animate-text runtime already understands.
 
 ## When To Use
 
@@ -309,7 +323,7 @@ live in animate-text.
 4. **Opacity on its own clock**: \`x_opacity_duration_ms\`, ease-out, starting
    with the unit. Never spring opacity.
 5. **Stagger** per \`stagger_mode\` (formulas in \`references/implementation-notes.md\`).
-6. **Hold** for \`x_hold_ms + words × x_hold_per_word_ms\` after the enter
+6. **Hold** for \`enter.x_hold_ms + words × enter.x_hold_per_word_ms\` after the enter
    finishes, before any exit. Don't shorten it to fit a loop; lengthen the loop.
 7. **Preserve the user's text and styling.** Specs carry motion only, never
    copy, colour or font size (except \`x_font_weight\`, which needs a variable font).

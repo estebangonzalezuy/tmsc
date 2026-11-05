@@ -1,17 +1,17 @@
 {
   "id": "spring-rise-letters",
   "display_name": "Spring Rise Letters",
-  "description": "Letters rise from below on a firm spring with a short dip first, and land with a single small overshoot.",
-  "inspiration": "The per-character rise everyone knows, given the weight a motion designer would key by hand: a dip, a push, a settle.",
+  "description": "Letters dip, then rise from below on a lively spring and land with a small overshoot.",
+  "inspiration": "The per-character rise, given the dip-push-settle a motion designer would key by hand.",
   "target": "per-character",
-  "signature_easing": "cubic-bezier(0.429, -0.404, 0.033, 1.366)",
+  "signature_easing": "cubic-bezier(0.357, -0.265, 0, 1.602)",
   "enter": {
-    "duration_ms": 573,
+    "duration_ms": 899,
     "stagger_ms": 28,
-    "easing": "cubic-bezier(0.429, -0.404, 0.033, 1.366)",
+    "easing": "cubic-bezier(0.357, -0.265, 0, 1.602)",
     "from": {
       "opacity": 0,
-      "y_px": 40
+      "y_px": 24
     },
     "to": {
       "opacity": 1,
@@ -19,33 +19,37 @@
     },
     "x_spring": {
       "stiffness": 260,
-      "damping": 24,
+      "damping": 18,
       "mass": 1,
+      "velocity": 0,
       "rest_delta": 0.001
     },
     "x_anticipation": {
-      "amount": 0.08,
-      "duration_ms": 80
+      "duration_ms": 120,
+      "amount": 0.12,
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
     },
-    "x_opacity_duration_ms": 180,
+    "x_opacity_duration_ms": 160,
+    "x_hold_ms": 1100,
+    "x_hold_per_word_ms": 160,
     "x_fallback": {
-      "fitted_from": "3f59c8ae",
-      "rms_error": 0.0205,
-      "max_error": 0.0318,
-      "spring_phase_ms": 573
+      "fitted_from": "1bc4458e",
+      "rms_error": 0.1059,
+      "max_error": 0.1977,
+      "spring_phase_ms": 899
     }
   },
   "exit": {
     "duration_ms": 320,
     "stagger_ms": 14,
-    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
     "from": {
       "opacity": 1,
       "y_px": 0
     },
     "to": {
       "opacity": 0,
-      "y_px": -24
+      "y_px": -20
     }
   },
   "swap": {
@@ -53,10 +57,8 @@
     "overlap_ms": 160,
     "micro_delay_ms": 35
   },
-  "usage_notes": "Headlines 40px and up. Base effect for the calm/energetic variants, which share its from/to and change only the physics. Below ~20ms stagger the staircase flattens into a block.",
+  "usage_notes": "Headlines 40px+. Base of the calm/energetic variants (same from/to). Below ~20ms stagger the staircase flattens.",
   "x_intent": "precise",
-  "x_intent_notes": "ζ ≈ 0.74: lands with one overshoot you feel more than see.",
-  "x_hold_ms": 1100,
-  "x_hold_per_word_ms": 160,
+  "x_intent_notes": "ζ ≈ 0.56: one overshoot you can see.",
   "x_built_on": "pixel-point/animate-text"
 }

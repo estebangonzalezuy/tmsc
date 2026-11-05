@@ -1,17 +1,16 @@
 {
   "id": "spring-rise-letters-energetic",
   "display_name": "Spring Rise Letters, Energetic",
-  "description": "The same rise, stiff and under-damped with a quick wind-up: letters snap up, overshoot and ring once.",
-  "inspiration": "Sports graphics, launch stingers, the beat drop.",
+  "description": "The same rise, stiff and under-damped with a quick dip: letters snap up and ring.",
   "target": "per-character",
-  "signature_easing": "cubic-bezier(0.464, 1.808, 0, 0.827)",
+  "signature_easing": "cubic-bezier(0.465, 1.797, 0, 0.834)",
   "enter": {
     "duration_ms": 846,
     "stagger_ms": 18,
-    "easing": "cubic-bezier(0.464, 1.808, 0, 0.827)",
+    "easing": "cubic-bezier(0.465, 1.797, 0, 0.834)",
     "from": {
       "opacity": 0,
-      "y_px": 40
+      "y_px": 24
     },
     "to": {
       "opacity": 1,
@@ -21,31 +20,35 @@
       "stiffness": 520,
       "damping": 18,
       "mass": 1,
+      "velocity": 0,
       "rest_delta": 0.001
     },
     "x_anticipation": {
-      "amount": 0.12,
-      "duration_ms": 70
+      "duration_ms": 70,
+      "amount": 0.15,
+      "easing": "cubic-bezier(0.45, 0, 0.55, 1)"
     },
     "x_opacity_duration_ms": 90,
+    "x_hold_ms": 800,
+    "x_hold_per_word_ms": 140,
     "x_fallback": {
-      "fitted_from": "c731d3a4",
-      "rms_error": 0.1499,
-      "max_error": 0.4679,
+      "fitted_from": "0e05b92a",
+      "rms_error": 0.1579,
+      "max_error": 0.4946,
       "spring_phase_ms": 846
     }
   },
   "exit": {
     "duration_ms": 260,
     "stagger_ms": 10,
-    "easing": "cubic-bezier(0.55, 0, 0.75, 0)",
+    "easing": "cubic-bezier(0.7, 0, 0.84, 0)",
     "from": {
       "opacity": 1,
       "y_px": 0
     },
     "to": {
       "opacity": 0,
-      "y_px": -32
+      "y_px": -28
     }
   },
   "swap": {
@@ -53,11 +56,9 @@
     "overlap_ms": 0,
     "micro_delay_ms": 20
   },
-  "usage_notes": "Variant of spring-rise-letters (same from/to). ζ ≈ 0.39 rings twice; a cubic-bezier can only show one overshoot, so the fallback's max_error is large. Prefer x_spring or x_css_linear wherever the runtime allows.",
+  "usage_notes": "Variant of spring-rise-letters. ζ ≈ 0.39 rings twice: prefer x_spring or x_css_linear over the bezier fallback.",
   "x_intent": "energetic",
-  "x_intent_notes": "ζ ≈ 0.39, short stagger, fast opacity. It wants to be cut to music.",
+  "x_intent_notes": "ζ ≈ 0.39 (rebota): cut it to music.",
   "x_variant_of": "spring-rise-letters",
-  "x_hold_ms": 800,
-  "x_hold_per_word_ms": 140,
   "x_built_on": "pixel-point/animate-text"
 }

@@ -5,16 +5,7 @@ action for Esteban.
 
 ## 0. Before anything public
 
-- [ ] **Reconcile the seed presets** with the local
-      `/workspace/creative-practice/tools-diarias/animate-text-springs/src/motion.js`.
-      That folder wasn't in the cloud session, so `anticipate-pop-words`,
-      `spring-rise-letters` and `heavy-drop-lines` were rebuilt from the
-      brief's description. Edit physics in the Lab → Save (overwrite) →
-      `npm run generate:skill`.
-- [ ] **Port your DialKit motion builder in, or keep this one.** The original
-      editor (and `reboot-editor/inception-prompt.md`) also wasn't here, so the
-      Editor tab was built fresh on DialKit's timeline. Compare and keep the
-      better parts.
+- [ ] Play with the Lab live (`npm run dev`). If a seed preset feels off, fix it with the dials, Save preset (overwrite), then `npm run generate:skill`.
 - [ ] Watch `out/springs-side-by-side.mp4` and `out/tmsc-timeline.mp4` full
       screen. Tune anything that feels off in the Lab and re-export
       (`npm run export -- springs-side-by-side tmsc-timeline --verify`).
@@ -29,10 +20,10 @@ action for Esteban.
       `git subtree split -P labs/anticipator -b anticipator` and push that
       branch to the new repo. It's self-contained (own package.json; nothing
       imports from the site).
-- [ ] **Licence for our code: MIT suggested.** Add `LICENSE` with your name.
+- [ ] `LICENSE` (MIT, your name) is already in the lab. Check the copyright line.
       Fonts stay OFL (licences already beside them in `app/public/fonts/`).
-- [ ] Replace the README with `docs/README-PUBLIC.md` (fill `YOUR_GITHUB`,
-      `YOUR_DEMO_URL`, `YOUR_LICENCE`).
+- [ ] Replace the README with `docs/README-PUBLIC.md` (fill `YOUR_GITHUB` and
+      `YOUR_DEMO_URL`).
 - [ ] Make it public.
 - [ ] `npx skills add YOUR_GITHUB/anticipator --skill anticipator` in a scratch
       project and ask an agent to "make this heading calm" / "give it a wind-up".

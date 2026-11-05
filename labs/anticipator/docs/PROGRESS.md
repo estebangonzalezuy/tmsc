@@ -1,124 +1,113 @@
 # Progress — Anticipator Skill Lab
 
-## Cierre de la noche (2026-11-05)
+## Estado (2026-11-05, brief cloud)
 
-**Anda:** etapas 0–6. Catálogo de 9 specs (springs reales + anticipación, fallback bezier ajustado con error declarado), `validate:catalog` (falla si algo rompe el schema), Lab con side-by-side + diales + ζ + Save al catálogo, `generate:skill` idempotente → `skills/anticipator/`, Editor con timeline DialKit (≥2 clips en loop, drag en el dock, panel Clip), export determinista → `out/*.mp4|webm`.
-**Falta / revisar:** (1) la semilla `animate-text-springs` y el motion builder no estaban en el contenedor: los 3 presets semilla y el editor se rehicieron desde el brief, así que hay que reconciliarlos con tu versión local. (2) Exits todavía bezier (el runtime ya soporta `exit.x_spring`). (3) Sin audio en el export. (4) Build estático: Save descarga JSON en vez de escribir.
+**Anda:** etapas 0–6. Vite + React + TS. 10 specs (física real + anticipación, fallback bezier ajustado con error declarado), `validate:catalog`, Lab (side-by-side vs bezier de Pixel 360ms, diales, ζ, Save preset / Copy enter JSON), `generate:skill` idempotente, Editor con timeline DialKit (5 clips en loop), export determinista a `out/`.
+**Falta / revisar:** exits todavía bezier (el runtime ya soporta `exit.x_spring`); sin audio en el export; en build estático Save descarga JSON en vez de escribir.
 **Cómo correr:**
 ```
 cd labs/anticipator && npm install
-npm run dev                      # http://localhost:5178  (Lab / #editor)
-npm test                         # validate:catalog + check:skill
-npm run generate:skill           # única forma de tocar skills/
+npm run dev        # http://localhost:5178 · Lab / #editor
+npm test           # física + validate:catalog + check:skill + typecheck
+npm run generate:skill
 npm run export -- springs-side-by-side tmsc-timeline --verify
 ```
-**Nada publicado:** sin PR a Pixel Point, sin npm, sin deploy, sin X. Solo el branch `claude/new-session-3sl55y` del repo tmsc (no `main`). Siguiente paso: `docs/SHIP-CHECKLIST.md`.
+**Nada publicado:** sin PR a Pixel Point, sin npm, sin Vercel, sin X. Solo el branch `claude/new-session-3sl55y` de `estebangonzalezuy/tmsc` (no `main`).
 
 ---
+
 ## Etapa 0 — Recon ✅
 
-**Where things are (real paths, in this cloud session):**
-
-| Thing | Path | Status |
-| --- | --- | --- |
-| This lab | `tmsc/labs/anticipator/` (repo `estebangonzalezuy/tmsc`, branch `claude/new-session-3sl55y`) | created tonight |
-| animate-text-springs seed | `/workspace/creative-practice/tools-diarias/animate-text-springs/` | **not in this container.** Lives on Esteban's machine. The three seed presets were rebuilt from the brief's description. Reconcile values with the local `src/motion.js` tomorrow. |
-| reboot-editor inception prompt | `/workspace/creative-practice/reboot-editor/inception-prompt.md` | **not in this container** |
-| Motion builder (Claude Code + DialKit) | not found (searched repo, `/`, `~`) | Editor rebuilt fresh on DialKit's `useDialTimeline` + `<DialTimeline />` |
-| Upstream reference clone | scratchpad only, not committed (`pixel-point/animate-text@0f783e4`) | read for format only |
-| DialKit | npm `dialkit@2.1.0`, MIT | dependency |
-| ffmpeg | `/usr/bin/ffmpeg` | used by export script |
-
-**Upstream licence:** none (no LICENSE file, `"private": true`). Zero copy-paste. See `LICENSE-NOTES.md`.
-
-**Where the lab lives:** inside `tmsc` as a self-contained folder with its own
-`package.json`, like `scripts/content-cycle/`. It's ignored by the site's
-ESLint/TypeScript, not wired into `app/`, and not merged to `main`, so
-nothing deploys.
+- Referencia: `labs/anticipator/_ref/animate-text` (clone de
+  `pixel-point/animate-text@0f783e4`, gitignored). **Sin LICENSE**,
+  `"private": true`, así que solo se leyó como formato. Ver `LICENSE-NOTES.md`.
+- DialKit: `dialkit@2.1.0` (MIT), docs leídas del paquete (README + `.d.ts`):
+  `useDialKit` / `useDialKitController`, `useDialTimeline`, `<DialTimeline />`,
+  `<DialRoot mode="inline" />`.
+- Dónde vive: `labs/anticipator/` dentro del repo tmsc, con su propio
+  `package.json` (como `scripts/content-cycle/`). El ESLint/tsconfig del sitio
+  lo ignoran, no está en `app/` y no se mergea a `main`, así que no se deploya.
+  El sitio sigue pasando `npm run lint` + `npm run build`.
 
 ## Etapa 1 — Skeleton + schema ✅
 
-- `core/`: shared pure modules (spring closed form, CSS easing, phase curves,
-  bezier fit, timeline, canvas render, validator). The app, scripts and export
-  all import these. One code path.
-- `catalog/text-animations/schema.md`: Pixel-compatible core + `x_*` extensions.
-- 8 specs: 3 seed (rebuilt from the brief; reconcile with the local
-  `motion.js`), `weight-wave-letters` (real, Archivo variable wght 100–900,
-  not a stub), `hold-aware-rise`, and 3 calm/energetic variants.
-- `npm run validate:catalog` passes; verified it fails on bad keys, stale
-  fallback, unlisted file and id/file mismatch.
-- `npm run fit:catalog` fits the bezier fallback from the physics (idempotent).
+- `core/*.ts`: types, spring, easing, phase, fit, timeline, render, validate,
+  canonical. Node 22 los corre nativo (type stripping), así que scripts, app y
+  export comparten exactamente el mismo código.
+- `catalog/text-animations/schema.md`: core compatible con animate-text + `x_*`
+  (`x_spring{stiffness,damping,mass,velocity,rest_delta}`,
+  `x_anticipation{duration_ms,amount,easing}`, `x_opacity_duration_ms`,
+  `x_hold_ms`, `x_hold_per_word_ms`, `x_font_weight`, `x_intent`, `x_variant_of`).
+- Specs semilla con los valores del brief: `anticipate-pop-words` (320/14/1,
+  15%/140ms), `spring-rise-letters` (260/18/1, 12%/120ms, y 24→0),
+  `heavy-drop-lines` (180/22/2.2, 10%/160ms, y −40→0), `weight-wave-letters`
+  (wght 100→800; **real, no stub**: Archivo variable 100–900), `hold-aware-rise`
+  (`x_hold_ms` 900). Variantes calm/energetic de `spring-rise-letters` y de
+  `anticipate-pop-words`.
+- `npm run validate:catalog` falla ante claves desconocidas, from/to
+  desparejos, id ≠ archivo, archivo no listado, o fallback desactualizado.
 
-## Etapa 2 — Runtime preview + diales ✅
+**Decisiones:**
+- **Física en forma cerrada, no integrada paso a paso.** Es la solución exacta
+  de `F = −k(x−1) − c·v`, `a = F/m` (sub-, crítico y sobre-amortiguado, con
+  `velocity`), y hace que cada frame sea función pura de `t`. `npm run
+  test:physics` la compara contra integración semi-implícita (error máx. 7.5e-5).
+- **El fallback bezier se ajusta a la física** (`npm run fit:catalog`,
+  Nelder–Mead). El `easing` / `duration_ms` del brief (p. ej.
+  `cubic-bezier(0.34, 1.56, 0.64, 1)` / 1000ms en `anticipate-pop-words`) se usa
+  como punto de partida y se reemplaza por la curva que mejor aproxima el spring
+  real; `x_fallback.max_error` dice cuánto se aleja. Ese bezier de Pixel sigue
+  siendo la referencia izquierda del Lab (360ms).
 
-- `npm run dev` → http://localhost:5178 (Lab tab).
-- Side by side: **bezier reference** (pick: the familiar back-out cubic
-  `cubic-bezier(0.34, 1.56, 0.64, 1)` with its own duration dial, or this spec's
-  own fitted fallback) vs **spring + anticipation**. One clock drives both
-  screens and the curve plot.
-- Dials: stiffness, damping, mass, anticipation %, anticipation ms, stagger,
-  opacity ms, rest_delta. Live ζ, character, overshoot %, settle ms, and the
-  fallback's rms/max error.
-- Save as preset: name + intent (calm / energetic / heavy / playful / precise /
-  editorial) + notes → POST `/api/specs` (Vite dev middleware) → validated,
-  fallback fitted, written to `catalog/text-animations/specs/<id>.json` and
-  listed in `catalog.json` (group `lab`). Copy JSON as well; without the dev
-  server it downloads the file.
-- Verified with Playwright: `anticipate-pop-words-energetic` was made from
-  the UI (k 700, c 19, wind-up 22%/80ms) and is now in the catalog.
+## Etapa 2 — Runtime + diales + save ✅
 
-## Etapa 3 — Generate skill ✅
+- Lab: side-by-side **bezier de Pixel** (`cubic-bezier(0.34, 1.56, 0.64, 1)`,
+  360ms, ajustable) o el fallback ajustado del spec vs **spring + anticipación**,
+  un solo reloj y gráfico de curvas. Los dos lados salen juntos.
+- Diales: stiffness, damping, mass, velocity, anticipation %, anticipation ms,
+  stagger, opacity ms, rest_delta. ζ en vivo con rebota / crítico / lento,
+  overshoot y settle.
+- Save preset (nombre + intención calm / energetic / heavy / playful / precise /
+  editorial) → `POST /api/specs` (middleware de Vite) → valida, ajusta el
+  fallback, escribe `catalog/text-animations/specs/<id>.json` y lo lista en
+  `catalog.json`. Copy enter JSON y Copy spec.
+- Verificado con Playwright: `heavy-drop-lines-calm` se creó desde la UI.
 
-- `npm run generate:skill` → `skills/anticipator/` (SKILL.md, references/
-  schema · selection-guide · catalog · implementation-notes, assets/specs with
-  generated `x_css_linear`, assets/catalog.json, scripts/list-specs ·
-  get-spec [--portable], scripts/runtime/ = the same closed-form core the app
-  uses). Wipes and rewrites; verified byte-identical on re-run.
-- `npm run check:skill`: regenerates to a temp dir and diffs (fails if
-  skills/ is stale or hand-edited), checks frontmatter/sections/credit, runs
-  the helper scripts from another cwd, imports the runtime.
-- SKILL.md presents it as an **expansion** of pixel-point/animate-text and
-  sends non-physical effects back to that skill. Translation order: native
-  spring → CSS `linear()` → JS runtime → fitted bezier fallback.
-- Not installed anywhere. Structure check only, as the brief asked.
+## Etapa 3 — generate:skill ✅
 
-## Etapa 4 — Editor timeline ✅
+- `npm run generate:skill` → `skills/anticipator/`: SKILL.md (expansion of
+  pixel-point/animate-text; **prefer `x_spring` when supported, else bezier
+  fallback**), references (schema, selection-guide, catalog,
+  implementation-notes), assets/specs con `x_css_linear` exacto, helpers
+  `list-specs` / `get-spec [--portable]`, y `scripts/runtime/*.js` (el mismo
+  core, con los tipos quitados).
+- Idempotente: borra y reescribe; `npm run check:skill` regenera en tmp y
+  compara byte a byte, valida estructura y crédito, corre los helpers.
 
-- Editor tab (`#editor`). A project is N text clips, and each clip plays one
-  catalog spec (spring or bezier runtime). Projects live in `projects/*.json`;
-  the last-open draft is kept in localStorage.
-- **DialKit**: `useDialTimeline` + `<DialTimeline />` own the transport and the
-  clip bars. Dragging/resizing a bar writes back into the project. Resizing
-  stretches the clip's **hold**, never its springs. `useDialKitController`
-  drives an inline **Clip** panel: text (`/` = line break), ink (current pair
-  + B/W), size, y, stagger override, spring override (k/c/m).
-- Our `renderProject(ctx, project, specs, t)` draws every frame at DialKit's
-  playhead, the same function the exporters call.
-- Colour pairs locked to the tMSC set (acid/ink, lilac/brown, magenta/green,
-  indigo/white, periwinkle/ink, yellow/ink, white/ink); formats square /
-  landscape / story.
-- Verified with Playwright: 5-clip timeline loops (wraps at 11.0s), dock drag
-  moves a clip (3000 → 4020ms), panel text edit reaches the canvas, Add clip
-  gets its natural length.
+## Etapa 4 — Editor DialKit ✅
 
-## Etapa 5 — Export + demos ✅
+- **DialKit alcanzó como timeline de producto**, así que no hizo falta un
+  timeline propio: `useDialTimeline` + `<DialTimeline />` manejan el transport
+  y las barras. Arrastrar o redimensionar en el dock escribe al proyecto;
+  redimensionar estira el *hold*, nunca el spring. Panel inline
+  `useDialKitController` "Clip": texto (`/` = salto de línea), color (par tMSC +
+  B/N), tamaño, y, stagger, override de spring.
+- `renderAt(ctx, project, specs, ms)` dibuja cada frame en el playhead: la
+  misma función que el export.
+- Verificado: 5 clips en loop (wrap a los 11.0s), drag en el dock (3000→4020ms),
+  edición de texto desde el panel, Add clip con su largo natural.
 
-- `npm run export -- <project…> [--fps N] [--verify] [--keep-frames]`: Vite +
-  headless Chromium + `#render` route → PNG per frame via `renderAt(ms)` →
-  ffmpeg MP4 (H.264) + WebM (VP9) + poster PNG in `out/`. Deterministic,
-  verified byte-identical on re-render.
-- In-app **Export WebM** (MediaRecorder, captureStream(0) + requestFrame,
-  frame-paced) for quick checks.
-- `out/springs-side-by-side.mp4` (1920×1080, 60fps, 9.8s) and
-  `out/tmsc-timeline.mp4` (1080×1080, 30fps, 11s), plus .webm and posters.
+## Etapa 5 — Export ✅
 
-## Etapa 6 — Docs de ship ✅
+- `npm run export -- <proyecto…> [--fps N] [--verify]`: Vite + Chromium
+  headless + ruta `#render`, `renderAt(i/fps)` por frame → PNG → ffmpeg MP4
+  (H.264) + WebM (VP9) + póster. `--verify` re-renderiza y compara bytes.
+- `out/springs-side-by-side.mp4` (1920×1080, 60fps, 9.8s) y
+  `out/tmsc-timeline.mp4` (1080×1080, 30fps, 11s), más .webm y .png.
+- Botón **Export WebM** en el Editor (MediaRecorder, frame a frame) para pruebas rápidas.
 
-- `docs/SHIP-CHECKLIST.md`: reconciliar semillas, repo propio + MIT, deploy
-  del demo (proyecto nuevo, no el sitio tMSC), video de 40s, tweet, comentario
-  en el post de Alex, preguntar antes de cualquier PR upstream.
-- `docs/tweet-draft.md` (minúsculas, `YOUR_DEMO_URL`, tag @alex_barashkov,
-  shot list del video). `docs/README-PUBLIC.md` con "Built on Pixel Point
-  animate-text" arriba de todo. `README.md` del lab.
-- Verificado: `npm test` del lab, `npm run build` estático (preview sin
-  errores), y el sitio tMSC sigue pasando `npm run lint` + `npm run build`.
+## Etapa 6 — Docs ✅
+
+`STRATEGY.md`, `LICENSE-NOTES.md`, `SHIP-CHECKLIST.md`, `tweet-draft.md`
+(minúsculas, @alex_barashkov, `YOUR_DEMO_URL`), `README-PUBLIC.md` ("Built on
+Pixel Point animate-text" arriba de todo), `LICENSE` (MIT).

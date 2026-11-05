@@ -22,7 +22,7 @@ function walk(dir, base = dir) {
 
 // 1. In sync with the catalog (and generation is idempotent).
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "anticipator-skill-"));
-execFileSync(process.execPath, [path.join(ROOT, "scripts", "generate-skill.mjs"), "--out", tmp], { stdio: "pipe" });
+execFileSync(process.execPath, ["--no-warnings=ExperimentalWarning", path.join(ROOT, "scripts", "generate-skill.mjs"), "--out", tmp], { stdio: "pipe" });
 const a = walk(SKILL), b = walk(tmp);
 if (JSON.stringify(a) !== JSON.stringify(b)) fail(`file list differs from a fresh generate (run npm run generate:skill)`);
 else {

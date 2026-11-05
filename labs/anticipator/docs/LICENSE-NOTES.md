@@ -3,7 +3,7 @@
 ## Upstream: pixel-point/animate-text
 
 Checked 2026-11-05 by cloning `https://github.com/pixel-point/animate-text`
-at commit `0f783e459d62d851b7e5308e0596fa5fbac00c7e` (2026-04-24).
+into `_ref/animate-text/` (gitignored, never published) at commit `0f783e459d62d851b7e5308e0596fa5fbac00c7e` (2026-04-24).
 
 - No `LICENSE`, `LICENSE.md` or `COPYING` file at the root.
 - `package.json` has `"private": true` and no `license` field.
@@ -34,7 +34,7 @@ the date and commit before quoting any of their files.
 | What | Licence | Where |
 | --- | --- | --- |
 | DialKit (`dialkit`, Josh Puckett) | MIT | npm dependency of `app/` |
-| React, Vite, motion | MIT | npm dependencies of `app/` |
+| React, Vite, motion, TypeScript | MIT / Apache-2.0 (TypeScript) | npm dependencies |
 | Archivo Narrow (Omnibus-Type) | SIL OFL 1.1 | `app/public/fonts/`, `OFL-ArchivoNarrow.txt` |
 | Archivo (Omnibus-Type) | SIL OFL 1.1 | `app/public/fonts/`, `OFL-Archivo.txt` |
 
@@ -43,5 +43,4 @@ Fonts were downloaded from `github.com/google/fonts` (`ofl/archivonarrow`,
 
 ## Our own licence
 
-Not chosen yet. That's a human decision. `SHIP-CHECKLIST.md` suggests MIT
-for *our* code.
+**MIT** for this lab's own code (`LICENSE`, per the brief). Fonts stay OFL.

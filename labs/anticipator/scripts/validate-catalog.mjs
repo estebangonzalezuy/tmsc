@@ -3,7 +3,7 @@
 
 import path from "node:path";
 import { CATALOG_FILE, SPECS_DIR, listSpecFiles, readJson } from "./lib.mjs";
-import { validateSpec } from "../core/validate.js";
+import { validateSpec } from "../core/validate.ts";
 
 let failures = 0;
 const fail = (msg) => { failures++; console.error(`  ✗ ${msg}`); };

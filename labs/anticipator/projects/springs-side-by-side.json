@@ -19,7 +19,7 @@
     {
       "id": "l-ref-0",
       "static": true,
-      "text": "bezier spring · cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "text": "pixel point's spring \u00b7 cubic-bezier(0.34, 1.56, 0.64, 1) \u00b7 360ms",
       "ink": "#3D3DEB",
       "at_ms": 0,
       "duration_ms": 3200,
@@ -31,7 +31,7 @@
     {
       "id": "l-spr-0",
       "static": true,
-      "text": "real spring + anticipation · k 420 · c 22 · m 1 · 18%",
+      "text": "real spring + anticipation \u00b7 k 320 \u00b7 c 14 \u00b7 m 1 \u00b7 squash 15% / 140ms",
       "ink": "#3D3DEB",
       "at_ms": 0,
       "duration_ms": 3200,
@@ -54,7 +54,7 @@
       "mode": "bezier",
       "overrides": {
         "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
-        "duration_ms": 600
+        "duration_ms": 360
       }
     },
     {
@@ -73,7 +73,7 @@
     {
       "id": "l-ref-3300",
       "static": true,
-      "text": "bezier spring · same curve, any weight",
+      "text": "bezier spring \u00b7 same curve, any weight",
       "ink": "#3D3DEB",
       "at_ms": 3300,
       "duration_ms": 3400,
@@ -85,7 +85,7 @@
     {
       "id": "l-spr-3300",
       "static": true,
-      "text": "mass 3 · ζ 0.67 · lifts before it drops",
+      "text": "mass 2.2 \u00b7 \u03b6 0.55 \u00b7 lifts before it drops",
       "ink": "#3D3DEB",
       "at_ms": 3300,
       "duration_ms": 3400,
@@ -108,7 +108,7 @@
       "mode": "bezier",
       "overrides": {
         "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
-        "duration_ms": 600
+        "duration_ms": 360
       }
     },
     {
@@ -139,7 +139,7 @@
     {
       "id": "l-spr-6800",
       "static": true,
-      "text": "ζ 0.39 · the second bounce is real",
+      "text": "\u03b6 0.39 \u00b7 the second bounce is real",
       "ink": "#3D3DEB",
       "at_ms": 6800,
       "duration_ms": 3000,
@@ -162,7 +162,7 @@
       "mode": "bezier",
       "overrides": {
         "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
-        "duration_ms": 600
+        "duration_ms": 360
       }
     },
     {
@@ -181,7 +181,7 @@
     {
       "id": "credit",
       "static": true,
-      "text": "anticipator · an expansion of pixel point's animate-text",
+      "text": "anticipator \u00b7 an expansion of pixel point's animate-text",
       "ink": "#0C0C0C",
       "at_ms": 0,
       "duration_ms": 9800,
