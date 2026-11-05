@@ -89,6 +89,12 @@ export function renderClip(ctx, tMs, cx, cy, opts) {
 }
 
 /** Natural length (ms) of a clip's spec on this text, in a mode. */
+export function clipNatural(ctx, clip, specs, width) {
+  const spec = specs[clip.specId];
+  if (!spec || clip.static) return null;
+  return naturalClipMs(ctx, { spec, text: clip.text, fontPx: clip.fontPx || 120, maxWidth: width * (clip.w ?? 0.84), mode: clip.mode || "spring", overrides: clip.overrides, weight: clip.weight || 700 });
+}
+
 export function naturalClipMs(ctx, opts) {
   const spec = withOverrides(opts.spec, opts.overrides);
   const layout = clipLayout(ctx, { spec, text: opts.text, fontPx: opts.fontPx || 96, maxWidth: opts.maxWidth || Infinity, weight: opts.weight || 700 });
@@ -118,23 +124,49 @@ export function renderProject(ctx, project, specs, tMs) {
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.scale(ctx.canvas.width / width, ctx.canvas.height / height);
   for (const clip of project.clips) {
-    const spec = specs[clip.specId];
-    if (!spec) continue;
     const local = tMs - clip.at_ms;
     if (local < 0 || local > clip.duration_ms) continue;
+    const cx = width * (clip.x ?? 0.5);
+    const cy = height * (clip.y ?? 0.5);
+    if (clip.static) {
+      // A label: no animation, just type. Used to caption side-by-sides.
+      ctx.save();
+      ctx.fillStyle = clip.ink || "#0C0C0C";
+      ctx.font = fontString(clip.weight || 600, clip.fontPx || 32, FONT_NARROW);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      String(clip.text).split("\n").forEach((line, i, all) => {
+        ctx.fillText(line, cx, cy + (i - (all.length - 1) / 2) * (clip.fontPx || 32) * 1.15);
+      });
+      ctx.restore();
+      continue;
+    }
+    const spec = specs[clip.specId];
+    if (!spec) continue;
     const opts = {
       spec,
       text: clip.text,
       ink: clip.ink,
       fontPx: clip.fontPx || 120,
-      maxWidth: width * 0.84,
+      maxWidth: width * (clip.w ?? 0.84),
       mode: clip.mode || "spring",
       overrides: clip.overrides,
       weight: clip.weight || 700,
     };
     const nat = naturalClipMs(ctx, opts);
     opts.holdMs = Math.max(0, clip.duration_ms - nat.enterTotal - nat.exitTotal);
-    renderClip(ctx, local, width / 2, height * (clip.y ?? 0.5), opts);
+    renderClip(ctx, local, cx, cy, opts);
+  }
+  for (const g of project.guides || []) {
+    // Hairline guides, e.g. the divider of a side-by-side.
+    ctx.save();
+    ctx.strokeStyle = g.ink || "rgba(12,12,12,0.2)";
+    ctx.lineWidth = g.width || 2;
+    ctx.beginPath();
+    ctx.moveTo(g.x1 * width, g.y1 * height);
+    ctx.lineTo(g.x2 * width, g.y2 * height);
+    ctx.stroke();
+    ctx.restore();
   }
   ctx.restore();
 }

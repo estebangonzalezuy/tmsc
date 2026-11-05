@@ -1,6 +1,8 @@
 // Dev-server middleware: the Lab's "Save to catalog" writes real files.
 //
 //   GET  /api/catalog          → { catalog, specs }
+//   GET  /api/projects         → { [name]: project }
+//   POST /api/projects {project} → writes projects/<name>.json (for npm run export)
 //   POST /api/specs  {spec}    → validates, fits the fallback, writes
 //                                catalog/text-animations/specs/<id>.json and
 //                                lists it in catalog.json
@@ -8,7 +10,11 @@
 // Dev only (configureServer). A static build has no API and the Lab falls
 // back to downloading the JSON instead.
 
-import { loadCatalog, saveSpec } from "../scripts/lib.mjs";
+import fs from "node:fs";
+import path from "node:path";
+import { loadCatalog, saveSpec, ROOT } from "../scripts/lib.mjs";
+
+const PROJECTS = path.join(ROOT, "projects");
 import { validateSpec } from "../core/validate.js";
 import { applyFallback } from "../core/fit.js";
 
@@ -35,6 +41,23 @@ export function catalogApi() {
         if (req.url === "/api/catalog" && req.method === "GET") {
           try { return send(res, 200, loadCatalog()); }
           catch (e) { return send(res, 500, { error: e.message }); }
+        }
+        if (req.url === "/api/projects" && req.method === "GET") {
+          const out = {};
+          for (const f of fs.readdirSync(PROJECTS).filter((f) => f.endsWith(".json")).sort()) {
+            out[f.replace(/\.json$/, "")] = JSON.parse(fs.readFileSync(path.join(PROJECTS, f), "utf8"));
+          }
+          return send(res, 200, out);
+        }
+        if (req.url === "/api/projects" && req.method === "POST") {
+          try {
+            const { project } = JSON.parse(await readBody(req));
+            const name = String(project.name || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "");
+            if (!name) return send(res, 422, { error: "project needs a name" });
+            project.name = name;
+            fs.writeFileSync(path.join(PROJECTS, `${name}.json`), JSON.stringify(project, null, 2) + "\n");
+            return send(res, 200, { ok: true, name });
+          } catch (e) { return send(res, 500, { error: e.message }); }
         }
         if (req.url === "/api/specs" && req.method === "POST") {
           try {

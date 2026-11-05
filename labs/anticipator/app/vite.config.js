@@ -14,6 +14,7 @@ export default defineConfig({
     alias: {
       "@core": path.join(root, "core"),
       "@catalog": path.join(root, "catalog"),
+      "@projects": path.join(root, "projects"),
     },
   },
   server: { port: 5178, fs: { allow: [root] } },

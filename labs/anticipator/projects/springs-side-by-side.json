@@ -1,0 +1,194 @@
+{
+  "name": "springs-side-by-side",
+  "description": "Same spec, two runtimes: the familiar back-out bezier (left) vs real spring + anticipation (right). 2 colours: ink + indigo on white.",
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "background": "#FFFFFF",
+  "guides": [
+    {
+      "x1": 0.5,
+      "y1": 0.08,
+      "x2": 0.5,
+      "y2": 0.92,
+      "ink": "rgba(12,12,12,0.15)",
+      "width": 2
+    }
+  ],
+  "clips": [
+    {
+      "id": "l-ref-0",
+      "static": true,
+      "text": "bezier spring · cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "ink": "#3D3DEB",
+      "at_ms": 0,
+      "duration_ms": 3200,
+      "x": 0.25,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "l-spr-0",
+      "static": true,
+      "text": "real spring + anticipation · k 420 · c 22 · m 1 · 18%",
+      "ink": "#3D3DEB",
+      "at_ms": 0,
+      "duration_ms": 3200,
+      "x": 0.75,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "ref-0",
+      "specId": "anticipate-pop-words",
+      "text": "springs with a wind-up",
+      "ink": "#0C0C0C",
+      "at_ms": 0,
+      "duration_ms": 3200,
+      "x": 0.25,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 104,
+      "mode": "bezier",
+      "overrides": {
+        "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "duration_ms": 600
+      }
+    },
+    {
+      "id": "spr-0",
+      "specId": "anticipate-pop-words",
+      "text": "springs with a wind-up",
+      "ink": "#0C0C0C",
+      "at_ms": 0,
+      "duration_ms": 3200,
+      "x": 0.75,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 104,
+      "mode": "spring"
+    },
+    {
+      "id": "l-ref-3300",
+      "static": true,
+      "text": "bezier spring · same curve, any weight",
+      "ink": "#3D3DEB",
+      "at_ms": 3300,
+      "duration_ms": 3400,
+      "x": 0.25,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "l-spr-3300",
+      "static": true,
+      "text": "mass 3 · ζ 0.67 · lifts before it drops",
+      "ink": "#3D3DEB",
+      "at_ms": 3300,
+      "duration_ms": 3400,
+      "x": 0.75,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "ref-3300",
+      "specId": "heavy-drop-lines",
+      "text": "heavy things\nland heavy",
+      "ink": "#0C0C0C",
+      "at_ms": 3300,
+      "duration_ms": 3400,
+      "x": 0.25,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 118,
+      "mode": "bezier",
+      "overrides": {
+        "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "duration_ms": 600
+      }
+    },
+    {
+      "id": "spr-3300",
+      "specId": "heavy-drop-lines",
+      "text": "heavy things\nland heavy",
+      "ink": "#0C0C0C",
+      "at_ms": 3300,
+      "duration_ms": 3400,
+      "x": 0.75,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 118,
+      "mode": "spring"
+    },
+    {
+      "id": "l-ref-6800",
+      "static": true,
+      "text": "one cubic: one overshoot, max",
+      "ink": "#3D3DEB",
+      "at_ms": 6800,
+      "duration_ms": 3000,
+      "x": 0.25,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "l-spr-6800",
+      "static": true,
+      "text": "ζ 0.39 · the second bounce is real",
+      "ink": "#3D3DEB",
+      "at_ms": 6800,
+      "duration_ms": 3000,
+      "x": 0.75,
+      "y": 0.12,
+      "fontPx": 30,
+      "weight": 600
+    },
+    {
+      "id": "ref-6800",
+      "specId": "spring-rise-letters-energetic",
+      "text": "ring twice",
+      "ink": "#0C0C0C",
+      "at_ms": 6800,
+      "duration_ms": 3000,
+      "x": 0.25,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 150,
+      "mode": "bezier",
+      "overrides": {
+        "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "duration_ms": 600
+      }
+    },
+    {
+      "id": "spr-6800",
+      "specId": "spring-rise-letters-energetic",
+      "text": "ring twice",
+      "ink": "#0C0C0C",
+      "at_ms": 6800,
+      "duration_ms": 3000,
+      "x": 0.75,
+      "y": 0.5,
+      "w": 0.42,
+      "fontPx": 150,
+      "mode": "spring"
+    },
+    {
+      "id": "credit",
+      "static": true,
+      "text": "anticipator · an expansion of pixel point's animate-text",
+      "ink": "#0C0C0C",
+      "at_ms": 0,
+      "duration_ms": 9800,
+      "x": 0.5,
+      "y": 0.94,
+      "fontPx": 26,
+      "weight": 500
+    }
+  ]
+}

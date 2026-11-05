@@ -66,3 +66,22 @@ nothing deploys.
   sends non-physical effects back to that skill. Translation order: native
   spring → CSS `linear()` → JS runtime → fitted bezier fallback.
 - Not installed anywhere. Structure check only, as the brief asked.
+
+## Etapa 4 — Editor timeline ✅
+
+- Editor tab (`#editor`). A project is N text clips, and each clip plays one
+  catalog spec (spring or bezier runtime). Projects live in `projects/*.json`;
+  the last-open draft is kept in localStorage.
+- **DialKit**: `useDialTimeline` + `<DialTimeline />` own the transport and the
+  clip bars. Dragging/resizing a bar writes back into the project. Resizing
+  stretches the clip's **hold**, never its springs. `useDialKitController`
+  drives an inline **Clip** panel: text (`/` = line break), ink (current pair
+  + B/W), size, y, stagger override, spring override (k/c/m).
+- Our `renderProject(ctx, project, specs, t)` draws every frame at DialKit's
+  playhead, the same function the exporters call.
+- Colour pairs locked to the tMSC set (acid/ink, lilac/brown, magenta/green,
+  indigo/white, periwinkle/ink, yellow/ink, white/ink); formats square /
+  landscape / story.
+- Verified with Playwright: 5-clip timeline loops (wraps at 11.0s), dock drag
+  moves a clip (3000 → 4020ms), panel text edit reaches the canvas, Add clip
+  gets its natural length.

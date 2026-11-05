@@ -191,6 +191,10 @@ export function withOverrides(spec, overrides) {
   if (!overrides) return spec;
   const enter = { ...spec.enter };
   if (overrides.stagger_ms != null) enter.stagger_ms = overrides.stagger_ms;
+  // A bezier override plays the spec the way a plain animate-text runtime
+  // would with a different curve. Used for side-by-side references.
+  if (overrides.easing) enter.easing = overrides.easing;
+  if (overrides.duration_ms != null) enter.duration_ms = overrides.duration_ms;
   if (overrides.x_spring && enter.x_spring) enter.x_spring = { ...enter.x_spring, ...overrides.x_spring };
   if (overrides.x_anticipation && enter.x_anticipation) enter.x_anticipation = { ...enter.x_anticipation, ...overrides.x_anticipation };
   return { ...spec, enter };

@@ -1,0 +1,60 @@
+{
+  "name": "tmsc-timeline",
+  "description": "A short tMSC title sequence built from catalog specs. Acid/ink pair.",
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "background": "#E4FC24",
+  "clips": [
+    {
+      "id": "c1",
+      "specId": "heavy-drop-lines",
+      "text": "the motion\nsocial club",
+      "ink": "#0C0C0C",
+      "at_ms": 0,
+      "duration_ms": 3000,
+      "fontPx": 150,
+      "y": 0.5
+    },
+    {
+      "id": "c2",
+      "specId": "anticipate-pop-words",
+      "text": "springs that wind up first",
+      "ink": "#0C0C0C",
+      "at_ms": 3000,
+      "duration_ms": 2900,
+      "fontPx": 118,
+      "y": 0.5
+    },
+    {
+      "id": "c3",
+      "specId": "spring-rise-letters-energetic",
+      "text": "energetic",
+      "ink": "#0C0C0C",
+      "at_ms": 5900,
+      "duration_ms": 2000,
+      "fontPx": 190,
+      "y": 0.42
+    },
+    {
+      "id": "c4",
+      "specId": "spring-rise-letters-calm",
+      "text": "or calm",
+      "ink": "#0C0C0C",
+      "at_ms": 6400,
+      "duration_ms": 1900,
+      "fontPx": 120,
+      "y": 0.62
+    },
+    {
+      "id": "c5",
+      "specId": "weight-wave-letters",
+      "text": "anticipator",
+      "ink": "#0C0C0C",
+      "at_ms": 8300,
+      "duration_ms": 2700,
+      "fontPx": 190,
+      "y": 0.5
+    }
+  ]
+}
