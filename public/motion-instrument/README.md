@@ -38,7 +38,7 @@ corner than the controls, and they still sit edge to edge. Click it or press Spa
 across it to paint the pattern. The other controls are a separate group on the right,
 flat white buttons with a black edge and no shadow. A selected control flips
 to black with white text: tempo,
-subdivision, preset (numbered 01–13), sound, tone, scale, variety, ramp,
+subdivision, preset (numbered 01–15), sound, tone, scale, variety, ramp,
 theme, and the text. Click the canvas and a word from the text grows at that spot, pushes its neighbours, and shrinks away after a short life. A one-line hint shows until playback starts, and
 returns when it stops. Tone is how a note sounds — Pluck,
 Soft, Reed, Bell — and only one note rings at a time. The text is the
@@ -52,7 +52,9 @@ or on a slider.
 | `SPACE` | play / stop the sequence |
 | `A S D F G H J K` | play notes (each note places a word) |
 | `1`–`9`, `0`, `-`, `=` | layouts 01–12 |
-| `E` | layout 13 |
+| `E` | layout 13, the square editorial |
+| `Q` | layout 14, the same grid composed for 16:9 |
+| `W` | layout 15, the same grid composed for 9:16 |
 | `O` | sound: SYNTH → MONO + SFX → SFX + BASS |
 | `T` | tone: Pluck → Soft → Reed → Bell |
 | `L` | tempo ramp 80 → 160 BPM on / off |
@@ -108,7 +110,9 @@ texto o en un deslizador.
 | `ESPACIO` | reproducir / parar |
 | `A S D F G H J K` | notas (cada nota coloca una palabra) |
 | `1`–`9`, `0`, `-`, `=` | composiciones 01–12 |
-| `E` | composición 13 |
+| `E` | composición 13, la editorial cuadrada |
+| `Q` | composición 14, la misma retícula en 16:9 |
+| `W` | composición 15, la misma retícula en 9:16 |
 | `O` | sonido: SYNTH → MONO + SFX → SFX + BASS |
 | `T` | timbre: Pluck → Soft → Reed → Bell |
 | `L` | rampa de tempo 80 → 160 BPM |

@@ -213,6 +213,11 @@ const PRESETS = [
   // word as one BIG tag, kicked in on every note · C: the NACE collision cluster in the indigo pane ----
   { name:'EDITORIAL', mode:'nace', lay:'edit', bpm:120, sub:2, fs:44, fsA:30, theme:0, mixed:true,
     scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[2,5],[3,2],[4,5],[5,4],[6,3],[7,7]] },
+  // 14 · the same three panes, composed for a 16:9 frame (LinkedIn). 15 · the same, for 9:16 (Instagram).
+  { name:'EDITORIAL WIDE', mode:'nace', lay:'edit', frame:'16x9', bpm:120, sub:2, fs:52, fsA:28, theme:0, mixed:true, fit:430,
+    scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[2,5],[3,2],[4,5],[5,4],[6,3],[7,7]] },
+  { name:'EDITORIAL TALL', mode:'nace', lay:'edit', frame:'9x16', bpm:120, sub:2, fs:48, fsA:34, theme:0, mixed:true, fit:430,
+    scales:['major','major','minor','major'], pairs:[[0,0],[1,4],[2,5],[3,2],[4,5],[5,4],[6,3],[7,7]] },
 ];
 const KEYMAP = '1234567890-=';                          // presets 1–12: keys 1…9, 0, -, =
 DIR.init = () => { S.preset = 0; S.variety = .5; S.noteIdx = 0; S.sub = PRESETS[0].sub; };
@@ -233,6 +238,8 @@ DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; flowClock
 DIR.onKey = k => {
   const pi = KEYMAP.indexOf(k); if (pi >= 0 && pi < PRESETS.length) { applyPreset(pi); return true; }
   if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
+  if (k === 'q') { applyPreset(13); return true; }       // 14 · 16:9
+  if (k === 'w') { applyPreset(14); return true; }       // 15 · 9:16
   if (k === 'v') { S.variety = (Math.round(S.variety * 4) + 1) % 5 / 4; return true; }
   return false;
 };
@@ -409,7 +416,12 @@ function lay() {
   const cap = capOf(pr), words = [...Array(cap)].map((_, n) => wordAt(n, cap)), d = dims(pr.fs);
   let tags = [], extra = {};
   if (pr.lay === 'nace' || pr.lay === 'edit') { const N = nace(words, d); extra.N = N;
-    if (pr.lay === 'edit') extra.A = textRun(words, dims(pr.fsA), 492, -516, -516, 5);
+    if (pr.lay === 'edit') {
+      const dA = dims(pr.fsA);
+      if (pr.frame === '16x9') extra.A = textRun(words, dA, 584, -932, -512, 5);
+      else if (pr.frame === '9x16') extra.A = textRun(words, dA, 1008, -504, -932, 5);
+      else extra.A = textRun(words, dA, 492, -516, -516, 5);
+    }
     tags = N.POS[cap - 1].map((o, k) => ({ x:o.x, y:o.y, w:N.wid[k], h:d.h, dir:'n', word:words[k], d })); }
   else if (pr.lay in SHAPES) tags = pack(words, d, SHAPES[pr.lay], pr.lay === 'blob' ? .35 : .04, S.preset);
   else if (pr.lay === 'justify') tags = justify(words, d, pr.bw);
@@ -641,7 +653,8 @@ function flowSimulate(group, folds, t) {
         const sc = scOf(it);
         maxR = Math.max(maxR, Math.hypot(it.fx, it.fy) + Math.max(it.tg.w, it.tg.h) * 0.5 * Math.min(sc, 1.2));
       }
-      const want = maxR > 470 ? 470 / maxR : 1;
+      const limit = P().fit || 470;
+      const want = maxR > limit ? limit / maxR : 1;
       const fit = (flowFit.get(key) ?? 1) + (want - (flowFit.get(key) ?? 1)) * Math.min(1, step * 5);
       flowFit.set(key, fit);
     }
@@ -680,7 +693,7 @@ function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
   const seq = group.filter(it => !it.click);
   const fit = group.length ? (flowFit.get(S.preset + ':' + (seq[0] ? seq[0].gen : 'guest')) ?? 1) : 1;
   const nb = seq.at(-1) || null;
-  c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u, L.u); c.translate(cam.x, cam.y);
+  c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u * (drawFlow.zoom || 1), L.u * (drawFlow.zoom || 1)); c.translate(cam.x, cam.y);
   const paint = (it, sc, pin) => {
     if (!it.tg || sc <= 0.01) return;
     const x = pin ? 0 : (it.fx || 0) * fit, y = pin ? 0 : (it.fy || 0) * fit;
@@ -699,7 +712,7 @@ DIR.draw = (c, t, th) => {
   for (let y = 48; y < H; y += 48) { c.moveTo(0, y + 0.5); c.lineTo(W, y + 0.5); }
   c.stroke(); c.restore();
   const live = items.filter(it => it.tg).sort((p, q) => p.t0 - q.t0);
-  if (pr.lay === 'edit') { drawEditorial(c, t, th, live, LC); return; }
+  if (pr.lay === 'edit') { (pr.frame ? drawFramedEditorial : drawEditorial)(c, t, th, live, LC); return; }
   drawFlow(c, t, th, live);
 };
 // NACE motion (round 5, aggressive). Tag s after insertions s+1…M: pos = POS[s][s] + Σ_m (POS[m][s] − POS[m−1][s]) · E(…)
@@ -767,6 +780,55 @@ function drawEditorial(c, t, th, live, LC) {
   // C · the same centre-birth cluster as every other preset, in the indigo pane
   c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.beginPath(); c.rect(L.cx - 540 * L.u, L.cy - 120 * L.u, 1080 * L.u, 660 * L.u); c.clip();
   drawFlow(c, t, th, live, { x:0, y:210 }); c.restore();
+}
+// 14 and 15: the same three panes as the square editorial, fitted to a 16:9 or
+// 9:16 board. The board scales to the view, so an exact frame is filled and a
+// different window letterboxes it instead of cropping the panes.
+function editBoard() {
+  const frame = P().frame;
+  if (frame === '16x9') return {
+    w:1920, h:1080,
+    a:{ x:-960, y:-540, w:640, h:540, fill:'#FFFFFF' },
+    b:{ x:-960, y:0, w:640, h:540, fill:'#F4C500' },
+    c:{ x:-320, y:-540, w:1280, h:1080, fill:'#3D3DEB' },
+    word:{ x:-640, y:270, fit:500 },
+  };
+  if (frame === '9x16') return {
+    w:1080, h:1920,
+    a:{ x:-540, y:-960, w:1080, h:460, fill:'#FFFFFF' },
+    b:{ x:-540, y:-500, w:1080, h:480, fill:'#F4C500' },
+    c:{ x:-540, y:-20, w:1080, h:980, fill:'#3D3DEB' },
+    word:{ x:0, y:-260, fit:820 },
+  };
+  return null;
+}
+function drawFramedEditorial(c, t, th, live, LC) {
+  const board = editBoard(); if (!board) return;
+  const s = Math.min((W / L.u) / board.w, (H / L.u) / board.h);
+  const place = () => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u * s, L.u * s); };
+  place();
+  for (const key of ['a', 'b', 'c']) { const p = board[key]; c.fillStyle = p.fill; c.fillRect(p.x, p.y, p.w, p.h); }
+  const gen = live.length ? Math.max(...live.filter(it => t >= it.t0 && it.gen != null).map(it => it.gen), 0) : 0;
+  const cur = live.filter(it => it.gen === gen && !it.click && t >= it.t0);
+  c.save(); place(); c.beginPath(); c.rect(board.a.x, board.a.y, board.a.w, board.a.h); c.clip();
+  cur.forEach(it => { const tg = LC.A && LC.A[it.slot]; if (!tg) return; const kc = kickCh(it.ch), sc = spring(t - it.t0, kc.w * 1.3, Math.max(.32, kc.z));
+    if (sc > .001) box(c, tg.x, tg.y, 0, Math.max(0, sc), tg.w, tg.h, tg.word, tg.d, '#000000', '#FFFFFF'); });
+  c.restore();
+  const last = cur.at(-1);
+  if (last) {
+    const wd = last.tg.word, a = t - last.t0, kc = kickCh(last.ch), e = spring(a, kc.w, kc.z);
+    const fs = Math.min(170, board.word.fit / (textW(wd, 100) / 100 + .6)), d = dims(Math.round(fs)), w = textW(wd, d.fs) + 2 * d.pad;
+    const sg = last.ch.rotF >= 0 ? 1 : -1, sc = .55 + .45 * e, x = board.word.x - sg * 36 * (1 - e), rot = sg * .05 * (1 - e);
+    c.save(); place(); c.beginPath(); c.rect(board.b.x, board.b.y, board.b.w, board.b.h); c.clip();
+    box(c, x, board.word.y, rot, sc, w, d.h, wd, d, '#000000', '#FFFFFF'); c.restore();
+  }
+  const pc = board.c;
+  c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.beginPath();
+  c.rect(L.cx + pc.x * L.u * s, L.cy + pc.y * L.u * s, pc.w * L.u * s, pc.h * L.u * s); c.clip();
+  drawFlow.zoom = s;
+  try { drawFlow(c, t, th, live, { x:pc.x + pc.w / 2, y:pc.y + pc.h / 2 }); }
+  finally { drawFlow.zoom = 1; }
+  c.restore();
 }
 // ---------- interface: one hard-split strip along the bottom (ref FP): identity | sequencer | state ----------
 let GR = null;
@@ -1128,12 +1190,17 @@ function toggleRec() {
 function spawnClick(ev) {
   if (!L) return;
   const pr = P();
-  const cam = pr.lay === 'edit' ? { x:0, y:210 } : { x:0, y:0 };
+  const board = (pr.frame === '16x9' || pr.frame === '9x16') ? editBoard() : null;
+  let cam = { x:0, y:0 }, zoom = 1;
+  if (board) {
+    cam = { x:board.c.x + board.c.w / 2, y:board.c.y + board.c.h / 2 };
+    zoom = Math.min((W / L.u) / board.w, (H / L.u) / board.h);
+  } else if (pr.lay === 'edit') cam = { x:0, y:210 };
   const seq = items.filter(it => it.tg && !it.click && !it.fold);
   const gen = seq.length ? Math.max(...seq.map(it => it.gen)) : 0;
   const fit = flowFit.get(S.preset + ':' + gen) ?? 1;
-  const designX = (ev.clientX - L.cx) / L.u - cam.x;
-  const designY = (ev.clientY - L.cy) / L.u - cam.y;
+  const designX = (ev.clientX - L.cx) / (L.u * zoom) - cam.x;
+  const designY = (ev.clientY - L.cy) / (L.u * zoom) - cam.y;
   const pool = TEXT.filter(Boolean);
   const word = pool[Math.floor(Math.random() * pool.length)] || '·';
   const d = dims(pr.fs || 46);
