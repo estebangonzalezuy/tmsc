@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     // browser scripts with no build step, deliberately outside the site's
     // toolchain. It lives under public/ so Vercel serves it as-is.
     "public/frames/**",
+    // labs/ holds self-contained experiments with their own package.json and
+    // toolchain (Vite, not Next). Not part of the site.
+    "labs/**",
   ]),
 ]);
 
