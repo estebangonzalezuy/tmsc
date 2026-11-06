@@ -379,8 +379,7 @@ function makeBody(it, t) {
   if (fresh && it.i >= 0 && it.i < 8) notePress[it.i] = t;
   return { it, ...m, x: Math.cos(a) * r, y: Math.sin(a) * r, z: (hash(it.key || 0, 7) - 0.5) * 0.3,
     vx: 0, vy: 0, vz: 0, ax: 0, ay: 0, az: (it.ch ? it.ch.rot0 : 0), wx: 0, wy: 0, wz: 0,
-    zRest: (hash(it.key || 0, 11) - 0.5) * 0.4, sc: fresh ? 0 : 1, colKey: '', foldAt: null, launch: fresh,
-    spin: hash(it.key || 0, 17) < 0.5 ? -1 : 1 };
+    zRest: (hash(it.key || 0, 11) - 0.5) * 0.4, sc: fresh ? 0 : 1, colKey: '', foldAt: null, foldDelay: null, q: 0, qv: 0 };
 }
 function dropBody(b) { cluster.remove(b.g); }
 function paintBody(b, th) {
@@ -406,22 +405,22 @@ function tagMaterial(hex) {
 function toggleFinish() { finish = finish === 'gloss' ? 'matte' : 'gloss'; hudSig = ''; }
 const ANG = { z: 0.18, xy: 0.24 };
 function integrate(b, dt, pull, pullZ) {
-  b.vx += (-pull * b.x - 4.2 * b.vx) * dt;
-  b.vy += (-pull * b.y - 4.2 * b.vy) * dt;
+  b.vx += (-pull * b.x - 2.9 * b.vx) * dt;               // less damping than 2D (4.2): the pile rings a little
+  b.vy += (-pull * b.y - 2.9 * b.vy) * dt;
   b.vz += (-pullZ * (b.z - (b.zRest - DOME * (b.x * b.x + b.y * b.y))) - 6 * b.vz) * dt;
   const vmax = 1600 * U;
   b.vx = clamp(b.vx, -vmax, vmax); b.vy = clamp(b.vy, -vmax, vmax); b.vz = clamp(b.vz, -vmax, vmax);
   b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
-  b.wz += (-70 * b.az - 9 * b.wz) * dt; b.az = clamp(b.az + b.wz * dt, -ANG.z, ANG.z);
-  b.wx += (-55 * b.ax - 8 * b.wx) * dt; b.ax = clamp(b.ax + b.wx * dt, -ANG.xy, ANG.xy);
-  b.wy += (-55 * b.ay - 8 * b.wy) * dt; b.ay = clamp(b.ay + b.wy * dt, -ANG.xy, ANG.xy);
+  b.wz += (-70 * b.az - 5.5 * b.wz) * dt; b.az = clamp(b.az + b.wz * dt, -ANG.z, ANG.z);
+  b.wx += (-55 * b.ax - 5 * b.wx) * dt; b.ax = clamp(b.ax + b.wx * dt, -ANG.xy, ANG.xy);
+  b.wy += (-55 * b.ay - 5 * b.wy) * dt; b.ay = clamp(b.ay + b.wy * dt, -ANG.xy, ANG.xy);
 }
 function pin(b) { b.x = 0; b.y = 0; b.z = 0; b.vx = b.vy = b.vz = 0; b.ax = b.ay = b.az = 0; b.wx = b.wy = b.wz = 0; }
 // Boxes stay nearly axis-aligned (tilts stay under ~14°), so contact is tested on the scaled
 // boxes' extents in the cluster's plane, exactly the 2D rule. Depth is not a collision axis:
 // each tag rests on a shallow dome (further back the further out it is) plus a seeded offset,
 // so the pile is round like the 2D one but has a front, a back and a curve you can orbit.
-const REST = 0.32, DOME = 0.075;
+const REST = 0.55, DOME = 0.075;                           // bouncier than the 2D 0.32
 function collide(a, b, fixedA, fixedB) {
   const sa = a.sc, sb = b.sc;
   if (sa < 0.04 || sb < 0.04) return;
@@ -448,6 +447,9 @@ function collide(a, b, fixedA, fixedB) {
     const j = -(1 + REST) * rel / (iA + iB);
     a.vx -= j * n[0] * iA; a.vy -= j * n[1] * iA; a.vz -= j * n[2] * iA;
     b.vx += j * n[0] * iB; b.vy += j * n[1] * iB; b.vz += j * n[2] * iB;
+    // jelly: squash along the hit (x for a sideways hit, y for a vertical one), by how hard it was
+    const sq = Math.min(3, j * 1.2) * (Math.abs(n[0]) >= Math.abs(n[1]) ? -1 : 1);
+    if (!fixedA) a.qv += sq * iA * mass(a); if (!fixedB) b.qv += sq * iB * mass(b);
     // spin: ω += I⁻¹ (r × J)
     const cross = (r, s) => [(r[1] * n[2] - r[2] * n[1]) * s, (r[2] * n[0] - r[0] * n[2]) * s, (r[0] * n[1] - r[1] * n[0]) * s];
     const ta = cross(ra, -j * IA), tb = cross(rb, j * IB);
@@ -472,23 +474,31 @@ function simulate(t, dt) {
   const folds = live.filter(b => b.it.fold || (b.it.gen ?? 0) !== cur);
   folds.forEach(b => { if (b.foldAt == null) b.foldAt = b.it.fold || t; });
   const nb = group.at(-1) || null;
-  for (const b of group) {
-    const air = b.launch && anim === 'launch' ? FLIGHT : 0;   // a launched tag only takes up room once it lands
-    b.sc = t - b.it.t0 < air ? 0 : b === nb ? growAmt(t - b.it.t0 - air) : 1;   // as in 2D: released tags are full size
-  }
+  for (const b of group) b.sc = b === nb ? growAmt(t - b.it.t0) : 1;   // as in 2D: released tags are full size
   for (const b of group) { if (b === nb) pin(b); else integrate(b, dt, 9, 26); }
   for (let pass = 0; pass < 3; pass++)
     for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++)
       collide(group[i], group[j], group[i] === nb, group[j] === nb);
   if (nb) pin(nb);
-  let foldR = 1e-3;
-  for (const b of folds) foldR = Math.max(foldR, Math.hypot(b.x, b.y, b.z));
+  // Clearing: the tags of one clear leave one at a time, nearest the centre first, each with a
+  // small pop, the same order and timing as the 2D file.
+  const fresh = folds.filter(b => b.foldDelay == null);
+  if (fresh.length) {
+    const batch = folds.filter(b => b.foldAt === fresh[0].foldAt).sort((p, q) => Math.hypot(p.x, p.y, p.z) - Math.hypot(q.x, q.y, q.z));
+    const step = Math.min(0.035, 0.5 / Math.max(1, batch.length));
+    batch.forEach((b, k) => { if (b.foldDelay == null) b.foldDelay = k * step; });
+  }
   for (const b of folds) {
-    const dist = Math.hypot(b.x, b.y, b.z), delay = Math.max(0, (foldR - dist) / (1100 * U));
-    if (t >= b.foldAt + delay) integrate(b, dt, 46, 46);
-    b.sc = Math.min(b.sc, Math.max(0, 1 - clamp((t - b.foldAt - delay) / 0.42)));
+    const a = t - b.foldAt - b.foldDelay;
+    b.sc = a <= 0 ? b.sc : a < FOLD_POP * 0.35 ? 1 + 0.18 * a / (FOLD_POP * 0.35) : Math.max(0, 1.18 * (1 - (a - FOLD_POP * 0.35) / (FOLD_POP * 0.65)));
+    b.done = a > FOLD_POP;
+  }
+  for (const b of live) {                                 // the wobble
+    b.qv += (-260 * b.q - 8 * b.qv) * dt;
+    b.q = clamp(b.q + b.qv * dt, -0.12, 0.12);
   }
 }
+const FOLD_POP = 0.15;
 function syncBodies(t) {
   const items = MI.items, present = new Set();
   for (const it of items) {
@@ -496,35 +506,20 @@ function syncBodies(t) {
     present.add(it);
     if (!bodies.has(it)) bodies.set(it, makeBody(it, t));
   }
-  for (const [it, b] of bodies) if (!present.has(it) || (b.foldAt != null && b.sc <= 0.001 && t - b.foldAt > 0.3)) { dropBody(b); bodies.delete(it); }
+  // a cleared tag stays until its own pop has played, even if the 2D side has already let it go
+  for (const [it, b] of bodies) if (b.done || (!present.has(it) && b.foldAt == null)) { dropBody(b); bodies.delete(it); }
 }
-// Tag animation. 'grow' is the 2D one: the newborn grows out of the centre of the pile.
-// 'launch' (a test): the device fires each word from its screen; it tumbles up along an arc,
-// lands in the middle of the pile, bulges on impact and the shove starts as it lands. N toggles.
-let anim = /[?&]grow\b/.test(location.search) ? 'grow' : 'launch';
-const FLIGHT = 0.3;
-const launchFrom = new Vector3();
-function toggleAnim() { anim = anim === 'launch' ? 'grow' : 'launch'; hudSig = ''; }
-function placeBodies(th, t) {
-  screenMesh.getWorldPosition(launchFrom);
-  launchFrom.sub(CL);                                    // into the cluster's frame
+// Every tag grows out of the centre of the pile, as in 2D. On top of the physics each tag has a
+// jelly wobble (q): a hit squashes it along one axis and it springs back past level a couple of
+// times, so a shove reads as a bounce rather than a slide.
+function placeBodies(th) {
   for (const b of bodies.values()) {
     paintBody(b, th);
-    const f = b.launch && anim === 'launch' ? clamp((t - b.it.t0) / FLIGHT) : 1;
-    if (f < 1 && !b.it.fold) {
-      const e = 1 - (1 - f) ** 3, arc = Math.sin(Math.PI * f) * 2.2;
-      b.g.visible = true;
-      b.g.position.set(launchFrom.x + (b.x - launchFrom.x) * e, launchFrom.y + (b.y - launchFrom.y) * e + arc, launchFrom.z + (b.z - launchFrom.z) * e);
-      b.g.rotation.set(b.ax + (1 - e) * Math.PI * 2 * b.spin, b.ay + (1 - e) * 0.8 * b.spin, b.az);
-      b.g.scale.setScalar(0.3 + 0.7 * e);
-      continue;
-    }
-    // after landing the physics scale runs 0 → overshoot → 1; show it as an impact bulge, not a regrow
-    const vis = b.launch && anim === 'launch' && !b.it.fold ? (b.sc <= 0 ? 1 : 1 + 0.35 * Math.max(0, b.sc - 1) + 0.12 * Math.max(0, 1 - b.sc)) : b.sc;
-    b.g.visible = vis > 0.002;
+    b.g.visible = b.sc > 0.002;
     b.g.position.set(b.x, b.y, b.z);
     b.g.rotation.set(b.ax, b.ay, b.az);
-    b.g.scale.setScalar(Math.max(0.0001, vis));
+    const s = Math.max(0.0001, b.sc), q = b.q;
+    b.g.scale.set(s * (1 + q), s * (1 - q), s);
   }
 }
 
@@ -686,7 +681,6 @@ function bindHud() {
     const k = ev.key.toLowerCase();
     if (k === 'r') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleRec3d(); }
     if (k === 'p') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleFinish(); }
-    if (k === 'n') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleAnim(); }
     if (k === 'c') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) MI.setTheme(themeStep(S.theme)); }
   }, true);
 }
@@ -749,7 +743,7 @@ let hudSig = '';
 function syncHud() {
   document.documentElement.classList.toggle('hud-off', !!S.hero);
   const th = MI.THEMES[S.theme], pr = MI.DIR.P(), lay = MI.DIR.lay();
-  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size, finish, anim].join('|');
+  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size, finish].join('|');
   if (sig === hudSig) return;
   hudSig = sig;
   const set = (id, v) => { document.getElementById(id).textContent = v; };
@@ -760,8 +754,6 @@ function syncHud() {
   set('hud-variety', `${Math.round(S.variety * 100)}%`);
   set('hud-theme', th.name);
   set('hud-finish', finish);
-  set('hud-anim', anim);
-  document.getElementById('hud-animbtn').setAttribute('aria-pressed', String(anim === 'launch'));
   document.getElementById('hud-finishbtn').setAttribute('aria-pressed', String(finish === 'gloss'));
   set('hud-tags', `${[...bodies.values()].filter(b => !b.it.fold).length} / ${lay.cap}`);
   document.getElementById('hud-rec').hidden = !rec3d;
@@ -778,7 +770,7 @@ function loop() {
   const lap = (k, f) => { const a = performance.now(); f(); stats[k] = stats[k] * 0.9 + (performance.now() - a) * 0.1; };
   lap('sync', () => syncBodies(t));
   lap('sim', () => { for (let left = dt; left > 1e-6;) { const s = Math.min(1 / 120, left); simulate(t - left + s, s); left -= s; } });
-  lap('device', () => { placeBodies(th, t); paintDevice(th); paintScreen(); animateDevice(t, dt); });
+  lap('device', () => { placeBodies(th); paintDevice(th); paintScreen(); animateDevice(t, dt); });
   if (S.playing && !wasPlaying) userTouched = false;   // a new take re-arms the slow orbit
   wasPlaying = S.playing;
   controls.autoRotate = !!S.playing && !userTouched;

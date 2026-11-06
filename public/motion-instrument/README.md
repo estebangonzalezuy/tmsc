@@ -31,8 +31,8 @@ Demo: [`media/demo-16x9.mp4`](media/demo-16x9.mp4) · loop: [`media/loop-1x1.mp4
 
 Every note grows from the centre of the cluster, from nothing to full size,
 and shoves the tags around it. They bump, tilt a little, and the pile pulls
-back together. Nothing falls. On the loop the pile shrinks back into the
-centre. The same motion is every preset, including the 16ths. The pad sits on the left, compact:
+back together. Nothing falls. On the loop, and on `X`, the pile clears one
+tag at a time, nearest the centre first, each with a small pop. The same motion is every preset, including the 16ths. The pad sits on the left, compact:
 an 8×8 step grid with slightly rounded cells. The word tags have a smaller
 corner than the controls, and they still sit edge to edge. Click it or press Space to start; drag
 across it to paint the pattern. The other controls are a separate group on the right,
@@ -56,14 +56,14 @@ or on a slider.
 | `Q` | layout 14, the same grid composed for 16:9 |
 | `W` | layout 15, the same grid composed for 9:16 |
 | `B` | editorial board colours on layouts 13, 14 and 15. Each press steps a three-pane combination (the club palette, plus blue with white and red with black). The first combination is the original white, yellow and indigo board. `C` still cycles the page background. |
-| `O` | sound: SYNTH → MONO + SFX → SFX + BASS |
+| `O` | sound: SFX + BASS (default) → SYNTH → MONO + SFX |
 | `T` | tone: Pluck → Soft → Reed → Bell |
 | `L` | tempo ramp 80 → 160 BPM on / off |
 | `V` | variety (0 → 100 % in steps of 25) |
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
 | `C` | next colour theme. One is picked at random when the page opens, then C cycles the rest. Each theme is two colours, background and type. |
-| `X` | clear the pattern |
+| `X` | clear the pattern; the pile clears one tag at a time from the centre out |
 | `R` | record the canvas and the sound, with no interface in the picture. Frame is 9:16, 16:9 or 1:1. Safari downloads H.264 + AAC `.mp4`. Chrome downloads H.264 `.mp4` (AAC when it offers it, otherwise Opus). Firefox downloads a `.webm`. |
 | `U` | hide / show the interface |
 
@@ -115,14 +115,14 @@ texto o en un deslizador.
 | `Q` | composición 14, la misma retícula en 16:9 |
 | `W` | composición 15, la misma retícula en 9:16 |
 | `B` | colores del tablero editorial en las composiciones 13, 14 y 15. Cada pulsación avanza una combinación de tres panes (la paleta del club, más azul con blanco y rojo con negro). La primera es el tablero original: blanco, amarillo e índigo. `C` sigue cambiando el fondo de la página. |
-| `O` | sonido: SYNTH → MONO + SFX → SFX + BASS |
+| `O` | sonido: SFX + BASS (por defecto) → SYNTH → MONO + SFX |
 | `T` | timbre: Pluck → Soft → Reed → Bell |
 | `L` | rampa de tempo 80 → 160 BPM |
 | `V` | variedad (0 → 100 % en pasos de 25) |
 | `M` | mayor / menor |
 | `↑` / `↓` | BPM ±5 (`Shift` = ±1) |
 | `C` | siguiente tema. Al abrir se elige uno al azar; C recorre el resto. Cada tema son dos colores, fondo y tipo. |
-| `X` | borrar el patrón |
+| `X` | borrar el patrón; el racimo se va de a un tag, del centro hacia afuera |
 | `R` | grabar el canvas y el sonido, sin la interfaz. El encuadre es 9:16, 16:9 o 1:1. Chrome y Safari bajan un `.mp4`; Firefox un `.webm`. |
 | `U` | ocultar / mostrar la interfaz |
 

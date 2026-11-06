@@ -368,6 +368,11 @@ linked from the Hub, not the public nav. Don't pull site modules into the
 HTML, and don't edit the instrument to change the page's title — that
 belongs to the route.
 
+`index.html` is no longer only a drop of the owner's own build: in November
+2026 it was edited in this repo (SFX + BASS as the default sound, and the
+pile clearing one tag at a time from the centre out, on the loop and on X).
+If the owner rebuilds it from their source, carry those two changes over.
+
 `public/motion-instrument-3d/` is its 3D mode, with 2D | 3D tabs. It is a
 host page: `app.js` fetches the 2D `index.html` and runs it **unchanged** in
 the same document, then reads `window.MI` to draw a Three.js scene. That

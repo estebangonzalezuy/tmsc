@@ -273,7 +273,11 @@ function applyPreset(n) {
 }
 DIR.pattern = pat(PRESETS[0].pairs); DIR.bpm = PRESETS[0].bpm;
 DIR.setPreset = applyPreset;
-DIR.onClear = () => { S.noteIdx = 0; S.schedIdx = 0; items.length = 0; flowClock.clear(); flowFit.clear(); };
+DIR.onClear = () => {                                  // the pile clears one tag at a time, centre first
+  const t0 = now();
+  items.forEach(o => { if (o.fold == null) o.fold = t0; });
+  S.noteIdx = 0; S.schedIdx = 0; flowClock.clear();
+};
 DIR.onKey = k => {
   const pi = KEYMAP.indexOf(k); if (pi >= 0 && pi < PRESETS.length) { applyPreset(pi); return true; }
   if (k === 'e') { applyPreset(12); return true; }       // 13 · EDITORIAL
@@ -495,7 +499,7 @@ DIR.onTrigger = (it, t0) => {
   const pr = P(), L0 = lay(), idx = S.noteIdx++;
   it.slot = idx % L0.cap; it.gen = Math.floor(idx / L0.cap); it.ch = character(it);
   it.tg = pr.lay === 'grid' ? L0.cells[(it.slot * 7) % L0.cells.length] : L0.tags[it.slot];
-  if (it.slot === 0) items.forEach(o => { if (o !== it && !o.click && o.fold == null) o.fold = t0; });   // new cycle: shrink back into the centre
+  if (it.slot === 0) items.forEach(o => { if (o !== it && !o.click && o.fold == null) o.fold = t0; });   // new cycle: the old pile clears, centre first
 };
 // ---------- draw ----------
 let L = null;
@@ -698,27 +702,34 @@ function flowSimulate(group, folds, t) {
       const fit = (flowFit.get(key) ?? 1) + (want - (flowFit.get(key) ?? 1)) * Math.min(1, step * 5);
       flowFit.set(key, fit);
     }
-    let foldR = 1;
-    for (const it of folds) foldR = Math.max(foldR, Math.hypot(it.fx || 0, it.fy || 0));
-    for (const it of folds) {
-      const dist = Math.hypot(it.fx, it.fy);
-      if (sim < it.fold + Math.max(0, (foldR - dist) / 1100)) continue;
-      flowStepBody(it, step, 46);
-    }
     clock = sim;
   }
   flowClock.set(key, t);
 }
+// Clearing: the tags of one clear leave one at a time, nearest the centre first, each with a small
+// pop (a little bigger, then gone in ~0.15 s). The whole pile is gone in about half a second.
+const FOLD_POP = 0.15;
+function foldRanks(folds) {
+  const batches = new Map();
+  for (const it of folds) if (it.foldDelay == null) { const k = it.fold; if (!batches.has(k)) batches.set(k, []); batches.get(k).push(it); }
+  for (const list of batches.values()) {
+    const all = folds.filter(o => o.fold === list[0].fold);
+    all.sort((p, q) => Math.hypot(p.fx || 0, p.fy || 0) - Math.hypot(q.fx || 0, q.fy || 0));
+    const stepT = Math.min(0.035, 0.5 / Math.max(1, all.length));
+    all.forEach((o, k) => { if (o.foldDelay == null) o.foldDelay = k * stepT; });
+  }
+}
 function foldScale(it, t) {
-  const dist = Math.hypot(it.fx || 0, it.fy || 0), maxR = it.foldR || dist;
-  const delay = Math.max(0, (maxR - dist) / 1100);
-  return Math.max(0, 1 - clamp((t - it.fold - delay) / 0.42));
+  const a = t - it.fold - (it.foldDelay || 0);
+  if (a <= 0) return 1;
+  if (a < FOLD_POP * 0.35) return 1 + 0.18 * (a / (FOLD_POP * 0.35));
+  return Math.max(0, 1.18 * (1 - (a - FOLD_POP * 0.35) / (FOLD_POP * 0.65)));
 }
 function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
   for (let i = items.length - 1; i >= 0; i--) {
     const it = items[i];
     if (it.click && t - it.t0 > it.click.life + 0.45) items.splice(i, 1);
-    else if (it.fold && t - it.fold > 0.95) items.splice(i, 1);
+    else if (it.fold && it.foldDelay != null && t - it.fold - it.foldDelay > FOLD_POP + 0.05) items.splice(i, 1);
   }
   live = items.filter(it => it.tg);
   const seqGen = live.filter(it => !it.click).map(it => it.gen);
@@ -727,18 +738,18 @@ function drawFlow(c, t, th, live, cam = { x:0, y:0 }) {
   const folds = live.filter(it => it.fold && !it.click && t >= it.t0);
   if (group.length) flowSimulate(group, folds, t);
   else folds.forEach(bodyInit);
-  let foldR = 1;
-  for (const it of folds) foldR = Math.max(foldR, Math.hypot(it.fx || 0, it.fy || 0));
-  folds.forEach(it => { it.foldR = foldR; });
   const seq = group.filter(it => !it.click);
   const fit = group.length ? (flowFit.get(S.preset + ':' + (seq[0] ? seq[0].gen : 'guest')) ?? 1) : 1;
+  foldRanks(folds);
+  for (const it of folds) if (it.foldFit == null) it.foldFit = flowFit.get(S.preset + ':' + it.gen) ?? fit;   // keep the size the pile had
   const nb = seq.at(-1) || null;
   c.setTransform(DPR, 0, 0, DPR, 0, 0); c.translate(L.cx, L.cy); c.scale(L.u * (drawFlow.zoom || 1), L.u * (drawFlow.zoom || 1)); c.translate(cam.x, cam.y);
   const paint = (it, sc, pin) => {
     if (!it.tg || sc <= 0.01) return;
-    const x = pin ? 0 : (it.fx || 0) * fit, y = pin ? 0 : (it.fy || 0) * fit;
+    const f = it.fold ? (it.foldFit ?? fit) : fit;
+    const x = pin ? 0 : (it.fx || 0) * f, y = pin ? 0 : (it.fy || 0) * f;
     const [bc, fc] = colours(it, th);
-    box(c, x, y, pin ? 0 : (it.ang || 0), sc * fit, it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
+    box(c, x, y, pin ? 0 : (it.ang || 0), sc * f, it.tg.w, it.tg.h, it.tg.word, it.tg.d, bc, fc);
   };
   folds.forEach(it => paint(it, foldScale(it, t), false));
   group.forEach(it => paint(it, it.click ? clickScale(it, t) : it === nb ? growAmt(t - it.t0) : 1, it === nb));
@@ -956,7 +967,7 @@ const S = {
   scale:'major', theme:DIR.defaultTheme, bpm:DIR.bpm || 112, playing:false, step:-1,
   pattern: DIR.pattern || [[1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0],
             [0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1],[0,0,0,1,0,0,0,0],[0,1,0,0,0,0,0,0]],
-  sound:'synth', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false, board:0,
+  sound:'sfx', tone:'pluck', ramp:false, schedIdx:0, recording:false, aspect:'16x9', lastNote:'', lastVoice:-1, fontWarn:'', hero:/[?&]hero\b/.test(location.search), render:false, board:0,
 };
 let items = [];
 DIR.init && DIR.init();

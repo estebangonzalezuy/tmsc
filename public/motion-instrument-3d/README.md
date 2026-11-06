@@ -48,7 +48,6 @@ Every 2D key works in both tabs, because they are the 2D file's own handler.
 | `↑` / `↓` | BPM ±5 (`Shift` ±1) |
 | `C` | theme. In 3D it recolours the whole scene: the background, the device and the tags. The 3D tab leaves indigo out: themes that use it are skipped, and colour presets never give a tag indigo. |
 | `P` | 3D only: tag finish, glossy clear-coated plastic (default) ↔ matte (`?matte` opens matte) |
-| `N` | 3D only: tag motion. **Launch** (default, a test): the device fires each word from its screen, it tumbles up along an arc, lands in the middle of the pile with a bulge, and the shove starts on impact. **Grow**: the 2D motion, the word grows out of the centre (`?grow` opens on it). |
 | `X` | clear the pattern |
 | `R` | record. In 2D this is the 2D recorder, unchanged. In 3D it records the WebGL canvas with the sound. |
 | `U` | hide / show all chrome, including the tabs |
@@ -73,9 +72,12 @@ These rules come from the 2D flow (`drawFlow` / `collideAll` in the 2D file):
 - The other tags are pulled toward the centre (k = 9, damping 4.2) and pushed
   out of each other with restitution 0.32.
 - Each collision adds a little spin, which springs back to level.
-- On a new cycle the old pile shrinks back into the centre, from the outside in.
+- Clearing (a new cycle, or `X`) takes the pile away one tag at a time,
+  nearest the centre first, each with a small pop. Same order and timing as 2D.
 
-Two things differ, so that the cluster has volume:
+Three things differ. The 3D pile is bouncier (restitution 0.55 instead of 0.32,
+less damping, looser tilt springs) and every hit gives the tag a small jelly
+squash that springs back. And, so that the cluster has volume:
 
 - Tags are pushed apart along the line between their centres. That grows a
   round pile.
