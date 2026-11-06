@@ -14,7 +14,7 @@
 
 import {
   WebGLRenderer, Scene, Color, Fog, PerspectiveCamera, HemisphereLight, DirectionalLight, Mesh, Group, Object3D,
-  PlaneGeometry, MeshStandardMaterial, ShadowMaterial, CanvasTexture, SRGBColorSpace, NeutralToneMapping,
+  PlaneGeometry, MeshStandardMaterial, MeshPhysicalMaterial, ShadowMaterial, CanvasTexture, SRGBColorSpace, NeutralToneMapping,
   PCFShadowMap, NearestFilter, Raycaster, Vector2, Vector3, Quaternion, PMREMGenerator,
   OrbitControls, RoundedBoxGeometry, RoomEnvironment,
 } from './vendor/three.js';
@@ -100,10 +100,10 @@ function mix(a, b, k) { return '#' + new Color(a).lerp(new Color(b), k).getHexSt
 let MI = null, S = null;
 const U = 1 / 115;                                         // 2D design px → world units
 const TAG_D = 0.3;                                         // tag thickness
-const CL = new Vector3(0, 5.0, -1.2);                       // cluster centre
+const CL = new Vector3(0, 6.6, -1.8);                       // cluster centre, well clear of the device
 const STUDIO = '#e4e3df';
 
-let renderer, scene, camera, controls, padGroup, cluster, slotAnchor;
+let renderer, scene, camera, controls, padGroup, cluster, slotAnchor, hemi, floorMat;
 const pickables = [];
 let capRatio = 0.72;
 
@@ -184,7 +184,8 @@ function buildScene() {
   controls.autoRotateSpeed = 0.45;
   resetView();
 
-  scene.add(new HemisphereLight('#ffffff', '#b9b5ab', 0.75));
+  hemi = new HemisphereLight('#ffffff', '#b9b5ab', 0.75);
+  scene.add(hemi);
   const key = new DirectionalLight('#ffffff', 2.3);
   key.position.set(5.5, 14, 9.5);
   key.target.position.set(0, 2, 0);
@@ -197,7 +198,8 @@ function buildScene() {
   rim.position.set(-8, 6, -10);
   scene.add(rim);
 
-  const floor = new Mesh(new PlaneGeometry(220, 220), new ShadowMaterial({ opacity: 0.15 }));
+  floorMat = new ShadowMaterial({ opacity: 0.15 });
+  const floor = new Mesh(new PlaneGeometry(220, 220), floorMat);
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
   scene.add(floor);
 
@@ -206,8 +208,8 @@ function buildScene() {
   buildCartridges();
 }
 function resetView() {
-  camera.position.set(0.8, 9.2, 21.5);
-  controls.target.set(0, 3.6, 0.2);
+  camera.position.set(0.8, 10.2, 21);
+  controls.target.set(0, 3.9, 0.4);
   controls.update();
 }
 
@@ -308,7 +310,8 @@ function engrave(label, x, z, size) {
   engraved.push(m); padGroup.add(m);
 }
 
-// -- cartridges: one per preset, floating in an arc; the active one flies into the slot --------------
+// -- cartridges: one per preset. Only the active one is shown, standing in the slot; changing preset
+//    drops the new one in from above. ------------------------------------------------------------------
 const CART = { w: 1.0, h: 1.3, d: 0.16 };
 const carts = [];
 function buildCartridges() {
@@ -318,20 +321,15 @@ function buildCartridges() {
     const g = new Group();
     const body = new Mesh(geo, solid('#ffffff'));
     body.castShadow = true; body.receiveShadow = true;
-    body.userData = { pick: { kind: 'preset', i } };
     const face = new Mesh(plane(CART.w - 0.12, CART.h - 0.2), null);
     face.position.z = CART.d / 2 + 0.002; face.position.y = 0.04;
     const back = new Mesh(plane(CART.w - 0.12, CART.h - 0.2), null);
     back.position.z = -CART.d / 2 - 0.002; back.position.y = 0.04; back.rotation.y = Math.PI;
     const contact = new Mesh(pins, gold); contact.position.y = -CART.h / 2 + 0.02;
     g.add(body, face, back, contact);
-    pickables.push(body);
-    const a = -1.1 + 2.2 * (i / (n - 1));
-    const home = new Vector3(Math.sin(a) * 7.6, 6.4 + (i % 2) * 1.1 + (i % 3) * 0.3, CL.z - Math.cos(a) * 3.4 - 3.4);
-    const homeQ = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), -a * 0.75);
-    g.position.copy(home); g.quaternion.copy(homeQ);
+    g.visible = false;
     scene.add(g);
-    carts.push({ g, body, face, back, home, homeQ, v: new Vector3(), key: '', phase: hash(i, 9) * Math.PI * 2 });
+    carts.push({ g, body, face, back, v: new Vector3(), key: '' });
   }
 }
 function cartFace(i) {
@@ -377,14 +375,26 @@ function makeBody(it, t) {
 }
 function dropBody(b) { cluster.remove(b.g); }
 function paintBody(b, th) {
-  const [bc, fc] = tagColours(b.it, th), key = `${b.it.tg.word}|${bc}|${fc}`;
+  const [bc, fc] = tagColours(b.it, th), key = `${b.it.tg.word}|${bc}|${fc}|${finish}`;
   if (key === b.colKey) return;
   b.colKey = key;
-  b.body.material = solid(bc, 0.52);
+  b.body.material = tagMaterial(bc);
   const tg = b.it.tg;
   const mat = printMat(`tag|${tg.word}|${tg.d.fs}|${Math.round(tg.w)}|${fc}`, tg.w, tg.h, (c, w, h) => textOn(c, tg.word, w / 2, h / 2, tg.d.fs, fc));
   b.front.material = mat; b.back.material = mat;
 }
+// Tag finish: 'gloss' is a clear-coated plastic (a test), 'matte' the original satin. P toggles
+// (in 3D only; the 2D file has no P since its pixel mode went).
+let finish = /[?&]matte\b/.test(location.search) ? 'matte' : 'gloss';
+const tagMats = new Map();
+function tagMaterial(hex) {
+  const k = `${finish}|${hex}`;
+  if (!tagMats.has(k)) tagMats.set(k, finish === 'gloss'
+    ? new MeshPhysicalMaterial({ color: hex, roughness: 0.14, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03, specularIntensity: 1, envMapIntensity: 2.6 })
+    : new MeshStandardMaterial({ color: hex, roughness: 0.52, metalness: 0 }));
+  return tagMats.get(k);
+}
+function toggleFinish() { finish = finish === 'gloss' ? 'matte' : 'gloss'; hudSig = ''; }
 const ANG = { z: 0.18, xy: 0.24 };
 function integrate(b, dt, pull, pullZ) {
   b.vx += (-pull * b.x - 4.2 * b.vx) * dt;
@@ -494,7 +504,14 @@ function paintDevice(th) {
   const k = th.bg + th.fg;
   if (k === themeKey) return;
   themeKey = k;
-  padMats.body.color.set(th.bg);
+  // The whole studio takes the theme: the void is the background colour, the device is a step
+  // toward the type colour so it still reads as an object, and the light fill picks up the ground.
+  scene.background.set(th.bg);
+  scene.fog.color.set(th.bg);
+  hemi.groundColor.set(mix(th.bg, '#000000', 0.25));
+  const dark = new Color(th.bg).getHSL({ h: 0, s: 0, l: 0 }).l < 0.35;
+  floorMat.opacity = dark ? 0.35 : 0.16;
+  padMats.body.color.set(mix(th.bg, th.fg, 0.07));
   padMats.capOff.color.set(mix(th.bg, th.fg, 0.14));
   padMats.capOn.color.set(th.fg);
   padMats.key.color.set(mix(th.bg, th.fg, 0.22));
@@ -565,14 +582,16 @@ function animateDevice(t, dt) {
   const sq = new Vector3(), sqq = new Quaternion();
   slotAnchor.getWorldPosition(sq); slotAnchor.getWorldQuaternion(sqq);
   carts.forEach((c, i) => {
+    const active = i === S.preset;
+    if (!active) { c.g.visible = false; return; }
     const f = cartFace(i);
     if (f.key !== c.key) { c.key = f.key; c.face.material = f.mat; c.back.material = f.mat; c.body.material = solid(f.bg, 0.5); }
-    const active = i === S.preset;
-    const target = active ? sq : c.home.clone().setY(c.home.y + Math.sin(t * 0.8 + c.phase) * 0.18);
-    const tq = active ? sqq : c.homeQ.clone().multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.sin(t * 0.5 + c.phase) * 0.12));
-    c.v.addScaledVector(target.clone().sub(c.g.position), 55 * dt).multiplyScalar(Math.exp(-10 * dt));
+    if (!c.g.visible) {                                   // just selected: drop in from above the slot
+      c.g.visible = true; c.g.position.copy(sq).add(new Vector3(0, 2.6, 0)); c.g.quaternion.copy(sqq); c.v.set(0, 0, 0);
+    }
+    c.v.addScaledVector(sq.clone().sub(c.g.position), 90 * dt).multiplyScalar(Math.exp(-9 * dt));
     c.g.position.addScaledVector(c.v, dt);
-    c.g.quaternion.slerp(tq, 1 - Math.exp(-8 * dt));
+    c.g.quaternion.slerp(sqq, 1 - Math.exp(-10 * dt));
   });
 }
 
@@ -597,8 +616,7 @@ function act(obj) {
     const on = S.pattern[p.st][p.row] ? 0 : 1;
     S.pattern[p.st][p.row] = on;
     if (on) { S.lastNote = MI.playNote(p.row, undefined, S.noteIdx); MI.trigger(p.row); }
-  } else if (p.kind === 'preset') { MI.DIR.setPreset(p.i); bodies.forEach(dropBody); bodies.clear(); }
-  else if (p.kind === 'play') { MI.togglePlay(); obj.userData.pressT = t; }
+  } else if (p.kind === 'play') { MI.togglePlay(); obj.userData.pressT = t; }
   else if (p.kind === 'rec') { toggleRec3d(); obj.userData.pressT = t; }
   else if (p.kind === 'clear') { sendKey('x'); obj.userData.pressT = t; }
 }
@@ -633,7 +651,9 @@ function bindHud() {
     if (mode !== '3d') return;
     const tag = ev.target && ev.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || ev.metaKey || ev.ctrlKey || ev.altKey) return;
-    if (ev.key.toLowerCase() === 'r') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleRec3d(); }
+    const k = ev.key.toLowerCase();
+    if (k === 'r') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleRec3d(); }
+    if (k === 'p') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleFinish(); }
   }, true);
 }
 
@@ -695,7 +715,7 @@ let hudSig = '';
 function syncHud() {
   document.documentElement.classList.toggle('hud-off', !!S.hero);
   const th = MI.THEMES[S.theme], pr = MI.DIR.P(), lay = MI.DIR.lay();
-  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size].join('|');
+  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size, finish].join('|');
   if (sig === hudSig) return;
   hudSig = sig;
   const set = (id, v) => { document.getElementById(id).textContent = v; };
@@ -705,6 +725,8 @@ function syncHud() {
   set('hud-sound', `${SOUND_NAME[S.sound] || S.sound} · ${S.tone || ''}`);
   set('hud-variety', `${Math.round(S.variety * 100)}%`);
   set('hud-theme', th.name);
+  set('hud-finish', finish);
+  document.getElementById('hud-finishbtn').setAttribute('aria-pressed', String(finish === 'gloss'));
   set('hud-tags', `${[...bodies.values()].filter(b => !b.it.fold).length} / ${lay.cap}`);
   document.getElementById('hud-rec').hidden = !rec3d;
   document.getElementById('hud-play').setAttribute('aria-pressed', String(!!S.playing));

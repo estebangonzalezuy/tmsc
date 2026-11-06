@@ -4,9 +4,11 @@ A 3D mode for the Motion Instrument, beside the 2D one rather than replacing
 it. The instrument becomes a device in a soft studio void. It has a step grid
 with keys that sink when they sound, A–K note keys, a pixel screen, and PLAY,
 REC and CLEAR buttons. Every note drops a thick, rounded word-tag into a
-cluster above it. Each tag is born in the middle, shoves the others outward,
-tilts and settles on springs. The fifteen presets float around the scene as
-cartridges, and the active one stands in the device's slot.
+cluster that floats well above it. Each tag is born in the middle, shoves the
+others outward, tilts and settles on springs. The active preset is a
+cartridge standing in the device's slot; changing preset drops the new one in.
+The theme colours the whole studio (the void, the device, the tags), not
+only the device.
 
 **This page does not reimplement the instrument.** `app.js` fetches
 `../motion-instrument/index.html` and runs it unchanged inside this document.
@@ -44,7 +46,8 @@ Every 2D key works in both tabs, because they are the 2D file's own handler.
 | `V` | variety |
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` ±1) |
-| `C` | theme. In 3D it recolours the device body, the keys and the tags. |
+| `C` | theme. In 3D it recolours the whole scene: the background, the device and the tags. |
+| `P` | 3D only: tag finish, glossy clear-coated plastic ↔ matte (a test; gloss is the default, `?matte` opens matte) |
 | `X` | clear the pattern |
 | `R` | record. In 2D this is the 2D recorder, unchanged. In 3D it records the WebGL canvas with the sound. |
 | `U` | hide / show all chrome, including the tabs |
@@ -52,15 +55,14 @@ Every 2D key works in both tabs, because they are the 2D file's own handler.
 In 3D you can also:
 
 - drag to orbit, scroll to zoom, and right-drag to pan;
-- click a grid key, a note key, PLAY, REC or CLEAR on the device;
-- click a cartridge to load that preset.
+- click a grid key, a note key, PLAY, REC or CLEAR on the device.
 
 While the sequence plays, the camera orbits slowly. The orbit stops as soon as
 you move the camera, and starts again on the next Play. **View** resets the
 camera.
 
-There is no `P` (pixel) key. The 2D file this wraps no longer has a pixel
-mode, so there is nothing to toggle.
+There is no pixel mode: the 2D file this wraps no longer has one, so `P` is
+free and the 3D tab uses it for the tag finish.
 
 ## How the 3D tags move
 

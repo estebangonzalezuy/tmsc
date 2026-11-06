@@ -4,7 +4,7 @@
 //   npx esbuild@0.25.10 entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=three.js
 export {
   WebGLRenderer, Scene, Color, Fog, PerspectiveCamera, HemisphereLight, DirectionalLight, Mesh, Group, Object3D,
-  PlaneGeometry, MeshStandardMaterial, ShadowMaterial, CanvasTexture, SRGBColorSpace, NeutralToneMapping,
+  PlaneGeometry, MeshStandardMaterial, MeshPhysicalMaterial, ShadowMaterial, CanvasTexture, SRGBColorSpace, NeutralToneMapping,
   PCFShadowMap, NearestFilter, Raycaster, Vector2, Vector3, Quaternion, PMREMGenerator,
 } from 'three';
 export { OrbitControls } from 'three/addons/controls/OrbitControls.js';
