@@ -46,8 +46,9 @@ Every 2D key works in both tabs, because they are the 2D file's own handler.
 | `V` | variety |
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` ±1) |
-| `C` | theme. In 3D it recolours the whole scene: the background, the device and the tags. |
-| `P` | 3D only: tag finish, glossy clear-coated plastic ↔ matte (a test; gloss is the default, `?matte` opens matte) |
+| `C` | theme. In 3D it recolours the whole scene: the background, the device and the tags. The 3D tab leaves indigo out: themes that use it are skipped, and colour presets never give a tag indigo. |
+| `P` | 3D only: tag finish, glossy clear-coated plastic (default) ↔ matte (`?matte` opens matte) |
+| `N` | 3D only: tag motion. **Launch** (default, a test): the device fires each word from its screen, it tumbles up along an arc, lands in the middle of the pile with a bulge, and the shove starts on impact. **Grow**: the 2D motion, the word grows out of the centre (`?grow` opens on it). |
 | `X` | clear the pattern |
 | `R` | record. In 2D this is the 2D recorder, unchanged. In 3D it records the WebGL canvas with the sound. |
 | `U` | hide / show all chrome, including the tabs |

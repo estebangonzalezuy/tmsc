@@ -77,7 +77,15 @@ function spring(a, w, z) {
 const growAmt = age => (age <= 0 ? 0 : Math.max(0, spring(age, 18, 0.45)));
 const PAL = { indigo:['#3D3DEB','#FFFFFF'], peri:['#ADB4F5','#000000'], yellow:['#F4C500','#000000'], orange:['#EE4B2B','#000000'],
               green:['#2E7D46','#FFFFFF'], black:['#000000','#FFFFFF'] };
-const PALK = Object.keys(PAL);
+// The 3D tab leaves indigo out: tags never take it, and a theme that uses it is skipped.
+const INDIGO = '#3D3DEB';
+const PALK = Object.keys(PAL).filter(k => PAL[k][0] !== INDIGO);
+const hasIndigo = th => th.bg.toUpperCase() === INDIGO || th.fg.toUpperCase() === INDIGO;
+function themeStep(from, dir = 1) {                       // next theme without indigo
+  const n = MI.THEMES.length;
+  for (let k = 1; k <= n; k++) { const i = (from + dir * k + n * k) % n; if (!hasIndigo(MI.THEMES[i])) return i; }
+  return from;
+}
 const FONT = '"Archivo Narrow", "Arial Narrow", "Helvetica Neue", Arial, sans-serif';
 const now = () => performance.now() / 1000;
 const SOUND_NAME = { synth:'Synth', mono:'Mono + SFX', sfx:'SFX + Bass' };
@@ -371,7 +379,8 @@ function makeBody(it, t) {
   if (fresh && it.i >= 0 && it.i < 8) notePress[it.i] = t;
   return { it, ...m, x: Math.cos(a) * r, y: Math.sin(a) * r, z: (hash(it.key || 0, 7) - 0.5) * 0.3,
     vx: 0, vy: 0, vz: 0, ax: 0, ay: 0, az: (it.ch ? it.ch.rot0 : 0), wx: 0, wy: 0, wz: 0,
-    zRest: (hash(it.key || 0, 11) - 0.5) * 0.4, sc: fresh ? 0 : 1, colKey: '', foldAt: null };
+    zRest: (hash(it.key || 0, 11) - 0.5) * 0.4, sc: fresh ? 0 : 1, colKey: '', foldAt: null, launch: fresh,
+    spin: hash(it.key || 0, 17) < 0.5 ? -1 : 1 };
 }
 function dropBody(b) { cluster.remove(b.g); }
 function paintBody(b, th) {
@@ -463,7 +472,10 @@ function simulate(t, dt) {
   const folds = live.filter(b => b.it.fold || (b.it.gen ?? 0) !== cur);
   folds.forEach(b => { if (b.foldAt == null) b.foldAt = b.it.fold || t; });
   const nb = group.at(-1) || null;
-  for (const b of group) b.sc = b === nb ? growAmt(t - b.it.t0) : 1;   // as in 2D: released tags are full size
+  for (const b of group) {
+    const air = b.launch && anim === 'launch' ? FLIGHT : 0;   // a launched tag only takes up room once it lands
+    b.sc = t - b.it.t0 < air ? 0 : b === nb ? growAmt(t - b.it.t0 - air) : 1;   // as in 2D: released tags are full size
+  }
   for (const b of group) { if (b === nb) pin(b); else integrate(b, dt, 9, 26); }
   for (let pass = 0; pass < 3; pass++)
     for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++)
@@ -486,13 +498,33 @@ function syncBodies(t) {
   }
   for (const [it, b] of bodies) if (!present.has(it) || (b.foldAt != null && b.sc <= 0.001 && t - b.foldAt > 0.3)) { dropBody(b); bodies.delete(it); }
 }
-function placeBodies(th) {
+// Tag animation. 'grow' is the 2D one: the newborn grows out of the centre of the pile.
+// 'launch' (a test): the device fires each word from its screen; it tumbles up along an arc,
+// lands in the middle of the pile, bulges on impact and the shove starts as it lands. N toggles.
+let anim = /[?&]grow\b/.test(location.search) ? 'grow' : 'launch';
+const FLIGHT = 0.3;
+const launchFrom = new Vector3();
+function toggleAnim() { anim = anim === 'launch' ? 'grow' : 'launch'; hudSig = ''; }
+function placeBodies(th, t) {
+  screenMesh.getWorldPosition(launchFrom);
+  launchFrom.sub(CL);                                    // into the cluster's frame
   for (const b of bodies.values()) {
     paintBody(b, th);
-    b.g.visible = b.sc > 0.002;
+    const f = b.launch && anim === 'launch' ? clamp((t - b.it.t0) / FLIGHT) : 1;
+    if (f < 1 && !b.it.fold) {
+      const e = 1 - (1 - f) ** 3, arc = Math.sin(Math.PI * f) * 2.2;
+      b.g.visible = true;
+      b.g.position.set(launchFrom.x + (b.x - launchFrom.x) * e, launchFrom.y + (b.y - launchFrom.y) * e + arc, launchFrom.z + (b.z - launchFrom.z) * e);
+      b.g.rotation.set(b.ax + (1 - e) * Math.PI * 2 * b.spin, b.ay + (1 - e) * 0.8 * b.spin, b.az);
+      b.g.scale.setScalar(0.3 + 0.7 * e);
+      continue;
+    }
+    // after landing the physics scale runs 0 → overshoot → 1; show it as an impact bulge, not a regrow
+    const vis = b.launch && anim === 'launch' && !b.it.fold ? (b.sc <= 0 ? 1 : 1 + 0.35 * Math.max(0, b.sc - 1) + 0.12 * Math.max(0, 1 - b.sc)) : b.sc;
+    b.g.visible = vis > 0.002;
     b.g.position.set(b.x, b.y, b.z);
     b.g.rotation.set(b.ax, b.ay, b.az);
-    b.g.scale.setScalar(Math.max(0.0001, b.sc));
+    b.g.scale.setScalar(Math.max(0.0001, vis));
   }
 }
 
@@ -654,6 +686,8 @@ function bindHud() {
     const k = ev.key.toLowerCase();
     if (k === 'r') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleRec3d(); }
     if (k === 'p') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleFinish(); }
+    if (k === 'n') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) toggleAnim(); }
+    if (k === 'c') { ev.stopImmediatePropagation(); ev.preventDefault(); if (!ev.repeat) MI.setTheme(themeStep(S.theme)); }
   }, true);
 }
 
@@ -715,7 +749,7 @@ let hudSig = '';
 function syncHud() {
   document.documentElement.classList.toggle('hud-off', !!S.hero);
   const th = MI.THEMES[S.theme], pr = MI.DIR.P(), lay = MI.DIR.lay();
-  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size, finish].join('|');
+  const sig = [S.preset, S.bpm, S.bpmNow, S.ramp, S.sub, S.scale, S.sound, S.tone, S.variety, S.theme, S.playing, !!rec3d, bodies.size, finish, anim].join('|');
   if (sig === hudSig) return;
   hudSig = sig;
   const set = (id, v) => { document.getElementById(id).textContent = v; };
@@ -726,6 +760,8 @@ function syncHud() {
   set('hud-variety', `${Math.round(S.variety * 100)}%`);
   set('hud-theme', th.name);
   set('hud-finish', finish);
+  set('hud-anim', anim);
+  document.getElementById('hud-animbtn').setAttribute('aria-pressed', String(anim === 'launch'));
   document.getElementById('hud-finishbtn').setAttribute('aria-pressed', String(finish === 'gloss'));
   set('hud-tags', `${[...bodies.values()].filter(b => !b.it.fold).length} / ${lay.cap}`);
   document.getElementById('hud-rec').hidden = !rec3d;
@@ -737,11 +773,12 @@ function syncHud() {
 function loop() {
   raf = requestAnimationFrame(loop);
   const t = now(), dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
+  if (hasIndigo(MI.THEMES[S.theme])) MI.setTheme(themeStep(S.theme));   // a preset or the random start may land on indigo
   const th = MI.THEMES[S.theme];
   const lap = (k, f) => { const a = performance.now(); f(); stats[k] = stats[k] * 0.9 + (performance.now() - a) * 0.1; };
   lap('sync', () => syncBodies(t));
   lap('sim', () => { for (let left = dt; left > 1e-6;) { const s = Math.min(1 / 120, left); simulate(t - left + s, s); left -= s; } });
-  lap('device', () => { placeBodies(th); paintDevice(th); paintScreen(); animateDevice(t, dt); });
+  lap('device', () => { placeBodies(th, t); paintDevice(th); paintScreen(); animateDevice(t, dt); });
   if (S.playing && !wasPlaying) userTouched = false;   // a new take re-arms the slow orbit
   wasPlaying = S.playing;
   controls.autoRotate = !!S.playing && !userTouched;
