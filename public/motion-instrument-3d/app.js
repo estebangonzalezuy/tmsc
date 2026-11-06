@@ -215,10 +215,11 @@ function buildScene() {
   buildPad();
   buildCartridges();
 }
+function defaultPose() { return { pos: new Vector3(0.8, 10.2, 21), target: new Vector3(0, 3.9, 0.4) }; }
 function resetView() {
-  camera.position.set(0.8, 10.2, 21);
-  controls.target.set(0, 3.9, 0.4);
-  controls.update();
+  const p = defaultPose();
+  if (camera.position.lengthSq() === 0) { camera.position.copy(p.pos); controls.target.copy(p.target); controls.update(); return; }
+  moveCamera(p, 0.9);
 }
 
 // -- the device ------------------------------------------------------------------------------------
@@ -538,17 +539,19 @@ function paintDevice(th) {
   hemi.groundColor.set(mix(th.bg, '#000000', 0.25));
   const dark = new Color(th.bg).getHSL({ h: 0, s: 0, l: 0 }).l < 0.35;
   floorMat.opacity = dark ? 0.35 : 0.16;
-  padMats.body.color.set(mix(th.bg, th.fg, 0.07));
-  padMats.capOff.color.set(mix(th.bg, th.fg, 0.14));
-  padMats.capOn.color.set(th.fg);
-  padMats.key.color.set(mix(th.bg, th.fg, 0.22));
+  // The machine is always white, whatever the theme: only the studio and the tags take colour.
+  const MACHINE = { body: '#ffffff', capOff: '#e2e2de', capOn: '#141414', key: '#f1f1ee', ink: '#141414', engrave: '#9a9a96' };
+  padMats.body.color.set(MACHINE.body);
+  padMats.capOff.color.set(MACHINE.capOff);
+  padMats.capOn.color.set(MACHINE.capOn);
+  padMats.key.color.set(MACHINE.key);
   for (const m of noteKeys) {
-    m.material = solid(mix(th.bg, th.fg, 0.22), 0.5);
+    m.material = solid(MACHINE.key, 0.5);
     const lab = m.userData.labelMesh || (m.userData.labelMesh = (() => { const p = new Mesh(plane(0.4, 0.4), null);
       p.rotation.x = -Math.PI / 2; p.position.y = 0.081; m.add(p); return p; })());
-    lab.material = printMat(`key|${m.userData.letter}|${th.fg}`, 64, 64, (c, w, h) => textOn(c, m.userData.letter, w / 2, h / 2, 36, th.fg));
+    lab.material = printMat(`key|${m.userData.letter}|${MACHINE.ink}`, 64, 64, (c, w, h) => textOn(c, m.userData.letter, w / 2, h / 2, 36, MACHINE.ink));
   }
-  const ink = mix(th.bg, th.fg, 0.6);
+  const ink = MACHINE.engrave;
   for (const e of engraved) {
     const { label, w, h } = e.userData;
     e.material = printMat(`eng|${label}|${ink}`, w * 100, h * 100, (c, ww, hh) => textOn(c, label, ww / 2, hh / 2, hh * 0.62, ink, 'center', 700));
@@ -729,15 +732,66 @@ function warn(msg) { const w = document.getElementById('hud-warn'); w.textConten
 // ---------------------------------------------------------------------------------------------
 let mode = '3d', raf = 0, lastT = 0;
 const stats = { sync: 0, sim: 0, device: 0, render: 0, frames: 0 };   // ms, smoothed
-function setMode(m) {
-  if (m === mode) return;
-  if (mode === '3d' && rec3d) rec3d.stop();
-  mode = m;
-  document.documentElement.dataset.mode = m;
+// 2D ↔ 3D. The 2D view is the pile seen flat and head-on, so the transition is a camera move:
+// into 3D the scene fades in on a flat, head-on shot of the pile framed like the 2D canvas, then
+// the camera eases back and up to where you left it. Out of 3D it eases back to that flat shot
+// and the 2D canvas fades in over it.
+const FADE = 0.35, MOVE = 1.15;
+let tween = null, lastPose = null;
+const easeInOut = x => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
+function flatPose() {
+  // distance at which one design px of the 2D canvas is one px here (vertical fov 34°)
+  const d = innerHeight * 1080 / (2 * Math.tan((camera.fov / 2) * Math.PI / 180) * Math.min(innerWidth, innerHeight) / U);
+  return { pos: new Vector3(CL.x, CL.y, CL.z + d), target: CL.clone() };
+}
+function pose() { return { pos: camera.position.clone(), target: controls.target.clone() }; }
+function moveCamera(to, dur, done) {
+  tween = { from: pose(), to, t0: now(), dur, done };
+  controls.enabled = false;
+}
+function stepTween(t) {
+  if (!tween) return false;
+  const p = clamp((t - tween.t0) / tween.dur), e = easeInOut(p);
+  camera.position.lerpVectors(tween.from.pos, tween.to.pos, e);
+  controls.target.lerpVectors(tween.from.target, tween.to.target, e);
+  camera.lookAt(controls.target);
+  if (p >= 1) { const done = tween.done; tween = null; controls.enabled = true; if (done) done(); }
+  return true;
+}
+function setTabs(m) {
   document.querySelectorAll('#hud-tabs [data-mode]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === m)));
-  if (m === '3d') { lastT = now(); raf = requestAnimationFrame(loop); }
-  else cancelAnimationFrame(raf);
   try { history.replaceState(null, '', m === '2d' ? '#2d' : location.pathname + location.search); } catch (_) {}
+}
+function setMode(m, instant = false) {
+  if (m === mode || (tween && tween.switching)) return;
+  const el = renderer.domElement;
+  setTabs(m);
+  if (m === '3d') {
+    mode = '3d';
+    document.documentElement.dataset.mode = '3d';
+    lastT = now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+    const to = lastPose || defaultPose();
+    if (instant) { camera.position.copy(to.pos); controls.target.copy(to.target); controls.update(); el.style.opacity = '1'; el.style.visibility = 'visible'; return; }
+    const flat = flatPose();
+    camera.position.copy(flat.pos); controls.target.copy(flat.target); camera.lookAt(flat.target);
+    el.style.visibility = 'visible'; el.style.transition = `opacity ${FADE}s ease`; el.style.opacity = '0';
+    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    moveCamera(to, MOVE);
+    tween.t0 += FADE * 0.6;                               // let the fade land before the camera starts
+    tween.switching = true;
+  } else {
+    if (rec3d) rec3d.stop();
+    lastPose = pose();
+    const finish = () => {
+      mode = '2d';
+      document.documentElement.dataset.mode = '2d';
+      el.style.transition = `opacity ${FADE}s ease`; el.style.opacity = '0';
+      setTimeout(() => { if (mode === '2d') { el.style.visibility = 'hidden'; cancelAnimationFrame(raf); } }, FADE * 1000 + 30);
+    };
+    if (instant) { mode = '2d'; document.documentElement.dataset.mode = '2d'; el.style.opacity = '0'; el.style.visibility = 'hidden'; cancelAnimationFrame(raf); return; }
+    moveCamera(flatPose(), MOVE * 0.85, finish);
+    tween.switching = true;
+  }
 }
 let hudSig = '';
 function syncHud() {
@@ -773,8 +827,8 @@ function loop() {
   lap('device', () => { placeBodies(th); paintDevice(th); paintScreen(); animateDevice(t, dt); });
   if (S.playing && !wasPlaying) userTouched = false;   // a new take re-arms the slow orbit
   wasPlaying = S.playing;
-  controls.autoRotate = !!S.playing && !userTouched;
-  controls.update(dt);
+  controls.autoRotate = !!S.playing && !userTouched && !tween;
+  if (!stepTween(now())) controls.update(dt);
   lap('render', () => renderer.render(scene, camera));    // CPU side of the draw; the GPU work is not measured here
   if (recTrack && recTrack.requestFrame) recTrack.requestFrame();
   syncHud();
@@ -795,7 +849,7 @@ function loop() {
     if (MI.fontOK === false) warn('Archivo Narrow did not load; tags use a fallback face.');
     const start = location.hash === '#2d' ? '2d' : '3d';
     mode = start === '3d' ? '2d' : '3d';               // force setMode to run
-    setMode(start);
+    setMode(start, true);
     loadEl.hidden = true;
     window.MI3D = { stats, get bodies() { return bodies; }, scene, camera, controls, renderer, setMode, toggleRec3d, get mode() { return mode; },
       get audioTap() { return audioTap; }, get audioContext() { return sharedAC; } };

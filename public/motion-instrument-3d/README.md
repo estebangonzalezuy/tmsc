@@ -7,8 +7,10 @@ REC and CLEAR buttons. Every note drops a thick, rounded word-tag into a
 cluster that floats well above it. Each tag is born in the middle, shoves the
 others outward, tilts and settles on springs. The active preset is a
 cartridge standing in the device's slot; changing preset drops the new one in.
-The theme colours the whole studio (the void, the device, the tags), not
-only the device.
+The theme colours the studio and the tags; the machine is always white.
+Switching tabs is a camera move: into 3D the scene fades in on a flat,
+head-on shot of the pile framed like the 2D canvas and eases back to the 3D
+view; out of 3D it eases back to that shot and the 2D canvas fades in.
 
 **This page does not reimplement the instrument.** `app.js` fetches
 `../motion-instrument/index.html` and runs it unchanged inside this document.
@@ -46,7 +48,7 @@ Every 2D key works in both tabs, because they are the 2D file's own handler.
 | `V` | variety |
 | `M` | major / minor |
 | `↑` / `↓` | BPM ±5 (`Shift` ±1) |
-| `C` | theme. In 3D it recolours the whole scene: the background, the device and the tags. The 3D tab leaves indigo out: themes that use it are skipped, and colour presets never give a tag indigo. |
+| `C` | theme. In 3D it recolours the background and the tags (the machine stays white). The 3D tab leaves indigo out: themes that use it are skipped, and colour presets never give a tag indigo. |
 | `P` | 3D only: tag finish, glossy clear-coated plastic (default) ↔ matte (`?matte` opens matte) |
 | `X` | clear the pattern |
 | `R` | record. In 2D this is the 2D recorder, unchanged. In 3D it records the WebGL canvas with the sound. |
