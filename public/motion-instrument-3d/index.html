@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="3d">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Motion Instrument 3D</title>
+<!--
+  Host page. The 2D instrument (../motion-instrument/index.html) is fetched and
+  run unchanged inside this document by app.js, so both tabs share one audio
+  engine, one sequencer and one keyboard. The 3D mode reads the 2D engine's
+  notes and draws them in Three.js. Needs a server (fetch + ES modules):
+  `npx serve public` from the repo root, or `npx next dev`.
+-->
+<style>
+  /* The HUD is tool chrome, not the club's: neutral greys, one mono face, small. */
+  :root {
+    --hud-bg: rgba(248, 248, 246, .94);
+    --hud-ink: #151515;
+    --hud-mute: #7a7a74;
+    --hud-line: rgba(0, 0, 0, .16);
+    --hud-on: #151515;
+    --hud-on-ink: #f6f6f4;
+    --hud-font: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  #stage3d { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 4; outline: none; touch-action: none; }
+  html[data-mode="2d"] #stage3d, html[data-mode="2d"] .hud-3d { display: none !important; }
+  html[data-mode="3d"] #mi, html[data-mode="3d"] #mi-hint { display: none !important; }
+  .hud { position: fixed; z-index: 20; font: 500 11px/1.25 var(--hud-font); letter-spacing: .03em; text-transform: uppercase; color: var(--hud-ink); }
+  .hud[hidden], .hud-off .hud { display: none !important; }
+  .hud button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--hud-ink); background: var(--hud-bg);
+    border: 1px solid var(--hud-line); border-radius: 5px; padding: 6px 9px; cursor: pointer; }
+  .hud button:hover { border-color: rgba(0, 0, 0, .4); }
+  .hud button[aria-pressed="true"], .hud button[aria-selected="true"] { background: var(--hud-on); color: var(--hud-on-ink); border-color: var(--hud-on); }
+  .hud kbd { font: inherit; color: var(--hud-mute); margin-left: 6px; }
+  .hud button[aria-pressed="true"] kbd, .hud button[aria-selected="true"] kbd { color: #a9a9a3; }
+  /* tabs */
+  #hud-tabs { top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 0; padding: 3px; background: var(--hud-bg);
+    border: 1px solid var(--hud-line); border-radius: 7px; }
+  #hud-tabs button { border: 0; border-radius: 4px; padding: 6px 16px; background: transparent; font-weight: 700; letter-spacing: .08em; }
+  #hud-tabs button[aria-selected="true"] { background: var(--hud-on); color: var(--hud-on-ink); }
+  /* status */
+  #hud-status { top: 14px; left: 14px; min-width: 232px; background: var(--hud-bg); border: 1px solid var(--hud-line); border-radius: 7px; padding: 8px 10px; }
+  #hud-status h2 { margin: 0 0 6px; font: inherit; font-weight: 700; letter-spacing: .1em; display: flex; justify-content: space-between; }
+  #hud-status dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; }
+  #hud-status dt { color: var(--hud-mute); }
+  #hud-status dd { margin: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+  #hud-rec { color: #c4321b; font-weight: 700; }
+  #hud-rec[hidden] { display: none; }
+  #hud-note { margin: 8px 0 0; color: var(--hud-mute); text-transform: none; letter-spacing: 0; line-height: 1.4; max-width: 232px; }
+  #hud-warn { margin: 8px 0 0; color: #c4321b; text-transform: none; letter-spacing: 0; }
+  #hud-warn[hidden] { display: none; }
+  /* control bar */
+  #hud-bar { left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
+    max-width: calc(100vw - 28px); padding: 4px; background: var(--hud-bg); border: 1px solid var(--hud-line); border-radius: 7px; }
+  #hud-bar .sep { width: 1px; align-self: stretch; background: var(--hud-line); margin: 2px 3px; }
+  #hud-load { position: fixed; inset: 0; display: grid; place-items: center; z-index: 30; background: #e4e3df;
+    font: 500 11px/1.4 var(--hud-font); letter-spacing: .08em; text-transform: uppercase; color: #555; }
+  #hud-load[hidden] { display: none; }
+  @media (max-width: 760px) { #hud-status { display: none; } }
+</style>
+</head>
+<body>
+<div id="mi2d"></div>
+<nav class="hud" id="hud-tabs" role="tablist" aria-label="Mode">
+  <button type="button" role="tab" data-mode="2d" aria-selected="false">2D</button>
+  <button type="button" role="tab" data-mode="3d" aria-selected="true">3D</button>
+</nav>
+<section class="hud hud-3d" id="hud-status" aria-label="Status">
+  <h2><span>Instrument · 3D</span><span id="hud-rec" hidden>● Rec</span></h2>
+  <dl>
+    <dt>Preset</dt><dd id="hud-preset">—</dd>
+    <dt>Tempo</dt><dd id="hud-tempo">—</dd>
+    <dt>Scale</dt><dd id="hud-scale">—</dd>
+    <dt>Sound</dt><dd id="hud-sound">—</dd>
+    <dt>Variety</dt><dd id="hud-variety">—</dd>
+    <dt>Theme</dt><dd id="hud-theme">—</dd>
+    <dt>Tags</dt><dd id="hud-tags">—</dd>
+  </dl>
+  <p id="hud-note">A–K play · drag to orbit, scroll to zoom, right-drag to pan · click keys, pads and cartridges on the device.</p>
+  <p id="hud-warn" hidden></p>
+</section>
+<div class="hud hud-3d" id="hud-bar" role="toolbar" aria-label="Controls">
+  <button type="button" data-key=" " id="hud-play">Play<kbd>Space</kbd></button>
+  <span class="sep"></span>
+  <button type="button" data-preset="-1">‹ Preset</button>
+  <button type="button" data-preset="1">Preset ›</button>
+  <span class="sep"></span>
+  <button type="button" data-key="arrowdown">BPM −<kbd>↓</kbd></button>
+  <button type="button" data-key="arrowup">BPM +<kbd>↑</kbd></button>
+  <button type="button" data-key="l" id="hud-ramp">Ramp<kbd>L</kbd></button>
+  <span class="sep"></span>
+  <button type="button" data-key="o">Sound<kbd>O</kbd></button>
+  <button type="button" data-key="t">Tone<kbd>T</kbd></button>
+  <button type="button" data-key="m">Scale<kbd>M</kbd></button>
+  <button type="button" data-key="v">Variety<kbd>V</kbd></button>
+  <button type="button" data-key="c">Theme<kbd>C</kbd></button>
+  <span class="sep"></span>
+  <button type="button" data-key="x">Clear<kbd>X</kbd></button>
+  <button type="button" data-key="r" id="hud-recbtn">Rec<kbd>R</kbd></button>
+  <button type="button" id="hud-view">View</button>
+  <button type="button" data-key="u">Hide<kbd>U</kbd></button>
+</div>
+<div id="hud-load">Loading instrument…</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

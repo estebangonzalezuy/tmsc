@@ -368,6 +368,20 @@ linked from the Hub, not the public nav. Don't pull site modules into the
 HTML, and don't edit the instrument to change the page's title — that
 belongs to the route.
 
+`public/motion-instrument-3d/` is its 3D mode, with 2D | 3D tabs. It is a
+host page: `app.js` fetches the 2D `index.html` and runs it **unchanged** in
+the same document, then reads `window.MI` to draw a Three.js scene. That
+scene is a device with the pad and a cluster of thick word-tags, with the
+presets as cartridges. Both tabs share one audio engine, one sequencer and
+one keyboard handler. The one hook is an `AudioContext` wrapper installed
+before the 2D script runs. It makes one shared context whose `destination`
+also feeds a MediaStream, so a 3D recording carries the sound. Never fork the
+2D logic into the 3D files; extend what `window.MI` exposes in the 2D source
+instead. three.js is vendored as one esbuild bundle (`vendor/three.js`,
+rebuilt from `vendor/entry.js`), and the folder is ignored by the site's
+ESLint like Frames. It needs http (not `file://`) and is unlinked.
+`public/motion-instrument-3d/README.md` is its documentation.
+
 ## the Tools (`/tools`) — retired
 
 The everyday front door to the studio (a note, a countdown, a quote card, a
